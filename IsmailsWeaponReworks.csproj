@@ -10,7 +10,8 @@
 
 	<!-- References -->
 	<ItemGroup>
-		
+	  <Folder Include="Localization\" />
+	  <Folder Include="tools\" />
 	</ItemGroup>
 
 </Project>
