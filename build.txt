@@ -1,0 +1,4 @@
+displayName = Ismail's Weapon Reworks
+author = Ismail
+version = 0.1
+buildIgnore = tools\*, index_codebase.py, CODEBASE_INDEX.md, PROJECT_CONTEXT.md, patch_*.ps1, docs\*

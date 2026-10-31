@@ -1,0 +1,20 @@
+# Visual Studio & C# Build Files
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+*.userprefs
+
+# Compiled tModLoader Artifacts
+*.tmod
+
+# OS & Editor Caches
+.DS_Store
+Thumbs.db
+.vscode/
+.clinerules
+.cursor
+
+index_codebase.py
+PROJECT_CONTEXT.md
