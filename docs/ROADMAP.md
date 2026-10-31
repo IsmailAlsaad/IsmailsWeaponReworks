@@ -8,8 +8,8 @@ Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projecti
 
 ## Progress
 
-- [~] Migration: Ice Boomerang imported from Factorraria commit `183e77e` (applied, untested)
-- [ ] Migration: removal of the old copy from Factorraria
+- [x] Migration: Ice Boomerang imported from Factorraria commit `183e77e` (tested alone and together with Factorraria, all checks passed)
+- [x] Migration: old copy removed from Factorraria (`patch_remove_weapons.ps1`); Factorraria lists this mod in `modReferences` (hard dependency); tested, disabling this mod while Factorraria is enabled is refused
 - [ ] R1: synced server config with one toggle per rework (checked in each GlobalItem's `AppliesToEntity`)
 
 ## 1. Ice Boomerang (vanilla `ItemID.IceBoomerang`) [DONE]
