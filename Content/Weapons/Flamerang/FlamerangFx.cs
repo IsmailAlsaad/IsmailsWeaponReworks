@@ -53,7 +53,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
                 Dust dust = Dust.NewDustPerfect(position, FireDust(), Main.rand.NextVector2Circular(2.5f, 2.5f), 80, default, 1f);
                 dust.noGravity = true;
             }
-            SoundEngine.PlaySound(SoundID.Item4 with { Volume = 0.45f, Pitch = -0.1f }, position);
+            SoundEngine.PlaySound(SoundID.Item45 with { Volume = 0.35f, Pitch = -0.1f }, position);
         }
 
         // The fire explosion: a ball of flame, flying sparks and smoke.
