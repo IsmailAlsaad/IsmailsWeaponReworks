@@ -13,6 +13,7 @@ Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projecti
 - [ ] R1: synced server config with one toggle per rework (checked in each GlobalItem's `AppliesToEntity`)
 - [~] Ice Blade: tap chop, 3-tier click charge, slash wave, freeze lockout (patch 2 applied, untested: release swing = tap swing, wave passes through blocks)
 - [~] R2: boomerang and blast hit sparks visible to other players (applied, untested)
+- [~] Enchanted Boomerang: left = normal throw, right = ethereal throw, collision = stardust burst + bounce (patch 1 applied, untested)
 
 ## 1. Ice Boomerang (vanilla `ItemID.IceBoomerang`) [DONE]
 
@@ -31,3 +32,15 @@ Multiplayer design: the owner's client decides release, tier, aim, freeze and th
 Art: none needed (vanilla blade sprite and the 1x1 magic pixel).
 
 Test checklist: tap swings and damages; holding plays 3 rising clicks then a low 4th; release before click 1 = chop only; release after click 1/2/3 = three clearly different wave sizes and damage; release between click 3 and 4 = biggest; holding past click 4 freezes the player about 3 s with no wave; swapping items mid-charge ends cleanly; waves stop at walls; the arm pose is right facing left and with the cursor on both sides; two players: the other player sees the arm lift, clicks, flash, slash, trail and wave, and the wave's hits register for the owner.
+
+## 3. Enchanted Boomerang (vanilla `ItemID.EnchantedBoomerang`) [patch 1 applied, untested]
+
+Design: left click throws the normal boomerang, right click (`AltFunctionUse`) throws an ethereal one drawn see-through with a ghostly trail. One of each kind can be out at the same time (`EnchantedBoomerangProjectile` and `EtherealBoomerangProjectile` are two types sharing `EnchantedBoomerangBase`, so `ownedProjectileCounts` limits each kind separately). Both fly a fixed range (18 tiles, tunable) and return to the player; a block ends the way out and turns them back (both kinds, the ethereal one does NOT pass blocks); they pierce infinitely (`penetrate = -1`, an enemy can be hit again after 12 ticks, and again on the way back). Same damage for both.
+
+Collision: when a normal and an ethereal one touch (swept test on their relative motion, 20 px radius each, forgiving on purpose; once per throw), `StardustBurstProjectile` explodes at the contact point (damages every enemy in 72 px once, 1.5x boomerang damage, gold and blue sparkle dust plus two pixel rings), and each boomerang flies off 90 degrees to its own travel direction, on the side that leads away from the other one, then returns. Head-on throws (right click along the line the left boomerang is coming back on) are the easy way to trigger it.
+
+Multiplayer design: both boomerangs belong to the same player, so the owner's client sees both and decides everything (turn, wall hit, collision, bounce, burst spawn); it syncs through ai[0] phase, velocity and netUpdate. Other machines simulate the same motion and visuals, and the burst is a normal spawned projectile that every machine plays on its first tick. Other players' hit sparks come from `Common/RemoteHitTracker` (extracted from the Ice Boomerang's R2 code, which now uses it too). No custom packets.
+
+Art: optional. Drop `EnchantedBoomerangProjectile.png` and `EtherealBoomerangProjectile.png` into `Content/Weapons/EnchantedBoomerang/` (same size as the vanilla boomerang sprite, single frame) and they replace the vanilla texture automatically.
+
+Test checklist: left click throws and returns, right click throws the ghost version, both can be out together; each is limited to one in flight; both turn back at walls; piercing hits an enemy going out and coming back; head-on collision bursts in stardust at the meeting point and sends the boomerangs off sideways (apart from each other), then both return and are caught; a pair collides only once per throw; the burst damages nearby enemies once; Ice Boomerang still behaves the same (chain, crystals, chill) and still shows hit sparks to the other player; two players: the other player sees both boomerangs, the bounce, the burst and the hit sparks.

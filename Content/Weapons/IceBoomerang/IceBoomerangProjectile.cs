@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using IsmailsWeaponReworks.Common;
 using ReLogic.Content;
 using System;
 using System.Collections.Generic;
@@ -39,8 +40,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
 
         List<int> visited;     // owner only: identities of the crystals already bounced off in this chain
         Vector2 sweepStart;    // center at the start of this tick, for the swept hit test
-        HashSet<int> sparked;  // other machines only: enemies already sparked in the current segment (visual only)
-        int sparkSegment = -1;
+        RemoteHitTracker hitTracker; // other machines only: which enemies already got hit sparks in the current segment (visual only)
 
         public override void Load()
         {
@@ -149,19 +149,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
         {
             if (Main.dedServ || phase == Phase.Settling || phase == Phase.Spent || sweepStart == Vector2.Zero)
                 return;
-            sparked ??= new HashSet<int>();
+            hitTracker ??= new RemoteHitTracker();
             int segment = (int)phase * 1000 + (phase >= Phase.Chain ? (int)Projectile.ai[2] : 0);
-            if (segment != sparkSegment)
+            hitTracker.Update(Projectile, segment, npc =>
             {
-                sparkSegment = segment;
-                sparked.Clear();
-            }
-            for (int i = 0; i < Main.maxNPCs; i++)
-            {
-                NPC npc = Main.npc[i];
-                if (!npc.active || sparked.Contains(i) || !npc.CanBeChasedBy(Projectile) || Colliding(Projectile.Hitbox, npc.Hitbox) != true)
-                    continue;
-                sparked.Add(i);
                 if (phase == Phase.Outbound)
                 {
                     Rectangle box = npc.Hitbox;
@@ -172,7 +163,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
                 {
                     IceBoomerangFx.Burst(npc.Center, 4, 3f, 1f);
                 }
-            }
+            });
         }
 
         void FlightDust(int level)

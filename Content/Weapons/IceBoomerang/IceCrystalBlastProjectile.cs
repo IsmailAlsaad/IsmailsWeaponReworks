@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using IsmailsWeaponReworks.Common;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -57,15 +58,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
             IceBoomerangFx.Ring(Projectile.Center, 16, 40f, 3f);
 
             // OnHitNPC only runs on the owner's client, so the other machines show the hit sparks themselves (visual only).
-            if (Projectile.owner != Main.myPlayer && !Main.dedServ)
-            {
-                for (int i = 0; i < Main.maxNPCs; i++)
-                {
-                    NPC npc = Main.npc[i];
-                    if (npc.active && npc.CanBeChasedBy(Projectile) && Colliding(Projectile.Hitbox, npc.Hitbox) == true)
-                        IceBoomerangFx.Burst(npc.Center, 5, 3f, 1f);
-                }
-            }
+            if (Projectile.owner != Main.myPlayer)
+                RemoteHitTracker.TouchOnce(Projectile, npc => IceBoomerangFx.Burst(npc.Center, 5, 3f, 1f));
 
             // Make the crystal under the blast flash (every machine does this for its own copy).
             int crystalType = ModContent.ProjectileType<IceCrystalProjectile>();

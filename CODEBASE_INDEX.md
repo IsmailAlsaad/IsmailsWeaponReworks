@@ -1,16 +1,17 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-01 | 13 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-01 | 21 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-IceFx(4) IceBoomerangTuning(4) IceBoomerangFx(3) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2) IceBladeFx(2) IceCrystalBlastProjectile(1) IceBoomerangProjectile(1) IceBladeWaveProjectile(1) IceBladeSwingProjectile(1)
+IceFx(5) RemoteHitTracker(4) IceBoomerangTuning(4) IceBoomerangFx(3) EnchantedBoomerangTuning(3) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2) IceBladeFx(2) EtherealBoomerangProjectile(2) EnchantedBoomerangFx(2) EnchantedBoomerangBase(2) StardustBurstProjectile(1) IceCrystalBlastProjectile(1) IceBoomerangProjectile(1) IceBladeWaveProjectile(1) IceBladeSwingProjectile(1) EnchantedBoomerangProjectile(1)
 
 ## Inheritance
 Project bases -> derived:
+- EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
 tModLoader/other bases -> project types:
-- ModProjectile (5): IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile
-- GlobalItem (2): IceBladeGlobalItem, IceBoomerangGlobalItem
+- ModProjectile (7): EnchantedBoomerangBase, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, StardustBurstProjectile
+- GlobalItem (3): EnchantedBoomerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem
 - Mod (1): IsmailsWeaponReworks
 
 ## Files
@@ -23,6 +24,34 @@ tModLoader/other bases -> project types:
 **IceFx.cs**
   static class IceFx
     +Burst(Vector2,int,float,float)[s] +Ring(Vector2,int,float,float)[s] +Gather(Vector2,float)[s] +DrawPixel(Vector2,float,Color,float)[s]
+**RemoteHitTracker.cs**
+  class RemoteHitTracker
+    +Update(Projectile,int,Action<NPC>) +TouchOnce(Projectile,Action<NPC>)[s]
+
+### Content/Weapons/EnchantedBoomerang/
+**EnchantedBoomerangBase.cs** uses: EnchantedBoomerangFx, EnchantedBoomerangTuning, EtherealBoomerangProjectile, RemoteHitTracker, StardustBurstProjectile
+  abstract class EnchantedBoomerangBase : ModProjectile
+    +Texture:string[ov] #Ethereal:bool[ab] +Load()[ov] +Unload()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Outbound, Returning, Bounce}
+**EnchantedBoomerangFx.cs**
+  static class EnchantedBoomerangFx
+    +FlightDust(Vector2,Vector2,bool)[s] +HitSparks(Vector2,bool)[s] +Catch(Vector2,bool)[s] +BounceSparks(Vector2)[s] +Burst(Vector2,float)[s]
+**EnchantedBoomerangGlobalItem.cs** uses: EnchantedBoomerangProjectile, EnchantedBoomerangTuning, EtherealBoomerangProjectile
+  class EnchantedBoomerangGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**EnchantedBoomerangProjectile.cs** uses: EnchantedBoomerangBase
+  class EnchantedBoomerangProjectile : EnchantedBoomerangBase
+    #Ethereal:bool[ov]
+**EnchantedBoomerangTuning.cs**
+  static class EnchantedBoomerangTuning
+    +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +SpinSpeed:float[s] +CollideRadius:float[s] +BounceSpeed:float[s] +BounceDecay:float[s] +BounceTicks:int[s] +BurstRadius:float[s] +BurstDamageMultiplier:float[s] +BurstLifeTicks:int[s] +NormalColor:Color[s] +EtherealColor:Color[s] +EtherealOpacity:float[s] +PixelSize:float[s]
+**EtherealBoomerangProjectile.cs** uses: EnchantedBoomerangBase
+  class EtherealBoomerangProjectile : EnchantedBoomerangBase
+    #Ethereal:bool[ov]
+**StardustBurstProjectile.cs** uses: EnchantedBoomerangFx, EnchantedBoomerangTuning, IceFx, RemoteHitTracker
+  class StardustBurstProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
 
 ### Content/Weapons/IceBlade/
 **IceBladeFx.cs** uses: IceFx
@@ -52,7 +81,7 @@ tModLoader/other bases -> project types:
 **IceBoomerangGlobalItem.cs** uses: IceBoomerangProjectile, IceBoomerangTuning
   class IceBoomerangGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**IceBoomerangProjectile.cs** uses: IceBoomerangFx, IceBoomerangTuning, IceCrystalBlastProjectile, IceCrystalProjectile
+**IceBoomerangProjectile.cs** uses: IceBoomerangFx, IceBoomerangTuning, IceCrystalBlastProjectile, IceCrystalProjectile, RemoteHitTracker
   class IceBoomerangProjectile : ModProjectile
     +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
@@ -62,7 +91,7 @@ tModLoader/other bases -> project types:
     +ThrowSpeed:float[s] +MinThrowRange:float[s] +MaxThrowRange:float[s] +SettleTicks:int[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ChainSpeedGainPerLevel:float[s] +ChainMaxSpeed:float[s] +ChainMaxTargetDistance:float[s] +DamageGainPerLevel:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastLifeTicks:int[s] +BlastFlashTicks:int[s] +FlightMaxTicks:int[s] +MaxCrystals:int[s] +CrystalLifeTicks:int[s] +CrystalPopTicks:int[s] +ExpiryWarnTicks:int[s] +CrystalSheetFrames:int[s] +CrystalBounceLifeLossTicks:int[s] +HaloIntervalTicks:int[s] +HaloLifeTicks:int[s] +HaloMaxScale:float[s] +HaloAlpha:float[s] +ChillTicks:int[s] +ChillRefreshBelowTicks:int[s] +ChillCheckInterval:int[s]
   static class IceBoomerangChill
     +Apply(NPC)[s]
-**IceCrystalBlastProjectile.cs** uses: IceBoomerangChill, IceBoomerangFx, IceBoomerangTuning, IceCrystalProjectile
+**IceCrystalBlastProjectile.cs** uses: IceBoomerangChill, IceBoomerangFx, IceBoomerangTuning, IceCrystalProjectile, RemoteHitTracker
   class IceCrystalBlastProjectile : ModProjectile
     +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
 **IceCrystalProjectile.cs** uses: IceBoomerangChill, IceBoomerangFx, IceBoomerangTuning
