@@ -44,8 +44,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
 
         public override void SetDefaults()
         {
-            Projectile.width = 10;
-            Projectile.height = 10;
+            Projectile.width = 1;
+            Projectile.height = 1;
             Projectile.aiStyle = -1;
             Projectile.friendly = true;
             Projectile.DamageType = DamageClass.Melee;
@@ -115,9 +115,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             Vector2 position = Projectile.Center - Main.screenPosition;
 
             if (heat > 0.01f)
-                Main.EntitySpriteDraw(texture, position, null, FlamerangTuning.FireColor * (0.8f * heat * fade), Projectile.rotation, origin, 1.5f, SpriteEffects.None, 0);
-            Color body = Color.Lerp(FlamerangTuning.ObsidianColor, new Color(255, 190, 90), heat) * fade;
-            Main.EntitySpriteDraw(texture, position, null, body, Projectile.rotation, origin, 1.25f, SpriteEffects.None, 0);
+                Main.EntitySpriteDraw(texture, position, null, FlamerangTuning.FireColor * (0.8f * heat * fade), Projectile.rotation, origin, 1f, SpriteEffects.None, 0);
+            //Color body = Color.Lerp(FlamerangTuning.ObsidianColor, new Color(255, 190, 90), heat) * fade;
+            Main.EntitySpriteDraw(texture, position, null, Color.White, Projectile.rotation, origin, 1f, SpriteEffects.None, 0);
             return false;
         }
     }
