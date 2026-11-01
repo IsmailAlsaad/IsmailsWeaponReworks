@@ -206,16 +206,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             Vector2 center = Projectile.Center;
             SpawnBlast(center);
 
-            Player owner = Main.player[Projectile.owner];
             Vector2 sideways = new Vector2(-flightDirection.Y, flightDirection.X);
             int damage = Math.Max(1, (int)(Projectile.damage * FlamerangTuning.MoltenDamageMultiplier));
             int moltenType = ModContent.ProjectileType<MoltenBoomerangProjectile>();
             foreach (float side in new[] { 1f, -1f })
             {
-                Vector2 velocity = sideways * side * FlamerangTuning.MoltenArcSpeed;
-                Vector2 toOwner = owner.Center - center;
-                float turn = velocity.X * toOwner.Y - velocity.Y * toOwner.X >= 0f ? 1f : -1f; // bend toward the player
-                Projectile.NewProjectile(Projectile.GetSource_FromThis(), center, velocity, moltenType, damage, Projectile.knockBack, Projectile.owner, 0f, turn);
+                Vector2 velocity = sideways * side * FlamerangTuning.MoltenArcSpeed; // the sideways impulse; the molten boomerang's own force bends it back
+                Projectile.NewProjectile(Projectile.GetSource_FromThis(), center, velocity, moltenType, damage, Projectile.knockBack, Projectile.owner);
             }
         }
 
@@ -227,6 +224,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             exploded = true;
             SpawnBlast(contact);
 
+            ObsidianShardProjectile.MakeRoom(Projectile.owner, FlamerangTuning.ShardCount); // at most ShardMaxAlive per player: the oldest break
             int shardType = ModContent.ProjectileType<ObsidianShardProjectile>();
             int shardDamage = Math.Max(1, (int)(Projectile.damage * FlamerangTuning.ShardDamageMultiplier));
             float spread = MathHelper.ToRadians(FlamerangTuning.ShardSpreadDeg);
@@ -241,7 +239,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             Vector2 toOwner = owner.Center - Projectile.Center;
             Vector2 back = toOwner.LengthSquared() > 1f ? Vector2.Normalize(toOwner) : Vector2.UnitX;
             int moltenDamage = Math.Max(1, (int)(Projectile.damage * FlamerangTuning.MoltenDamageMultiplier));
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, back * FlamerangTuning.ReturnStartSpeed, ModContent.ProjectileType<MoltenBoomerangProjectile>(), moltenDamage, Projectile.knockBack, Projectile.owner, 1f);
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, back * FlamerangTuning.ReturnStartSpeed, ModContent.ProjectileType<MoltenBoomerangProjectile>(), moltenDamage, Projectile.knockBack, Projectile.owner);
 
             Projectile.ai[0] = (float)Phase.Spent; // every machine removes its copy next tick
             Projectile.velocity = Vector2.Zero;

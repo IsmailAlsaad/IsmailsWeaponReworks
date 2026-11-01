@@ -110,6 +110,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             SoundEngine.PlaySound(SoundID.Item27 with { Volume = 0.35f, Pitch = -0.4f, PitchVariance = 0.2f }, position);
         }
 
+        // A shard breaks: a burst of dark fragments and sparks and a glassy crack.
+        public static void ShardShatter(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 12; i++)
+            {
+                bool spark = i % 3 == 0;
+                Dust dust = Dust.NewDustPerfect(position + Main.rand.NextVector2Circular(4f, 4f), spark ? DustID.Torch : DustID.Smoke, Main.rand.NextVector2Circular(4.5f, 4.5f) + new Vector2(0f, -1f), 100, spark ? default : FlamerangTuning.ObsidianColor, Main.rand.NextFloat(0.9f, 1.6f));
+                dust.noGravity = true;
+            }
+            SoundEngine.PlaySound(SoundID.Item27 with { Volume = 0.5f, Pitch = 0.3f, PitchVariance = 0.2f }, position);
+        }
+
         // A hot shard shedding a spark.
         public static void ShardGlow(Vector2 position, float heat)
         {

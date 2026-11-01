@@ -26,11 +26,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
 
         // ---- molten boomerangs ----
         public static float MoltenDamageMultiplier => 1f;
-        public static float MoltenArcSpeed => 13f;         // the two sideways ones
-        public static float MoltenArcTurnRadians => 0.085f; // how much their velocity bends toward the player every tick
-        public static int MoltenArcTicks => 32;            // then they home straight back
-        public static float ReturnStartSpeed => 8f;
-        public static float ReturnAcceleration => 1f;
+        public static float MoltenArcSpeed => 20f;         // the sideways impulse of the two molten boomerangs from the open-space explosion
+        public static float ReturnStartSpeed => 10f;        // the one from a contact explosion starts at this speed, straight at the player
+        public static float ReturnAcceleration => 1.4f;      // pull toward the player's current position, per tick (BoomerangFlight.StepForceReturn)
+        public static float ReturnDrag => 0.96f;           // velocity kept per tick; below 1 so the arc spirals in instead of orbiting
         public static float ReturnMaxSpeed => 20f;
         public static float CatchDistance => 28f;
         public static int MoltenHitCooldownTicks => 12;    // infinite pierce: the same enemy can be hit again after this long
@@ -47,15 +46,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
         public static float TrailBurnFade => 0.6f;         // the oldest part of the trail burns this much less far than the newest
 
         // ---- obsidian shards (contact explosion only) ----
-        public static int ShardCount => 6;
-        public static float ShardDamageMultiplier => 0.6f;
+        public static int ShardCount => 3;
+        public static float ShardDamageMultiplier => 0.3f;
         public static float ShardMinSpeed => 4f;
         public static float ShardMaxSpeed => 9f;
         public static float ShardSpreadDeg => 70f;         // around straight up
         public static float ShardGravity => 0.3f;
         public static float ShardMaxFallSpeed => 12f;
         public static int ShardLingerTicks => 480;         // how long a shard lasts in total (8 seconds)
-        public static int ShardFadeTicks => 40;
+        public static int ShardMaxHits => 4;               // a shard breaks after this many hits
+        public static int ShardMaxAlive => 15;             // per player; a new burst breaks the oldest shards
         public static int ShardCoolTicks => 70;            // glows like lava, then cools to dark obsidian
         public static int ShardHitCooldownTicks => 20;
 

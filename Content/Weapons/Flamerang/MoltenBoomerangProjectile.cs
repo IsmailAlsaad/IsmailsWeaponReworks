@@ -13,12 +13,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
 {
     /// <summary>
     /// The molten boomerang the Flamerang turns into. It pierces everything and leaves a trail of fire behind it that sets enemies
-    /// alight. ARC (spawned sideways at the end of the throw's range): its velocity bends toward the player for a while, a hook-shaped
-    /// path, then it RETURNS (homes back, accelerating) and is caught. A molten boomerang spawned by a contact explosion starts directly
-    /// in RETURN.
-    /// ai[0] = phase (0 arc, 1 return), ai[1] = turn direction (+1 or -1) for the arc, localAI[0] = age, localAI[1] = spin direction.
-    /// MULTIPLAYER: spawned by the owner's client (so synced); the owner flips arc to return with netUpdate and applies the burning from
-    /// the trail (NPC.AddBuff syncs itself). Every machine runs the same arc and draws its own copy of the trail from where its copy has been;
+    /// alight. It is spawned with an impulse (sideways at the end of the throw's range, or straight at the player by a contact explosion)
+    /// and from then on a force pulls it toward the player's CURRENT position every tick (BoomerangFlight.StepForceReturn), so it flies a
+    /// smooth arc that bends to wherever the player is now, and it is caught when it arrives.
+    /// localAI[1] = spin direction. ai[] is unused.
+    /// MULTIPLAYER: spawned by the owner's client (so synced); every machine runs the same force-based flight from the synced velocity,
+    /// the owner applies the burning from the trail (NPC.AddBuff syncs itself). Every machine draws its own copy of the trail from where its copy has been;
     /// other players' hit sparks come from RemoteHitTracker.
     /// </summary>
     public class MoltenBoomerangProjectile : ModProjectile
@@ -26,10 +26,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
         public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Flamarang;
 
         static Asset<Texture2D> art;
-
-        enum Phase { Arc = 0, Return = 1 }
-
-        Phase CurrentPhase => (Phase)(int)Projectile.ai[0];
 
         Vector2 sweepStart;
         int ticks;
@@ -87,7 +83,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             trail ??= MoltenTrailStyle.Create(isOwner);
 
             if (!isOwner)
-                RemoteHitSparks(CurrentPhase); // needs last tick's sweepStart, so it runs first
+                RemoteHitSparks(); // needs last tick's sweepStart, so it runs first
             sweepStart = Projectile.Center;
 
             if (ticks == 0)
@@ -112,26 +108,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             trail.Add(Projectile.Center);
             trail.Tick();
 
-            if (CurrentPhase == Phase.Arc)
-            {
-                // Bend the velocity toward the player a little every tick, then home straight back.
-                Projectile.velocity = Projectile.velocity.RotatedBy(Projectile.ai[1] * FlamerangTuning.MoltenArcTurnRadians);
-                if (isOwner && ticks >= FlamerangTuning.MoltenArcTicks)
-                    BeginReturn();
-            }
-            else if (BoomerangFlight.StepReturn(Projectile, owner, FlamerangTuning.ReturnStartSpeed, FlamerangTuning.ReturnAcceleration, FlamerangTuning.ReturnMaxSpeed, FlamerangTuning.CatchDistance))
+            // Pulled toward the player's current position by a force (the spawn velocity is the impulse), so it flies a smooth arc.
+            float AdjustedAcceleration = MathHelper.Lerp(FlamerangTuning.ReturnAcceleration, FlamerangTuning.ReturnAcceleration * 30f, (float)ticks / (float)(FlamerangTuning.FlightMaxTicks * 0.1f));
+            if (BoomerangFlight.StepForceReturn(Projectile, owner, AdjustedAcceleration, FlamerangTuning.ReturnMaxSpeed, FlamerangTuning.ReturnDrag, FlamerangTuning.CatchDistance))
             {
                 FlamerangFx.Catch(Projectile.Center); // every machine catches its own copy
                 Projectile.Kill();
             }
-        }
-
-        // Owner only.
-        void BeginReturn()
-        {
-            Projectile.ai[0] = (float)Phase.Return;
-            Array.Clear(Projectile.localNPCImmunity, 0, Projectile.localNPCImmunity.Length); // enemies can be hit again on the way back
-            Projectile.netUpdate = true;
         }
 
         // Every machine: the trail outlives the boomerang and keeps fading (and burning, on the owner's machine) on its own.
@@ -141,12 +124,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             trail = null;
         }
 
-        void RemoteHitSparks(Phase phase)
+        void RemoteHitSparks()
         {
             if (Main.dedServ || sweepStart == Vector2.Zero)
                 return;
             hitTracker ??= new RemoteHitTracker();
-            hitTracker.Update(Projectile, (int)phase, npc => FlamerangFx.HitSparks(npc.Center));
+            hitTracker.Update(Projectile, 0, npc => FlamerangFx.HitSparks(npc.Center));
         }
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
