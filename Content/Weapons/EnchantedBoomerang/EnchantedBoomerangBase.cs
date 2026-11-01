@@ -165,15 +165,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
 
         void AiReturning(Player owner)
         {
-            float speed = Math.Min(EnchantedBoomerangTuning.ReturnMaxSpeed, Math.Max(Projectile.velocity.Length(), EnchantedBoomerangTuning.ReturnStartSpeed) + EnchantedBoomerangTuning.ReturnAcceleration);
-            Vector2 toOwner = owner.Center - Projectile.Center;
-            if (toOwner.Length() <= Math.Max(speed, EnchantedBoomerangTuning.CatchDistance))
+            if (BoomerangFlight.StepReturn(Projectile, owner, EnchantedBoomerangTuning.ReturnStartSpeed, EnchantedBoomerangTuning.ReturnAcceleration, EnchantedBoomerangTuning.ReturnMaxSpeed, EnchantedBoomerangTuning.CatchDistance))
             {
                 EnchantedBoomerangFx.Catch(Projectile.Center, Ethereal); // every machine catches its own copy
                 Projectile.Kill();
-                return;
             }
-            Projectile.velocity = Vector2.Normalize(toOwner) * speed;
         }
 
         void AiBounce(bool isOwner)

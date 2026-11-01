@@ -1,4 +1,6 @@
 Projectiles: {
+	TrimarangProjectile.DisplayName: Trimarang Projectile
+	TrimarangEtherealProjectile.DisplayName: Trimarang Ethereal Projectile
 	EnchantedBoomerangProjectile.DisplayName: Enchanted Boomerang Projectile
 	EtherealBoomerangProjectile.DisplayName: Ethereal Boomerang Projectile
 	StardustBurstProjectile.DisplayName: Stardust Burst Projectile

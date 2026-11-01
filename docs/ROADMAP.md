@@ -14,6 +14,7 @@ Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projecti
 - [~] Ice Blade: tap chop, 3-tier click charge, slash wave, freeze lockout (patch 2 applied, untested: release swing = tap swing, wave passes through blocks)
 - [~] R2: boomerang and blast hit sparks visible to other players (applied, untested)
 - [~] Enchanted Boomerang: left = normal throw, right = ethereal throw, collision = stardust burst + bounce (patch 1 applied, untested)
+- [~] Trimarang: hold to spin 20 tiles out, ethereal forms on every 5th hit (patch 1 applied, untested)
 
 ## 1. Ice Boomerang (vanilla `ItemID.IceBoomerang`) [DONE]
 
@@ -44,3 +45,17 @@ Multiplayer design: both boomerangs belong to the same player, so the owner's cl
 Art: optional. Drop `EnchantedBoomerangProjectile.png` and `EtherealBoomerangProjectile.png` into `Content/Weapons/EnchantedBoomerang/` (same size as the vanilla boomerang sprite, single frame) and they replace the vanilla texture automatically.
 
 Test checklist: left click throws and returns, right click throws the ghost version, both can be out together; each is limited to one in flight; both turn back at walls; piercing hits an enemy going out and coming back; head-on collision bursts in stardust at the meeting point and sends the boomerangs off sideways (apart from each other), then both return and are caught; a pair collides only once per throw; the burst damages nearby enemies once; Ice Boomerang still behaves the same (chain, crystals, chill) and still shows hit sparks to the other player; two players: the other player sees both boomerangs, the bounce, the burst and the hit sparks.
+
+## 4. Trimarang (vanilla `ItemID.Trimarang`) [patch 1 applied, untested]
+
+Design: hold left click. The boomerang flies toward the cursor and glides to a stop exactly 20 tiles away (the speed is proportional to the distance left), or stops at the first block, and then spins there until the button is released (it also comes back if the item is swapped, or the player gets 45 tiles away). It spins slowly at first and speeds up (ease-in) to a cap over 3 s, and the faster it spins the shorter its per-enemy hit cooldown (14 to 5 ticks), so it shreds. Knockback is cut to 30% while holding so enemies stay in the blades. Release at any time (even before it reaches 20 tiles) and it accelerates back and is caught.
+
+Ethereal forms: every 5th hit of the main boomerang (ethereal hits do not count) it sheds a `TrimarangEtherealProjectile`: a see-through copy that spins at the same speed, is shot outward (consecutive ones fan out by the golden angle), and after 10 ticks homes on the nearest enemy that is NOT the one that triggered it (it never targets and never damages that enemy, even if it is the only one around; then it just drifts and fizzles after 6 s). It passes through tiles, pierces, deals 0.7x damage, and after 8 hits it explodes as a visual only (no damage). At most 8 are alive at once (the oldest fizzles).
+
+Multiplayer design: the owner's client decides everything (stop, wall, release, hit counting, ethereal spawns, target choice, the 8-hit explosion). The main boomerang syncs its phase with ai[0] and netUpdate; its spin is a pure function of its age, so every machine spins it the same. An ethereal form syncs its target and its "dying" state through ai[1] (-2 = dying), so every machine plays the explosion without a kill packet. Other players' hit sparks come from `Common/RemoteHitTracker`. No custom packets. The return and catch step moved to `Common/BoomerangFlight.cs` (the Enchanted Boomerang uses it too).
+
+Needs the Enchanted Boomerang patch applied first.
+
+Art: optional. Drop `TrimarangProjectile.png` and `TrimarangEtherealProjectile.png` into `Content/Weapons/Trimarang/` (same size as the vanilla Trimarang sprite, single frame).
+
+Test checklist: hold left click: it glides to a stop 20 tiles out and spins, getting faster, with a rising whoosh; releasing at any time (also before it arrives) sends it back and it is caught; it stops at walls; it shreds enemies without knocking them away; every 5th hit sheds a ghost copy that flies out and hunts another enemy, never the one that triggered it; ghosts pass through walls and explode harmlessly after 8 hits or when they have nothing to hunt; no more than 8 ghosts at once; the Enchanted Boomerang still returns and is caught as before; two players: the other player sees the spin, the ghosts, their explosions and the hit sparks.
