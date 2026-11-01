@@ -18,10 +18,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
                 SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.3f + 0.25f * spinT, Pitch = -0.3f + 0.7f * spinT }, center);
             if (Main.rand.NextFloat() < 0.15f + 0.6f * spinT)
             {
-                Vector2 spot = center + Main.rand.NextVector2CircularEdge(26f, 26f);
-                Vector2 tangent = new Vector2(-(spot - center).Y, (spot - center).X);
-                tangent.Normalize();
-                Dust dust = Dust.NewDustPerfect(spot, Main.rand.NextBool(3) ? DustID.Electric : DustID.PurpleTorch, tangent * (1f + 3f * spinT) + Main.rand.NextVector2Circular(0.5f, 0.5f), 80, default, 0.9f + 0.4f * spinT);
+                // Stardust palette. Every particle leaves the edge moving outward AND around in the spin direction (the rotation grows
+                // along this tangent), so the dust it sheds draws a spiral that opens up as the boomerang speeds up.
+                int[] palette = { DustID.Enchanted_Gold, DustID.MagicMirror, DustID.BlueTorch, DustID.PinkFairy };
+                Vector2 radial = Main.rand.NextVector2CircularEdge(1f, 1f);
+                Vector2 spot = center + radial * 26f;
+                Vector2 tangent = new Vector2(-radial.Y, radial.X);
+                Vector2 velocity = tangent * (1.5f + 3.5f * spinT) + radial * (0.8f + 2.2f * spinT);
+                Dust dust = Dust.NewDustPerfect(spot, palette[Main.rand.Next(palette.Length)], velocity + Main.rand.NextVector2Circular(0.4f, 0.4f), 80, default, 0.9f + 0.4f * spinT);
                 dust.noGravity = true;
             }
         }

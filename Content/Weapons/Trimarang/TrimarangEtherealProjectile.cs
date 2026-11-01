@@ -11,13 +11,14 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
 {
     /// <summary>
-    /// The ethereal form the Trimarang sheds on every 5th hit: a see-through copy that spins as fast as the main boomerang did, is shot
-    /// outward, then homes on enemies, never on (and never damaging) the enemy that triggered it. It passes through tiles and pierces.
-    /// After 8 hits it explodes, which is only a visual.
-    /// ai[0] = the enemy it must never hit (NPC index), ai[1] = target NPC index (-1 none, -2 dying), ai[2] = spin speed in radians per
-    /// tick; localAI[0] = age. MULTIPLAYER: spawned by the owner's client (so it is synced like any projectile); the owner picks the
-    /// target and counts the hits, and syncs target and "dying" through ai[1] and netUpdate. Every machine steers toward the synced
-    /// target and plays the explosion when it sees "dying", so no kill packet is needed.
+    /// The ethereal form the Trimarang sheds on every Nth hit: a see-through copy that spins as fast as the main boomerang did. It is
+    /// shot outward as an impulse (no homing at all) and a pull toward the player (BoomerangFlight.StepForceReturn) bends that into one
+    /// smooth arc back; it never hits (or damages) the enemy that triggered it, passes through tiles and pierces. After 8 hits, or when
+    /// it reaches the player, it explodes, which is only a visual.
+    /// ai[0] = the enemy it must never hit (NPC index), ai[1] = -1 alive / -2 dying, ai[2] = spin speed in radians per tick;
+    /// localAI[0] = age. MULTIPLAYER: spawned by the owner's client (so it is synced like any projectile, launch velocity included); the
+    /// owner counts the hits and decides the end (8 hits, reaching the player, the safety limit) and syncs "dying" through ai[1] and
+    /// netUpdate. Every machine flies the same force-based arc and plays the explosion when it sees "dying", so no kill packet is needed.
     /// </summary>
     public class TrimarangEtherealProjectile : ModProjectile
     {
@@ -111,62 +112,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
 
             if (isOwner && Age > TrimarangTuning.EtherealLifeTicks)
             {
-                BeginDying(); // never found anything: fizzles out
+                BeginDying(); // safety net: it has not reached the player in time, so it fizzles out
                 return;
             }
 
-            if (Age < TrimarangTuning.EtherealLaunchTicks)
-                return; // flies straight out first
-
-            if (isOwner)
-                ChooseTarget();
-
-            int target = (int)Projectile.ai[1];
-            if (target >= 0 && target < Main.maxNPCs && Main.npc[target].active)
-            {
-                Vector2 desired = Vector2.Normalize(Main.npc[target].Center - Projectile.Center) * TrimarangTuning.EtherealHomingSpeed;
-                Projectile.velocity = Vector2.Lerp(Projectile.velocity, desired, TrimarangTuning.EtherealTurn);
-            }
-            else
-            {
-                Projectile.velocity *= 0.97f; // nothing to hunt: it drifts and waits
-            }
-        }
-
-        // Owner only: keep the current target while it is valid, otherwise look for the nearest other enemy.
-        void ChooseTarget()
-        {
-            int current = (int)Projectile.ai[1];
-            if (current >= 0 && current < Main.maxNPCs && Main.npc[current].active && Main.npc[current].CanBeChasedBy(Projectile))
-                return;
-            if (current >= 0)
-            {
-                Projectile.ai[1] = -1f;
-                Projectile.netUpdate = true;
-            }
-            if (Age % TrimarangTuning.EtherealRetargetTicks != 0f)
-                return;
-
-            int excluded = (int)Projectile.ai[0];
-            int best = -1;
-            float bestDistance = TrimarangTuning.EtherealSearchRange * TrimarangTuning.EtherealSearchRange;
-            for (int i = 0; i < Main.maxNPCs; i++)
-            {
-                NPC npc = Main.npc[i];
-                if (i == excluded || !npc.CanBeChasedBy(Projectile))
-                    continue;
-                float distance = Vector2.DistanceSquared(Projectile.Center, npc.Center);
-                if (distance < bestDistance)
-                {
-                    bestDistance = distance;
-                    best = i;
-                }
-            }
-            if (best >= 0)
-            {
-                Projectile.ai[1] = best;
-                Projectile.netUpdate = true;
-            }
+            // No homing: the launch impulse (the velocity it was spawned with) is bent into an arc by the pull toward the player.
+            // Reaching the player ends it with the same harmless explosion as the 8th hit (the owner decides, everyone else sees "dying").
+            bool reached = BoomerangFlight.StepForceReturn(Projectile, owner, TrimarangTuning.EtherealReturnAcceleration, TrimarangTuning.EtherealReturnMaxSpeed, TrimarangTuning.EtherealReturnDrag, TrimarangTuning.CatchDistance);
+            if (reached && isOwner)
+                BeginDying();
         }
 
         // ---- hits ----

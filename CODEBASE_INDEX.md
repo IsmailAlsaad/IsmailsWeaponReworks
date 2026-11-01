@@ -4,7 +4,7 @@ generated 2026-11-02 | 38 .cs files | regenerate: `python index_codebase.py` (pr
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(10) FlamerangTuning(7) IceFx(6) FlamerangFx(5) IceBoomerangTuning(4) TrimarangTuning(3) PixelTrail(3) IceBoomerangFx(3) FlamerangBurn(3) EnchantedBoomerangTuning(3) BoomerangFlight(3) TrimarangFx(2) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2) IceBladeFx(2) EtherealBoomerangProjectile(2) EnchantedBoomerangFx(2) EnchantedBoomerangBase(2) TrimarangProjectile(1)
+RemoteHitTracker(10) FlamerangTuning(7) IceFx(6) FlamerangFx(5) IceBoomerangTuning(4) BoomerangFlight(4) TrimarangTuning(3) PixelTrail(3) IceBoomerangFx(3) FlamerangBurn(3) EnchantedBoomerangTuning(3) TrimarangFx(2) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2) IceBladeFx(2) EtherealBoomerangProjectile(2) EnchantedBoomerangFx(2) EnchantedBoomerangBase(2) TrimarangProjectile(1)
 
 ## Inheritance
 Project bases -> derived:
@@ -147,7 +147,7 @@ tModLoader/other bases -> project types:
     +Texture:string[ov] +Load()[ov] +Unload()[ov] +RandomFrame()[s] +RegisterBounce(Projectile)[s] +EvictForNewCrystal(int)[s] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 
 ### Content/Weapons/Trimarang/
-**TrimarangEtherealProjectile.cs** uses: RemoteHitTracker, TrimarangFx, TrimarangTuning
+**TrimarangEtherealProjectile.cs** uses: BoomerangFlight, RemoteHitTracker, TrimarangFx, TrimarangTuning
   class TrimarangEtherealProjectile : ModProjectile
     +Texture:string[ov] +Load()[ov] +Unload()[ov] +BeginDying() +AI()[ov] +CanHitNPC(NPC)[ov] +CanDamage()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
 **TrimarangFx.cs**
@@ -158,12 +158,12 @@ tModLoader/other bases -> project types:
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **TrimarangProjectile.cs** uses: BoomerangFlight, RemoteHitTracker, TrimarangEtherealProjectile, TrimarangFx, TrimarangTuning
   class TrimarangProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PreDraw(ref Color)[ov]
     enum Phase
       {Outbound, Hold, Returning}
 **TrimarangTuning.cs**
   static class TrimarangTuning
-    +ThrowSpeed:float[s] +HoldRange:float[s] +MinThrowSpeed:float[s] +StopSnapDistance:float[s] +LeashDistance:float[s] +FlightMaxTicks:int[s] +SpinStart:float[s] +SpinCap:float[s] +SpinRampTicks:int[s] +HitCooldownSlow:int[s] +HitCooldownFast:int[s] +HitRadius:float[s] +HoldKnockbackMultiplier:float[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +HitsPerEthereal:int[s] +EtherealDamageMultiplier:float[s] +EtherealMaxAlive:int[s] +EtherealHitsToExplode:int[s] +EtherealLaunchSpeed:float[s] +EtherealLaunchTicks:int[s] +EtherealHomingSpeed:float[s] +EtherealTurn:float[s] +EtherealSearchRange:float[s] +EtherealRetargetTicks:int[s] +EtherealHitCooldownTicks:int[s] +EtherealLifeTicks:int[s] +GoldenAngleDeg:float[s] +MainColor:Color[s] +EtherealColor:Color[s] +EtherealOpacity:float[s]
+    +ThrowSpeed:float[s] +HoldRange:float[s] +MinThrowSpeed:float[s] +StopSnapDistance:float[s] +LeashDistance:float[s] +FlightMaxTicks:int[s] +SteerTurn:float[s] +HoldSteerSpeed:float[s] +HoldSteerSmoothing:float[s] +HoldSteerDeadzone:float[s] +SteerSyncTicks:int[s] +SpinStart:float[s] +SpinCap:float[s] +SpinRampTicks:int[s] +HitCooldownSlow:int[s] +HitCooldownFast:int[s] +HitRadius:float[s] +HoldKnockbackMultiplier:float[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +HitsPerEthereal:int[s] +EtherealDamageMultiplier:float[s] +EtherealMaxAlive:int[s] +EtherealHitsToExplode:int[s] +EtherealLaunchSpeed:float[s] +EtherealReturnAcceleration:float[s] +EtherealReturnDrag:float[s] +EtherealReturnMaxSpeed:float[s] +EtherealHitCooldownTicks:int[s] +EtherealLifeTicks:int[s] +GoldenAngleDeg:float[s] +MainColor:Color[s] +EtherealColor:Color[s] +EtherealOpacity:float[s]
 
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; build.txt, description.txt, description_workshop.txt

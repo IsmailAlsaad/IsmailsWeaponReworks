@@ -16,6 +16,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
         public static float LeashDistance => 45f * 16f;    // it comes back on its own if the player gets this far away
         public static int FlightMaxTicks => 7200;          // safety net: 2 minutes
 
+        // ---- steering toward the cursor (owner only; Outbound and Hold) ----
+        public static float SteerTurn => 0.02f;            // most radians per tick the flight direction bends toward the cursor (weak on purpose)
+        public static float HoldSteerSpeed => 3f;          // drift speed toward the cursor while holding
+        public static float HoldSteerSmoothing => 0.08f;   // how fast the drift velocity follows (0 to 1 per tick)
+        public static float HoldSteerDeadzone => 24f;      // within this distance of the cursor it stops drifting
+        public static int SteerSyncTicks => 5;             // the owner sends position and velocity this often while steering
+
         // ---- spin: starts slow, speeds up (ease-in) to the cap ----
         public static float SpinStart => 0.12f;            // radians per tick
         public static float SpinCap => 0.95f;
@@ -38,14 +45,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
         public static float EtherealDamageMultiplier => 0.7f;
         public static int EtherealMaxAlive => 8;           // the oldest fizzles when a new one would be the 9th
         public static int EtherealHitsToExplode => 8;
-        public static float EtherealLaunchSpeed => 11f;
-        public static int EtherealLaunchTicks => 10;       // it flies straight out this long before it starts to home
-        public static float EtherealHomingSpeed => 15f;
-        public static float EtherealTurn => 0.18f;         // how sharply it steers (0 to 1 per tick)
-        public static float EtherealSearchRange => 44f * 16f;
-        public static int EtherealRetargetTicks => 15;
+        public static float EtherealLaunchSpeed => 11f;    // the impulse it is shot out with (no homing: the return pull bends it into an arc)
+        public static float EtherealReturnAcceleration => 1f; // pull toward the player per tick (BoomerangFlight.StepForceReturn)
+        public static float EtherealReturnDrag => 0.95f;   // keep below 1 or it orbits the player forever
+        public static float EtherealReturnMaxSpeed => 18f;
         public static int EtherealHitCooldownTicks => 10;
-        public static int EtherealLifeTicks => 360;        // fizzles out if it never finds anything
+        public static int EtherealLifeTicks => 360;        // safety net: it fizzles out if it has not reached the player by then
         public static float GoldenAngleDeg => 137.5f;      // consecutive ethereal forms fan out around the main boomerang
 
         // ---- look ----
