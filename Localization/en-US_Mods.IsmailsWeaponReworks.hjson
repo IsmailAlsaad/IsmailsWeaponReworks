@@ -1,4 +1,8 @@
 Projectiles: {
+	FlamerangProjectile.DisplayName: Flamerang Projectile
+	MoltenBoomerangProjectile.DisplayName: Molten Boomerang Projectile
+	FlamerangBlastProjectile.DisplayName: Flamerang Blast Projectile
+	ObsidianShardProjectile.DisplayName: Obsidian Shard Projectile
 	TrimarangProjectile.DisplayName: Trimarang Projectile
 	TrimarangEtherealProjectile.DisplayName: Trimarang Ethereal Projectile
 	EnchantedBoomerangProjectile.DisplayName: Enchanted Boomerang Projectile

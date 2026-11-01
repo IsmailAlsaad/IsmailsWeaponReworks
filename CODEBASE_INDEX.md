@@ -1,17 +1,17 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-01 | 27 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-01 | 34 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(6) IceFx(5) IceBoomerangTuning(4) TrimarangTuning(3) IceBoomerangFx(3) EnchantedBoomerangTuning(3) TrimarangFx(2) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2) IceBladeFx(2) EtherealBoomerangProjectile(2) EnchantedBoomerangFx(2) EnchantedBoomerangBase(2) BoomerangFlight(2) TrimarangProjectile(1) TrimarangEtherealProjectile(1) StardustBurstProjectile(1) IceCrystalBlastProjectile(1) IceBoomerangProjectile(1)
+RemoteHitTracker(10) IceFx(7) FlamerangTuning(5) IceBoomerangTuning(4) FlamerangFx(4) TrimarangTuning(3) IceBoomerangFx(3) EnchantedBoomerangTuning(3) BoomerangFlight(3) TrimarangFx(2) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2) IceBladeFx(2) FlamerangBurn(2) EtherealBoomerangProjectile(2) EnchantedBoomerangFx(2) EnchantedBoomerangBase(2) TrimarangProjectile(1) TrimarangEtherealProjectile(1)
 
 ## Inheritance
 Project bases -> derived:
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
 tModLoader/other bases -> project types:
-- ModProjectile (9): EnchantedBoomerangBase, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, StardustBurstProjectile, TrimarangEtherealProjectile, TrimarangProjectile
-- GlobalItem (4): EnchantedBoomerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, TrimarangGlobalItem
+- ModProjectile (13): EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, StardustBurstProjectile, TrimarangEtherealProjectile, TrimarangProjectile
+- GlobalItem (5): EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, TrimarangGlobalItem
 - Mod (1): IsmailsWeaponReworks
 
 ## Files
@@ -55,6 +55,37 @@ tModLoader/other bases -> project types:
 **StardustBurstProjectile.cs** uses: EnchantedBoomerangFx, EnchantedBoomerangTuning, IceFx, RemoteHitTracker
   class StardustBurstProjectile : ModProjectile
     +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+
+### Content/Weapons/Flamerang/
+**FlamerangBlastProjectile.cs** uses: FlamerangBurn, FlamerangFx, FlamerangTuning, IceFx, RemoteHitTracker
+  class FlamerangBlastProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**FlamerangFx.cs**
+  static class FlamerangFx
+    +FlightDust(Vector2,Vector2,float)[s] +Gather(Vector2,float)[s] +HitSparks(Vector2)[s] +Catch(Vector2)[s] +Blast(Vector2,float)[s] +MoltenBorn(Vector2,Vector2)[s] +TrailEmber(Vector2)[s] +ShardLand(Vector2)[s] +ShardGlow(Vector2,float)[s]
+**FlamerangGlobalItem.cs** uses: FlamerangProjectile, FlamerangTuning
+  class FlamerangGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**FlamerangProjectile.cs** uses: FlamerangBlastProjectile, FlamerangFx, FlamerangTuning, MoltenBoomerangProjectile, ObsidianShardProjectile, RemoteHitTracker
+  class FlamerangProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Outbound, Settling, Spent}
+**FlamerangTuning.cs**
+  static class FlamerangTuning
+    +ThrowSpeed:float[s] +MinThrowRange:float[s] +MaxThrowRange:float[s] +SettleTicks:int[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +FlightMaxTicks:int[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastLifeTicks:int[s] +MoltenDamageMultiplier:float[s] +MoltenArcSpeed:float[s] +MoltenArcTurnRadians:float[s] +MoltenArcTicks:int[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +MoltenHitCooldownTicks:int[s] +SpinSpeed:float[s] +TrailLifeTicks:int[s] +TrailRadius:float[s] +BurnCheckInterval:int[s] +BurnTicks:int[s] +BurnRefreshBelowTicks:int[s] +ShardCount:int[s] +ShardDamageMultiplier:float[s] +ShardMinSpeed:float[s] +ShardMaxSpeed:float[s] +ShardSpreadDeg:float[s] +ShardGravity:float[s] +ShardMaxFallSpeed:float[s] +ShardLingerTicks:int[s] +ShardFadeTicks:int[s] +ShardCoolTicks:int[s] +ShardHitCooldownTicks:int[s] +PixelSize:float[s] +HotColor:Color[s] +FireColor:Color[s] +EmberColor:Color[s] +ObsidianColor:Color[s]
+  static class FlamerangBurn
+    +Apply(NPC)[s]
+**MoltenBoomerangProjectile.cs** uses: BoomerangFlight, FlamerangBurn, FlamerangFx, FlamerangTuning, IceFx, RemoteHitTracker
+  class MoltenBoomerangProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Arc, Return}
+    struct TrailPoint
+      +Position:Vector2 +Born:int
+**ObsidianShardProjectile.cs** uses: FlamerangFx, FlamerangTuning, RemoteHitTracker
+  class ObsidianShardProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
 
 ### Content/Weapons/IceBlade/
 **IceBladeFx.cs** uses: IceFx

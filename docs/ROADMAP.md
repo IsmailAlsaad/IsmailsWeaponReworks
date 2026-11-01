@@ -15,6 +15,7 @@ Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projecti
 - [~] R2: boomerang and blast hit sparks visible to other players (applied, untested)
 - [~] Enchanted Boomerang: left = normal throw, right = ethereal throw, collision = stardust burst + bounce (patch 1 applied, untested)
 - [~] Trimarang: hold to spin 20 tiles out, ethereal forms on every 5th hit (patch 1 applied, untested)
+- [~] Flamerang: fire explosion at the end of range, molten boomerangs with burning trails, obsidian shards on contact (patch 1 applied, untested)
 
 ## 1. Ice Boomerang (vanilla `ItemID.IceBoomerang`) [DONE]
 
@@ -59,3 +60,18 @@ Needs the Enchanted Boomerang patch applied first.
 Art: optional. Drop `TrimarangProjectile.png` and `TrimarangEtherealProjectile.png` into `Content/Weapons/Trimarang/` (same size as the vanilla Trimarang sprite, single frame).
 
 Test checklist: hold left click: it glides to a stop 20 tiles out and spins, getting faster, with a rising whoosh; releasing at any time (also before it arrives) sends it back and it is caught; it stops at walls; it shreds enemies without knocking them away; every 5th hit sheds a ghost copy that flies out and hunts another enemy, never the one that triggered it; ghosts pass through walls and explode harmlessly after 8 hits or when they have nothing to hunt; no more than 8 ghosts at once; the Enchanted Boomerang still returns and is caught as before; two players: the other player sees the spin, the ghosts, their explosions and the hit sparks.
+
+## 5. Flamerang (vanilla `ItemID.Flamarang`) [patch 1 applied, untested]
+
+Design: it behaves like the Ice Boomerang. Left click throws it at the cursor (fixed 20-tile range, brakes at the end, only one thrown at a time) and it pierces everything, but it never returns as itself.
+- Nothing hit: at the end of its range it spins down, then explodes in fire (`FlamerangBlastProjectile`: 96 px circle, boomerang damage, sets enemies on fire) and two `MoltenBoomerangProjectile`s fly off sideways from the explosion, bend around in an arc and then home back to the player.
+- Touching an enemy or a tile first: the same fire explosion happens at the contact point and also throws 6 `ObsidianShardProjectile`s (fan out upward, fall, land on the first tile and linger 8 s, cutting enemies that touch them; they glow like lava and cool to dark obsidian). The boomerang is replaced by one molten boomerang that returns straight to the player.
+- Molten boomerangs pierce infinitely (an enemy can be hit again after 12 ticks and on the way back) and leave a trail of fire for 40 ticks; any enemy touching the trail is set on fire (vanilla On Fire, 4 s, refreshed below 1.5 s left).
+
+Multiplayer design: the owner's client decides everything (stop, contact, explosion and every spawn) and flips the main boomerang's phase with ai[0] and netUpdate. The blast, the shards and the molten boomerangs are normal spawned projectiles, so tModLoader syncs them; every machine plays the blast visuals on its first tick. The molten arc is deterministic from its spawn velocity and turn direction (ai[1]); the owner flips arc to return with netUpdate and applies the burning from the trail (`NPC.AddBuff` syncs itself). Every machine draws its own copy of the trail from where its copy has been. A shard's landing is decided by the owner (ai[0] = 1, netUpdate); its lifetime is a plain countdown each machine runs. Other players' hit sparks come from `Common/RemoteHitTracker`. No custom packets.
+
+Needs the Enchanted Boomerang and Trimarang patches applied first (it uses `Common/RemoteHitTracker` and `Common/BoomerangFlight`).
+
+Art: optional. Drop `FlamerangProjectile.png`, `MoltenBoomerangProjectile.png` and `ObsidianShardProjectile.png` into `Content/Weapons/Flamerang/` (the boomerang ones the size of the vanilla Flamarang sprite, single frame) and they replace the vanilla textures.
+
+Test checklist: left click throws at the cursor and only one can be out; thrown at open space it brakes, spins down and explodes at 20 tiles and two molten boomerangs arc out sideways and come back and are caught; thrown at an enemy or a wall it explodes at once, 6 obsidian shards fly up, fall and linger and hurt enemies that touch them, and one molten boomerang flies straight back; the explosion burns enemies; molten boomerangs leave a fiery trail that sets enemies on fire; you can throw again while the molten ones are still flying; shards are gone after about 8 s; Ice Boomerang, Enchanted Boomerang and Trimarang still work as before; two players: the other player sees the flight, the explosions, the shards, the molten arcs and trails and the hit sparks.
