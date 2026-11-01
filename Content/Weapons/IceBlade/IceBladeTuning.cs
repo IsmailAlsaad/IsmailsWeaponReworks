@@ -48,6 +48,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         public static int TrailMaxSamples => 80;
         public static float TrailStartFraction => 0.25f; // the trail covers the blade from this fraction of its length out to the tip
         public static float TrailOpacity(int tier) { return Pick(tier, 0.3f, 0.55f, 0.9f); } // lower tiers leave a fainter trail
+        public static float TrailThickness(int tier) { return Pick(tier, 3f, 5f, 8f); }
 
         // ---- the wave (tier 1, 2, 3) ----
         public static float WaveDamageMultiplier(int tier) { return Pick(tier, 0.55f, 1f, 1.8f); }

@@ -330,7 +330,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
                 if (released && timer >= windup && timer < windup + swing)
                 {
-                    // Three samples per tick; the trail fills the area between them, so it is one connected band.
+                    // Three samples per tick, so the fan trail is a smooth arc instead of a few straight streaks.
                     for (int k = 0; k < 3; k++)
                         AddTrailSample(timer + k / 3f, tier);
                     IceBladeFx.SlashDust(lastTipPosition, tipPosition, tier);
@@ -368,12 +368,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
                 trail.RemoveAt(0);
         }
 
-        // Owner only. The wave is a normal projectile, so tModLoader syncs it to everyone else. It passes through blocks, so it
-        // always starts at the blade tip.
+        // Owner only. The wave is a normal projectile, so tModLoader syncs it to everyone else.
         void FireWave(int tier, Vector2 direction)
         {
+            Vector2 spawn = tipPosition;
+            if (!Collision.CanHitLine(Owner.Center, 1, 1, spawn, 1, 1))
+                spawn = Owner.Center + direction * 24f; // the blade tip is inside a wall: start next to the player instead
             int damage = Math.Max(1, (int)(Projectile.damage * IceBladeTuning.WaveDamageMultiplier(tier)));
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), tipPosition, direction * IceBladeTuning.WaveSpeed(tier),
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, direction * IceBladeTuning.WaveSpeed(tier),
                 ModContent.ProjectileType<IceBladeWaveProjectile>(), damage, Projectile.knockBack * IceBladeTuning.WaveKnockbackMultiplier(tier), Projectile.owner, tier);
         }
 
@@ -472,33 +474,34 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             return false;
         }
 
-        // The freezing trail behind the blade: the area the blade swept, filled with pixel squares (additive, alpha 0). Neighbouring
-        // samples are joined into a quad and the whole quad is filled, so it is one connected band, brighter toward the tip, fading
-        // with age and fainter for lower tiers.
+        // The freezing fan behind the blade: short bright streaks from the middle of the blade to the tip, one per sample, fading
+        // with age (and fainter for lower tiers). Pixel squares with an additive color (alpha 0), like the wave.
         void DrawTrail()
         {
-            if (trail == null || trail.Count < 2)
+            if (trail == null || trail.Count == 0)
                 return;
             float grid = IceBladeTuning.PixelSize;
             float life = Math.Max(1, IceBladeTuning.TrailLifeTicks);
-            for (int i = 0; i < trail.Count - 1; i++)
+            for (int i = 0; i < trail.Count; i++)
             {
-                TrailSample a = trail[i];
-                TrailSample b = trail[i + 1];
-                float u = (ticks - a.Born) / life;
+                TrailSample sample = trail[i];
+                float u = (ticks - sample.Born) / life;
                 if (u >= 1f)
                     continue;
-                float alpha = IceBladeTuning.TrailOpacity(a.Tier) * (1f - u) * (1f - u);
-                int across = Math.Max(1, (int)Math.Ceiling(Vector2.Distance(a.Inner, a.Tip) / grid));
-                int along = Math.Max(1, (int)Math.Ceiling(Vector2.Distance(a.Tip, b.Tip) / grid));
-                for (int r = 0; r <= across; r++)
+                float fade = (1f - u) * (1f - u) * IceBladeTuning.TrailOpacity(sample.Tier);
+                float width = IceBladeTuning.TrailThickness(sample.Tier) * (1f - 0.5f * u);
+                Vector2 delta = sample.Tip - sample.Inner;
+                float length = delta.Length();
+                if (length < 1f)
+                    continue;
+                int steps = Math.Max(1, (int)(length / Math.Max(grid, width * 0.5f)));
+                for (int k = 0; k <= steps; k++)
                 {
-                    float f = r / (float)across; // 0 at the inner end of the band, 1 at the blade tip
-                    Vector2 from = Vector2.Lerp(a.Inner, a.Tip, f);
-                    Vector2 to = Vector2.Lerp(b.Inner, b.Tip, f);
-                    Color color = Color.Lerp(IceBladeTuning.MidColor, IceBladeTuning.CoreColor, f * f * f) * (alpha * (0.15f + 0.85f * f));
-                    for (int s = 0; s < along; s++)
-                        IceFx.DrawPixel(Vector2.Lerp(from, to, s / (float)along), grid, color, grid);
+                    float f = k / (float)steps;
+                    Vector2 spot = Vector2.Lerp(sample.Inner, sample.Tip, f);
+                    float taper = 0.3f + 0.7f * f;
+                    IceFx.DrawPixel(spot, width * 1.8f * taper, IceBladeTuning.MidColor * (0.22f * fade * f), grid);
+                    IceFx.DrawPixel(spot, width * 0.8f * taper, IceBladeTuning.CoreColor * (0.55f * fade * f), grid);
                 }
             }
         }
