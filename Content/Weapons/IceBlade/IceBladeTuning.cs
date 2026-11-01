@@ -21,7 +21,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         }
 
         // ---- the freeze punishment (vanilla Frozen buff: roots the player and blocks every item) ----
-        public static int FreezeDebuffTicks => 140;
+        public static int FreezeDebuffTicks => 120;
         public static int FrozenAnimTicks => 14;      // how long the shaking, frosted blade is shown before it vanishes
 
         // ---- charge pose (angles are for a player facing right, 0 = forward, positive = down) ----
@@ -42,15 +42,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         public static float TapStartDeg => -80f;
         public static float TapEndDeg => 60f;
 
-        // ---- release slash ----
-        public static int SlashTicks => 9;
-        public static int SlashWaveTick => 4;         // the wave leaves the blade on this tick of the slash
-        public static int SlashRecoverTicks => 8;
-        public static float SlashMaxAimDeg => 65f;    // the visual slash follows the cursor up to this angle
+        // ---- release swing: the same swing as the tap above; these only add the wave timing and the trail ----
+        public static int SlashWaveTick => 6;         // tick of the swing, counted from the release, on which the wave leaves the blade
         public static int TrailLifeTicks => 26;
         public static int TrailMaxSamples => 80;
-        public static float TrailStartFraction => 0.25f; // the fan trail covers the outer part of the blade
-        public static float TrailThickness(int tier) { return Pick(tier, 3f, 5f, 8f); }
+        public static float TrailStartFraction => 0.25f; // the trail covers the blade from this fraction of its length out to the tip
+        public static float TrailOpacity(int tier) { return Pick(tier, 0.3f, 0.55f, 0.9f); } // lower tiers leave a fainter trail
 
         // ---- the wave (tier 1, 2, 3) ----
         public static float WaveDamageMultiplier(int tier) { return Pick(tier, 0.55f, 1f, 1.8f); }

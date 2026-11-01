@@ -10,7 +10,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
     /// <summary>
     /// The slash wave of the Ice Blade. A crescent drawn as a pixelated line: full thickness in the middle, tapering to a point at
     /// both ends, with afterimages, a halo and blue fog (all vanilla dust and pixel squares, no art file). It expands and slows down
-    /// as it flies and fades at the end; its damage does NOT decay. It dies on tiles. Each enemy is hit once.
+    /// as it flies and fades at the end; its damage does NOT decay. It passes through blocks. Each enemy is hit once.
     /// MULTIPLAYER: spawned by the owner's IceBladeSwingProjectile (so it is synced like any projectile) and hit by the owner's client;
     /// every machine simulates the same motion and visuals from the synced spawn data.
     /// ai[0]: tier 1 to 3 (sent with the spawn). localAI[0]: age in ticks (visual and motion only, each machine counts its own).
@@ -47,7 +47,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             Projectile.friendly = true;
             Projectile.DamageType = DamageClass.Melee;
             Projectile.penetrate = -1;
-            Projectile.tileCollide = true;
+            Projectile.tileCollide = false; // passes through blocks
             Projectile.ignoreWater = true;
             Projectile.timeLeft = 120; // set from the tier on the first tick
             Projectile.usesLocalNPCImmunity = true;
@@ -125,11 +125,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             IceFx.Burst(target.Center, 5, 3f, 1f);
-        }
-
-        public override bool OnTileCollide(Vector2 oldVelocity)
-        {
-            return true; // a wall ends the wave
+            target.AddBuff(BuffID.Frostburn, IceBladeTuning.FreezeDebuffTicks);
         }
 
         public override void OnKill(int timeLeft)

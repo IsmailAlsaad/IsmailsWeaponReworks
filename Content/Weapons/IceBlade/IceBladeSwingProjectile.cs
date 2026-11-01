@@ -13,8 +13,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
     /// <summary>
     /// The held Ice Blade. It draws the blade, poses the owner's arm and runs the whole mechanic:
     /// CHARGE (button held): the arm lifts with a cubic ease-out, the blade flashes on every click (1 to 3 = tiers, 4 = freeze).
-    /// TAP (released before click 1): a plain melee chop, no wave. SLASH (released on tier 1 to 3): a fast cut toward the cursor
-    /// that fires an IceBladeWaveProjectile and leaves a freezing fan trail. FROZEN (click 4 reached while still holding): the
+    /// TAP (released before click 1): a plain melee chop, no wave. SLASH (released on tier 1 to 3): the very same chop, plus a
+    /// freezing trail behind the blade and an IceBladeWaveProjectile sent toward the cursor. FROZEN (click 4 reached while still holding): the
     /// owner gets the vanilla Frozen buff, which blocks every item for a few seconds.
     /// MULTIPLAYER: the owner's client decides (release, tier, aim, freeze, wave spawn) and syncs the decision through
     /// ai[0] phase, ai[1] tier, ai[2] aim angle (world radians) with netUpdate. Every machine runs the same timers from its own
@@ -53,8 +53,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         float armLocal;        // arm direction in radians for a player facing right (positive = down)
         float tiltRad;         // blade tilt relative to the arm
         float lastChargeArm;
-        float slashFromArm;
-        float slashToArm;
         Vector2 tipPosition;
         Vector2 lastTipPosition;
         List<TrailSample> trail;
@@ -126,7 +124,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
                 switch (CurrentPhase)
                 {
                     case Phase.Slash:
-                        return timer <= IceBladeTuning.SlashTicks;
                     case Phase.Tap:
                         return timer >= IceBladeTuning.TapWindupTicks && timer <= IceBladeTuning.TapWindupTicks + IceBladeTuning.TapSwingTicks;
                     default:
@@ -172,10 +169,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
                     UpdateCharge(owner);
                     break;
                 case Phase.Slash:
-                    UpdateSlash(owner);
-                    break;
                 case Phase.Tap:
-                    UpdateTap(owner);
+                    UpdateSwing(owner);
                     break;
                 default:
                     UpdateFrozen(owner);
@@ -202,15 +197,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             switch (phase)
             {
                 case Phase.Slash:
-                {
-                    slashFromArm = lastChargeArm;
-                    float aimLocal = MathHelper.WrapAngle(ToWorld(AimAngle)); // mirroring is its own inverse
-                    float limit = Rad(IceBladeTuning.SlashMaxAimDeg);
-                    slashToArm = MathHelper.Clamp(aimLocal, -limit, limit);
                     trail.Clear();
-                    IceBladeFx.PlaySlash(tipPosition, ReleasedTier);
                     break;
-                }
                 case Phase.Frozen:
                     IceBladeFx.FreezeShatter(Projectile.Center);
                     IceBladeFx.PlayFreeze(Projectile.Center);
@@ -293,45 +281,63 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             Projectile.netUpdate = true;
         }
 
-        // The cut is fast at the start and settles on the aim (ease-out cubic).
-        float SlashEase(float time)
+        // The release swing IS the tap swing: windup (from wherever the charge arm was), chop, recover. Both read this one timeline.
+        float SwingProgress(float time)
         {
-            float t = MathHelper.Clamp(time / Math.Max(1, IceBladeTuning.SlashTicks), 0f, 1f);
-            return 1f - (float)Math.Pow(1f - t, 3);
+            float t = MathHelper.Clamp((time - IceBladeTuning.TapWindupTicks) / Math.Max(1, IceBladeTuning.TapSwingTicks), 0f, 1f);
+            return MathHelper.SmoothStep(0f, 1f, t);
         }
 
-        float SlashArmAt(float time)
+        float SwingArmAt(float time)
         {
-            return MathHelper.Lerp(slashFromArm, slashToArm, SlashEase(time));
-        }
-
-        float SlashTiltAt(float time)
-        {
-            return MathHelper.Lerp(Rad(IceBladeTuning.BladeTiltDeg), 0f, SlashEase(time));
-        }
-
-        void UpdateSlash(Player owner)
-        {
-            int swing = IceBladeTuning.SlashTicks;
-            int total = swing + IceBladeTuning.SlashRecoverTicks;
-            int tier = ReleasedTier;
-
-            if (timer < total)
+            int windup = IceBladeTuning.TapWindupTicks;
+            if (time < windup)
             {
-                armLocal = SlashArmAt(timer);
-                tiltRad = SlashTiltAt(timer);
-                opacity = timer <= swing ? 1f : 1f - (timer - swing) / Math.Max(1, IceBladeTuning.SlashRecoverTicks);
+                float k = 1f - (float)Math.Pow(1f - time / Math.Max(1, windup), 2);
+                return MathHelper.Lerp(lastChargeArm, Rad(IceBladeTuning.TapStartDeg), k);
+            }
+            return MathHelper.Lerp(Rad(IceBladeTuning.TapStartDeg), Rad(IceBladeTuning.TapEndDeg), SwingProgress(time));
+        }
 
-                if (timer < swing)
+        float SwingTiltAt(float time)
+        {
+            return MathHelper.Lerp(Rad(IceBladeTuning.BladeTiltDeg), 0f, SwingProgress(time));
+        }
+
+        void UpdateSwing(Player owner)
+        {
+            int windup = IceBladeTuning.TapWindupTicks;
+            int swing = IceBladeTuning.TapSwingTicks;
+            int recover = IceBladeTuning.TapRecoverTicks;
+            int t = (int)timer;
+            bool released = CurrentPhase == Phase.Slash; // a charged release: the same swing plus trail and wave
+            int tier = released ? ReleasedTier : 0;
+
+            if (timer < windup + swing + recover)
+            {
+                armLocal = SwingArmAt(timer);
+                tiltRad = SwingTiltAt(timer);
+                if (timer > windup + swing)
+                    opacity = 1f - (timer - windup - swing) / Math.Max(1, recover);
+
+                if (t == windup)
                 {
-                    // Three samples per tick, so the fan trail is a smooth arc instead of a few straight streaks.
+                    if (released)
+                        IceBladeFx.PlaySlash(tipPosition, tier);
+                    else
+                        IceBladeFx.PlayTapSwing(tipPosition);
+                }
+
+                if (released && timer >= windup && timer < windup + swing)
+                {
+                    // Three samples per tick; the trail fills the area between them, so it is one connected band.
                     for (int k = 0; k < 3; k++)
                         AddTrailSample(timer + k / 3f, tier);
                     IceBladeFx.SlashDust(lastTipPosition, tipPosition, tier);
                     Lighting.AddLight(tipPosition, 0.4f + 0.15f * tier, 0.8f + 0.1f * tier, 1.1f);
                 }
 
-                if ((int)timer == IceBladeTuning.SlashWaveTick)
+                if (released && t == IceBladeTuning.SlashWaveTick)
                 {
                     Vector2 direction = AimAngle.ToRotationVector2();
                     IceBladeFx.WaveBorn(tipPosition, direction, tier);
@@ -341,18 +347,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             }
             else
             {
-                holding = false; // blade gone; the projectile stays only to finish drawing the trail
+                holding = false; // blade gone; after a charged release the projectile stays only to finish drawing the trail
                 opacity = 0f;
             }
 
-            if (timer >= swing + IceBladeTuning.TrailLifeTicks)
+            int end = windup + swing + (released ? IceBladeTuning.TrailLifeTicks : recover);
+            if (t >= end)
                 Projectile.Kill();
         }
 
         void AddTrailSample(float time, int tier)
         {
-            float arm = SlashArmAt(time);
-            float tilt = SlashTiltAt(time);
+            float arm = SwingArmAt(time);
+            float tilt = SwingTiltAt(time);
             Vector2 hand = ComputeHand(arm);
             Vector2 direction = BladeDirection(arm, tilt);
             float length = IceBladeTuning.BladeLength * Projectile.scale;
@@ -361,47 +368,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
                 trail.RemoveAt(0);
         }
 
-        // Owner only. The wave is a normal projectile, so tModLoader syncs it to everyone else.
+        // Owner only. The wave is a normal projectile, so tModLoader syncs it to everyone else. It passes through blocks, so it
+        // always starts at the blade tip.
         void FireWave(int tier, Vector2 direction)
         {
-            Vector2 spawn = tipPosition;
-            if (!Collision.CanHitLine(Owner.Center, 1, 1, spawn, 1, 1))
-                spawn = Owner.Center + direction * 24f; // the blade tip is inside a wall: start next to the player instead
             int damage = Math.Max(1, (int)(Projectile.damage * IceBladeTuning.WaveDamageMultiplier(tier)));
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, direction * IceBladeTuning.WaveSpeed(tier),
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), tipPosition, direction * IceBladeTuning.WaveSpeed(tier),
                 ModContent.ProjectileType<IceBladeWaveProjectile>(), damage, Projectile.knockBack * IceBladeTuning.WaveKnockbackMultiplier(tier), Projectile.owner, tier);
-        }
-
-        void UpdateTap(Player owner)
-        {
-            int windup = IceBladeTuning.TapWindupTicks;
-            int swing = IceBladeTuning.TapSwingTicks;
-            int recover = IceBladeTuning.TapRecoverTicks;
-            int t = (int)timer;
-
-            if (t < windup)
-            {
-                float k = 1f - (float)Math.Pow(1f - timer / Math.Max(1, windup), 2);
-                armLocal = MathHelper.Lerp(lastChargeArm, Rad(IceBladeTuning.TapStartDeg), k);
-                tiltRad = Rad(IceBladeTuning.BladeTiltDeg);
-            }
-            else if (t < windup + swing)
-            {
-                float k = MathHelper.SmoothStep(0f, 1f, (timer - windup) / Math.Max(1, swing));
-                armLocal = MathHelper.Lerp(Rad(IceBladeTuning.TapStartDeg), Rad(IceBladeTuning.TapEndDeg), k);
-                tiltRad = MathHelper.Lerp(Rad(IceBladeTuning.BladeTiltDeg), 0f, k);
-                if (t == windup)
-                    IceBladeFx.PlayTapSwing(tipPosition);
-            }
-            else
-            {
-                armLocal = Rad(IceBladeTuning.TapEndDeg);
-                tiltRad = 0f;
-                opacity = 1f - (timer - windup - swing) / Math.Max(1, recover);
-            }
-
-            if (t >= windup + swing + recover)
-                Projectile.Kill();
         }
 
         void UpdateFrozen(Player owner)
@@ -499,34 +472,33 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             return false;
         }
 
-        // The freezing fan behind the blade: short bright streaks from the middle of the blade to the tip, one per sample, fading
-        // with age. Pixel squares with an additive color (alpha 0), like the wave.
+        // The freezing trail behind the blade: the area the blade swept, filled with pixel squares (additive, alpha 0). Neighbouring
+        // samples are joined into a quad and the whole quad is filled, so it is one connected band, brighter toward the tip, fading
+        // with age and fainter for lower tiers.
         void DrawTrail()
         {
-            if (trail == null || trail.Count == 0)
+            if (trail == null || trail.Count < 2)
                 return;
             float grid = IceBladeTuning.PixelSize;
             float life = Math.Max(1, IceBladeTuning.TrailLifeTicks);
-            for (int i = 0; i < trail.Count; i++)
+            for (int i = 0; i < trail.Count - 1; i++)
             {
-                TrailSample sample = trail[i];
-                float u = (ticks - sample.Born) / life;
+                TrailSample a = trail[i];
+                TrailSample b = trail[i + 1];
+                float u = (ticks - a.Born) / life;
                 if (u >= 1f)
                     continue;
-                float fade = (1f - u) * (1f - u);
-                float width = IceBladeTuning.TrailThickness(sample.Tier) * (1f - 0.5f * u);
-                Vector2 delta = sample.Tip - sample.Inner;
-                float length = delta.Length();
-                if (length < 1f)
-                    continue;
-                int steps = Math.Max(1, (int)(length / Math.Max(grid, width * 0.5f)));
-                for (int k = 0; k <= steps; k++)
+                float alpha = IceBladeTuning.TrailOpacity(a.Tier) * (1f - u) * (1f - u);
+                int across = Math.Max(1, (int)Math.Ceiling(Vector2.Distance(a.Inner, a.Tip) / grid));
+                int along = Math.Max(1, (int)Math.Ceiling(Vector2.Distance(a.Tip, b.Tip) / grid));
+                for (int r = 0; r <= across; r++)
                 {
-                    float f = k / (float)steps;
-                    Vector2 spot = Vector2.Lerp(sample.Inner, sample.Tip, f);
-                    float taper = 0.3f + 0.7f * f;
-                    IceFx.DrawPixel(spot, width * 1.8f * taper, IceBladeTuning.MidColor * (0.22f * fade * f), grid);
-                    IceFx.DrawPixel(spot, width * 0.8f * taper, IceBladeTuning.CoreColor * (0.55f * fade * f), grid);
+                    float f = r / (float)across; // 0 at the inner end of the band, 1 at the blade tip
+                    Vector2 from = Vector2.Lerp(a.Inner, a.Tip, f);
+                    Vector2 to = Vector2.Lerp(b.Inner, b.Tip, f);
+                    Color color = Color.Lerp(IceBladeTuning.MidColor, IceBladeTuning.CoreColor, f * f * f) * (alpha * (0.15f + 0.85f * f));
+                    for (int s = 0; s < along; s++)
+                        IceFx.DrawPixel(Vector2.Lerp(from, to, s / (float)along), grid, color, grid);
                 }
             }
         }

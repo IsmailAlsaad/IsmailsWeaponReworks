@@ -39,6 +39,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
 
         List<int> visited;     // owner only: identities of the crystals already bounced off in this chain
         Vector2 sweepStart;    // center at the start of this tick, for the swept hit test
+        HashSet<int> sparked;  // other machines only: enemies already sparked in the current segment (visual only)
+        int sparkSegment = -1;
 
         public override void Load()
         {
@@ -98,6 +100,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
 
             bool isOwner = Projectile.owner == Main.myPlayer;
             Phase phase = CurrentPhase;
+            if (!isOwner)
+                RemoteHitSparks(phase); // must run before sweepStart is overwritten: it needs last tick's start
             sweepStart = Projectile.Center;
             Projectile.tileCollide = phase == Phase.Outbound; // chain and return fly through tiles (set on every machine)
 
@@ -135,6 +139,39 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
                 default:
                     AiReturning(owner, spinDirection);
                     break;
+            }
+        }
+
+        // OnHitNPC only runs on the owner's client, so the hit sparks would be invisible to other players. Every other machine runs
+        // the same swept test against its own copy of the enemies and spawns the sparks itself (no damage, no packets). Like the
+        // owner's hit immunity, an enemy sparks once per segment: the whole outbound flight, then once per chain leg, then once on the way back.
+        void RemoteHitSparks(Phase phase)
+        {
+            if (Main.dedServ || phase == Phase.Settling || phase == Phase.Spent || sweepStart == Vector2.Zero)
+                return;
+            sparked ??= new HashSet<int>();
+            int segment = (int)phase * 1000 + (phase >= Phase.Chain ? (int)Projectile.ai[2] : 0);
+            if (segment != sparkSegment)
+            {
+                sparkSegment = segment;
+                sparked.Clear();
+            }
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC npc = Main.npc[i];
+                if (!npc.active || sparked.Contains(i) || !npc.CanBeChasedBy(Projectile) || Colliding(Projectile.Hitbox, npc.Hitbox) != true)
+                    continue;
+                sparked.Add(i);
+                if (phase == Phase.Outbound)
+                {
+                    Rectangle box = npc.Hitbox;
+                    Vector2 center = Projectile.Center;
+                    IceBoomerangFx.Burst(new Vector2(MathHelper.Clamp(center.X, box.Left, box.Right), MathHelper.Clamp(center.Y, box.Top, box.Bottom)), 8, 3f, 1.1f);
+                }
+                else
+                {
+                    IceBoomerangFx.Burst(npc.Center, 4, 3f, 1f);
+                }
             }
         }
 

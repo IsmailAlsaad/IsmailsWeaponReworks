@@ -43,6 +43,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             return false;
         }
 
+        public override void OnHitNPC(Item item, Player player, NPC target, NPC.HitInfo hit, int damageDone)
+        {
+            base.OnHitNPC(item, player, target, hit, damageDone);
+            target.AddBuff(BuffID.Frostburn, IceBladeTuning.FreezeDebuffTicks);
+        }
+
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
             //tooltips.Add(new TooltipLine(Mod, "IceBlade1", "Tap for a plain swing, hold to charge"));
