@@ -15,8 +15,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
         public static float BrakeMinSpeed => 4f;
 
         // ---- return ----
-        public static float ReturnStartSpeed => 6f;
-        public static float ReturnAcceleration => 0.9f;
+        public static float ReturnAcceleration => 1f;     // pull toward the player per tick (force-based return, see BoomerangFlight.StepForceReturn)
+        public static float ReturnDrag => 0.95f;          // velocity multiplier per tick; keep it below 1 or the path orbits the player forever
         public static float ReturnMaxSpeed => 18f;
         public static float CatchDistance => 28f;
         public static int FlightMaxTicks => 900;          // safety net: a boomerang that never gets back is removed
@@ -27,9 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
 
         // ---- the two kinds hitting each other ----
         public static float CollideRadius => 20f;         // each boomerang counts as a circle this big (forgiving on purpose)
-        public static float BounceSpeed => 25f;           // speed along the bounce direction (90 degrees off the travel direction)
-        public static float BounceDecay => 0.85f;         // velocity multiplier per tick during the bounce
-        public static int BounceTicks => 14;
+        public static float BounceSpeed => 13f;           // sideways impulse (90 degrees off the travel direction); the return pull bends it into an arc
 
         // ---- stardust burst at the contact point ----
         public static float BurstRadius => 72f;

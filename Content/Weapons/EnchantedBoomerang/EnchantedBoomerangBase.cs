@@ -26,7 +26,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
 
         protected abstract bool Ethereal { get; }
 
-        enum Phase { Outbound = 0, Returning = 1, Bounce = 2 }
+        // Bounced flies exactly like Returning (the force-based return); it only marks that this one already bounced off its partner,
+        // so every machine can play the bounce sparks once when the value arrives.
+        enum Phase { Outbound = 0, Returning = 1, Bounced = 2 }
 
         Phase CurrentPhase => (Phase)(int)Projectile.ai[0];
 
@@ -105,7 +107,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
             {
                 lastPhase = (int)phase;
                 phaseTimer = 0;
-                if (phase == Phase.Bounce)
+                if (phase == Phase.Bounced)
                     EnchantedBoomerangFx.BounceSparks(Projectile.Center);
             }
 
@@ -128,11 +130,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
                 case Phase.Outbound:
                     AiOutbound(isOwner);
                     break;
-                case Phase.Returning:
+                default: // Returning and Bounced
                     AiReturning(owner);
-                    break;
-                default:
-                    AiBounce(isOwner);
                     break;
             }
             phaseTimer++;
@@ -165,18 +164,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
 
         void AiReturning(Player owner)
         {
-            if (BoomerangFlight.StepReturn(Projectile, owner, EnchantedBoomerangTuning.ReturnStartSpeed, EnchantedBoomerangTuning.ReturnAcceleration, EnchantedBoomerangTuning.ReturnMaxSpeed, EnchantedBoomerangTuning.CatchDistance))
+            // Force-based: the pull toward the player is added to the velocity the boomerang already has (the braked throw, or the
+            // sideways bounce impulse), so it swings round in one smooth arc instead of homing in a straight line.
+            if (BoomerangFlight.StepForceReturn(Projectile, owner, EnchantedBoomerangTuning.ReturnAcceleration, EnchantedBoomerangTuning.ReturnMaxSpeed, EnchantedBoomerangTuning.ReturnDrag, EnchantedBoomerangTuning.CatchDistance))
             {
                 EnchantedBoomerangFx.Catch(Projectile.Center, Ethereal); // every machine catches its own copy
                 Projectile.Kill();
             }
-        }
-
-        void AiBounce(bool isOwner)
-        {
-            Projectile.velocity *= EnchantedBoomerangTuning.BounceDecay;
-            if (isOwner && phaseTimer >= EnchantedBoomerangTuning.BounceTicks)
-                BeginReturn();
         }
 
         // Owner only.
@@ -201,7 +195,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
         // line segment; the closest it gets to zero is the closest the two boomerangs came, so a fast pair cannot tunnel.
         void TryCollideWithPartner()
         {
-            if (Ethereal || bounced || CurrentPhase == Phase.Bounce || sweepStart == Vector2.Zero)
+            if (Ethereal || bounced || CurrentPhase == Phase.Bounced || sweepStart == Vector2.Zero)
                 return;
             int partnerType = ModContent.ProjectileType<EtherealBoomerangProjectile>();
             for (int i = 0; i < Main.maxProjectiles; i++)
@@ -210,7 +204,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
                 if (!other.active || other.type != partnerType || other.owner != Projectile.owner)
                     continue;
                 EnchantedBoomerangBase partner = other.ModProjectile as EnchantedBoomerangBase;
-                if (partner == null || partner.bounced || partner.CurrentPhase == Phase.Bounce || partner.sweepStart == Vector2.Zero)
+                if (partner == null || partner.bounced || partner.CurrentPhase == Phase.Bounced || partner.sweepStart == Vector2.Zero)
                     continue;
 
                 Vector2 from = sweepStart - partner.sweepStart;
@@ -231,7 +225,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
             }
         }
 
-        // Owner only: fly off 90 degrees to the travel direction, on the side that leads away from the other boomerang.
+        // Owner only: a sideways IMPULSE, 90 degrees to the travel direction on the side that leads away from the other boomerang. There
+        // is no separate bounce phase: the boomerang goes straight into the force-based return, and the pull toward the player bends
+        // that impulse into one smooth arc.
         void BounceAway(Vector2 awayFromOther)
         {
             Vector2 direction = Projectile.velocity;
@@ -243,7 +239,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
                 perpendicular = -perpendicular;
 
             Projectile.velocity = perpendicular * EnchantedBoomerangTuning.BounceSpeed;
-            Projectile.ai[0] = (float)Phase.Bounce;
+            Projectile.ai[0] = (float)Phase.Bounced;
             Array.Clear(Projectile.localNPCImmunity, 0, Projectile.localNPCImmunity.Length);
             bounced = true;
             Projectile.netUpdate = true;
