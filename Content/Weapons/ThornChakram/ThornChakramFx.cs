@@ -68,7 +68,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
             Puff(position, 6, 2.5f, 1f);
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item4 with { Volume = 0.4f, Pitch = -0.2f }, position);
+            SoundEngine.PlaySound(SoundID.Grass with { Volume = 0.4f, Pitch = -0.2f }, position);
         }
 
         public static void PlayBurst(Vector2 position)
@@ -90,7 +90,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item22 with { Volume = 0.4f, Pitch = 0.1f + 0.6f * spinT, PitchVariance = 0.1f }, position);
+
+            //SoundEngine.PlaySound(SoundID.Item22 with { Volume = 0.7f, Pitch = 0.1f + 0.8f * spinT, PitchVariance = 0.1f}, position);
         }
 
         public static void PlayExplosion(Vector2 position)

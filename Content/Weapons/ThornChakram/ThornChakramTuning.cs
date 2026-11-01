@@ -37,9 +37,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
         // ---- latch (the first enemy it hits: it sticks to it and shreds it) ----
         public static int LatchTicks => 60;               // 1 second
         public static float LatchOffset => 8f;            // pixels from the enemy's center, toward the side it came from
-        public static int ShredIntervalTicks => 6;        // the same enemy is hit again this often while latched
+        public static int ShredIntervalTicks => 4;        // the same enemy is hit again this often while latched
         public static float ShredDamageMultiplier => 0.4f; // of the chakram's damage, per shred hit
-        public static float LatchSpinMaxMultiplier => 3.5f; // spin speed at the end of the latch, relative to SpinSpeed
+        public static float LatchSpinMaxMultiplier => 1.2f; // spin speed at the end of the latch, relative to SpinSpeed
 
         // ---- final explosion (when the latch ends) ----
         public static int ExplosionCount => 8;

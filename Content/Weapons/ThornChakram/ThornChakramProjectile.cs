@@ -171,11 +171,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
         {
             Projectile.tileCollide = false;
             Projectile.velocity = Vector2.Zero;
-            Projectile.localNPCHitCooldown = ThornChakramTuning.ShredIntervalTicks;
 
             latchTicks++;
             float t = MathHelper.Clamp(latchTicks / (float)ThornChakramTuning.LatchTicks, 0f, 1f);
-            Projectile.rotation += ThornChakramTuning.SpinSpeed * MathHelper.Lerp(1f, ThornChakramTuning.LatchSpinMaxMultiplier, t) * Projectile.localAI[1];
+            Projectile.localNPCHitCooldown = (int)MathHelper.Lerp(ThornChakramTuning.ShredIntervalTicks, ThornChakramTuning.ShredIntervalTicks * 3f,t);
+            Projectile.rotation += ThornChakramTuning.SpinSpeed * MathHelper.Lerp(ThornChakramTuning.LatchSpinMaxMultiplier, 0f, t) * Projectile.localAI[1];
             Lighting.AddLight(Projectile.Center, 0.15f + 0.2f * t, 0.45f + 0.2f * t, 0.15f);
 
             if (!latchEffectPlayed)
