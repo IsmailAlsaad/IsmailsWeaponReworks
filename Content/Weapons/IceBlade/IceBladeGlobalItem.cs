@@ -46,7 +46,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         public override void OnHitNPC(Item item, Player player, NPC target, NPC.HitInfo hit, int damageDone)
         {
             base.OnHitNPC(item, player, target, hit, damageDone);
-            target.AddBuff(BuffID.Frostburn, IceBladeTuning.FreezeDebuffTicks);
+            //target.AddBuff(BuffID.Frostburn, IceBladeTuning.FreezeDebuffTicks);
         }
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
