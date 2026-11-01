@@ -1,18 +1,18 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-02 | 44 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-02 | 49 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(12) IceFx(7) FlamerangTuning(7) FlamerangFx(5) BoomerangFlight(5) ShroomerangTuning(4) IceBoomerangTuning(4) TrimarangTuning(3) ShroomerangFx(3) PixelTrail(3) IceBoomerangFx(3) FlamerangBurn(3) EnchantedBoomerangTuning(3) TrimarangFx(2) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2) IceBladeFx(2) EtherealBoomerangProjectile(2) EnchantedBoomerangFx(2)
+RemoteHitTracker(13) IceFx(7) FlamerangTuning(7) BoomerangFlight(6) FlamerangFx(5) WoodenBoomerangTuning(4) ShroomerangTuning(4) IceBoomerangTuning(4) TrimarangTuning(3) ShroomerangFx(3) PixelTrail(3) IceBoomerangFx(3) FlamerangBurn(3) EnchantedBoomerangTuning(3) WoodenBoomerangProjectile(2) WoodenBoomerangFx(2) TrimarangFx(2) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2)
 
 ## Inheritance
 Project bases -> derived:
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
 - PixelTrailStyle: MoltenTrailStyle
 tModLoader/other bases -> project types:
-- ModProjectile (16): EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, TrimarangEtherealProjectile, TrimarangProjectile
-- GlobalItem (6): EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, ShroomerangGlobalItem, TrimarangGlobalItem
+- ModProjectile (18): EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
+- GlobalItem (7): EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, ShroomerangGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
 - Mod (1): IsmailsWeaponReworks
 - ModSystem (1): DetachedTrails
 
@@ -186,6 +186,25 @@ tModLoader/other bases -> project types:
 **TrimarangTuning.cs**
   static class TrimarangTuning
     +ThrowSpeed:float[s] +HoldRange:float[s] +MinThrowSpeed:float[s] +StopSnapDistance:float[s] +LeashDistance:float[s] +FlightMaxTicks:int[s] +SteerTurn:float[s] +HoldSteerSpeed:float[s] +HoldSteerSmoothing:float[s] +HoldSteerDeadzone:float[s] +SteerSyncTicks:int[s] +SpinStart:float[s] +SpinCap:float[s] +SpinRampTicks:int[s] +HitCooldownSlow:int[s] +HitCooldownFast:int[s] +HitRadius:float[s] +HoldKnockbackMultiplier:float[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +HitsPerEthereal:int[s] +EtherealDamageMultiplier:float[s] +EtherealMaxAlive:int[s] +EtherealHitsToExplode:int[s] +EtherealLaunchSpeed:float[s] +EtherealReturnAcceleration:float[s] +EtherealReturnDrag:float[s] +EtherealReturnMaxSpeed:float[s] +EtherealHitCooldownTicks:int[s] +EtherealLifeTicks:int[s] +GoldenAngleDeg:float[s] +MainColor:Color[s] +EtherealColor:Color[s] +EtherealOpacity:float[s]
+
+### Content/Weapons/WoodenBoomerang/
+**WoodenBoomerangFx.cs** uses: WoodenBoomerangTuning
+  static class WoodenBoomerangFx
+    +Splinters(Vector2,int,float,float)[s] +HitSparks(Vector2)[s] +Trail(Vector2,Vector2,float)[s] +Catch(Vector2)[s] +PlayBreak(Vector2)[s]
+**WoodenBoomerangGlobalItem.cs** uses: WoodenBoomerangProjectile, WoodenBoomerangTuning
+  class WoodenBoomerangGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**WoodenBoomerangProjectile.cs** uses: BoomerangFlight, WoodenBoomerangFx, WoodenBoomerangShardProjectile, WoodenBoomerangTuning
+  class WoodenBoomerangProjectile : ModProjectile
+    +Texture:string[ov] +Art()[s] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Outbound, Returning, Broken}
+**WoodenBoomerangShardProjectile.cs** uses: RemoteHitTracker, WoodenBoomerangFx, WoodenBoomerangProjectile, WoodenBoomerangTuning
+  class WoodenBoomerangShardProjectile : ModProjectile
+    +Texture:string[ov] +CanDamage()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**WoodenBoomerangTuning.cs**
+  static class WoodenBoomerangTuning
+    +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +SpinSpeed:float[s] +ShardDamageMultiplier:float[s] +ShardLifeTicks:int[s] +ShardFadeTicks:int[s] +ShardHitCooldownTicks:int[s] +ShardSpeed:float[s] +ShardSpreadAngle:float[s] +ShardHop:float[s] +ShardGravity:float[s] +ShardMaxFallSpeed:float[s] +ShardAirDrag:float[s] +ShardBounceX:float[s] +ShardBounceY:float[s] +ShardGroundFriction:float[s] +GlowColor:Color[s] +WoodDust:int[s]
 
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; build.txt, description.txt, description_workshop.txt
