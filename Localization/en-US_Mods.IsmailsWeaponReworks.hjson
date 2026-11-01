@@ -1,4 +1,6 @@
 Projectiles: {
+	IceBladeSwingProjectile.DisplayName: Ice Blade Swing Projectile
+	IceBladeWaveProjectile.DisplayName: Ice Blade Wave Projectile
 	IceBoomerangProjectile.DisplayName: Ice Boomerang Projectile
 	IceCrystalProjectile.DisplayName: Ice Crystal Projectile
 	IceCrystalBlastProjectile.DisplayName: Ice Crystal Blast Projectile
