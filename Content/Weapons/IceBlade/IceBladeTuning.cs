@@ -46,7 +46,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         public static int SlashWaveTick => 6;         // tick of the swing, counted from the release, on which the wave leaves the blade
         public static int TrailLifeTicks => 26;
         public static int TrailMaxSamples => 80;
-        public static float TrailStartFraction => 0.25f; // the trail covers the blade from this fraction of its length out to the tip
+        public static float TrailInnerAtSwingStart => 0.85f; // the trail starts short: only the outer 15% of the blade at the start of the swing...
+        public static float TrailInnerAtSwingEnd => 0f;      // ...and grows to the full blade length (0 = from the hand) at the end of it
+        public static float WaveSpawnFraction => 0.5f;       // the wave starts this fraction of the blade's reach out from the player, along the aim
         public static float TrailOpacity(int tier) { return Pick(tier, 0.3f, 0.55f, 0.9f); } // lower tiers leave a fainter trail
         public static float TrailThickness(int tier) { return Pick(tier, 3f, 5f, 8f); }
 

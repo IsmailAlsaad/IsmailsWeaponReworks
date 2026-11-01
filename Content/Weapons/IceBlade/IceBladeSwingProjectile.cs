@@ -340,7 +340,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
                 if (released && t == IceBladeTuning.SlashWaveTick)
                 {
                     Vector2 direction = AimAngle.ToRotationVector2();
-                    IceBladeFx.WaveBorn(tipPosition, direction, tier);
+                    IceBladeFx.WaveBorn(WaveSpawnPoint(direction), direction, tier);
                     if (IsOwner)
                         FireWave(tier, direction);
                 }
@@ -363,19 +363,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             Vector2 hand = ComputeHand(arm);
             Vector2 direction = BladeDirection(arm, tilt);
             float length = IceBladeTuning.BladeLength * Projectile.scale;
-            trail.Add(new TrailSample { Inner = hand + direction * length * IceBladeTuning.TrailStartFraction, Tip = hand + direction * length, Born = ticks, Tier = tier });
+            trail.Add(new TrailSample { Inner = hand + direction * length * MathHelper.Lerp(IceBladeTuning.TrailInnerAtSwingStart, IceBladeTuning.TrailInnerAtSwingEnd, SwingProgress(time)), Tip = hand + direction * length, Born = ticks, Tier = tier });
             if (trail.Count > IceBladeTuning.TrailMaxSamples)
                 trail.RemoveAt(0);
+        }
+
+        // Where the wave starts: in front of the player, in the middle of the area the blade sweeps (a fraction of the blade's reach along the aim).
+        Vector2 WaveSpawnPoint(Vector2 direction)
+        {
+            return Owner.MountedCenter + direction * IceBladeTuning.BladeLength * Projectile.scale * IceBladeTuning.WaveSpawnFraction;
         }
 
         // Owner only. The wave is a normal projectile, so tModLoader syncs it to everyone else.
         void FireWave(int tier, Vector2 direction)
         {
-            Vector2 spawn = tipPosition;
-            if (!Collision.CanHitLine(Owner.Center, 1, 1, spawn, 1, 1))
-                spawn = Owner.Center + direction * 24f; // the blade tip is inside a wall: start next to the player instead
             int damage = Math.Max(1, (int)(Projectile.damage * IceBladeTuning.WaveDamageMultiplier(tier)));
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, direction * IceBladeTuning.WaveSpeed(tier),
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), WaveSpawnPoint(direction), direction * IceBladeTuning.WaveSpeed(tier),
                 ModContent.ProjectileType<IceBladeWaveProjectile>(), damage, Projectile.knockBack * IceBladeTuning.WaveKnockbackMultiplier(tier), Projectile.owner, tier);
         }
 
