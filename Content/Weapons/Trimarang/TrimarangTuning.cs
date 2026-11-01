@@ -34,7 +34,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
         public static float CatchDistance => 28f;
 
         // ---- ethereal forms ----
-        public static int HitsPerEthereal => 5;            // every 5th hit of the main boomerang
+        public static int HitsPerEthereal => 10;            // every 10th hit of the main boomerang
         public static float EtherealDamageMultiplier => 0.7f;
         public static int EtherealMaxAlive => 8;           // the oldest fizzles when a new one would be the 9th
         public static int EtherealHitsToExplode => 8;
