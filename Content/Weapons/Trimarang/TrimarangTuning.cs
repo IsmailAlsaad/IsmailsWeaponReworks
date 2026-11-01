@@ -25,12 +25,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
 
         // ---- spin: starts slow, speeds up (ease-in) to the cap ----
         public static float SpinStart => 0.12f;            // radians per tick
-        public static float SpinCap => 0.95f;
+        public static float SpinCap => 0.45f;
         public static int SpinRampTicks => 180;
 
         // ---- shredding: the faster it spins, the faster it hits the same enemy again ----
-        public static int HitCooldownSlow => 14;
-        public static int HitCooldownFast => 5;
+        public static int HitCooldownSlow => 18;
+        public static int HitCooldownFast => 8;
         public static float HitRadius => 30f;
         public static float HoldKnockbackMultiplier => 0.3f; // enemies stay in the blades
 
