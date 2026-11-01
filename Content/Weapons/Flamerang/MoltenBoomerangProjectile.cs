@@ -29,17 +29,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
 
         enum Phase { Arc = 0, Return = 1 }
 
-        struct TrailPoint
-        {
-            public Vector2 Position;
-            public int Born;
-        }
-
         Phase CurrentPhase => (Phase)(int)Projectile.ai[0];
 
         Vector2 sweepStart;
         int ticks;
-        List<TrailPoint> trail;
+        PixelTrail trail;
         RemoteHitTracker hitTracker; // other machines only
 
         public override void Load()
@@ -90,7 +84,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
                 return;
             }
             bool isOwner = Projectile.owner == Main.myPlayer;
-            trail ??= new List<TrailPoint>();
+            trail ??= MoltenTrailStyle.Create(isOwner);
 
             if (!isOwner)
                 RemoteHitSparks(CurrentPhase); // needs last tick's sweepStart, so it runs first
@@ -113,13 +107,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             Lighting.AddLight(Projectile.Center, 1f, 0.55f, 0.15f);
             FlamerangFx.FlightDust(Projectile.Center, Projectile.velocity, 1f);
 
-            // The trail: where this copy has been, recently. Every machine keeps its own for drawing; only the owner burns enemies with it.
-            trail.Add(new TrailPoint { Position = Projectile.Center, Born = ticks });
-            trail.RemoveAll(point => ticks - point.Born > FlamerangTuning.TrailLifeTicks);
-            if (trail.Count > 0)
-                FlamerangFx.TrailEmber(trail[Main.rand.Next(trail.Count)].Position);
-            if (isOwner && ticks % Math.Max(1, FlamerangTuning.BurnCheckInterval) == 0)
-                BurnEnemiesInTrail();
+            // The trail: where this copy has been, recently (a PixelTrail). Every machine keeps its own for drawing and embers; only the
+            // owner's burns enemies (MoltenTrailStyle.Update). When this projectile dies the trail is handed to DetachedTrails (OnKill).
+            trail.Add(Projectile.Center);
+            trail.Tick();
 
             if (CurrentPhase == Phase.Arc)
             {
@@ -143,23 +134,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             Projectile.netUpdate = true;
         }
 
-        // Owner only: every enemy touching a point of the trail (or the boomerang itself) is set on fire.
-        void BurnEnemiesInTrail()
+        // Every machine: the trail outlives the boomerang and keeps fading (and burning, on the owner's machine) on its own.
+        public override void OnKill(int timeLeft)
         {
-            float radius = FlamerangTuning.TrailRadius;
-            for (int i = 0; i < Main.maxNPCs; i++)
-            {
-                NPC npc = Main.npc[i];
-                if (!npc.active || !npc.CanBeChasedBy(Projectile))
-                    continue;
-                Rectangle box = npc.Hitbox;
-                box.Inflate((int)radius, (int)radius);
-                bool touching = box.Contains(Projectile.Center.ToPoint());
-                for (int p = 0; p < trail.Count && !touching; p += 2)
-                    touching = box.Contains(trail[p].Position.ToPoint());
-                if (touching)
-                    FlamerangBurn.Apply(npc);
-            }
+            DetachedTrails.Hand(trail);
+            trail = null;
         }
 
         void RemoteHitSparks(Phase phase)
@@ -180,7 +159,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
 
         public override bool PreDraw(ref Color lightColor)
         {
-            DrawTrail();
+            trail?.Draw();
 
             Texture2D texture = art?.Value ?? TextureAssets.Projectile[Type].Value;
             Vector2 origin = texture.Size() * 0.5f;
@@ -200,28 +179,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             Main.EntitySpriteDraw(texture, position, null, glow * 0.55f, Projectile.rotation, origin, 1.4f, SpriteEffects.None, 0); // molten halo
             Main.EntitySpriteDraw(texture, position, null, Color.Lerp(lightColor, FlamerangTuning.HotColor, 0.7f), Projectile.rotation, origin, 1f, SpriteEffects.None, 0);
             return false;
-        }
-
-        // Flames along the path: blocks that shrink and cool from white-yellow through orange to dark red as they age.
-        void DrawTrail()
-        {
-            if (trail == null)
-                return;
-            float grid = FlamerangTuning.PixelSize;
-            float life = Math.Max(1, FlamerangTuning.TrailLifeTicks);
-            for (int i = 0; i < trail.Count; i++)
-            {
-                TrailPoint point = trail[i];
-                float u = (ticks - point.Born) / life;
-                if (u >= 1f)
-                    continue;
-                float size = FlamerangTuning.TrailRadius * 1.1f * (1f - 0.8f * u);
-                Vector2 wobble = new Vector2(((point.Born * 7 + i * 13) % 9) - 4, ((point.Born * 11 + i * 5) % 9) - 4) * 0.8f; // fixed jitter so the flames look ragged
-                Color outer = Color.Lerp(FlamerangTuning.FireColor, FlamerangTuning.EmberColor, u) * (0.55f * (1f - u));
-                Color inner = Color.Lerp(FlamerangTuning.HotColor, FlamerangTuning.FireColor, u) * (0.8f * (1f - u));
-                IceFx.DrawPixel(point.Position + wobble, size, outer, grid);
-                IceFx.DrawPixel(point.Position + wobble, size * 0.5f, inner, grid);
-            }
         }
     }
 }

@@ -1,18 +1,20 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-01 | 34 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-02 | 38 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(10) IceFx(7) FlamerangTuning(5) IceBoomerangTuning(4) FlamerangFx(4) TrimarangTuning(3) IceBoomerangFx(3) EnchantedBoomerangTuning(3) BoomerangFlight(3) TrimarangFx(2) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2) IceBladeFx(2) FlamerangBurn(2) EtherealBoomerangProjectile(2) EnchantedBoomerangFx(2) EnchantedBoomerangBase(2) TrimarangProjectile(1) TrimarangEtherealProjectile(1)
+RemoteHitTracker(10) IceFx(6) FlamerangTuning(6) FlamerangFx(5) IceBoomerangTuning(4) TrimarangTuning(3) PixelTrail(3) IceBoomerangFx(3) FlamerangBurn(3) EnchantedBoomerangTuning(3) BoomerangFlight(3) TrimarangFx(2) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2) IceBladeFx(2) EtherealBoomerangProjectile(2) EnchantedBoomerangFx(2) EnchantedBoomerangBase(2) TrimarangProjectile(1)
 
 ## Inheritance
 Project bases -> derived:
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
+- PixelTrailStyle: MoltenTrailStyle
 tModLoader/other bases -> project types:
 - ModProjectile (13): EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, StardustBurstProjectile, TrimarangEtherealProjectile, TrimarangProjectile
 - GlobalItem (5): EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, TrimarangGlobalItem
 - Mod (1): IsmailsWeaponReworks
+- ModSystem (1): DetachedTrails
 
 ## Files
 
@@ -24,9 +26,22 @@ tModLoader/other bases -> project types:
 **BoomerangFlight.cs**
   static class BoomerangFlight
     +StepReturn(Projectile,Player,float,float,float,float)[s]
+**DetachedTrails.cs** uses: PixelTrail
+  class DetachedTrails : ModSystem
+    +Hand(PixelTrail)[s] +PostUpdateEverything()[ov] +PostDrawTiles()[ov] +OnWorldUnload()[ov] +Unload()[ov]
 **IceFx.cs**
   static class IceFx
     +Burst(Vector2,int,float,float)[s] +Ring(Vector2,int,float,float)[s] +Gather(Vector2,float)[s] +DrawPixel(Vector2,float,Color,float)[s]
+**PixelLine.cs**
+  static class PixelLine
+    +Draw(Vector2,float,int,float,Func<float, float>,Func<float, Color>)[s]
+    struct Span
+      +Y:int +X0:int +X1:int +Order:int +Color:Color
+**PixelTrail.cs** uses: PixelLine
+  abstract class PixelTrailStyle
+    +Grid:float[v] +LifeTicks:int[v] +Layers:int[v] +Jitter:float[v] +GetWidth(int,float)[ab] +GetColor(int,float)[ab] +Update(PixelTrail)[v]
+  class PixelTrail
+    +Style:PixelTrailStyle +IsOwner:bool +Count:int +IsEmpty:bool +Clock:int +PointAt(int) +AgeAt(int) +Add(Vector2) +Tick() +Draw()
 **RemoteHitTracker.cs**
   class RemoteHitTracker
     +Update(Projectile,int,Action<NPC>) +TouchOnce(Projectile,Action<NPC>)[s]
@@ -73,16 +88,17 @@ tModLoader/other bases -> project types:
       {Outbound, Settling, Spent}
 **FlamerangTuning.cs**
   static class FlamerangTuning
-    +ThrowSpeed:float[s] +MinThrowRange:float[s] +MaxThrowRange:float[s] +SettleTicks:int[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +FlightMaxTicks:int[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastLifeTicks:int[s] +MoltenDamageMultiplier:float[s] +MoltenArcSpeed:float[s] +MoltenArcTurnRadians:float[s] +MoltenArcTicks:int[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +MoltenHitCooldownTicks:int[s] +SpinSpeed:float[s] +TrailLifeTicks:int[s] +TrailRadius:float[s] +BurnCheckInterval:int[s] +BurnTicks:int[s] +BurnRefreshBelowTicks:int[s] +ShardCount:int[s] +ShardDamageMultiplier:float[s] +ShardMinSpeed:float[s] +ShardMaxSpeed:float[s] +ShardSpreadDeg:float[s] +ShardGravity:float[s] +ShardMaxFallSpeed:float[s] +ShardLingerTicks:int[s] +ShardFadeTicks:int[s] +ShardCoolTicks:int[s] +ShardHitCooldownTicks:int[s] +PixelSize:float[s] +HotColor:Color[s] +FireColor:Color[s] +EmberColor:Color[s] +ObsidianColor:Color[s]
+    +ThrowSpeed:float[s] +MinThrowRange:float[s] +MaxThrowRange:float[s] +SettleTicks:int[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +FlightMaxTicks:int[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastLifeTicks:int[s] +MoltenDamageMultiplier:float[s] +MoltenArcSpeed:float[s] +MoltenArcTurnRadians:float[s] +MoltenArcTicks:int[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +MoltenHitCooldownTicks:int[s] +SpinSpeed:float[s] +TrailLifeTicks:int[s] +TrailRadius:float[s] +BurnCheckInterval:int[s] +BurnTicks:int[s] +BurnRefreshBelowTicks:int[s] +TrailWidth:float[s] +TrailJitter:float[s] +TrailBurnFade:float[s] +ShardCount:int[s] +ShardDamageMultiplier:float[s] +ShardMinSpeed:float[s] +ShardMaxSpeed:float[s] +ShardSpreadDeg:float[s] +ShardGravity:float[s] +ShardMaxFallSpeed:float[s] +ShardLingerTicks:int[s] +ShardFadeTicks:int[s] +ShardCoolTicks:int[s] +ShardHitCooldownTicks:int[s] +PixelSize:float[s] +HotColor:Color[s] +FireColor:Color[s] +EmberColor:Color[s] +ObsidianColor:Color[s]
   static class FlamerangBurn
     +Apply(NPC)[s]
-**MoltenBoomerangProjectile.cs** uses: BoomerangFlight, FlamerangBurn, FlamerangFx, FlamerangTuning, IceFx, RemoteHitTracker
+**MoltenBoomerangProjectile.cs** uses: BoomerangFlight, DetachedTrails, FlamerangBurn, FlamerangFx, FlamerangTuning, MoltenTrailStyle, PixelTrail, RemoteHitTracker
   class MoltenBoomerangProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnKill(int)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
       {Arc, Return}
-    struct TrailPoint
-      +Position:Vector2 +Born:int
+**MoltenTrail.cs** uses: FlamerangBurn, FlamerangFx, FlamerangTuning, PixelTrail, PixelTrailStyle
+  class MoltenTrailStyle : PixelTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov] +Update(PixelTrail)[ov] +Create(bool)[s]
 **ObsidianShardProjectile.cs** uses: FlamerangFx, FlamerangTuning, RemoteHitTracker
   class ObsidianShardProjectile : ModProjectile
     +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]

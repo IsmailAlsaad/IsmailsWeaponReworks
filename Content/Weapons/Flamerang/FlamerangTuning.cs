@@ -42,6 +42,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
         public static int BurnCheckInterval => 3;
         public static int BurnTicks => 240;                // 4 seconds of burning
         public static int BurnRefreshBelowTicks => 90;
+        public static float TrailWidth => 12f;             // pixel line width of the outer glow (the hot core is half of it)
+        public static float TrailJitter => 2.4f;           // ragged edge, in pixels
+        public static float TrailBurnFade => 0.6f;         // the oldest part of the trail burns this much less far than the newest
 
         // ---- obsidian shards (contact explosion only) ----
         public static int ShardCount => 6;
