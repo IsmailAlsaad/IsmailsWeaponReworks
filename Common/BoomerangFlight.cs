@@ -38,5 +38,29 @@ namespace IsmailsWeaponReworks.Common
                 projectile.velocity = Vector2.Normalize(projectile.velocity) * maxSpeed;
             return false;
         }
+
+        // One tick of the way OUT of a fixed-range throw (ai[1] = range in pixels, ai[2] = distance flown so far). Over the last
+        // brakeDistance pixels the speed follows the remaining distance down to brakeMinSpeed (a gradual stop), then ai[2] grows by the
+        // distance moved. Every machine adds its own distance; only the owner should act on the result. Returns true when the range is
+        // used up (or the projectile has stopped), i.e. when the return should begin. Added with the Shroomerang, when the second
+        // fixed-range boomerang (after the Enchanted Boomerang's own copy of this) needed it; the Wooden Boomerang and the Thorn Chakram use it too.
+        public static bool StepOutbound(Projectile projectile, float range, float throwSpeed, float brakeDistance, float brakeMinSpeed)
+        {
+            float speed = projectile.velocity.Length();
+            if (speed < 0.01f)
+                return true;
+            float remaining = range - projectile.ai[2];
+            if (remaining < brakeDistance)
+            {
+                float braked = Math.Max(brakeMinSpeed, throwSpeed * Math.Max(0f, remaining) / brakeDistance);
+                if (speed > braked)
+                {
+                    projectile.velocity *= braked / speed;
+                    speed = braked;
+                }
+            }
+            projectile.ai[2] += speed;
+            return projectile.ai[2] >= range;
+        }
     }
 }

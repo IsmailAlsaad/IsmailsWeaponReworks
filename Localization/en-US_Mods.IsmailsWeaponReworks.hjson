@@ -13,4 +13,7 @@ Projectiles: {
 	IceBoomerangProjectile.DisplayName: Ice Boomerang Projectile
 	IceCrystalProjectile.DisplayName: Ice Crystal Projectile
 	IceCrystalBlastProjectile.DisplayName: Ice Crystal Blast Projectile
+	ShroomerangProjectile.DisplayName: Shroomerang Projectile
+	ShroomerangMushroomProjectile.DisplayName: Shroomerang Mushroom Projectile
+	ShroomerangBurstProjectile.DisplayName: Shroomerang Burst Projectile
 }

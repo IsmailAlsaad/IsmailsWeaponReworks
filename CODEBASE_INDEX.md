@@ -1,18 +1,18 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-02 | 38 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-02 | 44 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(10) FlamerangTuning(7) IceFx(6) FlamerangFx(5) IceBoomerangTuning(4) BoomerangFlight(4) TrimarangTuning(3) PixelTrail(3) IceBoomerangFx(3) FlamerangBurn(3) EnchantedBoomerangTuning(3) TrimarangFx(2) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2) IceBladeFx(2) EtherealBoomerangProjectile(2) EnchantedBoomerangFx(2) EnchantedBoomerangBase(2) TrimarangProjectile(1)
+RemoteHitTracker(12) IceFx(7) FlamerangTuning(7) FlamerangFx(5) BoomerangFlight(5) ShroomerangTuning(4) IceBoomerangTuning(4) TrimarangTuning(3) ShroomerangFx(3) PixelTrail(3) IceBoomerangFx(3) FlamerangBurn(3) EnchantedBoomerangTuning(3) TrimarangFx(2) IceCrystalProjectile(2) IceBoomerangChill(2) IceBladeTuning(2) IceBladeFx(2) EtherealBoomerangProjectile(2) EnchantedBoomerangFx(2)
 
 ## Inheritance
 Project bases -> derived:
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
 - PixelTrailStyle: MoltenTrailStyle
 tModLoader/other bases -> project types:
-- ModProjectile (13): EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, StardustBurstProjectile, TrimarangEtherealProjectile, TrimarangProjectile
-- GlobalItem (5): EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, TrimarangGlobalItem
+- ModProjectile (16): EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, TrimarangEtherealProjectile, TrimarangProjectile
+- GlobalItem (6): EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, ShroomerangGlobalItem, TrimarangGlobalItem
 - Mod (1): IsmailsWeaponReworks
 - ModSystem (1): DetachedTrails
 
@@ -25,7 +25,7 @@ tModLoader/other bases -> project types:
 ### Common/
 **BoomerangFlight.cs**
   static class BoomerangFlight
-    +StepReturn(Projectile,Player,float,float,float,float)[s] +StepForceReturn(Projectile,Player,float,float,float,float)[s]
+    +StepReturn(Projectile,Player,float,float,float,float)[s] +StepForceReturn(Projectile,Player,float,float,float,float)[s] +StepOutbound(Projectile,float,float,float,float)[s]
 **DetachedTrails.cs** uses: PixelTrail
   class DetachedTrails : ModSystem
     +Hand(PixelTrail)[s] +PostUpdateEverything()[ov] +PostDrawTiles()[ov] +OnWorldUnload()[ov] +Unload()[ov]
@@ -145,6 +145,28 @@ tModLoader/other bases -> project types:
 **IceCrystalProjectile.cs** uses: IceBoomerangChill, IceBoomerangFx, IceBoomerangTuning
   class IceCrystalProjectile : ModProjectile
     +Texture:string[ov] +Load()[ov] +Unload()[ov] +RandomFrame()[s] +RegisterBounce(Projectile)[s] +EvictForNewCrystal(int)[s] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+
+### Content/Weapons/Shroomerang/
+**ShroomerangBurstProjectile.cs** uses: IceFx, RemoteHitTracker, ShroomerangFx, ShroomerangTuning
+  class ShroomerangBurstProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**ShroomerangFx.cs**
+  static class ShroomerangFx
+    +FlightDust(Vector2,Vector2)[s] +SporePuff(Vector2,int,float,float)[s] +HitSparks(Vector2)[s] +SporeRing(Vector2,int,float,float)[s] +SporeCloud(Vector2,float,int)[s] +Trail(Vector2,Vector2,float)[s] +Catch(Vector2)[s] +PlayPop(Vector2)[s] +PlayBurst(Vector2)[s]
+**ShroomerangGlobalItem.cs** uses: ShroomerangProjectile, ShroomerangTuning
+  class ShroomerangGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**ShroomerangMushroomProjectile.cs** uses: ShroomerangBurstProjectile, ShroomerangFx, ShroomerangTuning
+  class ShroomerangMushroomProjectile : ModProjectile
+    +Texture:string[ov] +EvictForNewMushroom(int)[s] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**ShroomerangProjectile.cs** uses: BoomerangFlight, RemoteHitTracker, ShroomerangFx, ShroomerangMushroomProjectile, ShroomerangTuning
+  class ShroomerangProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Outbound, Returning}
+**ShroomerangTuning.cs**
+  static class ShroomerangTuning
+    +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +SpinSpeed:float[s] +FirstSpawnDelayTicks:int[s] +SpawnIntervalTicks:int[s] +MaxMushrooms:int[s] +MushroomLifeTicks:int[s] +PopTicks:int[s] +WarnTicks:int[s] +InheritVelocity:float[s] +ScatterSpeed:float[s] +Drag:float[s] +MushroomSpinSpeed:float[s] +ArmTicks:int[s] +TriggerPadding:float[s] +TriggerCheckInterval:int[s] +BurstRadius:float[s] +BurstDamageMultiplier:float[s] +BurstLifeTicks:int[s] +GlowColor:Color[s] +PixelSize:float[s]
 
 ### Content/Weapons/Trimarang/
 **TrimarangEtherealProjectile.cs** uses: BoomerangFlight, RemoteHitTracker, TrimarangFx, TrimarangTuning
