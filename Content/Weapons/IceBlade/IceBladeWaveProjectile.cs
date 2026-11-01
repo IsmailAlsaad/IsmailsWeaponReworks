@@ -134,13 +134,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         public override void OnKill(int timeLeft)
         {
-            IceBladeFx.PlayWaveShatter(Projectile.Center);
-            if (Main.dedServ)
-                return;
-            float radius = CurrentRadius;
-            float half = MathHelper.ToRadians(IceBladeTuning.WaveArcHalfDeg);
-            for (int i = 0; i < 6; i++)
-                IceFx.Burst(ArcPoint(MathHelper.Lerp(-half, half, i / 5f), radius), 2 + Tier, 3f, 1.1f);
+
         }
 
         // ---- drawing ----
@@ -190,9 +184,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
             Vector2 center = Projectile.Center;
             float currentRadius = CurrentRadius;
-            DrawCrescent(center, angle, currentRadius, thickness * 2.4f, half, IceBladeTuning.HaloColor * (0.2f * fade));  // halo
-            DrawCrescent(center, angle, currentRadius, thickness * 1.35f, half, IceBladeTuning.MidColor * (0.5f * fade));
-            DrawCrescent(center, angle, currentRadius, thickness * 0.7f, half, IceBladeTuning.CoreColor * (0.95f * fade)); // hot core
+            DrawCrescent(center, angle, currentRadius, thickness * 1.4f, half, IceBladeTuning.HaloColor * (0.2f * fade));  // halo
+            DrawCrescent(center, angle, currentRadius, thickness * 1.2f, half, IceBladeTuning.MidColor * (0.5f * fade));
+            DrawCrescent(center, angle, currentRadius, thickness * 0.8f, half, IceBladeTuning.CoreColor * (0.95f * fade)); // hot core
             return false;
         }
     }

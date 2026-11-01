@@ -59,11 +59,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         Vector2 lastTipPosition;
         List<TrailSample> trail;
 
-        public override void SetStaticDefaults()
-        {
-            ProjectileID.Sets.AllowsContactDamageFromJellyfish[Type] = true;
-        }
-
         public override void SetDefaults()
         {
             Projectile.width = 40;
@@ -78,7 +73,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             Projectile.usesLocalNPCImmunity = true;
             Projectile.localNPCHitCooldown = -1; // every enemy once per swing
             Projectile.ownerHitCheck = true;
-            Projectile.drawLayer = ProjectileDrawLayerID.HeldProj;
             trail = new List<TrailSample>();
         }
 

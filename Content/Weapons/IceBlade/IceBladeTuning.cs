@@ -21,18 +21,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         }
 
         // ---- the freeze punishment (vanilla Frozen buff: roots the player and blocks every item) ----
-        public static int FreezeDebuffTicks => 180;
+        public static int FreezeDebuffTicks => 140;
         public static int FrozenAnimTicks => 14;      // how long the shaking, frosted blade is shown before it vanishes
 
         // ---- charge pose (angles are for a player facing right, 0 = forward, positive = down) ----
         public static float ArmStartDeg => 25f;
         public static float ArmEndDeg => -105f;       // fully lifted: up and a little behind the head
         public static int LiftTicks => 54;            // cubic ease-out, ends exactly on click 3
-        public static float BladeTiltDeg => 45f;      // the blade stays tilted this far forward from the arm
+        public static float BladeTiltDeg => -15f;      // the blade stays tilted this far forward from the arm
         public static float BladeLength => 58f;       // hand to tip, in pixels at scale 1
         public static float SwordScale => 1.15f;
-        public static int ShakeStartTicks => 56;      // the blade starts to tremble just before the freeze click
-        public static float ShakeDeg => 5f;
+        public static int ShakeStartTicks => 16;      // the blade starts to tremble just before the freeze click
+        public static float ShakeDeg => 3f;
         public static int ClickFlashTicks => 12;
 
         // ---- tap swing: a plain melee chop ----
@@ -49,7 +49,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         public static float SlashMaxAimDeg => 65f;    // the visual slash follows the cursor up to this angle
         public static int TrailLifeTicks => 26;
         public static int TrailMaxSamples => 80;
-        public static float TrailStartFraction => 0.45f; // the fan trail covers the outer part of the blade
+        public static float TrailStartFraction => 0.25f; // the fan trail covers the outer part of the blade
         public static float TrailThickness(int tier) { return Pick(tier, 3f, 5f, 8f); }
 
         // ---- the wave (tier 1, 2, 3) ----

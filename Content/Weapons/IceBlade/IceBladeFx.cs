@@ -118,8 +118,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             for (int i = 0; i < count; i++)
             {
                 Vector2 spot = Vector2.Lerp(from, to, Main.rand.NextFloat());
-                int dustType = Main.rand.NextBool(3) ? DustID.IceTorch : DustID.Ice;
-                Dust dust = Dust.NewDustPerfect(spot, dustType, Main.rand.NextVector2Circular(1f + 0.6f * tier, 1f + 0.6f * tier), 100, default, 1.2f + 0.2f * tier);
+                Dust dust = Dust.NewDustPerfect(spot, DustID.IceTorch, Main.rand.NextVector2Circular(1f + 0.6f * tier, 1f + 0.6f * tier), 100, default, 1.2f + 0.2f * tier);
                 dust.noGravity = true;
             }
         }
@@ -137,7 +136,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         {
             if (Main.dedServ)
                 return;
-            Dust dust = Dust.NewDustPerfect(position, DustID.Ice, velocity, 150, default, scale);
+
+            Dust dust = Dust.NewDustPerfect(position, DustID.IceTorch, velocity, 150, default, scale);
             dust.noGravity = true;
         }
 
