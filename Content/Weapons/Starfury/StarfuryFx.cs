@@ -161,12 +161,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             for (int ring = 0; ring < 3; ring++)
             {
                 for (int i = 0; i < 24; i++)
-                    SparkGen(position, (MathHelper.TwoPi * i / 24f).ToRotationVector2() * (4f + 4f * ring), 1.8f - 0.2f * ring, StarfuryTuning.MaxBats);
+                    SparkGen(position, (MathHelper.TwoPi * i / 24f).ToRotationVector2() * (4f + 4f * ring), 2.8f - 0.4f * ring, StarfuryTuning.MaxBats);
             }
             for (int i = 0; i < 30; i++)
-                SparkGen(position, Main.rand.NextVector2Circular(14f, 14f), 1.6f, StarfuryTuning.MaxBats);
+                SparkGen(position, Main.rand.NextVector2Circular(14f, 14f), 3.6f, StarfuryTuning.MaxBats);
             for (int i = 0; i < 16; i++)
-                SparkGen(position, Main.rand.NextVector2Circular(9f, 9f), 1.4f, 0);
+                SparkGen(position, Main.rand.NextVector2Circular(9f, 9f), 1.8f, 0);
         }
 
         public static void PlayBlast(Vector2 position)

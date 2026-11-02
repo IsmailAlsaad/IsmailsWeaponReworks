@@ -38,7 +38,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static float SpawnSideOffset => 140f;  // the star starts this far sideways of the target, on the side the player does NOT face
         public static float SpawnAboveScreen => 120f; // and this far above the top of the screen ...
         public static float MinFallDistance => 500f;  // ... or at least this far above the target
-        public static float CalledStarSpeed => 20f;
+        public static float CalledStarSpeed => 10f;
         public static float CalledStarDamageMultiplier => 0.35f; // deliberately unimpressive on its own
         public static float CalledStarKnockbackMultiplier => 0.5f;
         public static int StarLifeTicks => 300;
@@ -59,8 +59,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static int LaunchLifeTicks => 90;
 
         // ---- bounce: a launched star that hits an enemy flies off upward and falls in a parabola again ----
-        public static float BounceSpeed => 9f;
-        public static float BounceSpreadDeg => 45f;   // random angle either side of straight up
+        public static float BounceSpeed => 10f;
+        public static float BounceSpreadDeg => 15f;   // random angle either side of straight up
         public static float Gravity => 0.32f;
         public static float MaxFallSpeed => 14f;
         public static int BounceImmunityTicks => 20;  // a star cannot hit the same enemy again for this long
@@ -71,7 +71,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static int BlastTicks => 8;                     // how long the explosion can hurt
         public static float BlastDamageMultiplier => 2.5f;     // times the weapon's damage, on top of the star's own hit
         public static float BlastKnockbackMultiplier => 2f;
-        public static float BlastShake => 9f;                  // camera shake strength (pixels)
+        public static float BlastShake => 5f;                  // camera shake strength (pixels)
 
         // ---- melee: a swing that hits an enemy pops one falling star out of the impact point ----
         public static int MeleeStarsPerSwing => 1;             // so a swing through a crowd does not flood the screen
