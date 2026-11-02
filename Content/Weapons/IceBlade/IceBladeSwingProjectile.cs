@@ -340,11 +340,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         void AddTrailSample(float time, int tier)
         {
+            time -= 1f;
             float arm = SwingArmAt(time);
             float tilt = SwingTiltAt(time);
             Vector2 hand = ComputeHand(arm);
             Vector2 direction = BladeDirection(arm, tilt);
-            float length = IceBladeTuning.BladeLength * Projectile.scale;
+            float length = IceBladeTuning.BladeLength * Projectile.scale * 0.8f;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
             float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / IceBladeTuning.TrailExpandBy, 0f, 1f));
             float inner = MathHelper.Lerp(1f, IceBladeTuning.TrailInnerFraction(tier), expand);
