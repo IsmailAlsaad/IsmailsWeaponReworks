@@ -74,25 +74,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         float ToWorld(float localRadians)
         {
-            return Facing == 1 ? localRadians : MathHelper.Pi - localRadians;
+            return HeldSwordPose.ToWorld(Facing, localRadians);
         }
 
         Vector2 ComputeHand(float arm)
         {
-            Player owner = Owner;
-            Vector2 hand = owner.GetFrontHandPosition(Player.CompositeArmStretchAmount.Full, ToWorld(arm) - MathHelper.PiOver2);
-            if (owner.gravDir == -1f)
-                hand.Y = owner.Bottom.Y + (owner.position.Y - hand.Y);
-            hand.Y += owner.gfxOffY;
-            return hand;
+            return HeldSwordPose.Hand(Owner, Facing, arm);
         }
 
         Vector2 BladeDirection(float arm, float tilt)
         {
-            float angle = ToWorld(arm + tilt);
-            if (Owner.gravDir == -1f)
-                angle = -angle;
-            return angle.ToRotationVector2();
+            return HeldSwordPose.BladeDirection(Owner, Facing, arm, tilt);
         }
 
         static int ChargeTier(int t)
@@ -439,21 +431,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
                 return false;
 
             Texture2D texture = TextureAssets.Projectile[Type].Value;
-            Vector2 origin;
-            float rotationOffset;
-            SpriteEffects effects;
-            if (Projectile.spriteDirection > 0)
-            {
-                origin = new Vector2(0f, texture.Height); // the hilt is the bottom-left corner of the sprite
-                rotationOffset = MathHelper.ToRadians(45f);
-                effects = SpriteEffects.None;
-            }
-            else
-            {
-                origin = new Vector2(texture.Width, texture.Height);
-                rotationOffset = MathHelper.ToRadians(135f);
-                effects = SpriteEffects.FlipHorizontally;
-            }
+            HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
 
             Vector2 position = Projectile.Center - Main.screenPosition;
             float rotation = Projectile.rotation + rotationOffset;

@@ -1,4 +1,6 @@
 Projectiles: {
+	StarfurySwingProjectile.DisplayName: Starfury Swing Projectile
+	StarfuryStarProjectile.DisplayName: Starfury Star Projectile
 	SunfuryFlailProjectile.DisplayName: Sunfury Flail Projectile
 	SunfuryBlastProjectile.DisplayName: Sunfury Blast Projectile
 	FlamerangProjectile.DisplayName: Flamerang Projectile
@@ -22,4 +24,5 @@ Projectiles: {
 	ShroomerangProjectile.DisplayName: Shroomerang Projectile
 	ShroomerangMushroomProjectile.DisplayName: Shroomerang Mushroom Projectile
 	ShroomerangBurstProjectile.DisplayName: Shroomerang Burst Projectile
+	StarfuryBlastProjectile.DisplayName: Starfury Blast Projectile
 }
