@@ -45,9 +45,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         // ---- release swing: the same swing as the tap above; these only add the wave timing and the trail ----
         public static int SlashWaveTick => 6;         // tick of the swing, counted from the release, on which the wave leaves the blade
         public static int TrailLifeTicks => 26;
-        public static int TrailMaxSamples => 80;
-        public static float TrailInnerAtSwingStart => 0.85f; // the trail starts short: only the outer 15% of the blade at the start of the swing...
-        public static float TrailInnerAtSwingEnd => 0f;      // ...and grows to the full blade length (0 = from the hand) at the end of it
         public static float WaveSpawnFraction => 0.5f;       // the wave starts this fraction of the blade's reach out from the player, along the aim
         public static float TrailOpacity(int tier) { return Pick(tier, 0.3f, 0.55f, 0.9f); } // lower tiers leave a fainter trail
         public static float TrailThickness(int tier) { return Pick(tier, 3f, 5f, 8f); }
@@ -65,7 +62,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         // ---- pixel look ----
         public static float PixelSize => 2f;
-        public static int AfterimageCount => 7;       // at most 7 (the projectile's trail cache holds 8)
+        public static int AfterimageCount => 7;       // how many ticks each crescent afterimage lives
         public static Color HaloColor => new Color(60, 140, 255, 0);
         public static Color MidColor => new Color(110, 200, 255, 0);
         public static Color CoreColor => new Color(235, 250, 255, 0);

@@ -12,13 +12,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
 {
     /// <summary>
     /// The ethereal form the Trimarang sheds on every Nth hit: a see-through copy that spins as fast as the main boomerang did. It is
-    /// shot outward as an impulse (no homing at all) and a pull toward the player (BoomerangFlight.StepForceReturn) bends that into one
-    /// smooth arc back; it never hits (or damages) the enemy that triggered it, passes through tiles and pierces. After 8 hits, or when
-    /// it reaches the player, it explodes, which is only a visual.
-    /// ai[0] = the enemy it must never hit (NPC index), ai[1] = -1 alive / -2 dying, ai[2] = spin speed in radians per tick;
-    /// localAI[0] = age. MULTIPLAYER: spawned by the owner's client (so it is synced like any projectile, launch velocity included); the
-    /// owner counts the hits and decides the end (8 hits, reaching the player, the safety limit) and syncs "dying" through ai[1] and
-    /// netUpdate. Every machine flies the same force-based arc and plays the explosion when it sees "dying", so no kill packet is needed.
+    /// shot outward as an impulse, flies straight out for a moment, then homes on the nearest enemy that is NOT the one that triggered
+    /// it (it never targets or damages that one). If no other enemy is near it falls back to an arc: a pull toward the player
+    /// (BoomerangFlight.StepForceReturn) bends the impulse into one smooth curve back, and reaching the player ends it. It passes
+    /// through tiles and pierces. After 3 hits, or at the end of the arc, it explodes, which is only a visual.
+    /// ai[0] = the enemy it must never hit (NPC index), ai[1] = target NPC index (-1 none, -2 dying), ai[2] = spin speed in radians per
+    /// tick; localAI[0] = age. MULTIPLAYER: spawned by the owner's client (so it is synced like any projectile, with the launch velocity
+    /// and the first target in the spawn); the owner re-picks targets, counts the hits and decides the end, and syncs target and "dying"
+    /// through ai[1] and netUpdate. Every machine steers toward the synced target (or flies the same arc) and plays the explosion when
+    /// it sees "dying", so no kill packet is needed.
     /// </summary>
     public class TrimarangEtherealProjectile : ModProjectile
     {
@@ -33,6 +35,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
         bool exploded;             // every machine plays the explosion once
         int dyingTicks;
         RemoteHitTracker hitTracker; // other machines only
+        AfterimageTrail afterimages; // visual only, never synced
 
         public override void Load()
         {
@@ -116,11 +119,70 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
                 return;
             }
 
-            // No homing: the launch impulse (the velocity it was spawned with) is bent into an arc by the pull toward the player.
-            // Reaching the player ends it with the same harmless explosion as the 8th hit (the owner decides, everyone else sees "dying").
+            // Owner only: keep the target while it is valid, otherwise look for another one every few ticks.
+            if (isOwner && (Age == 1f || Age % TrimarangTuning.EtherealRetargetTicks == 0f))
+                ChooseTarget();
+
+            int target = (int)Projectile.ai[1];
+            if (target >= 0 && target < Main.maxNPCs && Main.npc[target].active)
+            {
+                if (Age >= TrimarangTuning.EtherealLaunchTicks) // flies straight out first, then homes
+                {
+                    Vector2 desired = Vector2.Normalize(Main.npc[target].Center - Projectile.Center) * TrimarangTuning.EtherealHomingSpeed;
+                    Projectile.velocity = Vector2.Lerp(Projectile.velocity, desired, TrimarangTuning.EtherealTurn);
+                }
+                return;
+            }
+
+            // No other enemy near: the launch impulse (the velocity it was spawned with) is bent into an arc by the pull toward the
+            // player. Reaching the player ends it with the same harmless explosion as the last hit (the owner decides, everyone else
+            // sees "dying").
             bool reached = BoomerangFlight.StepForceReturn(Projectile, owner, TrimarangTuning.EtherealReturnAcceleration, TrimarangTuning.EtherealReturnMaxSpeed, TrimarangTuning.EtherealReturnDrag, TrimarangTuning.CatchDistance);
             if (reached && isOwner)
                 BeginDying();
+        }
+
+        // Owner only: keep the current target while it is valid, otherwise look for the nearest other enemy.
+        void ChooseTarget()
+        {
+            int current = (int)Projectile.ai[1];
+            if (current >= 0 && current < Main.maxNPCs && Main.npc[current].active && Main.npc[current].CanBeChasedBy(Projectile))
+                return;
+            if (current >= 0)
+            {
+                Projectile.ai[1] = -1f;
+                Projectile.netUpdate = true;
+            }
+            if (Age % TrimarangTuning.EtherealRetargetTicks != 0f)
+                return;
+
+            int best = FindTarget(Projectile.Center, (int)Projectile.ai[0], Projectile);
+            if (best >= 0)
+            {
+                Projectile.ai[1] = best;
+                Projectile.netUpdate = true;
+            }
+        }
+
+        // The nearest enemy within the search range that is not 'excluded' (the one that triggered the ghost), or -1. The main
+        // Trimarang uses it too, to give every new ghost its first target in the spawn itself.
+        public static int FindTarget(Vector2 from, int excluded, Projectile projectile)
+        {
+            int best = -1;
+            float bestDistance = TrimarangTuning.EtherealSearchRange * TrimarangTuning.EtherealSearchRange;
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC npc = Main.npc[i];
+                if (i == excluded || !npc.CanBeChasedBy(projectile))
+                    continue;
+                float distance = Vector2.DistanceSquared(from, npc.Center);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    best = i;
+                }
+            }
+            return best;
         }
 
         // ---- hits ----
@@ -155,6 +217,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
                 BeginDying();
         }
 
+        // One afterimage per tick (visual only, never synced). Each carries its own lifetime: OnKill hands the trail to DetachedTrails,
+        // so when this projectile dies the leftover afterimages fade out on their own instead of vanishing with it.
+        public override void PostAI()
+        {
+            if (Main.dedServ || !Projectile.active)
+                return;
+            afterimages ??= AfterimageTrail.Sprite(art?.Value ?? TextureAssets.Projectile[Type].Value, 8, 0.7f);
+            afterimages.Tick();
+            if (!Dying)
+                afterimages.Add(Projectile.Center, Projectile.rotation, 1f, TrimarangTuning.EtherealColor * 0.5f);
+        }
+
+        public override void OnKill(int timeLeft)
+        {
+            DetachedTrails.Hand(afterimages);
+            afterimages = null;
+        }
+
         // ---- drawing ----
 
         public override bool PreDraw(ref Color lightColor)
@@ -164,15 +244,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
             Color glow = TrimarangTuning.EtherealColor;
             float opacity = Dying ? 0.3f : 1f;
 
-            int length = ProjectileID.Sets.TrailCacheLength[Type];
-            for (int i = length - 1; i >= 1; i--)
-            {
-                Vector2 old = Projectile.oldPos[i];
-                if (old == Vector2.Zero)
-                    continue;
-                float fade = 1f - i / (float)length;
-                Main.EntitySpriteDraw(texture, old + Projectile.Size * 0.5f - Main.screenPosition, null, glow * (0.5f * fade * opacity), Projectile.oldRot[i], origin, 0.7f + 0.3f * fade, SpriteEffects.None, 0);
-            }
+            afterimages?.Draw();
 
             Vector2 position = Projectile.Center - Main.screenPosition;
             Main.EntitySpriteDraw(texture, position, null, glow * (0.45f * opacity), Projectile.rotation, origin, 1.3f, SpriteEffects.None, 0); // halo

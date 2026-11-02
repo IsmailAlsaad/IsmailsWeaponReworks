@@ -28,14 +28,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         enum Phase { Charge = 0, Slash = 1, Tap = 2, Frozen = 3 }
 
-        struct TrailSample
-        {
-            public Vector2 Inner;
-            public Vector2 Tip;
-            public int Born;
-            public int Tier;
-        }
-
         Phase CurrentPhase => (Phase)(int)Projectile.ai[0];
         int ReleasedTier => (int)Projectile.ai[1];
         float AimAngle => Projectile.ai[2];
@@ -55,7 +47,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         float lastChargeArm;
         Vector2 tipPosition;
         Vector2 lastTipPosition;
-        List<TrailSample> trail;
+        PixelTrail trail;      // the freezing trail along the blade tip (null until a charged release swings)
 
         public override void SetDefaults()
         {
@@ -71,7 +63,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             Projectile.usesLocalNPCImmunity = true;
             Projectile.localNPCHitCooldown = -1; // every enemy once per swing
             Projectile.ownerHitCheck = true;
-            trail = new List<TrailSample>();
         }
 
         // ---- helpers ----
@@ -136,7 +127,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         public override void AI()
         {
-            trail ??= new List<TrailSample>();
             Player owner = Owner;
             ticks++;
             Phase phase = CurrentPhase;
@@ -180,7 +170,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
                 return;
 
             flash = Math.Max(0f, flash - 1f / Math.Max(1, IceBladeTuning.ClickFlashTicks));
-            trail.RemoveAll(sample => ticks - sample.Born > IceBladeTuning.TrailLifeTicks);
+            trail?.Tick();
 
             if (holding)
             {
@@ -197,7 +187,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             switch (phase)
             {
                 case Phase.Slash:
-                    trail.Clear();
+                    trail = null;
                     break;
                 case Phase.Frozen:
                     IceBladeFx.FreezeShatter(Projectile.Center);
@@ -330,7 +320,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
                 if (released && timer >= windup && timer < windup + swing)
                 {
-                    // Three samples per tick, so the fan trail is a smooth arc instead of a few straight streaks.
+                    // Three points per tick, so the pixel line follows a smooth arc instead of a few straight segments.
                     for (int k = 0; k < 3; k++)
                         AddTrailSample(timer + k / 3f, tier);
                     IceBladeFx.SlashDust(lastTipPosition, tipPosition, tier);
@@ -363,9 +353,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             Vector2 hand = ComputeHand(arm);
             Vector2 direction = BladeDirection(arm, tilt);
             float length = IceBladeTuning.BladeLength * Projectile.scale;
-            trail.Add(new TrailSample { Inner = hand + direction * length * MathHelper.Lerp(IceBladeTuning.TrailInnerAtSwingStart, IceBladeTuning.TrailInnerAtSwingEnd, SwingProgress(time)), Tip = hand + direction * length, Born = ticks, Tier = tier });
-            if (trail.Count > IceBladeTuning.TrailMaxSamples)
-                trail.RemoveAt(0);
+            trail ??= new PixelTrail(new IceBladeTrailStyle(tier), IsOwner);
+            trail.Add(hand + direction * length); // the blade's edge: the tip
         }
 
         // Where the wave starts: in front of the player, in the middle of the area the blade sweeps (a fraction of the blade's reach along the aim).
@@ -434,6 +423,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             IceFx.Burst(target.Center, 6, 3f, 1f);
         }
 
+        // The trail outlives the swing and keeps fading on its own (DetachedTrails).
+        public override void OnKill(int timeLeft)
+        {
+            DetachedTrails.Hand(trail);
+            trail = null;
+        }
+
         // ---- drawing ----
 
         public override bool PreDraw(ref Color lightColor)
@@ -477,36 +473,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             return false;
         }
 
-        // The freezing fan behind the blade: short bright streaks from the middle of the blade to the tip, one per sample, fading
-        // with age (and fainter for lower tiers). Pixel squares with an additive color (alpha 0), like the wave.
+        // The freezing trail behind the blade tip: a PixelTrail (Common/PixelTrail.cs), drawn by the shared pixel line renderer.
         void DrawTrail()
         {
-            if (trail == null || trail.Count == 0)
-                return;
-            float grid = IceBladeTuning.PixelSize;
-            float life = Math.Max(1, IceBladeTuning.TrailLifeTicks);
-            for (int i = 0; i < trail.Count; i++)
-            {
-                TrailSample sample = trail[i];
-                float u = (ticks - sample.Born) / life;
-                if (u >= 1f)
-                    continue;
-                float fade = (1f - u) * (1f - u) * IceBladeTuning.TrailOpacity(sample.Tier);
-                float width = IceBladeTuning.TrailThickness(sample.Tier) * (1f - 0.5f * u);
-                Vector2 delta = sample.Tip - sample.Inner;
-                float length = delta.Length();
-                if (length < 1f)
-                    continue;
-                int steps = Math.Max(1, (int)(length / Math.Max(grid, width * 0.5f)));
-                for (int k = 0; k <= steps; k++)
-                {
-                    float f = k / (float)steps;
-                    Vector2 spot = Vector2.Lerp(sample.Inner, sample.Tip, f);
-                    float taper = 0.3f + 0.7f * f;
-                    IceFx.DrawPixel(spot, width * 1.8f * taper, IceBladeTuning.MidColor * (0.22f * fade * f), grid);
-                    IceFx.DrawPixel(spot, width * 0.8f * taper, IceBladeTuning.CoreColor * (0.55f * fade * f), grid);
-                }
-            }
+            trail?.Draw();
         }
     }
 }

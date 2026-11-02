@@ -44,13 +44,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
         public static int HitsPerEthereal => 10;            // every 10th hit of the main boomerang
         public static float EtherealDamageMultiplier => 0.7f;
         public static int EtherealMaxAlive => 8;           // the oldest fizzles when a new one would be the 9th
-        public static int EtherealHitsToExplode => 8;
-        public static float EtherealLaunchSpeed => 11f;    // the impulse it is shot out with (no homing: the return pull bends it into an arc)
-        public static float EtherealReturnAcceleration => 1f; // pull toward the player per tick (BoomerangFlight.StepForceReturn)
+        public static int EtherealHitsToExplode => 3;
+        public static float EtherealLaunchSpeed => 11f;    // the impulse it is shot out with
+        public static int EtherealLaunchTicks => 10;       // with a target it flies straight out this long before it starts to home
+        public static float EtherealHomingSpeed => 15f;
+        public static float EtherealTurn => 0.18f;         // how sharply it steers (0 to 1 per tick)
+        public static float EtherealSearchRange => 30f * 16f; // "nearby": a target must be this close to the ghost
+        public static int EtherealRetargetTicks => 10;
+        // No other enemy near: the impulse is bent into an arc back to the player (BoomerangFlight.StepForceReturn).
+        public static float EtherealReturnAcceleration => 1f;
         public static float EtherealReturnDrag => 0.95f;   // keep below 1 or it orbits the player forever
         public static float EtherealReturnMaxSpeed => 18f;
         public static int EtherealHitCooldownTicks => 10;
-        public static int EtherealLifeTicks => 360;        // safety net: it fizzles out if it has not reached the player by then
+        public static int EtherealLifeTicks => 360;        // safety net: it fizzles out if it has not finished by then
         public static float GoldenAngleDeg => 137.5f;      // consecutive ethereal forms fan out around the main boomerang
 
         // ---- look ----

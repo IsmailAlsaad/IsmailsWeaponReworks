@@ -31,6 +31,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
         int ticks;
         PixelTrail trail;
         RemoteHitTracker hitTracker; // other machines only
+        AfterimageTrail afterimages; // visual only, never synced
 
         public override void Load()
         {
@@ -122,6 +123,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
         {
             DetachedTrails.Hand(trail);
             trail = null;
+            DetachedTrails.Hand(afterimages);
+            afterimages = null;
         }
 
         void RemoteHitSparks()
@@ -138,6 +141,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             FlamerangBurn.Apply(target);
         }
 
+        // One afterimage per tick (visual only, never synced). Each carries its own lifetime: OnKill hands the trail to DetachedTrails,
+        // so when this projectile dies the leftover afterimages fade out on their own instead of vanishing with it.
+        public override void PostAI()
+        {
+            if (Main.dedServ || !Projectile.active)
+                return;
+            afterimages ??= AfterimageTrail.Sprite(art?.Value ?? TextureAssets.Projectile[Type].Value, 8, 0.7f);
+            afterimages.Tick();
+            afterimages.Add(Projectile.Center, Projectile.rotation, 1f, FlamerangTuning.FireColor * 0.6f);
+        }
+
         // ---- drawing ----
 
         public override bool PreDraw(ref Color lightColor)
@@ -148,15 +162,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             Vector2 origin = texture.Size() * 0.5f;
             Color glow = FlamerangTuning.FireColor;
 
-            int length = ProjectileID.Sets.TrailCacheLength[Type];
-            for (int i = length - 1; i >= 1; i--)
-            {
-                Vector2 old = Projectile.oldPos[i];
-                if (old == Vector2.Zero)
-                    continue;
-                float fade = 1f - i / (float)length;
-                Main.EntitySpriteDraw(texture, old + Projectile.Size * 0.5f - Main.screenPosition, null, glow * (0.6f * fade), Projectile.oldRot[i], origin, 0.7f + 0.3f * fade, SpriteEffects.None, 0);
-            }
+            afterimages?.Draw();
 
             Vector2 position = Projectile.Center - Main.screenPosition;
             Main.EntitySpriteDraw(texture, position, null, glow * 0.55f, Projectile.rotation, origin, 1.4f, SpriteEffects.None, 0); // molten halo

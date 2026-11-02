@@ -38,6 +38,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
         Vector2 flightDirection = Vector2.UnitX; // last flight direction, for the sideways arcs
         bool exploded;                           // owner only: the contact explosion already happened
         RemoteHitTracker hitTracker;             // other machines only
+        AfterimageTrail afterimages; // visual only, never synced
 
         public override void Load()
         {
@@ -261,10 +262,32 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             ExplodeOnContact(contact);
         }
 
+        // One afterimage per tick (visual only, never synced). Each carries its own lifetime: OnKill hands the trail to DetachedTrails,
+        // so when this projectile dies the leftover afterimages fade out on their own instead of vanishing with it.
+        public override void PostAI()
+        {
+            if (Main.dedServ || !Projectile.active)
+                return;
+            float settleT = CurrentPhase == Phase.Settling ? MathHelper.Clamp(Projectile.localAI[0] / FlamerangTuning.SettleTicks, 0f, 1f) : 0f;
+            float scale = MathHelper.Lerp(1f, 1.25f, settleT); // swells with heat before it bursts
+            Color glow = Color.Lerp(FlamerangTuning.FireColor, FlamerangTuning.HotColor, settleT);
+            afterimages ??= AfterimageTrail.Sprite(art?.Value ?? TextureAssets.Projectile[Type].Value, 10, 0.6f);
+            afterimages.Tick();
+            if (CurrentPhase != Phase.Spent)
+                afterimages.Add(Projectile.Center, Projectile.rotation, scale, glow * 0.55f);
+        }
+
+        public override void OnKill(int timeLeft)
+        {
+            DetachedTrails.Hand(afterimages);
+            afterimages = null;
+        }
+
         // ---- drawing ----
 
         public override bool PreDraw(ref Color lightColor)
         {
+            afterimages?.Draw(); // also while spent: they fade out on their own
             if (CurrentPhase == Phase.Spent)
                 return false;
             Texture2D texture = art?.Value ?? TextureAssets.Projectile[Type].Value;
@@ -272,16 +295,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             float settleT = CurrentPhase == Phase.Settling ? MathHelper.Clamp(Projectile.localAI[0] / FlamerangTuning.SettleTicks, 0f, 1f) : 0f;
             float scale = MathHelper.Lerp(1f, 1.25f, settleT); // swells with heat before it bursts
             Color glow = Color.Lerp(FlamerangTuning.FireColor, FlamerangTuning.HotColor, settleT);
-
-            int length = ProjectileID.Sets.TrailCacheLength[Type];
-            for (int i = length - 1; i >= 1; i--)
-            {
-                Vector2 old = Projectile.oldPos[i];
-                if (old == Vector2.Zero)
-                    continue;
-                float fade = 1f - i / (float)length;
-                Main.EntitySpriteDraw(texture, old + Projectile.Size * 0.5f - Main.screenPosition, null, glow * (0.55f * fade), Projectile.oldRot[i], origin, scale * (0.6f + 0.4f * fade), SpriteEffects.None, 0);
-            }
 
             Vector2 position = Projectile.Center - Main.screenPosition;
             Main.EntitySpriteDraw(texture, position, null, glow * 0.5f, Projectile.rotation, origin, scale * 1.3f, SpriteEffects.None, 0);

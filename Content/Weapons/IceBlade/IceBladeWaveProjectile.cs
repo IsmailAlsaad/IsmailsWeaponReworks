@@ -33,6 +33,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         float CurrentRadius => IceBladeTuning.WaveRadius(Tier) * ScaleAt(Age);
         float CurrentThickness => IceBladeTuning.WaveThickness(Tier) * Math.Min(1f, (Age + 1f) / 4f) * (0.4f + 0.6f * Fade);
 
+        AfterimageTrail afterimages; // visual only, never synced
+
         public override void SetStaticDefaults()
         {
             ProjectileID.Sets.TrailCacheLength[Type] = 8;
@@ -128,16 +130,35 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             target.AddBuff(BuffID.Frostburn, IceBladeTuning.FreezeDebuffTicks);
         }
 
+        // One crescent afterimage per tick (visual only): where the wave is and how big and thick it is right now. Each carries its own
+        // lifetime, and OnKill hands the trail to DetachedTrails, so the leftover ones fade out on their own when the wave dies.
+        public override void PostAI()
+        {
+            if (Main.dedServ || !Projectile.active)
+                return;
+            afterimages ??= new AfterimageTrail(IceBladeTuning.AfterimageCount, PaintAfterimage);
+            afterimages.Tick();
+            afterimages.Add(Projectile.Center, Projectile.rotation, CurrentRadius, IceBladeTuning.MidColor * Fade, CurrentThickness);
+        }
+
+        // Older copies of the crescent, smaller and dimmer with age.
+        static void PaintAfterimage(Afterimage image, float age)
+        {
+            float f = 1f - age;
+            DrawCrescent(image.Position, image.Rotation, image.Scale, image.Width * (0.5f + 0.5f * f), MathHelper.ToRadians(IceBladeTuning.WaveArcHalfDeg), image.Color * (0.32f * f * f));
+        }
+
         public override void OnKill(int timeLeft)
         {
-
+            DetachedTrails.Hand(afterimages);
+            afterimages = null;
         }
 
         // ---- drawing ----
 
         // One crescent made of pixel squares: the line follows the circle, the squares are thickest in the middle and shrink to a
         // single pixel at both tips. Each square sits on the pixel grid, so the shape looks like pixel art and crawls as it moves.
-        void DrawCrescent(Vector2 center, float angle, float radius, float thickness, float half, Color color)
+        static void DrawCrescent(Vector2 center, float angle, float radius, float thickness, float half, Color color)
         {
             float grid = IceBladeTuning.PixelSize;
             Vector2 origin = center - angle.ToRotationVector2() * radius;
@@ -158,25 +179,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         public override bool PreDraw(ref Color lightColor)
         {
+            afterimages?.Draw();
             float fade = Fade;
             if (fade <= 0.01f)
                 return false;
             float half = MathHelper.ToRadians(IceBladeTuning.WaveArcHalfDeg);
-            float baseRadius = IceBladeTuning.WaveRadius(Tier);
             float thickness = CurrentThickness;
             float angle = Projectile.rotation;
-
-            // Afterimages: older copies of the crescent, smaller and dimmer.
-            int count = Math.Min(IceBladeTuning.AfterimageCount, 7);
-            for (int i = count; i >= 1; i--)
-            {
-                Vector2 old = Projectile.oldPos[i];
-                if (old == Vector2.Zero)
-                    continue;
-                float f = 1f - i / (float)(count + 1);
-                float radius = baseRadius * ScaleAt(Math.Max(0f, Age - i));
-                DrawCrescent(old + Projectile.Size * 0.5f, angle, radius, thickness * (0.5f + 0.5f * f), half, IceBladeTuning.MidColor * (0.32f * f * f * fade));
-            }
 
             Vector2 center = Projectile.Center;
             float currentRadius = CurrentRadius;

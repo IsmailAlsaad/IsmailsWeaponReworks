@@ -42,6 +42,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
         int etherealsSpawned;      // owner only: fans the ethereal forms out around the boomerang
         Vector2 lastSyncedVelocity;  // owner only: the velocity the last steering sync carried
         RemoteHitTracker hitTracker; // other machines only
+        AfterimageTrail afterimages; // visual only, never synced
 
         public override void Load()
         {
@@ -241,7 +242,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
                 SpawnEthereal(target);
         }
 
-        // The ethereal form never touches the enemy that triggered it (ai[0]); ai[1] = -1 alive, -2 dying; ai[2] = spin speed.
+        // The ethereal form never touches the enemy that triggered it (ai[0]); ai[1] = target NPC (-1 none, -2 dying); ai[2] = spin speed.
         void SpawnEthereal(NPC trigger)
         {
             int type = ModContent.ProjectileType<TrimarangEtherealProjectile>();
@@ -262,8 +263,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
 
             float angle = MathHelper.ToRadians(TrimarangTuning.GoldenAngleDeg) * etherealsSpawned++;
             Vector2 direction = angle.ToRotationVector2();
+            int firstTarget = TrimarangEtherealProjectile.FindTarget(Projectile.Center, trigger.whoAmI, Projectile); // -1: it arcs back to the player
             int damage = Math.Max(1, (int)(Projectile.damage * TrimarangTuning.EtherealDamageMultiplier));
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, direction * TrimarangTuning.EtherealLaunchSpeed, type, damage, Projectile.knockBack, Projectile.owner, trigger.whoAmI, -1f, SpinSpeed);
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, direction * TrimarangTuning.EtherealLaunchSpeed, type, damage, Projectile.knockBack, Projectile.owner, trigger.whoAmI, firstTarget, SpinSpeed);
         }
 
         // Swept circle: the whole path it moved along this tick, widened by the blade radius.
@@ -271,6 +273,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
         {
             float radius = TrimarangTuning.HitRadius;
             return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft() - new Vector2(radius), targetHitbox.Size() + new Vector2(radius * 2f), sweepStart, Projectile.Center);
+        }
+
+        // One afterimage per tick (visual only, never synced). Each carries its own lifetime: OnKill hands the trail to DetachedTrails,
+        // so when this projectile dies the leftover afterimages fade out on their own instead of vanishing with it.
+        public override void PostAI()
+        {
+            if (Main.dedServ || !Projectile.active)
+                return;
+            afterimages ??= AfterimageTrail.Sprite(art?.Value ?? TextureAssets.Projectile[Type].Value, 8, 0.8f);
+            afterimages.Tick();
+            afterimages.Add(Projectile.Center, Projectile.rotation, 1f, TrimarangTuning.MainColor * 0.4f);
+        }
+
+        public override void OnKill(int timeLeft)
+        {
+            DetachedTrails.Hand(afterimages);
+            afterimages = null;
         }
 
         // ---- drawing ----
@@ -282,15 +301,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trimarang
             Color glow = TrimarangTuning.MainColor;
             float spinT = SpinT;
 
-            int length = ProjectileID.Sets.TrailCacheLength[Type];
-            for (int i = length - 1; i >= 1; i--)
-            {
-                Vector2 old = Projectile.oldPos[i];
-                if (old == Vector2.Zero)
-                    continue;
-                float fade = 1f - i / (float)length;
-                Main.EntitySpriteDraw(texture, old + Projectile.Size * 0.5f - Main.screenPosition, null, glow * (0.4f * fade), Projectile.oldRot[i], origin, 0.8f + 0.2f * fade, SpriteEffects.None, 0);
-            }
+            afterimages?.Draw();
 
             Vector2 position = Projectile.Center - Main.screenPosition;
             // Motion blur: ghost copies a little behind in the spin, stronger the faster it goes.

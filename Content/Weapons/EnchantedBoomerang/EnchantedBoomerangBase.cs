@@ -41,6 +41,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
         int phaseTimer;
         bool bounced;             // owner only: this one already bounced once in this throw
         RemoteHitTracker hitTracker; // other machines only
+        AfterimageTrail afterimages; // visual only, never synced
 
         public override void Load()
         {
@@ -250,6 +251,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
             return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft() - half, targetHitbox.Size() + Projectile.Size, sweepStart, Projectile.Center);
         }
 
+        // One afterimage per tick (visual only, never synced). Each carries its own lifetime: OnKill hands the trail to DetachedTrails,
+        // so when this projectile dies the leftover afterimages fade out on their own instead of vanishing with it.
+        public override void PostAI()
+        {
+            if (Main.dedServ || !Projectile.active)
+                return;
+            Color glow = Ethereal ? EnchantedBoomerangTuning.EtherealColor : EnchantedBoomerangTuning.NormalColor;
+            afterimages ??= AfterimageTrail.Sprite((Ethereal ? etherealArt : normalArt)?.Value ?? TextureAssets.Projectile[Type].Value, 10, 0.7f);
+            afterimages.Tick();
+            afterimages.Add(Projectile.Center, Projectile.rotation, 1f, glow * 0.5f);
+        }
+
+        public override void OnKill(int timeLeft)
+        {
+            DetachedTrails.Hand(afterimages);
+            afterimages = null;
+        }
+
         // ---- drawing ----
 
         public override bool PreDraw(ref Color lightColor)
@@ -258,16 +277,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
             Vector2 origin = texture.Size() * 0.5f;
             Color glow = Ethereal ? EnchantedBoomerangTuning.EtherealColor : EnchantedBoomerangTuning.NormalColor;
 
-            // Afterimages.
-            int length = ProjectileID.Sets.TrailCacheLength[Type];
-            for (int i = length - 1; i >= 1; i--)
-            {
-                Vector2 old = Projectile.oldPos[i];
-                if (old == Vector2.Zero)
-                    continue;
-                float fade = 1f - i / (float)length;
-                Main.EntitySpriteDraw(texture, old + Projectile.Size * 0.5f - Main.screenPosition, null, glow * (0.5f * fade), Projectile.oldRot[i], origin, 0.7f + 0.3f * fade, SpriteEffects.None, 0);
-            }
+            afterimages?.Draw();
 
             Vector2 position = Projectile.Center - Main.screenPosition;
             Main.EntitySpriteDraw(texture, position, null, glow * 0.45f, Projectile.rotation, origin, 1.35f, SpriteEffects.None, 0); // halo

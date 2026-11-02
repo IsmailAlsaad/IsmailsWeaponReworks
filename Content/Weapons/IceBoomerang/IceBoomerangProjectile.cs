@@ -41,6 +41,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
         List<int> visited;     // owner only: identities of the crystals already bounced off in this chain
         Vector2 sweepStart;    // center at the start of this tick, for the swept hit test
         RemoteHitTracker hitTracker; // other machines only: which enemies already got hit sparks in the current segment (visual only)
+        AfterimageTrail afterimages; // visual only, never synced
 
         public override void Load()
         {
@@ -453,8 +454,32 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
             }
         }
 
+        // One afterimage per tick (visual only, never synced). Each carries its own lifetime: OnKill hands the trail to DetachedTrails,
+        // so when this projectile dies the leftover afterimages fade out on their own instead of vanishing with it.
+        public override void PostAI()
+        {
+            if (Main.dedServ || !Projectile.active)
+                return;
+            float settleT = Settling ? MathHelper.Clamp(Projectile.localAI[0] / IceBoomerangTuning.SettleTicks, 0f, 1f) : 0f;
+            int level = CurrentPhase >= Phase.Chain ? (int)Projectile.ai[2] : 0;
+            float scale = MathHelper.Lerp(1f, 0.65f, settleT) * (1f + 0.06f * level);
+            Color glow = Color.Lerp(new Color(110, 200, 255, 0), new Color(235, 250, 255, 0), Math.Min(level, 5) / 5f);
+            Texture2D texture = (customTexture != null && customTexture.IsLoaded) ? customTexture.Value : TextureAssets.Projectile[Projectile.type].Value;
+            afterimages ??= AfterimageTrail.Sprite(texture, 10, 0.6f);
+            afterimages.Tick();
+            if (!Spent)
+                afterimages.Add(Projectile.Center, Projectile.rotation, scale, glow * (0.55f + 0.07f * level));
+        }
+
+        public override void OnKill(int timeLeft)
+        {
+            DetachedTrails.Hand(afterimages);
+            afterimages = null;
+        }
+
         public override bool PreDraw(ref Color lightColor)
         {
+            afterimages?.Draw(); // also while spent: they fade out on their own
             if (CurrentPhase == Phase.Spent)
                 return false;
             Texture2D texture = (customTexture != null && customTexture.IsLoaded) ? customTexture.Value : TextureAssets.Projectile[Projectile.type].Value;
@@ -463,17 +488,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
             int level = CurrentPhase >= Phase.Chain ? (int)Projectile.ai[2] : 0;
             float scale = MathHelper.Lerp(1f, 0.65f, settleT) * (1f + 0.06f * level);
             Color glow = Color.Lerp(new Color(110, 200, 255, 0), new Color(235, 250, 255, 0), Math.Min(level, 5) / 5f);
-
-            int length = ProjectileID.Sets.TrailCacheLength[Projectile.type];
-            for (int i = length - 1; i >= 1; i--)
-            {
-                Vector2 old = Projectile.oldPos[i];
-                if (old == Vector2.Zero)
-                    continue;
-                float fade = 1f - i / (float)length;
-                Main.EntitySpriteDraw(texture, old + Projectile.Size * 0.5f - Main.screenPosition, null, glow * ((0.55f + 0.07f * level) * fade),
-                    Projectile.oldRot[i], origin, scale * (0.6f + 0.4f * fade), SpriteEffects.None, 0);
-            }
 
             Vector2 drawPosition = Projectile.Center - Main.screenPosition;
             Main.EntitySpriteDraw(texture, drawPosition, null, glow * 0.5f, Projectile.rotation, origin, scale * 1.25f, SpriteEffects.None, 0);
