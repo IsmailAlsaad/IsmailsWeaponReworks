@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.Audio;
 using Terraria.Graphics.CameraModifiers;
@@ -83,7 +84,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             if (Main.dedServ)
                 return;
             for (int i = 0; i < 3; i++)
-                Spark(Vector2.Lerp(from, to, Main.rand.NextFloat()), Main.rand.NextVector2Circular(1.2f, 1.2f), 1.1f, Main.rand.NextBool());
+                Spark(Vector2.Lerp(from, to, Main.rand.NextFloat(0.5f,1f)), Main.rand.NextVector2Circular(1.2f, 1.2f), 1.1f, Main.rand.NextBool());
         }
 
         // A spark somewhere along the blade.
@@ -158,15 +159,28 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         {
             if (Main.dedServ)
                 return;
+
+            List<int> generations = new List<int>();
+            while(generations.Count < 3)
+            {
+                int randInt = Main.rand.Next(0, 3);
+                if (generations.Contains(randInt))
+                {
+                    continue;
+                }
+
+                generations.Add(randInt);
+            }
+
             for (int ring = 0; ring < 3; ring++)
             {
                 for (int i = 0; i < 24; i++)
-                    SparkGen(position, (MathHelper.TwoPi * i / 24f).ToRotationVector2() * (4f + 4f * ring), 2.8f - 0.4f * ring, StarfuryTuning.MaxBats);
+                    SparkGen(position, (MathHelper.TwoPi * i / 24f).ToRotationVector2() * (4f + 4f * ring), 2.8f - 0.8f * ring, generations[0]);
             }
             for (int i = 0; i < 30; i++)
-                SparkGen(position, Main.rand.NextVector2Circular(14f, 14f), 3.6f, StarfuryTuning.MaxBats);
+                SparkGen(position, Main.rand.NextVector2Circular(14f, 14f), 1.6f, generations[1]);
             for (int i = 0; i < 16; i++)
-                SparkGen(position, Main.rand.NextVector2Circular(9f, 9f), 1.8f, 0);
+                SparkGen(position, Main.rand.NextVector2Circular(9f, 9f), 0.8f, generations[2]);
         }
 
         public static void PlayBlast(Vector2 position)

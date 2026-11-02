@@ -200,7 +200,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 // Three points per tick, so the pixel line follows a smooth arc instead of a few straight segments.
                 for (int k = 0; k < 3; k++)
                     AddTrailSample(timer + k / 3f);
-                StarfuryFx.SlashDust(lastTipPosition, tipPosition);
+                StarfuryFx.SlashDust(Main.LocalPlayer.Center, tipPosition);
                 Lighting.AddLight(tipPosition, 0.9f, 0.75f, 0.35f);
             }
         }
@@ -209,11 +209,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         {
             if (Main.dedServ)
                 return;
+
+            time -= 0.8f;
             float arm = SwingArmAt(time);
             float tilt = SwingTiltAt(time);
             Vector2 hand = HeldSwordPose.HandWorld(Owner, WorldArm(arm));
             Vector2 direction = HeldSwordPose.BladeDirectionWorld(Owner, WorldBlade(arm, tilt));
-            float length = StarfuryTuning.BladeLength * Projectile.scale;
+            float length = StarfuryTuning.BladeLength * Projectile.scale * 0.9f;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
             float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / Math.Max(0.01f, StarfuryTuning.TrailExpandBy), 0f, 1f));
             float inner = MathHelper.Lerp(1f, StarfuryTuning.TrailInnerFraction, expand);

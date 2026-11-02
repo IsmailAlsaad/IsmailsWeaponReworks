@@ -94,10 +94,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static float PixelSize => 2f;
         public static int TrailLifeTicks => 22;
         public static float TrailThickness => 7f;
-        public static float TrailOpacity => 0.9f;
+        public static float TrailOpacity => 0.5f;
         public static int TrailRails => 7;                // parallel pixel lines that fill the fan
-        public static float TrailExpandBy => 0.6f;        // the fan has fully expanded this far into the swing (0..1)
-        public static float TrailInnerFraction => 0.25f;  // fully expanded, the fan reaches down the blade to this fraction of its length
+        public static float TrailExpandBy => 0.9f;        // the fan has fully expanded this far into the swing (0..1)
+        public static float TrailInnerFraction => 0.45f;  // fully expanded, the fan reaches down the blade to this fraction of its length
         public static Color GoldColor => new Color(255, 215, 110, 0);
         public static Color PinkColor => new Color(255, 140, 190, 0);
         public static Color CoreColor => new Color(255, 250, 225, 0);
