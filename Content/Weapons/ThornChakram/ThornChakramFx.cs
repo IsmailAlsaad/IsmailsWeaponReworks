@@ -82,7 +82,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item22 with { Volume = 0.7f, Pitch = 0.2f }, position);
+            //SoundEngine.PlaySound(SoundID.Item22 with { Volume = 0.7f, Pitch = 0.2f }, position);
         }
 
         // spinT: 0 at the start of the latch, 1 at the end; the shred sound climbs with the spin.
