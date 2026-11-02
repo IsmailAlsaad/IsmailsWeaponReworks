@@ -4,11 +4,12 @@ using Microsoft.Xna.Framework;
 namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 {
     /// <summary>
-    /// The freezing trail the Ice Blade's tip leaves while a charged release swings (a PixelTrail, drawn by the shared pixel line
-    /// renderer). Two layers: a wide faint glow and a narrow bright core. Thickness and opacity grow with the tier (IceBladeTuning); the
-    /// line tapers away toward its tail and fades with age. Every number is read live, so hot reload works.
+    /// The freezing trail of a charged release swing (a SweepTrail, drawn by the shared pixel line renderer): it starts as a thin line at
+    /// the blade's tip and expands down the blade toward the hand as the swing builds up, leaving a fan behind the blade. The tip edge is
+    /// the bright core, the rest fades through the mid blue to the halo blue toward the hand. The tier sets the opacity and how far down
+    /// the blade the fan reaches (IceBladeTuning); the fan fades from its tail with age. Every number is read live, so hot reload works.
     /// </summary>
-    public class IceBladeTrailStyle : PixelTrailStyle
+    public class IceBladeTrailStyle : SweepTrailStyle
     {
         readonly int tier;
 
@@ -19,18 +20,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         public override float Grid => IceBladeTuning.PixelSize;
         public override int LifeTicks => IceBladeTuning.TrailLifeTicks;
-        public override int Layers => 2;
+        public override int Rails => IceBladeTuning.TrailRails;
 
-        public override float GetWidth(int layer, float age)
-        {
-            float thickness = IceBladeTuning.TrailThickness(tier) * (layer == 0 ? 1.8f : 0.8f);
-            return thickness * (1f - age);
-        }
-
-        public override Color GetColor(int layer, float age)
+        public override Color GetColor(float across, float age)
         {
             float fade = (1f - age) * (1f - age) * IceBladeTuning.TrailOpacity(tier);
-            return layer == 0 ? IceBladeTuning.MidColor * (0.45f * fade) : IceBladeTuning.CoreColor * (0.85f * fade);
+            // Bright core on the tip edge, mid blue in the middle, deep halo blue toward the hand; the inner side is fainter.
+            Color color = across < 0.5f
+                ? Color.Lerp(IceBladeTuning.CoreColor, IceBladeTuning.MidColor, across * 2f)
+                : Color.Lerp(IceBladeTuning.MidColor, IceBladeTuning.HaloColor, (across - 0.5f) * 2f);
+            return color * (fade * (1f - 0.65f * across));
         }
     }
 }

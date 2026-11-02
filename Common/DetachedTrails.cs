@@ -14,6 +14,7 @@ namespace IsmailsWeaponReworks.Common
     {
         readonly List<PixelTrail> trails = new List<PixelTrail>();
         readonly List<AfterimageTrail> afterimages = new List<AfterimageTrail>();
+        readonly List<SweepTrail> sweeps = new List<SweepTrail>();
 
         static int MaxTrails => 64;
 
@@ -26,6 +27,18 @@ namespace IsmailsWeaponReworks.Common
             system.trails.Add(trail);
             if (system.trails.Count > MaxTrails)
                 system.trails.RemoveAt(0);
+        }
+
+        // Same for a held sword's sweep trail (the expanding fan): it keeps fading on its own after the swing projectile has died.
+        public static void Hand(SweepTrail trail)
+        {
+            if (Main.dedServ || trail == null || trail.IsEmpty)
+                return;
+
+            DetachedTrails system = ModContent.GetInstance<DetachedTrails>();
+            system.sweeps.Add(trail);
+            if (system.sweeps.Count > MaxTrails)
+                system.sweeps.RemoveAt(0);
         }
 
         // Same for a projectile's afterimages: they keep fading on their own after it has died.
@@ -52,6 +65,13 @@ namespace IsmailsWeaponReworks.Common
                     trails.RemoveAt(i);
             }
 
+            for (int i = sweeps.Count - 1; i >= 0; i--)
+            {
+                sweeps[i].Tick();
+                if (sweeps[i].IsEmpty)
+                    sweeps.RemoveAt(i);
+            }
+
             for (int i = afterimages.Count - 1; i >= 0; i--)
             {
                 afterimages[i].Tick();
@@ -62,12 +82,14 @@ namespace IsmailsWeaponReworks.Common
 
         public override void PostDrawTiles()
         {
-            if (Main.dedServ || (trails.Count == 0 && afterimages.Count == 0))
+            if (Main.dedServ || (trails.Count == 0 && afterimages.Count == 0 && sweeps.Count == 0))
                 return;
 
             Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
             for (int i = 0; i < afterimages.Count; i++)
                 afterimages[i].Draw();
+            for (int i = 0; i < sweeps.Count; i++)
+                sweeps[i].Draw();
             for (int i = 0; i < trails.Count; i++)
                 trails[i].Draw();
             Main.spriteBatch.End();
@@ -77,12 +99,14 @@ namespace IsmailsWeaponReworks.Common
         {
             trails.Clear();
             afterimages.Clear();
+            sweeps.Clear();
         }
 
         public override void Unload()
         {
             trails.Clear();
             afterimages.Clear();
+            sweeps.Clear();
         }
     }
 }

@@ -1,15 +1,16 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-02 | 71 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-02 | 72 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(16) DetachedTrails(11) AfterimageTrail(10) IceFx(9) BoomerangFlight(8) FlamerangTuning(7) StarfuryTuning(6) PixelTrail(6) ShroomerangTuning(5) FlamerangFx(5) WoodenBoomerangTuning(4) ThornChakramTuning(4) SunfuryTuning(4) PixelTrailStyle(4) IceBoomerangTuning(4) TrimarangTuning(3) StarfuryFx(3) ShroomerangFx(3) PixelLine(3) IceBoomerangFx(3)
+RemoteHitTracker(16) DetachedTrails(11) AfterimageTrail(10) IceFx(9) BoomerangFlight(8) FlamerangTuning(7) StarfuryTuning(6) ShroomerangTuning(5) PixelTrail(5) FlamerangFx(5) WoodenBoomerangTuning(4) ThornChakramTuning(4) SunfuryTuning(4) PixelLine(4) IceBoomerangTuning(4) TrimarangTuning(3) StarfuryFx(3) ShroomerangFx(3) PixelTrailStyle(3) IceBoomerangFx(3)
 
 ## Inheritance
 Project bases -> derived:
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
-- PixelTrailStyle: IceBladeTrailStyle, MoltenTrailStyle, StarfuryTrailStyle, SunfuryTrailStyle
+- PixelTrailStyle: MoltenTrailStyle, StarfuryTrailStyle, SunfuryTrailStyle
+- SweepTrailStyle: IceBladeTrailStyle
 tModLoader/other bases -> project types:
 - ModProjectile (25): EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
 - GlobalItem (10): EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, ShroomerangGlobalItem, StarfuryGlobalItem, SunfuryGlobalItem, ThornChakramGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
@@ -32,9 +33,9 @@ tModLoader/other bases -> project types:
 **BoomerangFlight.cs**
   static class BoomerangFlight
     +StepReturn(Projectile,Player,float,float,float,float)[s] +StepForceReturn(Projectile,Player,float,float,float,float)[s] +StepOutbound(Projectile,float,float,float,float)[s]
-**DetachedTrails.cs** uses: AfterimageTrail, PixelTrail
+**DetachedTrails.cs** uses: AfterimageTrail, PixelTrail, SweepTrail
   class DetachedTrails : ModSystem
-    +Hand(PixelTrail)[s] +Hand(AfterimageTrail)[s] +PostUpdateEverything()[ov] +PostDrawTiles()[ov] +OnWorldUnload()[ov] +Unload()[ov]
+    +Hand(PixelTrail)[s] +Hand(SweepTrail)[s] +Hand(AfterimageTrail)[s] +PostUpdateEverything()[ov] +PostDrawTiles()[ov] +OnWorldUnload()[ov] +Unload()[ov]
 **HeldSwordPose.cs**
   static class HeldSwordPose
     +ToWorld(int,float)[s] +Hand(Player,int,float)[s] +BladeDirection(Player,int,float,float)[s] +Sprite(Texture2D,int,out Vector2,out float,out SpriteEffects)[s]
@@ -54,6 +55,11 @@ tModLoader/other bases -> project types:
 **RemoteHitTracker.cs**
   class RemoteHitTracker
     +Update(Projectile,int,Action<NPC>) +TouchOnce(Projectile,Action<NPC>)[s]
+**SweepTrail.cs** uses: PixelLine
+  abstract class SweepTrailStyle
+    +Grid:float[v] +LifeTicks:int[v] +Rails:int[v] +GetColor(float,float)[ab]
+  class SweepTrail
+    +Style:SweepTrailStyle +IsOwner:bool +Count:int +IsEmpty:bool +Add(Vector2,Vector2) +Tick() +Draw()
 
 ### Content/Weapons/EnchantedBoomerang/
 **EnchantedBoomerangBase.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, EnchantedBoomerangFx, EnchantedBoomerangTuning, EtherealBoomerangProjectile, RemoteHitTracker, StardustBurstProjectile
@@ -117,17 +123,17 @@ tModLoader/other bases -> project types:
 **IceBladeGlobalItem.cs** uses: IceBladeSwingProjectile
   class IceBladeGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +OnHitNPC(Item,Player,NPC,HitInfo,int)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**IceBladeSwingProjectile.cs** uses: DetachedTrails, HeldSwordPose, IceBladeFx, IceBladeTrailStyle, IceBladeTuning, IceBladeWaveProjectile, IceFx, PixelTrail
+**IceBladeSwingProjectile.cs** uses: DetachedTrails, HeldSwordPose, IceBladeFx, IceBladeTrailStyle, IceBladeTuning, IceBladeWaveProjectile, IceFx, SweepTrail
   class IceBladeSwingProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
       {Charge, Slash, Tap, Frozen}
-**IceBladeTrail.cs** uses: IceBladeTuning, PixelTrailStyle
-  class IceBladeTrailStyle : PixelTrailStyle
-    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
+**IceBladeTrail.cs** uses: IceBladeTuning, SweepTrailStyle
+  class IceBladeTrailStyle : SweepTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +GetColor(float,float)[ov]
 **IceBladeTuning.cs**
   static class IceBladeTuning
-    +Click1Ticks:int[s] +Click2Ticks:int[s] +Click3Ticks:int[s] +FreezeClickTicks:int[s] +ReleaseGraceTicks:int[s] +ClickTicks(int)[s] +FreezeDebuffTicks:int[s] +FrozenAnimTicks:int[s] +ArmStartDeg:float[s] +ArmEndDeg:float[s] +LiftTicks:int[s] +BladeTiltDeg:float[s] +BladeLength:float[s] +SwordScale:float[s] +ShakeStartTicks:int[s] +ShakeDeg:float[s] +ClickFlashTicks:int[s] +TapWindupTicks:int[s] +TapSwingTicks:int[s] +TapRecoverTicks:int[s] +TapStartDeg:float[s] +TapEndDeg:float[s] +SlashWaveTick:int[s] +TrailLifeTicks:int[s] +WaveSpawnFraction:float[s] +TrailOpacity(int)[s] +TrailThickness(int)[s] +WaveDamageMultiplier(int)[s] +WaveKnockbackMultiplier(int)[s] +WaveSpeed(int)[s] +WaveLifeTicks(int)[s] +WaveRadius(int)[s] +WaveThickness(int)[s] +WaveArcHalfDeg:float[s] +WaveDrag:float[s] +WaveGrowth:float[s] +PixelSize:float[s] +AfterimageCount:int[s] +HaloColor:Color[s] +MidColor:Color[s] +CoreColor:Color[s]
+    +Click1Ticks:int[s] +Click2Ticks:int[s] +Click3Ticks:int[s] +FreezeClickTicks:int[s] +ReleaseGraceTicks:int[s] +ClickTicks(int)[s] +FreezeDebuffTicks:int[s] +FrozenAnimTicks:int[s] +ArmStartDeg:float[s] +ArmEndDeg:float[s] +LiftTicks:int[s] +BladeTiltDeg:float[s] +BladeLength:float[s] +SwordScale:float[s] +ShakeStartTicks:int[s] +ShakeDeg:float[s] +ClickFlashTicks:int[s] +TapWindupTicks:int[s] +TapSwingTicks:int[s] +TapRecoverTicks:int[s] +TapStartDeg:float[s] +TapEndDeg:float[s] +SlashWaveTick:int[s] +TrailLifeTicks:int[s] +WaveSpawnFraction:float[s] +TrailOpacity(int)[s] +TrailInnerFraction(int)[s] +TrailExpandBy:float[s] +TrailRails:int[s] +WaveDamageMultiplier(int)[s] +WaveKnockbackMultiplier(int)[s] +WaveSpeed(int)[s] +WaveLifeTicks(int)[s] +WaveRadius(int)[s] +WaveThickness(int)[s] +WaveArcHalfDeg:float[s] +WaveDrag:float[s] +WaveGrowth:float[s] +PixelSize:float[s] +AfterimageCount:int[s] +HaloColor:Color[s] +MidColor:Color[s] +CoreColor:Color[s]
 **IceBladeWaveProjectile.cs** uses: Afterimage, AfterimageTrail, DetachedTrails, IceBladeFx, IceBladeTuning, IceFx
   class IceBladeWaveProjectile : ModProjectile
     +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]

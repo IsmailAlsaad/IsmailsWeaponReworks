@@ -47,7 +47,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         float lastChargeArm;
         Vector2 tipPosition;
         Vector2 lastTipPosition;
-        PixelTrail trail;      // the freezing trail along the blade tip (null until a charged release swings)
+        SweepTrail trail;      // the freezing fan along the blade (null until a charged release swings)
 
         public override void SetDefaults()
         {
@@ -345,8 +345,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             Vector2 hand = ComputeHand(arm);
             Vector2 direction = BladeDirection(arm, tilt);
             float length = IceBladeTuning.BladeLength * Projectile.scale;
-            trail ??= new PixelTrail(new IceBladeTrailStyle(tier), IsOwner);
-            trail.Add(hand + direction * length); // the blade's edge: the tip
+            // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
+            float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / IceBladeTuning.TrailExpandBy, 0f, 1f));
+            float inner = MathHelper.Lerp(1f, IceBladeTuning.TrailInnerFraction(tier), expand);
+            trail ??= new SweepTrail(new IceBladeTrailStyle(tier), IsOwner);
+            trail.Add(hand + direction * length, hand + direction * length * inner);
         }
 
         // Where the wave starts: in front of the player, in the middle of the area the blade sweeps (a fraction of the blade's reach along the aim).
@@ -451,7 +454,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
             return false;
         }
 
-        // The freezing trail behind the blade tip: a PixelTrail (Common/PixelTrail.cs), drawn by the shared pixel line renderer.
+        // The freezing fan behind the blade: a SweepTrail (Common/SweepTrail.cs), drawn by the shared pixel line renderer.
         void DrawTrail()
         {
             trail?.Draw();
