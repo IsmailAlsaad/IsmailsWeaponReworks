@@ -92,7 +92,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
             tooltips.Add(new TooltipLine(Mod, "Starfury1", "Right click to call a star down in front of you"));
-            tooltips.Add(new TooltipLine(Mod, "Starfury2", "Hit a falling star with a swing to bat it at the closest enemy; every hit doubles it"));
+            tooltips.Add(new TooltipLine(Mod, "Starfury2", "Hit a falling star with a swing to bat it at the closest enemy; the third bat makes it explode"));
+            tooltips.Add(new TooltipLine(Mod, "Starfury3", "Hitting an enemy with the blade can call a star down"));
         }
     }
 }

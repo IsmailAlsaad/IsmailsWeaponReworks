@@ -13,9 +13,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static float SwordScale => 1.15f;
 
         // ---- swing: fixed ticks, NOT scaled by melee speed; left click alternates down, up, down ... ----
-        public static int WindupTicks => 2;           // only used when the swing does not continue from the previous one
-        public static int SwingTicks => 8;
-        public static int RecoverTicks => 3;
+        // A swing has three parts: a slow, heavy ANTICIPATION (the arm and wrist pull back past the start of the arc), a fast STRIKE that
+        // is quickest right after the anticipation and decelerates until it ends (a little past the end of the arc), and a RECOVER that
+        // settles back to the end of the arc, so the next swing chains from an exact pose.
+        public static int AnticipateTicks => 8;
+        public static float AnticipateDeg => 20f;     // how far past the start of the arc the arm pulls back
+        public static float AnticipateTiltDeg => 10f; // and the wrist (the blade tilt) the same way
+        public static int SwingTicks => 7;            // the strike (the only part that damages and bats)
+        public static float SwingEasePower => 2.5f;   // 1 = even speed; higher = faster start and a longer deceleration
+        public static float OvershootDeg => 6f;       // the strike carries this far past the end of the arc ...
+        public static int RecoverTicks => 5;          // ... and settles back to the end of the arc over this long
+        public static int SweepHitSteps => 4;         // the blade's hit test is checked at this many poses between two ticks (the strike is fast)
         // All of these are relative to the AIM (the direction to the cursor when the swing starts): 0 = at the cursor, negative = above
         // it, positive = below it. The arc is symmetric, so the middle of every slash points exactly at the cursor.
         public static float RestArmDeg => 10f;        // where a fresh combo starts (just before the high end of the arc)
@@ -53,9 +61,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 
         // ---- batting: a swing that touches a falling star launches it ----
         public static int MaxBats => 3;               // successful hits per star lineage; the 3rd one is the finisher
-        public static int MaxStars => 16;             // safety ceiling of stars alive per player (a call is refused at the cap, a doubling is skipped)
+        public static int MaxStars => 16;             // safety ceiling of stars alive per player (a call is refused at the cap, a melee star is skipped)
         public static float BatPadding => 14f;        // the star's hitbox is this much bigger for the swing's hit test (forgiving on purpose)
-        public static float DoubleSpreadDeg => 5f;    // the two stars of a doubling leave this far to each side of the launch direction (fixed, not random)
         public static int BatGraceTicks => 12;        // a star that just bounced cannot be batted again for this long
         public static float BatTargetRange => 700f;   // a bat sends the star at the enemy closest to the player within this distance (pixels)
         public static float LaunchSpeed(int generation) { return generation <= 1 ? 18f : generation == 2 ? 22f : 30f; }          // the 3rd hit is the fastest
@@ -71,7 +78,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static int BounceMaxTicks => 60;
         public static float BounceLead => 1f;           // 1 = aim where the player will be when the star arrives (their velocity times the flight time)
         public static float ArcMaxFallSpeed => 24f;     // a bounced star may fall faster than MaxFallSpeed, so the arc stays exact
-        public static float BounceSpreadDeg => 15f;     // random angle either side of straight up (the small pop of a star born at a melee hit)
         public static float Gravity => 0.32f;
         public static float MaxFallSpeed => 14f;
         public static int BounceImmunityTicks => 20;  // a star cannot hit the same enemy again for this long
@@ -84,11 +90,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static float BlastKnockbackMultiplier => 2f;
         public static float BlastShake => 5f;                  // camera shake strength (pixels)
 
-        // ---- melee: a swing that hits an enemy pops one falling star out of the impact point ----
+        // ---- melee: a true blade hit may call a star down, exactly like the right click (from offscreen to the point in front of the player) ----
+        public static float MeleeStarChance => 0.5f;           // chance per true blade hit
         public static int MeleeStarsPerSwing => 1;             // so a swing through a crowd does not flood the screen
-        public static float MeleeStarPopSpeed => 7f;
-        public static int MeleeStarHitGraceTicks => 6;         // a freshly popped star cannot hit any enemy for this long ...
-        public static int MeleeStarOriginImmunityTicks => 20;  // ... and cannot hit the enemy it popped out of for this long
 
         // ---- pixel look ----
         public static float PixelSize => 2f;
@@ -98,6 +102,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static int TrailRails => 7;                // parallel pixel lines that fill the fan
         public static float TrailExpandBy => 0.9f;        // the fan has fully expanded this far into the swing (0..1)
         public static float TrailInnerFraction => 0.45f;  // fully expanded, the fan reaches down the blade to this fraction of its length
+        public static int TrailSamplesPerTick => 8;       // trail points laid per tick (the strike is fast, so many keep the fan smooth)
         public static Color GoldColor => new Color(255, 215, 110, 0);
         public static Color PinkColor => new Color(255, 140, 190, 0);
         public static Color CoreColor => new Color(255, 250, 225, 0);

@@ -12,14 +12,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 {
     /// <summary>
     /// The star of the Starfury. A called star flies a straight line at a constant speed (no gravity) and does small damage to the first
-    /// enemy it touches: the weak baseline for a star nobody bats. A swing that touches it bats it (StarfurySwingProjectile): it doubles,
+    /// enemy it touches: the weak baseline for a star nobody bats. A swing that touches it bats it (StarfurySwingProjectile): it
     /// becomes the next generation (its own color) and flies fast toward where the owner decided. A launched star that hits an enemy
     /// arcs back to the player on a solved parabola so it can be batted again; after the last bat it ends on its first hit instead. Every star ends
     /// with the same burst of sparks (OnKill, which runs on every machine).
     /// ai[0] = generation (0 = a star straight from a call, +1 per bat). ai[1] = ticks until a called star may touch blocks: it flies
     /// through everything on its way to the cursor point (like the vanilla falling stars, so it also works underground).
-    /// ai[2] = mode: 0 Straight (called, no gravity), 1 Launched (batted, straight and fast), 2 Parabolic (a small pop with gravity: the star
-    /// born at a melee hit), 3 Arc (the bounce back to the player: gravity without the usual fall-speed cap, so the solved arc stays exact).
+    /// ai[2] = mode: 0 Straight (called, no gravity), 1 Launched (batted, straight and fast), 2 Parabolic (unused now: it was the star
+    /// born at a melee hit; kept so the ai[2] values stay stable), 3 Arc (the bounce back to the player: gravity without the usual fall-speed cap, so the solved arc stays exact).
     /// MULTIPLAYER: stars are spawned by the owner (so tModLoader syncs them) and every machine moves them the same way. The owner's
     /// client decides everything else (the bat, its direction, the doubling, the bounce angle, the end) and syncs it through ai[] and
     /// velocity with netUpdate; every machine notices a changed generation or mode on its own and plays the bat or bounce effect, so
@@ -41,7 +41,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public float WeaponKnockback;
 
         int noBatTicks;          // owner only: a star that just bounced cannot be batted again right away
-        int hitGraceTicks;       // owner only: a star just born at a melee hit cannot hit an enemy yet (it would end inside the one it came out of)
         int lastGeneration = -1; // per machine: lets every machine notice a bat or a bounce the owner decided
         int lastMode = -1;
         AfterimageTrail afterimages; // visual only, never synced
@@ -164,8 +163,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             }
             if (noBatTicks > 0)
                 noBatTicks--;
-            if (hitGraceTicks > 0)
-                hitGraceTicks--;
 
             switch (CurrentMode)
             {
@@ -190,22 +187,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             Projectile.rotation += StarfuryTuning.StarSpin * (Projectile.velocity.X >= 0f ? 1f : -1f);
             StarfuryFx.StarTrail(Projectile.Center, Projectile.velocity, Generation);
             Lighting.AddLight(Projectile.Center, StarfuryTuning.GenerationColor(Generation).ToVector3() * 0.9f);
-        }
-
-        // Owner only: a star born at a melee hit. It cannot be batted for a moment (so the same swing does not bat it at once), it cannot hit
-        // any enemy for a few ticks, and it cannot hit the enemy it came out of for longer: it is born inside that enemy's hitbox, and any
-        // hit ends a star that is not launched, so without this it ended on its first tick.
-        public void StartGrace(NPC origin)
-        {
-            noBatTicks = StarfuryTuning.BatGraceTicks;
-            hitGraceTicks = StarfuryTuning.MeleeStarHitGraceTicks;
-            if (origin != null && origin.whoAmI >= 0 && origin.whoAmI < Projectile.localNPCImmunity.Length)
-                Projectile.localNPCImmunity[origin.whoAmI] = StarfuryTuning.MeleeStarOriginImmunityTicks;
-        }
-
-        public override bool? CanHitNPC(NPC target)
-        {
-            return hitGraceTicks > 0 ? (bool?)false : null;
         }
 
         // Owner only (OnHitNPC only runs on the owner's machine). A launched star bounces, unless it has had its last bat: that one

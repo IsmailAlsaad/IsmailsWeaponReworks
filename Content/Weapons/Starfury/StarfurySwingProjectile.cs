@@ -11,9 +11,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 {
     /// <summary>
     /// The held Starfury. It draws the sword, poses the owner's arm and runs both uses:
-    /// SWING DOWN / SWING UP (left click): a custom melee chop centered on the cursor (the middle of the slash points at it); consecutive
-    /// swings alternate down, up, down ... and each one starts where the previous one ended, so a held button flows. An expanding sweep
-    /// trail (SweepTrail) fills the area the blade crosses.
+    /// SWING DOWN / SWING UP (left click): a custom melee chop centered on the cursor (the middle of the slash points at it): a slow heavy
+    /// anticipation, a fast strike that decelerates, a short recover. Consecutive swings alternate down, up, down ... and each one starts
+    /// where the previous one ended, so a held button flows. An expanding sweep trail (SweepTrail) fills the area the blade crosses. A true
+    /// blade hit may call a star down the same way the right click does.
     /// CALL (right click): the arm lifts until the sword points straight up, a burst of star dust marks the moment, and on that tick the
     /// owner spawns a StarfuryStarProjectile far above, which falls in a straight line to a point in front of the player.
     /// MULTIPLAYER: the owner's client decides everything (which use it is, where the arm starts, the aim, the star spawn) and
@@ -47,8 +48,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         float tiltRad;         // blade tilt relative to the arm
         Vector2 tipPosition;
         Vector2 lastTipPosition;
+        Vector2 lastOwnerCenter; // where the owner was on the previous tick: the trail interpolates the owner's movement from it
+        Vector2 prevCenter;      // the blade's hand position and angle on the previous tick: the hit test sweeps from them
+        float prevRotation;
         SweepTrail trail;      // the fan behind the blade (null until a swing lays a point)
-        int meleeStars;        // owner only: stars this swing has popped out of enemies (capped per swing)
+        int meleeStars;        // owner only: stars this swing has called down (capped per swing)
 
         public override void SetDefaults()
         {
@@ -91,31 +95,40 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         float FromTilt => Rad(IsUp ? StarfuryTuning.TiltLowDeg : StarfuryTuning.TiltHighDeg);
         float ToTilt => Rad(IsUp ? StarfuryTuning.TiltHighDeg : StarfuryTuning.TiltLowDeg);
 
-        // A swing that continues from the previous one (the arm already is where this one starts) needs no windup.
-        int Windup => Math.Abs(StartArm - FromArm) < Rad(8f) ? 0 : StarfuryTuning.WindupTicks;
+        // The swing is anticipation, strike, recover (see StarfuryTuning). A swing that continues from the previous one starts its anticipation
+        // from where the arm is; a fresh combo starts it from the rest pose.
+        int StrikeStart => StarfuryTuning.AnticipateTicks;
+        int StrikeEnd => StrikeStart + StarfuryTuning.SwingTicks;
 
-        int TotalTicks => IsCall ? StarfuryTuning.CallTicks : Windup + StarfuryTuning.SwingTicks + StarfuryTuning.RecoverTicks;
+        int TotalTicks => IsCall ? StarfuryTuning.CallTicks : StrikeEnd + StarfuryTuning.RecoverTicks;
 
+        // +1 when the arm angle grows during the swing (down), -1 when it shrinks (up).
+        float Travel => IsUp ? -1f : 1f;
+
+        // 0 until the strike starts, then eased from 0 to 1: fastest right after the anticipation, decelerating until the strike ends.
         float SwingProgress(float time)
         {
-            float t = MathHelper.Clamp((time - Windup) / Math.Max(1, StarfuryTuning.SwingTicks), 0f, 1f);
-            return MathHelper.SmoothStep(0f, 1f, t);
+            float t = MathHelper.Clamp((time - StrikeStart) / Math.Max(1, StarfuryTuning.SwingTicks), 0f, 1f);
+            return 1f - (float)Math.Pow(1f - t, Math.Max(1f, StarfuryTuning.SwingEasePower));
         }
 
         float SwingArmAt(float time)
         {
-            int windup = Windup;
-            if (time < windup)
-            {
-                float k = 1f - (float)Math.Pow(1f - time / Math.Max(1, windup), 2);
-                return MathHelper.Lerp(StartArm, FromArm, k);
-            }
-            return MathHelper.Lerp(FromArm, ToArm, SwingProgress(time));
+            float back = FromArm - Travel * Rad(StarfuryTuning.AnticipateDeg);   // pulled back, away from where the strike goes
+            float over = ToArm + Travel * Rad(StarfuryTuning.OvershootDeg);      // carried a little past the end of the arc
+            if (time < StrikeStart)
+                return MathHelper.Lerp(StartArm, back, MathHelper.SmoothStep(0f, 1f, time / Math.Max(1, StrikeStart)));
+            if (time <= StrikeEnd)
+                return MathHelper.Lerp(back, over, SwingProgress(time));
+            return MathHelper.Lerp(over, ToArm, MathHelper.SmoothStep(0f, 1f, (time - StrikeEnd) / Math.Max(1, StarfuryTuning.RecoverTicks)));
         }
 
         float SwingTiltAt(float time)
         {
-            return MathHelper.Lerp(FromTilt, ToTilt, SwingProgress(time));
+            float back = FromTilt - Travel * Rad(StarfuryTuning.AnticipateTiltDeg);
+            if (time < StrikeStart)
+                return MathHelper.Lerp(FromTilt, back, MathHelper.SmoothStep(0f, 1f, time / Math.Max(1, StrikeStart)));
+            return MathHelper.Lerp(back, ToTilt, SwingProgress(time));
         }
 
         bool Damaging
@@ -124,7 +137,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             {
                 if (IsCall)
                     return false;
-                return timer >= Windup && timer <= Windup + StarfuryTuning.SwingTicks;
+                return timer >= StrikeStart && timer <= StrikeEnd;
             }
         }
 
@@ -154,6 +167,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 
             Projectile.scale = StarfuryTuning.SwordScale * owner.GetAdjustedItemScale(owner.HeldItem);
 
+            prevCenter = Projectile.Center; // the previous tick's pose (the first tick fixes it below)
+            prevRotation = Projectile.rotation;
+            if (ticks == 0)
+                lastOwnerCenter = owner.Center;
+
             if (IsCall)
                 UpdateCall();
             else
@@ -163,7 +181,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             owner.itemTime = 2;
             ApplyPose(owner);
             if (ticks == 0)
+            {
                 lastTipPosition = tipPosition;
+                prevCenter = Projectile.Center;
+                prevRotation = Projectile.rotation;
+            }
 
             if (IsCall)
             {
@@ -179,6 +201,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             flash = Math.Max(0f, flash - 1f / Math.Max(1, StarfuryTuning.FlashTicks));
             trail?.Tick();
             lastTipPosition = tipPosition;
+            lastOwnerCenter = owner.Center;
             ticks++;
             timer++;
         }
@@ -191,21 +214,27 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 
         void SwingEffects()
         {
-            int windup = Windup;
-            if ((int)timer == windup)
+            int strike = StrikeStart;
+            if ((int)timer == strike)
                 StarfuryFx.PlaySwing(tipPosition, IsUp);
 
-            if (timer >= windup && timer < windup + StarfuryTuning.SwingTicks)
+            if (timer >= strike && timer < StrikeEnd)
             {
-                // Three points per tick, so the pixel line follows a smooth arc instead of a few straight segments.
-                for (int k = 0; k < 3; k++)
-                    AddTrailSample(timer + k / 3f);
+                // Many points per tick, laid between the previous tick's pose and this one, so the pixel line follows a smooth arc.
+                int samples = Math.Max(1, StarfuryTuning.TrailSamplesPerTick);
+                for (int k = 0; k < samples; k++)
+                {
+                    float fraction = (k + 1f) / samples;
+                    AddTrailSample(timer - 1f + fraction, fraction);
+                }
                 StarfuryFx.SlashDust(Main.LocalPlayer.Center, tipPosition);
                 Lighting.AddLight(tipPosition, 0.9f, 0.75f, 0.35f);
             }
         }
 
-        void AddTrailSample(float time)
+        // 'fraction' is how far between the previous tick and this one the sample is (0..1): the owner is placed where they were at that
+        // moment, so the trail stays one connected line while the player moves during the swing.
+        void AddTrailSample(float time, float fraction)
         {
             if (Main.dedServ)
                 return;
@@ -213,7 +242,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             time -= 0.8f;
             float arm = SwingArmAt(time);
             float tilt = SwingTiltAt(time);
-            Vector2 hand = HeldSwordPose.HandWorld(Owner, WorldArm(arm));
+            Vector2 shift = Vector2.Lerp(lastOwnerCenter, Owner.Center, fraction) - Owner.Center;
+            Vector2 hand = HeldSwordPose.HandWorld(Owner, WorldArm(arm)) + shift;
             Vector2 direction = HeldSwordPose.BladeDirectionWorld(Owner, WorldBlade(arm, tilt));
             float length = StarfuryTuning.BladeLength * Projectile.scale * 0.9f;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
@@ -268,12 +298,29 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 Projectile.damage, Projectile.knockBack, Projectile.owner);
         }
 
+        // The blade is a line from the hand to the tip. The strike is fast, so the test sweeps: it checks the line at a few poses between the
+        // previous tick and this one, and a thin enemy or a star cannot slip through between two ticks.
+        bool BladeTouches(Rectangle box, float width)
+        {
+            int steps = Math.Max(1, StarfuryTuning.SweepHitSteps);
+            float length = StarfuryTuning.BladeLength * Projectile.scale;
+            float deltaAngle = MathHelper.WrapAngle(Projectile.rotation - prevRotation);
+            for (int i = 1; i <= steps; i++)
+            {
+                float fraction = i / (float)steps;
+                Vector2 start = Vector2.Lerp(prevCenter, Projectile.Center, fraction);
+                Vector2 end = start + (prevRotation + deltaAngle * fraction).ToRotationVector2() * length;
+                float point = 0f;
+                if (Collision.CheckAABBvLineCollision(box.TopLeft(), box.Size(), start, end, width, ref point))
+                    return true;
+            }
+            return false;
+        }
+
         // Owner only: a swing that touches a star that is falling (called or bounced, not already launched) bats it.
         void TryBat()
         {
             int starType = ModContent.ProjectileType<StarfuryStarProjectile>();
-            Vector2 start = Projectile.Center;
-            Vector2 end = start + Projectile.rotation.ToRotationVector2() * StarfuryTuning.BladeLength * Projectile.scale;
             for (int i = 0; i < Main.maxProjectiles; i++)
             {
                 Projectile other = Main.projectile[i];
@@ -284,25 +331,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                     continue;
                 Rectangle box = other.Hitbox;
                 box.Inflate((int)StarfuryTuning.BatPadding, (int)StarfuryTuning.BatPadding);
-                float point = 0f;
-                if (Collision.CheckAABBvLineCollision(box.TopLeft(), box.Size(), start, end, 18f * Projectile.scale, ref point))
+                if (BladeTouches(box, 18f * Projectile.scale))
                     Bat(other, star);
             }
         }
 
-        // Owner only. The hit star launches one way and a copy launches the other way (a fixed small spread, so the pair reads clearly);
-        // when the player already has the maximum number of stars alive, there is no copy.
+        // Owner only. The hit star launches toward the bat direction as the next generation (one star: no copy).
         void Bat(Projectile starProjectile, StarfuryStarProjectile star)
         {
             int generation = star.Generation + 1;
             Vector2 direction = BatDirection(starProjectile);
-            float spread = Rad(StarfuryTuning.DoubleSpreadDeg);
-            star.Launch(direction.RotatedBy(-spread), generation, Projectile.damage, Projectile.knockBack);
-            if (StarfuryStarProjectile.CountOwned(Projectile.owner) < StarfuryTuning.MaxStars)
-            {
-                StarfuryStarProjectile.Spawn(Projectile.GetSource_FromThis(), starProjectile.Center, direction.RotatedBy(spread) * StarfuryTuning.LaunchSpeed(generation), generation,
-                    StarfuryStarProjectile.Mode.Launched, 0f, Projectile.damage, Projectile.knockBack, Projectile.owner);
-            }
+            star.Launch(direction, generation, Projectile.damage, Projectile.knockBack);
             flash = 0.8f;
         }
 
@@ -381,10 +420,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         {
             if (!Damaging)
                 return false;
-            Vector2 start = Projectile.Center;
-            Vector2 end = start + Projectile.rotation.ToRotationVector2() * StarfuryTuning.BladeLength * Projectile.scale;
-            float point = 0f;
-            return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), start, end, 18f * Projectile.scale, ref point);
+            return BladeTouches(targetHitbox, 18f * Projectile.scale);
         }
 
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
@@ -395,28 +431,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             StarfuryFx.HitSpark(target.Center);
-            if (IsOwner && meleeStars < StarfuryTuning.MeleeStarsPerSwing && StarfuryStarProjectile.CountOwned(Projectile.owner) < StarfuryTuning.MaxStars)
-                SpawnMeleeStar(target);
-        }
-
-        // Owner only. A true blade hit pops a falling star out of the impact point (the closest spot of the blade to the enemy, kept inside
-        // the enemy's hitbox). It is an ordinary star of generation 0 in the falling, parabolic state: batting, doubling and generations
-        // work the same; it just cannot be batted for a few ticks, so this very swing does not bat it right away.
-        void SpawnMeleeStar(NPC target)
-        {
-            Vector2 start = Projectile.Center;
-            Vector2 blade = Projectile.rotation.ToRotationVector2() * StarfuryTuning.BladeLength * Projectile.scale;
-            float t = blade.LengthSquared() > 0f ? MathHelper.Clamp(Vector2.Dot(target.Center - start, blade) / blade.LengthSquared(), 0f, 1f) : 0f;
-            Rectangle box = target.Hitbox;
-            Vector2 point = Vector2.Clamp(start + blade * t, box.TopLeft(), box.BottomRight());
-            float angle = -MathHelper.PiOver2 + Main.rand.NextFloat(-1f, 1f) * Rad(StarfuryTuning.BounceSpreadDeg);
-            Vector2 velocity = angle.ToRotationVector2() * StarfuryTuning.MeleeStarPopSpeed;
-            int index = StarfuryStarProjectile.Spawn(Projectile.GetSource_FromThis(), point, velocity, 0, StarfuryStarProjectile.Mode.Parabolic, 0f,
-                Projectile.damage, Projectile.knockBack, Projectile.owner);
-            if (index >= 0 && index < Main.maxProjectiles && Main.projectile[index].ModProjectile is StarfuryStarProjectile star)
-                star.StartGrace(target);
-            meleeStars++;
-            StarfuryFx.BounceBurst(point, 0);
+            // The roll only happens when a star could be called, so a failed roll does not use up the swing's allowance.
+            if (IsOwner && meleeStars < StarfuryTuning.MeleeStarsPerSwing && StarfuryStarProjectile.CountOwned(Projectile.owner) < StarfuryTuning.MaxStars
+                && Main.rand.NextFloat() < StarfuryTuning.MeleeStarChance)
+            {
+                SpawnStar(); // the same star the right click calls: from offscreen to the point in front of the player
+                meleeStars++;
+            }
         }
 
         // The trail outlives the swing and keeps fading on its own (DetachedTrails). The owner remembers how this use ended, so the
