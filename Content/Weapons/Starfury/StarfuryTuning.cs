@@ -85,7 +85,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 
         // ---- the finisher: the star of the 3rd bat explodes on the enemy it hits ----
         public static int BlastSize => 200;                    // diameter of the explosion in pixels
-        public static int BlastTicks => 8;                     // how long the explosion can hurt
+        public static int BlastTicks => 16;                     // how long the explosion can hurt
         public static float BlastDamageMultiplier => 2.5f;     // times the weapon's damage, on top of the star's own hit
         public static float BlastKnockbackMultiplier => 2f;
         public static float BlastShake => 5f;                  // camera shake strength (pixels)
