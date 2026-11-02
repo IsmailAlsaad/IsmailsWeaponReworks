@@ -1,4 +1,6 @@
 Projectiles: {
+	SunfuryFlailProjectile.DisplayName: Sunfury Flail Projectile
+	SunfuryBlastProjectile.DisplayName: Sunfury Blast Projectile
 	FlamerangProjectile.DisplayName: Flamerang Projectile
 	MoltenBoomerangProjectile.DisplayName: Molten Boomerang Projectile
 	FlamerangBlastProjectile.DisplayName: Flamerang Blast Projectile
