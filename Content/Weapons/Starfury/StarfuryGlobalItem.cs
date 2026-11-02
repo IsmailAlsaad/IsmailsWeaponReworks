@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Common;
+using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using Terraria;
 using Terraria.DataStructures;
@@ -9,8 +10,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 {
     /// <summary>
     /// Overhauls the vanilla Starfury: the item itself fires nothing. Left click starts a StarfurySwingProjectile that swings the sword
-    /// (alternating down and up), right click starts the same projectile in its call pose, which sends a star falling from offscreen
-    /// through the cursor point. Recipe, drops and base stats stay vanilla.
+    /// (alternating down and up, centered on the cursor), right click starts the same projectile in its call pose, which sends a star
+    /// falling from offscreen to a point in front of the player. Recipe, drops and base stats stay vanilla.
     /// </summary>
     public class StarfuryGlobalItem : GlobalItem
     {
@@ -56,33 +57,42 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             StarfuryPlayer state = player.GetModPlayer<StarfuryPlayer>();
             bool call = player.altFunctionUse == 2;
             bool combo = state.LastPhase >= 0 && Main.GameUpdateCount - state.LastEndTick <= (uint)StarfuryTuning.ComboTicks;
-            float startArm = combo ? state.LastEndArm : MathHelper.ToRadians(StarfuryTuning.RestArmDeg);
+            bool afterSwing = combo && state.LastPhase != (int)StarfurySwingProjectile.Phase.Call;
+
+            // The aim is captured here, once, and travels in the spawn packet (ai[2]) so every machine poses the same swing. It is kept in the
+            // player's own frame (mirrored when gravity is flipped), like the arm angles; the whole swing is relative to it.
+            Vector2 toMouse = Main.MouseWorld - player.MountedCenter;
+            float aim = toMouse.LengthSquared() > 1f ? toMouse.ToRotation() : (player.direction >= 0 ? 0f : MathHelper.Pi);
+            if (player.gravDir == -1f)
+                aim = -aim;
 
             StarfurySwingProjectile.Phase phase;
+            float startArm;
             if (call)
             {
                 phase = StarfurySwingProjectile.Phase.Call;
                 state.LastCallTick = Main.GameUpdateCount;
-                Vector2 offset = Main.MouseWorld - player.MountedCenter;
-                if (offset.Length() > StarfuryTuning.CallMaxRange)
-                    offset = offset.SafeNormalize(Vector2.UnitX * player.direction) * StarfuryTuning.CallMaxRange;
-                state.CallTarget = player.MountedCenter + offset;
+                // The call still faces the cursor's side, but where the star comes down does not depend on the cursor. It starts from the
+                // arm's world angle of the previous swing (converted to the facing-local angle the call pose uses).
+                int side = Main.MouseWorld.X >= player.MountedCenter.X ? 1 : -1;
+                startArm = afterSwing ? HeldSwordPose.ToWorld(side, state.LastEndWorldArm) : MathHelper.ToRadians(StarfuryTuning.CallRestArmDeg);
             }
             else
             {
                 // Alternate: a swing right after a down swing goes up; anything else (fresh combo, after a call, after an up swing) goes down.
                 bool afterDown = combo && state.LastPhase == (int)StarfurySwingProjectile.Phase.SwingDown;
                 phase = afterDown ? StarfurySwingProjectile.Phase.SwingUp : StarfurySwingProjectile.Phase.SwingDown;
+                startArm = afterSwing ? state.LastEndArm : MathHelper.ToRadians(StarfuryTuning.RestArmDeg); // relative to the aim
             }
 
-            Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, damage, knockback, player.whoAmI, (float)phase, startArm);
+            Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, damage, knockback, player.whoAmI, (float)phase, startArm, aim);
             return false;
         }
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Starfury1", "Right click to call a star down at the cursor"));
-            tooltips.Add(new TooltipLine(Mod, "Starfury2", "Hit a falling star with a swing to bat it away; every hit doubles it"));
+            tooltips.Add(new TooltipLine(Mod, "Starfury1", "Right click to call a star down in front of you"));
+            tooltips.Add(new TooltipLine(Mod, "Starfury2", "Hit a falling star with a swing to bat it at the closest enemy; every hit doubles it"));
         }
     }
 }

@@ -14,11 +14,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
     /// The star of the Starfury. A called star flies a straight line at a constant speed (no gravity) and does small damage to the first
     /// enemy it touches: the weak baseline for a star nobody bats. A swing that touches it bats it (StarfurySwingProjectile): it doubles,
     /// becomes the next generation (its own color) and flies fast toward where the owner decided. A launched star that hits an enemy
-    /// bounces up and falls in a parabola again, hittable again; after the last bat it ends on its first hit instead. Every star ends
+    /// arcs back to the player on a solved parabola so it can be batted again; after the last bat it ends on its first hit instead. Every star ends
     /// with the same burst of sparks (OnKill, which runs on every machine).
     /// ai[0] = generation (0 = a star straight from a call, +1 per bat). ai[1] = ticks until a called star may touch blocks: it flies
     /// through everything on its way to the cursor point (like the vanilla falling stars, so it also works underground).
-    /// ai[2] = mode: 0 Straight (called, no gravity), 1 Launched (batted, straight and fast), 2 Parabolic (bounced, gravity).
+    /// ai[2] = mode: 0 Straight (called, no gravity), 1 Launched (batted, straight and fast), 2 Parabolic (a small pop with gravity: the star
+    /// born at a melee hit), 3 Arc (the bounce back to the player: gravity without the usual fall-speed cap, so the solved arc stays exact).
     /// MULTIPLAYER: stars are spawned by the owner (so tModLoader syncs them) and every machine moves them the same way. The owner's
     /// client decides everything else (the bat, its direction, the doubling, the bounce angle, the end) and syncs it through ai[] and
     /// velocity with netUpdate; every machine notices a changed generation or mode on its own and plays the bat or bounce effect, so
@@ -29,7 +30,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         // The vanilla falling-star projectile sprite (no art needed).
         public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Starfury;
 
-        public enum Mode { Straight = 0, Launched = 1, Parabolic = 2 }
+        public enum Mode { Straight = 0, Launched = 1, Parabolic = 2, Arc = 3 }
 
         public int Generation => (int)Projectile.ai[0];
         public Mode CurrentMode => (Mode)(int)Projectile.ai[2];
@@ -40,6 +41,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public float WeaponKnockback;
 
         int noBatTicks;          // owner only: a star that just bounced cannot be batted again right away
+        int hitGraceTicks;       // owner only: a star just born at a melee hit cannot hit an enemy yet (it would end inside the one it came out of)
         int lastGeneration = -1; // per machine: lets every machine notice a bat or a bounce the owner decided
         int lastMode = -1;
         AfterimageTrail afterimages; // visual only, never synced
@@ -93,12 +95,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             Projectile.netUpdate = true;
         }
 
-        // Owner only: a launched star hit an enemy: it flies off in a random upward direction and falls in a parabola again.
+        // Owner only: the launch velocity that carries this star from where it is to a point in front of the player (within sword reach),
+        // aimed where the player will be when it arrives. Gravity is added before the move every tick, so after n ticks the star has moved
+        // x = vx * n and y = vy * n + g * n * (n + 1) / 2; solving that for the target gives the velocity. The flight time n comes from the
+        // distance, clamped. Mode.Arc has no fall-speed cap, so the arc is exact (no correction in flight, no extra network traffic).
+        Vector2 SolveArc(Player owner)
+        {
+            int facing = owner.direction >= 0 ? 1 : -1;
+            Vector2 front = owner.MountedCenter + new Vector2(facing * StarfuryTuning.BounceFrontDistance, StarfuryTuning.BounceTargetHeight);
+            float distance = Vector2.Distance(Projectile.Center, front);
+            int n = (int)MathHelper.Clamp(distance / Math.Max(0.1f, StarfuryTuning.BounceSpeedTarget), StarfuryTuning.BounceMinTicks, StarfuryTuning.BounceMaxTicks);
+            Vector2 delta = front + owner.velocity * (n * StarfuryTuning.BounceLead) - Projectile.Center;
+            return new Vector2(delta.X / n, delta.Y / n - StarfuryTuning.Gravity * (n + 1) * 0.5f);
+        }
+
+        // Owner only: a launched star hit an enemy: it arcs back to the player (SolveArc) so the player can bat it again.
         void Bounce()
         {
-            float angle = -MathHelper.PiOver2 + Main.rand.NextFloat(-1f, 1f) * MathHelper.ToRadians(StarfuryTuning.BounceSpreadDeg);
-            Projectile.velocity = angle.ToRotationVector2() * StarfuryTuning.BounceSpeed;
-            Projectile.ai[2] = (float)Mode.Parabolic;
+            Projectile.velocity = SolveArc(Main.player[Projectile.owner]);
+            Projectile.ai[2] = (float)Mode.Arc;
             Projectile.damage = Math.Max(1, (int)(WeaponDamage * StarfuryTuning.CalledStarDamageMultiplier));
             Projectile.knockBack = WeaponKnockback * StarfuryTuning.CalledStarKnockbackMultiplier;
             Projectile.timeLeft = StarfuryTuning.BouncedLifeTicks;
@@ -139,7 +154,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 }
                 if ((int)CurrentMode != lastMode)
                 {
-                    if (lastMode == (int)Mode.Launched && CurrentMode == Mode.Parabolic)
+                    if (lastMode == (int)Mode.Launched && (CurrentMode == Mode.Parabolic || CurrentMode == Mode.Arc))
                     {
                         StarfuryFx.BounceBurst(Projectile.Center, Generation);
                         StarfuryFx.PlayBounce(Projectile.Center);
@@ -149,6 +164,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             }
             if (noBatTicks > 0)
                 noBatTicks--;
+            if (hitGraceTicks > 0)
+                hitGraceTicks--;
 
             switch (CurrentMode)
             {
@@ -161,6 +178,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                     Projectile.tileCollide = true;
                     Projectile.velocity.Y = Math.Min(Projectile.velocity.Y + StarfuryTuning.Gravity, StarfuryTuning.MaxFallSpeed);
                     break;
+                case Mode.Arc:
+                    Projectile.tileCollide = true;
+                    Projectile.velocity.Y = Math.Min(Projectile.velocity.Y + StarfuryTuning.Gravity, StarfuryTuning.ArcMaxFallSpeed);
+                    break;
                 default:
                     Projectile.tileCollide = true;
                     break;
@@ -171,10 +192,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             Lighting.AddLight(Projectile.Center, StarfuryTuning.GenerationColor(Generation).ToVector3() * 0.9f);
         }
 
-        // Owner only: this star cannot be batted for a moment (a star born at a melee hit, so the same swing does not bat it at once).
-        public void StartGrace()
+        // Owner only: a star born at a melee hit. It cannot be batted for a moment (so the same swing does not bat it at once), it cannot hit
+        // any enemy for a few ticks, and it cannot hit the enemy it came out of for longer: it is born inside that enemy's hitbox, and any
+        // hit ends a star that is not launched, so without this it ended on its first tick.
+        public void StartGrace(NPC origin)
         {
             noBatTicks = StarfuryTuning.BatGraceTicks;
+            hitGraceTicks = StarfuryTuning.MeleeStarHitGraceTicks;
+            if (origin != null && origin.whoAmI >= 0 && origin.whoAmI < Projectile.localNPCImmunity.Length)
+                Projectile.localNPCImmunity[origin.whoAmI] = StarfuryTuning.MeleeStarOriginImmunityTicks;
+        }
+
+        public override bool? CanHitNPC(NPC target)
+        {
+            return hitGraceTicks > 0 ? (bool?)false : null;
         }
 
         // Owner only (OnHitNPC only runs on the owner's machine). A launched star bounces, unless it has had its last bat: that one

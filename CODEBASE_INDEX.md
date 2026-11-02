@@ -4,13 +4,13 @@ generated 2026-11-02 | 72 .cs files | regenerate: `python index_codebase.py` (pr
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(16) DetachedTrails(11) AfterimageTrail(10) IceFx(9) BoomerangFlight(8) FlamerangTuning(7) StarfuryTuning(6) ShroomerangTuning(5) PixelTrail(5) FlamerangFx(5) WoodenBoomerangTuning(4) ThornChakramTuning(4) SunfuryTuning(4) PixelLine(4) IceBoomerangTuning(4) TrimarangTuning(3) StarfuryFx(3) ShroomerangFx(3) PixelTrailStyle(3) IceBoomerangFx(3)
+RemoteHitTracker(16) DetachedTrails(11) AfterimageTrail(10) IceFx(9) BoomerangFlight(8) FlamerangTuning(7) StarfuryTuning(6) ShroomerangTuning(5) FlamerangFx(5) WoodenBoomerangTuning(4) ThornChakramTuning(4) SunfuryTuning(4) PixelTrail(4) PixelLine(4) IceBoomerangTuning(4) TrimarangTuning(3) SweepTrail(3) StarfuryFx(3) ShroomerangFx(3) IceBoomerangFx(3)
 
 ## Inheritance
 Project bases -> derived:
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
-- PixelTrailStyle: MoltenTrailStyle, StarfuryTrailStyle, SunfuryTrailStyle
-- SweepTrailStyle: IceBladeTrailStyle
+- PixelTrailStyle: MoltenTrailStyle, SunfuryTrailStyle
+- SweepTrailStyle: IceBladeTrailStyle, StarfurySweepTrailStyle
 tModLoader/other bases -> project types:
 - ModProjectile (25): EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
 - GlobalItem (10): EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, ShroomerangGlobalItem, StarfuryGlobalItem, SunfuryGlobalItem, ThornChakramGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
@@ -38,7 +38,7 @@ tModLoader/other bases -> project types:
     +Hand(PixelTrail)[s] +Hand(SweepTrail)[s] +Hand(AfterimageTrail)[s] +PostUpdateEverything()[ov] +PostDrawTiles()[ov] +OnWorldUnload()[ov] +Unload()[ov]
 **HeldSwordPose.cs**
   static class HeldSwordPose
-    +ToWorld(int,float)[s] +Hand(Player,int,float)[s] +BladeDirection(Player,int,float,float)[s] +Sprite(Texture2D,int,out Vector2,out float,out SpriteEffects)[s]
+    +ToWorld(int,float)[s] +Hand(Player,int,float)[s] +BladeDirection(Player,int,float,float)[s] +HandWorld(Player,float)[s] +BladeDirectionWorld(Player,float)[s] +Sprite(Texture2D,int,out Vector2,out float,out SpriteEffects)[s]
 **IceFx.cs**
   static class IceFx
     +Burst(Vector2,int,float,float)[s] +Ring(Vector2,int,float,float)[s] +Gather(Vector2,float)[s] +DrawPixel(Vector2,float,Color,float)[s]
@@ -191,28 +191,28 @@ tModLoader/other bases -> project types:
 **StarfuryFx.cs** uses: StarfuryTuning
   static class StarfuryFx
     +PlaySwing(Vector2,bool)[s] +PlayCall(Vector2)[s] +PlayStarImpact(Vector2)[s] +PlayBat(Vector2,int)[s] +PlayBounce(Vector2)[s] +CallGather(Vector2)[s] +CallBurst(Vector2)[s] +SlashDust(Vector2,Vector2)[s] +BladeSparkle(Vector2,Vector2)[s] +HitSpark(Vector2)[s] +StarTrail(Vector2,Vector2,int)[s] +StarImpact(Vector2,int)[s] +BatBurst(Vector2,int)[s] +BounceBurst(Vector2,int)[s] +BlastBurst(Vector2)[s] +PlayBlast(Vector2)[s] +Shake(Vector2,float)[s]
-**StarfuryGlobalItem.cs** uses: Phase, StarfuryPlayer, StarfuryStarProjectile, StarfurySwingProjectile, StarfuryTuning
+**StarfuryGlobalItem.cs** uses: HeldSwordPose, Phase, StarfuryPlayer, StarfuryStarProjectile, StarfurySwingProjectile, StarfuryTuning
   class StarfuryGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **StarfuryPlayer.cs**
   class StarfuryPlayer : ModPlayer
-    +LastPhase:int +LastEndArm:float +LastEndTick:uint +LastCallTick:uint +CallTarget:Vector2
+    +LastPhase:int +LastEndArm:float +LastEndTick:uint +LastCallTick:uint +LastEndWorldArm:float
 **StarfuryStarProjectile.cs** uses: AfterimageTrail, DetachedTrails, StarfuryBlastProjectile, StarfuryFx, StarfuryTuning
   class StarfuryStarProjectile : ModProjectile
-    +Texture:string[ov] +Generation:int +CurrentMode:Mode +CanBeBatted:bool +WeaponDamage:int +WeaponKnockback:float +Spawn(IEntitySource,Vector2,Vector2,int,Mode,float,int,float,int)[s] +CountOwned(int)[s] +Launch(Vector2,int,int,float) +AI()[ov] +StartGrace() +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +Generation:int +CurrentMode:Mode +CanBeBatted:bool +WeaponDamage:int +WeaponKnockback:float +Spawn(IEntitySource,Vector2,Vector2,int,Mode,float,int,float,int)[s] +CountOwned(int)[s] +Launch(Vector2,int,int,float) +AI()[ov] +StartGrace(NPC) +CanHitNPC(NPC)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Mode
-      {Straight, Launched, Parabolic}
-**StarfurySwingProjectile.cs** uses: DetachedTrails, HeldSwordPose, Mode, PixelTrail, StarfuryFx, StarfuryPlayer, StarfuryStarProjectile, StarfuryTrailStyle, StarfuryTuning
+      {Straight, Launched, Parabolic, Arc}
+**StarfurySwingProjectile.cs** uses: DetachedTrails, HeldSwordPose, Mode, StarfuryFx, StarfuryPlayer, StarfuryStarProjectile, StarfurySweepTrailStyle, StarfuryTuning, SweepTrail
   class StarfurySwingProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
       {SwingDown, SwingUp, Call}
-**StarfuryTrail.cs** uses: PixelTrailStyle, StarfuryTuning
-  class StarfuryTrailStyle : PixelTrailStyle
-    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
+**StarfuryTrail.cs** uses: StarfuryTuning, SweepTrailStyle
+  class StarfurySweepTrailStyle : SweepTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +GetColor(float,float)[ov]
 **StarfuryTuning.cs**
   static class StarfuryTuning
-    +BladeLength:float[s] +SwordScale:float[s] +WindupTicks:int[s] +SwingTicks:int[s] +RecoverTicks:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboTicks:int[s] +CallLiftTicks:int[s] +CallSpawnTick:int[s] +CallTicks:int[s] +CallArmDeg:float[s] +CallTiltDeg:float[s] +CallKickDeg:float[s] +CallCooldownTicks:int[s] +CallMaxRange:float[s] +FlashTicks:int[s] +SpawnSideOffset:float[s] +SpawnAboveScreen:float[s] +MinFallDistance:float[s] +CalledStarSpeed:float[s] +CalledStarDamageMultiplier:float[s] +CalledStarKnockbackMultiplier:float[s] +StarLifeTicks:int[s] +StarSize:int[s] +StarSpin:float[s] +AfterimageCount:int[s] +GenerationGrowth:float[s] +MaxBats:int[s] +MaxStars:int[s] +BatPadding:float[s] +DoubleSpreadDeg:float[s] +BatGraceTicks:int[s] +LaunchSpeed(int)[s] +LaunchDamageMultiplier(int)[s] +LaunchKnockbackMultiplier:float[s] +LaunchLifeTicks:int[s] +BounceSpeed:float[s] +BounceSpreadDeg:float[s] +Gravity:float[s] +MaxFallSpeed:float[s] +BounceImmunityTicks:int[s] +BouncedLifeTicks:int[s] +BlastSize:int[s] +BlastTicks:int[s] +BlastDamageMultiplier:float[s] +BlastKnockbackMultiplier:float[s] +BlastShake:float[s] +MeleeStarsPerSwing:int[s] +MeleeStarPopSpeed:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailThickness:float[s] +TrailOpacity:float[s] +GoldColor:Color[s] +PinkColor:Color[s] +CoreColor:Color[s] +GenerationColor(int)[s]
+    +BladeLength:float[s] +SwordScale:float[s] +WindupTicks:int[s] +SwingTicks:int[s] +RecoverTicks:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboTicks:int[s] +CallLiftTicks:int[s] +CallSpawnTick:int[s] +CallTicks:int[s] +CallArmDeg:float[s] +CallTiltDeg:float[s] +CallKickDeg:float[s] +CallCooldownTicks:int[s] +CallFrontDistance:float[s] +CallTargetHeight:float[s] +CallRestArmDeg:float[s] +FlashTicks:int[s] +SpawnSideOffset:float[s] +SpawnAboveScreen:float[s] +MinFallDistance:float[s] +CalledStarSpeed:float[s] +CalledStarDamageMultiplier:float[s] +CalledStarKnockbackMultiplier:float[s] +StarLifeTicks:int[s] +StarSize:int[s] +StarSpin:float[s] +AfterimageCount:int[s] +GenerationGrowth:float[s] +MaxBats:int[s] +MaxStars:int[s] +BatPadding:float[s] +DoubleSpreadDeg:float[s] +BatGraceTicks:int[s] +BatTargetRange:float[s] +LaunchSpeed(int)[s] +LaunchDamageMultiplier(int)[s] +LaunchKnockbackMultiplier:float[s] +LaunchLifeTicks:int[s] +BounceFrontDistance:float[s] +BounceTargetHeight:float[s] +BounceSpeedTarget:float[s] +BounceMinTicks:int[s] +BounceMaxTicks:int[s] +BounceLead:float[s] +ArcMaxFallSpeed:float[s] +BounceSpreadDeg:float[s] +Gravity:float[s] +MaxFallSpeed:float[s] +BounceImmunityTicks:int[s] +BouncedLifeTicks:int[s] +BlastSize:int[s] +BlastTicks:int[s] +BlastDamageMultiplier:float[s] +BlastKnockbackMultiplier:float[s] +BlastShake:float[s] +MeleeStarsPerSwing:int[s] +MeleeStarPopSpeed:float[s] +MeleeStarHitGraceTicks:int[s] +MeleeStarOriginImmunityTicks:int[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailThickness:float[s] +TrailOpacity:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInnerFraction:float[s] +GoldColor:Color[s] +PinkColor:Color[s] +CoreColor:Color[s] +GenerationColor(int)[s]
 
 ### Content/Weapons/Sunfury/
 **SunfuryBlastProjectile.cs** uses: IceFx, PixelLine, RemoteHitTracker, SunfuryFx, SunfuryTuning

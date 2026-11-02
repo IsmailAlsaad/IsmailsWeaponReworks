@@ -34,6 +34,22 @@ namespace IsmailsWeaponReworks.Common
             return angle.ToRotationVector2();
         }
 
+        // The same two for an arm and blade angle given directly as WORLD angles: a swing that is aimed at something is not relative to the
+        // facing. Added for the Starfury; the Ice Blade keeps using the facing-local versions above (its behavior is unchanged).
+        public static Vector2 HandWorld(Player owner, float worldArm)
+        {
+            Vector2 hand = owner.GetFrontHandPosition(Player.CompositeArmStretchAmount.Full, worldArm - MathHelper.PiOver2);
+            if (owner.gravDir == -1f)
+                hand.Y = owner.Bottom.Y + (owner.position.Y - hand.Y);
+            hand.Y += owner.gfxOffY;
+            return hand;
+        }
+
+        public static Vector2 BladeDirectionWorld(Player owner, float worldBlade)
+        {
+            return (owner.gravDir == -1f ? -worldBlade : worldBlade).ToRotationVector2();
+        }
+
         // Origin, rotation offset and flip for drawing a vanilla sword item sprite (hilt in the bottom-left corner) along Projectile.rotation.
         public static void Sprite(Texture2D texture, int spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects)
         {

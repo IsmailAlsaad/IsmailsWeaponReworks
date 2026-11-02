@@ -10,9 +10,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
     public class StarfuryPlayer : ModPlayer
     {
         public int LastPhase = -1;       // StarfurySwingProjectile.Phase of the previous use, -1 = none yet
-        public float LastEndArm;         // where the arm was when the previous use ended (local radians)
+        public float LastEndArm;         // where the arm was when the previous use ended (a swing: relative to its aim; a call: facing-local)
         public uint LastEndTick;         // Main.GameUpdateCount when it ended
         public uint LastCallTick;        // when the last right click happened (the call cooldown counts from it)
-        public Vector2 CallTarget;       // the cursor point of the current call, clamped to range, fixed at the right click
+        public float LastEndWorldArm;    // the same end pose as a world angle (a call starts from it, whatever the aim was)
     }
 }

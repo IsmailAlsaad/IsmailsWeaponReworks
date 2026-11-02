@@ -11,12 +11,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 {
     /// <summary>
     /// The held Starfury. It draws the sword, poses the owner's arm and runs both uses:
-    /// SWING DOWN / SWING UP (left click): a custom melee chop; consecutive swings alternate down, up, down ... and each one starts
-    /// where the previous one ended, so a held button flows. A pixel trail follows the tip.
+    /// SWING DOWN / SWING UP (left click): a custom melee chop centered on the cursor (the middle of the slash points at it); consecutive
+    /// swings alternate down, up, down ... and each one starts where the previous one ended, so a held button flows. An expanding sweep
+    /// trail (SweepTrail) fills the area the blade crosses.
     /// CALL (right click): the arm lifts until the sword points straight up, a burst of star dust marks the moment, and on that tick the
-    /// owner spawns a StarfuryStarProjectile far above, which falls in a straight line through the point the cursor was on at the click.
-    /// MULTIPLAYER: the owner's client decides everything (which use it is, where the arm starts, the call target, the star spawn) and
-    /// passes the two values the other machines need in the spawn packet: ai[0] = phase, ai[1] = start arm angle (local radians).
+    /// owner spawns a StarfuryStarProjectile far above, which falls in a straight line to a point in front of the player.
+    /// MULTIPLAYER: the owner's client decides everything (which use it is, where the arm starts, the aim, the star spawn) and
+    /// passes what the other machines need in the spawn packet: ai[0] = phase, ai[1] = start arm angle (a swing: relative to the aim;
+    /// a call: facing-local radians), ai[2] = the aim angle captured at the click (radians, the player's own frame).
     /// Every machine then runs the same timers for the pose, sounds, dust and trail. Swing hits are detected by the owner's client
     /// like any projectile; the star is a normal spawned (and therefore synced) projectile. No custom packets.
     /// </summary>
@@ -29,9 +31,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 
         Phase CurrentPhase => (Phase)(int)Projectile.ai[0];
         float StartArm => Projectile.ai[1];
+        float Aim => Projectile.ai[2];
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
-        int Facing => Owner.direction >= 0 ? 1 : -1;
+        // A swing faces the side of its aim on every machine (so nobody's pose lags the synced direction); a call keeps the owner's direction.
+        int Facing => IsCall ? (Owner.direction >= 0 ? 1 : -1) : (Math.Cos(Aim) >= 0.0 ? 1 : -1);
         bool IsCall => CurrentPhase == Phase.Call;
         bool IsUp => CurrentPhase == Phase.SwingUp;
 
@@ -39,11 +43,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         int ticks;             // ticks this machine has run this projectile
         float timer;           // ticks since the use began
         float flash;           // 1 right after the star is called, fades to 0
-        float armLocal;        // arm direction in radians for a player facing right (positive = down)
+        float armLocal;        // a swing: arm angle relative to the aim for a player facing right (positive = down); a call: facing-local arm angle
         float tiltRad;         // blade tilt relative to the arm
         Vector2 tipPosition;
         Vector2 lastTipPosition;
-        PixelTrail trail;      // the trail along the blade tip (null until a swing lays a point)
+        SweepTrail trail;      // the fan behind the blade (null until a swing lays a point)
         int meleeStars;        // owner only: stars this swing has popped out of enemies (capped per swing)
 
         public override void SetDefaults()
@@ -67,6 +71,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         static float Rad(float degrees)
         {
             return MathHelper.ToRadians(degrees);
+        }
+
+        // The arm and the blade as world angles (in the player's own frame, see ApplyPose). A swing is relative to its aim and mirrored by
+        // the facing; the call keeps the old facing-local pose.
+        float WorldArm(float arm)
+        {
+            return IsCall ? HeldSwordPose.ToWorld(Facing, arm) : Aim + Facing * arm;
+        }
+
+        float WorldBlade(float arm, float tilt)
+        {
+            return IsCall ? HeldSwordPose.ToWorld(Facing, arm + tilt) : Aim + Facing * (arm + tilt);
         }
 
         // The swing runs from one end of the arc to the other: down goes high to low, up goes low to high.
@@ -134,7 +150,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             }
 
             if (ticks == 0 && IsOwner)
-                owner.ChangeDir(Main.MouseWorld.X >= owner.Center.X ? 1 : -1);
+                owner.ChangeDir(IsCall ? (Main.MouseWorld.X >= owner.Center.X ? 1 : -1) : Facing);
 
             Projectile.scale = StarfuryTuning.SwordScale * owner.GetAdjustedItemScale(owner.HeldItem);
 
@@ -195,10 +211,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 return;
             float arm = SwingArmAt(time);
             float tilt = SwingTiltAt(time);
-            Vector2 hand = HeldSwordPose.Hand(Owner, Facing, arm);
-            Vector2 direction = HeldSwordPose.BladeDirection(Owner, Facing, arm, tilt);
-            trail ??= new PixelTrail(new StarfuryTrailStyle(), IsOwner);
-            trail.Add(hand + direction * StarfuryTuning.BladeLength * Projectile.scale); // the blade's edge: the tip
+            Vector2 hand = HeldSwordPose.HandWorld(Owner, WorldArm(arm));
+            Vector2 direction = HeldSwordPose.BladeDirectionWorld(Owner, WorldBlade(arm, tilt));
+            float length = StarfuryTuning.BladeLength * Projectile.scale;
+            // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
+            float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / Math.Max(0.01f, StarfuryTuning.TrailExpandBy), 0f, 1f));
+            float inner = MathHelper.Lerp(1f, StarfuryTuning.TrailInnerFraction, expand);
+            trail ??= new SweepTrail(new StarfurySweepTrailStyle(), IsOwner);
+            trail.Add(hand + direction * length, hand + direction * length * inner);
         }
 
         void UpdateCall()
@@ -232,11 +252,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 Lighting.AddLight(tipPosition, 0.5f + 0.6f * flash, 0.4f + 0.5f * flash, 0.15f + 0.3f * flash);
         }
 
-        // Owner only. The star starts far above the target (on the side the player does not face) and flies a straight line through it.
+        // Owner only. The target is a point in front of the player, within sword reach (the cursor does not matter). The star starts far
+        // above it (on the side the player does not face) and flies a straight line through it.
         void SpawnStar()
         {
-            StarfuryPlayer state = Owner.GetModPlayer<StarfuryPlayer>();
-            Vector2 target = state.CallTarget;
+            Vector2 target = Owner.MountedCenter + new Vector2(Facing * StarfuryTuning.CallFrontDistance, StarfuryTuning.CallTargetHeight);
             float side = -Facing * StarfuryTuning.SpawnSideOffset;
             float y = Math.Min(Main.screenPosition.Y - StarfuryTuning.SpawnAboveScreen, target.Y - StarfuryTuning.MinFallDistance);
             Vector2 spawn = new Vector2(target.X + side, Math.Max(y, 64f));
@@ -273,7 +293,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         void Bat(Projectile starProjectile, StarfuryStarProjectile star)
         {
             int generation = star.Generation + 1;
-            Vector2 direction = LaunchDirection(starProjectile);
+            Vector2 direction = BatDirection(starProjectile);
             float spread = Rad(StarfuryTuning.DoubleSpreadDeg);
             star.Launch(direction.RotatedBy(-spread), generation, Projectile.damage, Projectile.knockBack);
             if (StarfuryStarProjectile.CountOwned(Projectile.owner) < StarfuryTuning.MaxStars)
@@ -284,7 +304,37 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             flash = 0.8f;
         }
 
-        // Toward the cursor when the player faces the cursor's side; otherwise the star reflects off the blade, by the angle it was hit at.
+        // Owner only: the closest enemy to the player (within BatTargetRange) that a star can be sent at, or -1.
+        int ClosestEnemy(Projectile star)
+        {
+            int best = -1;
+            float bestDistance = StarfuryTuning.BatTargetRange;
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC npc = Main.npc[i];
+                if (!npc.active || npc.friendly || npc.dontTakeDamage || !npc.CanBeChasedBy(star))
+                    continue;
+                float distance = Vector2.Distance(Owner.Center, npc.Center);
+                if (distance < bestDistance)
+                {
+                    best = i;
+                    bestDistance = distance;
+                }
+            }
+            return best;
+        }
+
+        // A bat sends the star in a straight line at the enemy closest to the player; with none in range the old rule decides.
+        Vector2 BatDirection(Projectile star)
+        {
+            int enemy = ClosestEnemy(star);
+            if (enemy < 0)
+                return LaunchDirection(star);
+            return (Main.npc[enemy].Center - star.Center).SafeNormalize(LaunchDirection(star));
+        }
+
+        // The fallback when no enemy is in range: toward the cursor when the player faces the cursor's side; otherwise the star reflects off
+        // the blade, by the angle it was hit at.
         Vector2 LaunchDirection(Projectile star)
         {
             Vector2 fallback = Vector2.UnitX * Facing;
@@ -304,9 +354,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         // Moves the owner's arm and puts the projectile in the hand; the blade points along Projectile.rotation.
         void ApplyPose(Player owner)
         {
-            owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, HeldSwordPose.ToWorld(Facing, armLocal) - MathHelper.PiOver2);
-            Vector2 hand = HeldSwordPose.Hand(owner, Facing, armLocal);
-            float blade = HeldSwordPose.ToWorld(Facing, armLocal + tiltRad);
+            float worldArm = WorldArm(armLocal);
+            owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, worldArm - MathHelper.PiOver2);
+            Vector2 hand = HeldSwordPose.HandWorld(owner, worldArm);
+            float blade = WorldBlade(armLocal, tiltRad);
             if (owner.gravDir == -1f)
                 blade = -blade;
             Projectile.rotation = blade;
@@ -361,7 +412,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             int index = StarfuryStarProjectile.Spawn(Projectile.GetSource_FromThis(), point, velocity, 0, StarfuryStarProjectile.Mode.Parabolic, 0f,
                 Projectile.damage, Projectile.knockBack, Projectile.owner);
             if (index >= 0 && index < Main.maxProjectiles && Main.projectile[index].ModProjectile is StarfuryStarProjectile star)
-                star.StartGrace();
+                star.StartGrace(target);
             meleeStars++;
             StarfuryFx.BounceBurst(point, 0);
         }
@@ -375,6 +426,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 StarfuryPlayer state = Owner.GetModPlayer<StarfuryPlayer>();
                 state.LastPhase = (int)CurrentPhase;
                 state.LastEndArm = armLocal;
+                state.LastEndWorldArm = WorldArm(armLocal);
                 state.LastEndTick = Main.GameUpdateCount;
             }
             DetachedTrails.Hand(trail);
