@@ -26,8 +26,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Shroomerang
         public static float SpinSpeed => 0.5f;
 
         // ---- mushrooms the boomerang drops ----
-        public static int FirstSpawnDelayTicks => 3;
-        public static int SpawnIntervalTicks => 8;
+        public static int FirstSpawnDelayTicks => 4;
+        public static int SpawnIntervalTicks => 18;
         public static int MaxMushrooms => 8;              // the 9th evicts the oldest, which explodes at once
         public static int MushroomLifeTicks => 150;       // 2.5 seconds, then it explodes
         public static int PopTicks => 12;                 // grow-in animation
@@ -49,6 +49,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Shroomerang
 
         // ---- look ----
         public static Color GlowColor => new Color(80, 160, 255, 0);
-        public static float PixelSize => 2f;
+        public static Color CloudColor => new Color(110, 170, 255); // tint of the smoke in the spore cloud
     }
 }

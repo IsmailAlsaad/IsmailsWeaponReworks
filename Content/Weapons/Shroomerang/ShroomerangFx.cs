@@ -83,14 +83,36 @@ namespace IsmailsWeaponReworks.Content.Weapons.Shroomerang
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.25f, Pitch = 0.5f, PitchVariance = 0.3f }, position);
+            //SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.25f, Pitch = 0.5f, PitchVariance = 0.3f }, position);
         }
 
-        public static void PlayBurst(Vector2 position)
+        // The end of a mushroom: a soft, fat cloud of spores, not an explosion. Blue smoke for the body, glowing spores drifting inside it;
+        // no flash, no rings, no bang.
+        public static void CloudPuff(Vector2 center, float radius)
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.45f, Pitch = 0.5f, PitchVariance = 0.2f }, position);
+            for (int i = 0; i < 18; i++)
+            {
+                Vector2 offset = Main.rand.NextVector2Circular(radius * 0.45f, radius * 0.45f);
+                Dust smoke = Dust.NewDustPerfect(center + offset, DustID.Smoke, offset * 0.06f + Main.rand.NextVector2Circular(0.6f, 0.6f), 150, ShroomerangTuning.CloudColor, Main.rand.NextFloat(1.6f, 2.4f));
+                smoke.noGravity = true;
+            }
+            for (int i = 0; i < 26; i++)
+            {
+                Vector2 offset = Main.rand.NextVector2Circular(radius * 0.7f, radius * 0.7f);
+                Dust spore = Dust.NewDustPerfect(center + offset, SporeType(), offset * 0.04f + new Vector2(0f, -0.4f), 100, default, Main.rand.NextFloat(1f, 1.6f));
+                spore.noGravity = true;
+            }
+        }
+
+        // A quiet "fwoomp": two soft pops, deep and short.
+        public static void PlayPuff(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            //SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.6f, Pitch = -0.5f, PitchVariance = 0.2f }, position);
+            SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.35f, Pitch = -0.1f, PitchVariance = 0.2f }, position);
         }
     }
 }

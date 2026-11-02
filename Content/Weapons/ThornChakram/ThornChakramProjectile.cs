@@ -15,8 +15,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
     /// ring of 8 stingers from its outer circle every BurstIntervalTicks. The first enemy it hits makes it latch on: it sticks to the enemy,
     /// spins faster and faster and shreds it, and when the latch ends (or the enemy dies) it explodes into 8 piercing stingers.
     /// ai[0] = phase (0 outbound, 1 returning, 2 latched, 3 spent).
-    /// ai[1] = outbound/returning: range in pixels; latched: index of the enemy it sits on.
-    /// ai[2] = outbound/returning: distance flown (every machine adds its own, only the owner decides the turn); latched: angle of its side of the enemy.
+    /// ai[1] = outbound/returning: range in pixels; latched: index of the enemy it sits on, plus (distance of the contact point from the enemy's center) / 1024 as the fraction.
+    /// ai[2] = outbound/returning: distance flown (every machine adds its own, only the owner decides the turn); latched: angle of the contact point seen from the enemy's center.
     /// localAI[1] = spin direction, localAI[2] = age in ticks. The latch timer is the field latchTicks.
     /// MULTIPLAYER: the owner's client decides the throw, the turn, a block hit, every stinger spawn (normal spawned projectiles, synced by
     /// tModLoader), the latch (OnHitNPC only runs there) and the explosion. The phase, the enemy and the side are synced through netUpdate;
@@ -194,8 +194,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
                 return;
             }
 
-            float reach = Math.Min(ThornChakramTuning.LatchOffset, 0.4f * Math.Min(npc.width, npc.height));
-            Projectile.Center = npc.Center + Projectile.ai[2].ToRotationVector2() * reach;
+            Projectile.Center = npc.Center + LatchOffsetVector();
 
             if (latchTicks % ThornChakramTuning.ShredIntervalTicks == 0)
             {
@@ -205,6 +204,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
 
             if (isOwner && latchTicks >= ThornChakramTuning.LatchTicks)
                 Explode();
+        }
+
+        // Where it sits on the enemy, relative to the enemy's center: the point where it touched it (see OnHitNPC for the encoding).
+        Vector2 LatchOffsetVector()
+        {
+            float length = (Projectile.ai[1] - (int)Projectile.ai[1]) * 1024f;
+            return Projectile.ai[2].ToRotationVector2() * length;
         }
 
         // Owner's client: a ring of stingers around the circle, a new one every BurstIntervalTicks while it flies. They start on the
@@ -218,16 +224,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
                 ThornChakramTuning.BurstStingerLifeTicks, ThornChakramTuning.BurstDamageMultiplier, false);
         }
 
-        void SpawnStingers(int count, float radius, float speed, int lifeTicks, float damageMultiplier, bool piercing)
+        void SpawnStingers(int count, float radius, float speed, int lifeTicks, float damageMultiplier, bool piercing, int ignoreNpc = -1)
         {
             int damage = Math.Max(1, (int)(Projectile.damage * damageMultiplier));
             int type = ModContent.ProjectileType<ThornChakramStingerProjectile>();
             for (int i = 0; i < count; i++)
             {
                 Vector2 direction = (Projectile.rotation + MathHelper.TwoPi * i / count).ToRotationVector2();
-                // ai[0]: 1 = piercing, ai[1]: life in ticks, ai[2]: 1 = this one plays the burst sound (one per ring)
+                // ai[0]: 1 = piercing, ai[1]: life in ticks, ai[2]: 2 * (index of the one enemy it must not hurt + 1) + 1 if this one plays the burst sound (one per ring)
                 Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center + direction * radius, direction * speed, type, damage, Projectile.knockBack,
-                    Projectile.owner, piercing ? 1f : 0f, lifeTicks, i == 0 ? 1f : 0f);
+                    Projectile.owner, piercing ? 1f : 0f, lifeTicks, (i == 0 ? 1f : 0f) + 2f * (ignoreNpc + 1));
             }
         }
 
@@ -238,7 +244,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
             if (CurrentPhase == Phase.Spent)
                 return;
             SpawnStingers(ThornChakramTuning.ExplosionCount, 0f, ThornChakramTuning.ExplosionSpeed,
-                ThornChakramTuning.ExplosionStingerLifeTicks, ThornChakramTuning.ExplosionDamageMultiplier, true);
+                ThornChakramTuning.ExplosionStingerLifeTicks, ThornChakramTuning.ExplosionDamageMultiplier, true, (int)Projectile.ai[1]); // never hurts the enemy it just shredded
             Projectile.ai[0] = (float)Phase.Spent;
             Projectile.velocity = Vector2.Zero;
             Projectile.netUpdate = true;
@@ -272,16 +278,54 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
 
             if (InFlight)
             {
-                Vector2 fromEnemy = Projectile.Center - target.Center;
-                float angle = fromEnemy.LengthSquared() > 1f ? fromEnemy.ToRotation() : (-Projectile.velocity).ToRotation();
+                // It latches on where it touched the enemy. The offset from the enemy's center is synced as ai[1] = enemy index + length / 1024
+                // (the fraction) and ai[2] = angle, so every machine puts the chakram at the same spot of the enemy.
+                Vector2 offset = EntryPoint(sweepStart, Projectile.Center, target.Hitbox) - target.Center;
+                float length = Math.Min(offset.Length(), 1000f);
                 Projectile.ai[0] = (float)Phase.Latched;
-                Projectile.ai[1] = target.whoAmI;
-                Projectile.ai[2] = angle;
+                Projectile.ai[1] = target.whoAmI + length / 1024f;
+                Projectile.ai[2] = length > 0.01f ? offset.ToRotation() : 0f;
                 Projectile.localNPCHitCooldown = ThornChakramTuning.ShredIntervalTicks;
                 Projectile.localNPCImmunity[target.whoAmI] = ThornChakramTuning.ShredIntervalTicks;
                 Projectile.netUpdate = true;
             }
             ThornChakramFx.Shred(target.Center, 2);
+        }
+
+        // Where the line from 'from' to 'to' first enters the box (the point of contact); if it never does, the closest point of the box.
+        static Vector2 EntryPoint(Vector2 from, Vector2 to, Rectangle box)
+        {
+            Vector2 closest = new Vector2(MathHelper.Clamp(to.X, box.Left, box.Right), MathHelper.Clamp(to.Y, box.Top, box.Bottom));
+            if (from == Vector2.Zero)
+                return closest;
+            Vector2 delta = to - from;
+            float tMin = 0f;
+            float tMax = 1f;
+            if (Math.Abs(delta.X) < 0.0001f)
+            {
+                if (from.X < box.Left || from.X > box.Right)
+                    return closest;
+            }
+            else
+            {
+                float a = (box.Left - from.X) / delta.X;
+                float b = (box.Right - from.X) / delta.X;
+                tMin = Math.Max(tMin, Math.Min(a, b));
+                tMax = Math.Min(tMax, Math.Max(a, b));
+            }
+            if (Math.Abs(delta.Y) < 0.0001f)
+            {
+                if (from.Y < box.Top || from.Y > box.Bottom)
+                    return closest;
+            }
+            else
+            {
+                float a = (box.Top - from.Y) / delta.Y;
+                float b = (box.Bottom - from.Y) / delta.Y;
+                tMin = Math.Max(tMin, Math.Min(a, b));
+                tMax = Math.Min(tMax, Math.Max(a, b));
+            }
+            return tMin > tMax ? closest : from + delta * tMin;
         }
 
         void RemoteHitSparks(Phase phase)

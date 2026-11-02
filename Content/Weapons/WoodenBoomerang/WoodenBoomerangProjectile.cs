@@ -12,7 +12,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.WoodenBoomerang
 {
     /// <summary>
     /// The thrown Wooden Boomerang: out to a fixed range (or until a block), then back to the player in a smooth force-based arc. The first
-    /// enemy it hits breaks it in half: it becomes two WoodenBoomerangShardProjectiles that linger and hurt.
+    /// enemy (or, on the way out, the first block) it hits breaks it in half: it becomes two WoodenBoomerangShardProjectiles that linger and hurt.
     /// ai[0] = phase (0 outbound, 1 returning, 2 broken), ai[1] = range, ai[2] = distance flown (every machine adds its own, only the
     /// owner decides the turn). localAI[1] = spin direction, localAI[2] = age in ticks.
     /// MULTIPLAYER: the owner's client decides the throw, the turn, a block hit and the break (OnHitNPC only runs there). The break flips
@@ -88,7 +88,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.WoodenBoomerang
             Phase phase = CurrentPhase;
 
             sweepStart = Projectile.Center;
-            Projectile.tileCollide = phase == Phase.Outbound; // only the way out stops at blocks
+            Projectile.tileCollide = phase == Phase.Outbound || WoodenBoomerangTuning.BreakOnTilesWhileReturning; // by default only the way out meets blocks
             Projectile.timeLeft = Math.Max(Projectile.timeLeft, 60);
 
             if (++Projectile.localAI[2] > WoodenBoomerangTuning.FlightMaxTicks)
@@ -122,31 +122,35 @@ namespace IsmailsWeaponReworks.Content.Weapons.WoodenBoomerang
             Projectile.netUpdate = true;
         }
 
-        // A block ends the way out and turns it back.
+        // A block breaks it, like an enemy does. The owner's client decides; the shards fly back away from the block.
         public override bool OnTileCollide(Vector2 oldVelocity)
         {
-            if (Projectile.owner == Main.myPlayer && CurrentPhase == Phase.Outbound)
-            {
-                WoodenBoomerangFx.Splinters(Projectile.Center, 4, 2.5f, 0.9f);
-                BeginReturn();
-            }
-            return false; // never die on a tile
+            if (Projectile.owner == Main.myPlayer && CurrentPhase != Phase.Broken)
+                Break(-oldVelocity);
+            return false; // never die on a tile: the break is flagged and synced
         }
 
         // Owner's client only. It must not be moved or killed here: the break is flagged (synced) and every machine removes its own copy.
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            if (Projectile.owner != Main.myPlayer || CurrentPhase == Phase.Broken)
+            if (Projectile.owner == Main.myPlayer)
+                Break(Projectile.velocity);
+        }
+
+        // Owner's client only: spawn the two shards, one to each side of 'direction', and flag the boomerang as broken.
+        void Break(Vector2 direction)
+        {
+            if (CurrentPhase == Phase.Broken)
                 return;
 
-            Vector2 direction = Projectile.velocity.SafeNormalize(Vector2.UnitX);
+            direction = direction.SafeNormalize(Vector2.UnitX);
             int damage = Math.Max(1, (int)(Projectile.damage * WoodenBoomerangTuning.ShardDamageMultiplier));
             int shardType = ModContent.ProjectileType<WoodenBoomerangShardProjectile>();
             for (int half = 0; half < 2; half++)
             {
                 float side = half == 0 ? -1f : 1f;
                 Vector2 velocity = direction.RotatedBy(side * WoodenBoomerangTuning.ShardSpreadAngle) * WoodenBoomerangTuning.ShardSpeed + new Vector2(0f, -WoodenBoomerangTuning.ShardHop);
-                // ai[0]: which half of the sprite (0 = left, 1 = right), ai[1]: spin direction
+                // ai[0]: which half (0 = left, 1 = right), ai[1]: spin direction
                 Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, velocity, shardType, damage, Projectile.knockBack, Projectile.owner, half, side);
             }
 

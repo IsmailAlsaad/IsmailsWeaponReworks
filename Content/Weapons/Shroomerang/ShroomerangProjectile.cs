@@ -116,7 +116,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Shroomerang
         void BeginReturn()
         {
             Projectile.ai[0] = (float)Phase.Returning;
-            Array.Clear(Projectile.localNPCImmunity, 0, Projectile.localNPCImmunity.Length); // enemies can be hit again on the way back
+            //Array.Clear(Projectile.localNPCImmunity, 0, Projectile.localNPCImmunity.Length); // enemies can be hit again on the way back
             Projectile.netUpdate = true;
         }
 
@@ -155,6 +155,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Shroomerang
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
+            BeginReturn();
             ShroomerangFx.HitSparks(target.Center);
         }
 

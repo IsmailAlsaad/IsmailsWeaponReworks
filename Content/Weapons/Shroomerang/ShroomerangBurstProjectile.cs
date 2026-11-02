@@ -8,7 +8,7 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.Shroomerang
 {
     /// <summary>
-    /// The puff of glowing spores a mushroom explodes into. A short-lived circle that damages every enemy in it once.
+    /// The cloud puff of glowing spores a mushroom ends in (soft, not an explosion). A short-lived circle that damages every enemy in it once.
     /// MULTIPLAYER: spawned by the owner's client (so it is synced like any projectile); every machine plays the visuals and sound from
     /// the synced spawn on its first tick, the owner's client does the damage, and the other machines add the hit sparks themselves.
     /// localAI[0] = age (visual only).
@@ -46,10 +46,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Shroomerang
         {
             if (Projectile.localAI[0] == 0f)
             {
-                ShroomerangFx.PlayBurst(Projectile.Center);
+                //ShroomerangFx.PlayBurst(Projectile.Center);
                 ShroomerangFx.SporePuff(Projectile.Center, 22, 6f, 1.5f);
                 ShroomerangFx.SporeRing(Projectile.Center, 24, 10f, 5f);
                 ShroomerangFx.SporeRing(Projectile.Center, 16, 36f, 2.5f);
+                ShroomerangFx.PlayPuff(Projectile.Center);
+                ShroomerangFx.CloudPuff(Projectile.Center, ShroomerangTuning.BurstRadius);
                 if (Projectile.owner != Main.myPlayer)
                     RemoteHitTracker.TouchOnce(Projectile, npc => ShroomerangFx.HitSparks(npc.Center)); // the owner gets these from OnHitNPC
             }
@@ -71,7 +73,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Shroomerang
             float life = Math.Max(1, ShroomerangTuning.BurstLifeTicks);
             float u = MathHelper.Clamp(Age / life, 0f, 1f);
             float fade = (1f - u) * (1f - u);
-            float grid = ShroomerangTuning.PixelSize;
+            float grid = 2f;
             for (int ring = 0; ring < 2; ring++)
             {
                 float radius = ShroomerangTuning.BurstRadius * (ring == 0 ? 1f : 0.6f) * (1f - (1f - u) * (1f - u));

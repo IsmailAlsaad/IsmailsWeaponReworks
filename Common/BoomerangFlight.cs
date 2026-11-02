@@ -42,8 +42,7 @@ namespace IsmailsWeaponReworks.Common
         // One tick of the way OUT of a fixed-range throw (ai[1] = range in pixels, ai[2] = distance flown so far). Over the last
         // brakeDistance pixels the speed follows the remaining distance down to brakeMinSpeed (a gradual stop), then ai[2] grows by the
         // distance moved. Every machine adds its own distance; only the owner should act on the result. Returns true when the range is
-        // used up (or the projectile has stopped), i.e. when the return should begin. Added with the Shroomerang, when the second
-        // fixed-range boomerang (after the Enchanted Boomerang's own copy of this) needed it; the Wooden Boomerang and the Thorn Chakram use it too.
+        // used up (or the projectile has stopped), i.e. when the return should begin. Used by the Enchanted Boomerang, the Flamerang, the Shroomerang, the Wooden Boomerang and the Thorn Chakram.
         public static bool StepOutbound(Projectile projectile, float range, float throwSpeed, float brakeDistance, float brakeMinSpeed)
         {
             float speed = projectile.velocity.Length();

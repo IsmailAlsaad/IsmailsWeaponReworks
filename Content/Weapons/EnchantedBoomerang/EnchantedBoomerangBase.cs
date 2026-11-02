@@ -139,26 +139,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
 
         void AiOutbound(bool isOwner)
         {
-            float range = Projectile.ai[1];
-            float remaining = range - Projectile.ai[2];
-            float speed = Projectile.velocity.Length();
-            if (speed < 0.01f)
-            {
-                if (isOwner)
-                    BeginReturn();
-                return;
-            }
-            if (remaining < EnchantedBoomerangTuning.BrakeDistance)
-            {
-                float braked = Math.Max(EnchantedBoomerangTuning.BrakeMinSpeed, EnchantedBoomerangTuning.ThrowSpeed * Math.Max(0f, remaining) / EnchantedBoomerangTuning.BrakeDistance);
-                if (speed > braked)
-                {
-                    Projectile.velocity *= braked / speed;
-                    speed = braked;
-                }
-            }
-            Projectile.ai[2] += speed; // every machine adds the same distance; only the owner decides when it is enough
-            if (isOwner && Projectile.ai[2] >= range)
+            // Shared with the other fixed-range boomerangs: braking over the last stretch, ai[2] += distance flown. Every machine adds its
+            // own distance; only the owner decides the turn.
+            if (BoomerangFlight.StepOutbound(Projectile, Projectile.ai[1], EnchantedBoomerangTuning.ThrowSpeed, EnchantedBoomerangTuning.BrakeDistance, EnchantedBoomerangTuning.BrakeMinSpeed) && isOwner)
                 BeginReturn();
         }
 

@@ -137,32 +137,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Flamerang
             FlamerangFx.FlightDust(Projectile.Center, Projectile.velocity, 0.5f);
 
             float speed = Projectile.velocity.Length();
-            if (speed < 0.01f)
-            {
-                if (isOwner)
-                    BeginSettle();
-                return;
-            }
-            Vector2 direction = Projectile.velocity / speed;
-            flightDirection = direction;
+            if (speed >= 0.01f)
+                flightDirection = Projectile.velocity / speed;
+            float remaining = Projectile.ai[1] - Projectile.ai[2];
 
-            float range = Projectile.ai[1];
-            float flown = Projectile.ai[2];
-            float remaining = range - flown;
-
-            // Gradual stop: over the last BrakeDistance pixels the speed follows the remaining distance, with a minimum crawl.
-            float brake = FlamerangTuning.BrakeDistance;
-            if (remaining < brake)
+            // Gradual stop and distance flown: shared with the other fixed-range boomerangs (BoomerangFlight.StepOutbound).
+            if (BoomerangFlight.StepOutbound(Projectile, Projectile.ai[1], FlamerangTuning.ThrowSpeed, FlamerangTuning.BrakeDistance, FlamerangTuning.BrakeMinSpeed) && isOwner)
             {
-                float wanted = Math.Max(FlamerangTuning.BrakeMinSpeed, FlamerangTuning.ThrowSpeed * Math.Max(remaining, 0f) / brake);
-                speed = Math.Min(speed, wanted);
-                Projectile.velocity = direction * speed;
-            }
-
-            Projectile.ai[2] += speed;
-            if (isOwner && flown + speed >= range)
-            {
-                Projectile.Center += direction * Math.Max(0f, remaining); // stop exactly at the end of the range
+                if (speed >= 0.01f)
+                    Projectile.Center += flightDirection * Math.Max(0f, remaining); // stop exactly at the end of the range
                 BeginSettle();
             }
         }

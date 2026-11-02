@@ -9,7 +9,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
     /// A stinger of the Thorn Chakram: either one of the rings it spits while it flies (hits one enemy and is gone) or one of the
     /// eight it explodes into (pierces). Spawned by the chakram's owner, so its damage goes through the normal owner-client hit path.
     /// MULTIPLAYER: normal spawned projectile (synced by tModLoader); the straight flight is deterministic on every machine.
-    /// ai[0]: 1 = piercing (set at spawn). ai[1]: life in ticks (set at spawn). ai[2]: 1 = plays the burst sound (one stinger per ring).
+    /// ai[0]: 1 = piercing (set at spawn). ai[1]: life in ticks (set at spawn). ai[2]: bit 0 = plays the burst sound (one stinger per ring),
+    /// the rest = 2 * (index of the one enemy it must never hurt + 1), 0 = none (the explosion's stingers skip the enemy that was shredded).
     /// localAI[0]: age in ticks.
     /// </summary>
     public class ThornChakramStingerProjectile : ModProjectile
@@ -43,7 +44,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
                     Projectile.localNPCHitCooldown = ThornChakramTuning.ExplosionHitCooldownTicks;
                 }
                 ThornChakramFx.Puff(Projectile.Center, 2, 1.5f, 0.8f);
-                if (Projectile.ai[2] == 1f)
+                if (((int)Projectile.ai[2] & 1) == 1)
                     ThornChakramFx.PlayBurst(Projectile.Center);
             }
 
@@ -51,6 +52,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
             Lighting.AddLight(Projectile.Center, 0.05f, 0.2f, 0.05f);
             if (Main.rand.NextBool(4))
                 ThornChakramFx.Trail(Projectile.Center, Projectile.velocity, 0.7f);
+        }
+
+        // The stingers of the final explosion never hurt the enemy that was just shredded, only the others.
+        public override bool? CanHitNPC(NPC target)
+        {
+            int ignored = ((int)Projectile.ai[2] >> 1) - 1;
+            return target.whoAmI == ignored ? false : (bool?)null;
         }
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
