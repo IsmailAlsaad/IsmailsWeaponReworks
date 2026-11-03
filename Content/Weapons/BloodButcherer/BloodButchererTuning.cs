@@ -38,14 +38,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
 
         // ---- grip, spin and launch (patch 2): an enemy that can be gripped is pinned in the shut jaws, spun a full circle and thrown at the cursor ----
         public static int PullTicks => 6;             // the blade drags the enemy in from where it was caught to the middle of the mouth
-        public static int SpinTicks => 34;            // the full circle (ease-in: it gets faster until the throw)
-        public static int LockTicks => 4;             // the aim stops following the cursor this many ticks before the throw
+        public static int SpinTicks => 34;            // the ease-in: the blade gets faster for this long, ending in exactly one full circle at top speed (SpinTopSpeed); while the button is held it keeps that speed
+        public static int LockTicks => 4;             // after the button is released the throw waits at least this many timeline ticks, so the other machines hear about it before it happens
+        public static float SpinTopSpeed => 2f * MathHelper.TwoPi / System.Math.Max(1, SpinTicks); // radians per timeline tick once the ease-in is over (about 0.37); derived, so one full circle always ends the ease-in
+        public static float ChompTurnSpeed => 0.6f;   // radians per tick the jaws turn toward the cursor after each chomp
         public static int WindDownTicks => 26;        // after the throw (or when the enemy dies first) the blade keeps spinning, slowing evenly to a stop, and comes back to the player
         public static int WindDownRecoverTicks => 4;  // a short pause with the blade back in the hand before the next bite can start
         public static int ReleaseHoldTicks => 6;      // the jaws stay open this long after they fly open, then close while the blade slows
         public static int ReleaseOpenTicks => 3;      // how fast they fly open
         public static float SpinOffset => 50f;        // how far the blade is pushed out from the hand while it spins
-        public static float SpinFollow => 0.5f;       // radians per tick the sweep may change while it follows the cursor
         public static float PinRatio => 0.6f;         // where in the shut jaws the enemy is pinned (0 = pivot, 1 = tips)
         public static float LaunchSpeed => 15f;       // pixels per tick toward the cursor
         public static int LaunchAiOffTicks => 25;    // the thrown enemy cannot steer or attack for this long (normal gravity and tile collision)
@@ -58,8 +59,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static float LaunchShake => 6f;
         public static float SpinWhooshPitchLow => 0f;
         public static float SpinWhooshPitchHigh => 0.7f;
-        public static int SpinMaxCircles => 2;        // hard cap on how many full circles the spin sweep can ever be (the minimum is always one)
-        public static float SpinCursorSlack => 0.8f;  // radians: a cursor up to this far BEHIND the first aim counts as exactly on it, so a cursor that drifts a hair backwards cannot turn one circle into two
         public static int JawTrailCutTicks => 3;      // when the spin starts, the two jaw lines left by the bite vanish within this many ticks and only the spin fan remains
         public static float SpinSweepDamageMultiplier => 1.3f; // the spinning blade cutting an enemy that is not the pinned one
         public static int SpinSweepHitInterval => 10; // ticks before the blade may cut the same enemy again
