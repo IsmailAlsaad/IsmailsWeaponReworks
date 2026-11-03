@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-04 | 127 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-04 | 128 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -93,6 +93,11 @@ tModLoader/other bases -> project types:
     +Draw(Vector2,float,int,float,Func<float, float>,Func<float, Color>)[s]
     struct Span
       +Y:int +X0:int +X1:int +Order:int +Color:Color
+**PixelShaderFx.cs**
+  class PixelShaderParams
+    +Grid:float +Time:float +Seed:float +Progress:float +Intensity:float +Bands:float +Ellipse:bool +ColorA:Color +ColorB:Color +ColorC:Color +Params:Vector4 +Params2:Vector4 +Ramp:Texture2D +Blend:BlendState +FallbackColor:Color +Configure:Action<Effect>
+  static class PixelShaderFx
+    +Draw(string,Vector2,int,int,PixelShaderParams)[s] +Draw(string,Vector2,int,PixelShaderParams)[s] +Set(Effect,string,float)[s] +Set(Effect,string,Vector2)[s] +Set(Effect,string,Vector3)[s] +Set(Effect,string,Vector4)[s]
 **PixelTrail.cs** uses: PixelLine
   abstract class PixelTrailStyle
     +Grid:float[v] +LifeTicks:int[v] +Layers:int[v] +Jitter:float[v] +GetWidth(int,float)[ab] +GetColor(int,float)[ab] +Update(PixelTrail)[v]
@@ -224,7 +229,7 @@ tModLoader/other bases -> project types:
     +Texture:string[ov] +Load()[ov] +Unload()[ov] +Break() +MakeRoom(int,int)[s] +CanHitNPC(NPC)[ov] +OnKill(int)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
 
 ### Content/Weapons/FlowerOfFire/
-**FlowerOfFireFx.cs** uses: FlowerOfFireTuning
+**FlowerOfFireFx.cs** uses: FlowerOfFireTuning, PixelShaderFx, PixelShaderParams
   static class FlowerOfFireFx
     +Burst(Vector2)[s] +DrawFireball(Vector2,float,float,float)[s]
 **FlowerOfFireGlobalItem.cs** uses: FlowerOfFireTuning, PixelFireballProjectile
@@ -232,7 +237,7 @@ tModLoader/other bases -> project types:
     +AppliesToEntity(Item,bool)[ov]
 **FlowerOfFireTuning.cs**
   static class FlowerOfFireTuning
-    +Speed:float[s] +FlightTicks:int[s] +HitSize:float[s] +BurnTicks:int[s] +BurstTicks:int[s] +PixelSize:float[s] +UnitScale:float[s] +QuadSize:int[s] +FlameSpeed:float[s] +ColorBands:int[s] +Dither:float[s] +LightColor:Vector3[s]
+    +Speed:float[s] +FlightTicks:int[s] +HitSize:float[s] +BurnTicks:int[s] +BurstTicks:int[s] +PixelSize:float[s] +UnitScale:float[s] +QuadSize:int[s] +FlameSpeed:float[s] +ColorBands:int[s] +LightColor:Vector3[s]
 **PixelFireballProjectile.cs** uses: FlowerOfFireFx, FlowerOfFireTuning
   class PixelFireballProjectile : ModProjectile
     +Texture:string[ov] +OnSpawn(IEntitySource)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
@@ -495,8 +500,8 @@ tModLoader/other bases -> project types:
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; build.txt, description.txt, description_workshop.txt
 - Content/Sounds/: ElectricEel.wav
-- Effects/: PixelFireball.fx; PixelFireball.xnb
+- Effects/: PixelFireball.fx; PixelShared.fxh; PixelFireball.xnb
 - Localization/: en-US_Mods.IsmailsWeaponReworks.hjson
 - Properties/: launchSettings.json
 - docs/: ROADMAP.md
-- tools/: patch_engine.ps1
+- tools/: flatten_shader.ps1, patch_engine.ps1
