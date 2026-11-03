@@ -44,7 +44,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         public static float CarryFollow => 0.55f;           // how fast an impaled enemy slides into its slot (0 to 1 per tick)
         public static float CarryFrontGap => 8f;            // from the tip to the front edge of the first impaled enemy
         public static float CarryGap => 4f;                 // between two impaled enemies
-        public static float BlastRadius => 110f;            // the explosion at the tip hits every enemy this close
+        public static float BlastRadius => 60f;            // the explosion at the tip hits every enemy this close
         public static float BlastDamageMultiplier => 0.75f; // of the javelin hit's damage
         public static float CarriedBlastMultiplier => 1.5f; // extra damage for each impaled enemy
         public static float BlastKnockback => 7f;
