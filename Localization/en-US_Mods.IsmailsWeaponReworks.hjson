@@ -26,4 +26,6 @@ Projectiles: {
 	ShroomerangBurstProjectile.DisplayName: Shroomerang Burst Projectile
 	StarfuryBlastProjectile.DisplayName: Starfury Blast Projectile
 	BloodButchererSwingProjectile.DisplayName: Blood Butcherer Swing Projectile
+	SpearThrustProjectile.DisplayName: Spear Thrust Projectile
+	SwordfishThrustProjectile.DisplayName: Swordfish Thrust Projectile
 }
