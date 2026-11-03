@@ -510,4 +510,4 @@ tModLoader/other bases -> project types:
 - Localization/: en-US_Mods.IsmailsWeaponReworks.hjson
 - Properties/: launchSettings.json
 - docs/: ROADMAP.md
-- tools/: flatten_shader.ps1, patch_engine.ps1
+- tools/: compile_shader.ps1, flatten_shader.ps1, patch_engine.ps1

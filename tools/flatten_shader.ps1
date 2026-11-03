@@ -14,7 +14,7 @@ $evaluator = [System.Text.RegularExpressions.MatchEvaluator] {
     param($m)
     ([IO.File]::ReadAllText((Join-Path $dir $m.Groups[1].Value))).TrimStart([char]0xFEFF)
 }
-$flat = [regex]::Replace($text, '(?m)^[ \t]*#include[ \t]+"([^"]+)"[^\r\n]*$', $evaluator)
+$flat = [regex]::Replace($text, '(?m)^[ \t]*#include[ \t]+"([^"]+)"[^\r\n]*\r?$', $evaluator)
 $outDir = Join-Path $Root 'tools\flat'
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 $out = Join-Path $outDir (Split-Path -Leaf $fxPath)
