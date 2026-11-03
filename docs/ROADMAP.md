@@ -30,7 +30,7 @@ Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projecti
 - [~] Blood Butcherer patch 1 (2026-11-03): left click lunges a jawed blade along the aim, the jaws open and bite, a catch wedge decides caught or miss (the clamp is a placeholder until patch 2's spin); also `Common/CameraShake` (Sunfury and Starfury use it now) and `SweepTrailStyle.Fade` (`Uniform` / `TailFirst`, Ice Blade and Starfury moved onto it) (applied, untested)
 - [~] Blood Butcherer patch 2 (2026-11-03): a caught enemy that can be gripped is pinned in the shut jaws, spun a full circle and thrown at the cursor (new `BloodButchererGripNPC`); bosses, worms, immovable and big enemies are still only clamped (patch 3 = the chomp); a blood tether ties the blade's handle to the player's real hand (`BloodButchererTether`, drawn with `PixelLine`); the art convention is now 45 degree sprites with the pivot in the middle of each canvas (applied, untested)
 - [~] Blood Butcherer patch 2b (2026-11-03): spin feel round: at least one full 360 before the throw, the player faces the cursor while spinning, after the throw the blade keeps spinning and slows down back to the player, an enemy dying mid-spin no longer snaps the blade (it just winds down in place), and the spin trail is a fan that fills the blade as it speeds up (applied, untested)
-- [ ] Spears (design in section 12): patch 1 = `Common` held-spear core + Spear + Swordfish rage; patch 2 = dash helpers + Trident; patch 3 = `ArcBolt` + Storm Spear; patch 4 = `OrbitRing` + Rotted Fork spin; patch 5 = `CarriedNPC`/`AreaEffect` + Rotted Fork javelin; patch 6-7 = Dark Lance (orbs, then sweep/thrust/explosion); patch 8 = optional cleanup (not started)
+- [~] Spears (design in section 12; patch 1 applied 2026-11-03, untested): patch 1 = `Common` held-spear core + Spear + Swordfish rage; patch 2 = dash helpers + Trident; patch 3 = `ArcBolt` + Storm Spear; patch 4 = `OrbitRing` + Rotted Fork spin; patch 5 = `CarriedNPC`/`AreaEffect` + Rotted Fork javelin; patch 6-7 = Dark Lance (orbs, then sweep/thrust/explosion); patch 8 = optional cleanup (not started)
 - [~] Blood Butcherer patch 3 (2026-11-03): the immovable chomp (a boss, worm, immovable or too big enemy is chewed six times instead of clamped, `ClampTicks` is gone); the spin sweep is wrapped on the angle difference with a dead zone and a hard cap of `SpinMaxCircles` 2; the bite's two jaw lines vanish when the spin starts so the fan is the only trail (`PixelTrail.FadeWithin`); the spinning blade cuts every other enemy it passes through; a thrown enemy takes damage from the speed it loses hitting a tile (applied, untested)
 - [~] Blood Butcherer patch 4 (2026-11-03): melee attack speed plays the whole timeline faster or slower (`AttackSpeedInfluence`, `SpeedScaleMin`, `SpeedScaleMax`); the speed rides in the spawn velocity so every machine runs the same pace; one-shot events fire on crossing a time instead of on an exact tick (applied, untested)
 
@@ -235,7 +235,7 @@ Test checklist (patch 4): with no melee speed bonus the Blood Butcherer plays ex
 
 Next (for a new chat): "Blood Butcherer patches 3 and 4 results: <what worked / what felt off>". Feel changes are tuning in `BloodButchererTuning` (`SpinTicks`, `SpinOffset`, `LaunchSpeed`, `PinRatio`, `GripTickDamageMultiplier`, `LaunchDamageMultiplier`, `TetherWidth`, `TetherSag`, `TetherTrailing`).
 
-## 12. Spears (vanilla `ItemID.Spear`, `Swordfish`, `Trident`, `ThunderSpear` = Storm Spear, `TheRottedFork`, `DarkLance`) [PLANNED, nothing built]
+## 12. Spears (vanilla `ItemID.Spear`, `Swordfish`, `Trident`, `ThunderSpear` = Storm Spear, `TheRottedFork`, `DarkLance`) [patch 1 applied, untested]
 
 Verify every item id against the API source when the first patch is written. Each spear gets its own folder `Content/Weapons/<Weapon>/` (GlobalItem, projectiles, Tuning, Fx). Like the Blood Butcherer, the GlobalItem sets `shoot` to a held projectile, `noMelee`, `noUseGraphic`, `useStyle = Shoot`; the item itself swings nothing. Art: none needed (vanilla item sprites drawn along the aim, vanilla dust and sounds). Later Ismail art drops in as `<Weapon>Spear.png`, 45 degree sprite with the pivot in the middle of the canvas, loaded with `RequestIfExists`. All numbers below are STARTING VALUES that live in each `<Weapon>Tuning`.
 
@@ -291,6 +291,16 @@ The owner's client decides everything (aim capture, burst start and end, enrage 
 6. Dark Lance part 1: right click charge, up to 8 orbiting orbs, orb pop with area Shadowflame.
 7. Dark Lance part 2: sweep and thrust cycle, orb collection, scaling thrust, full-8 evil explosion.
 8. Cleanup (optional, after testing): Blood Butcherer onto `CarriedNPC`, Starfury and Blood Butcherer onto `HeldAim`, R1 config toggles for the six spears.
+
+### Patch 1 as built (2026-11-03, applied, untested)
+
+Files: `Common/` gets `HeldAim`, `AimSpread`, `ThrustTimeline`, `ThrustChain`, `SpearPose`, `SegmentHit`, `LiquidState`, `ThrustPlayer`, `ThrustFx` (also holds `ThrustPalette`), `ThrustTrailStyle` and the abstract `HeldSpearProjectile`; `Content/Weapons/Spear/` (`SpearGlobalItem`, `SpearThrustProjectile`, `SpearTuning`) and `Content/Weapons/Swordfish/` (`SwordfishGlobalItem`, `SwordfishThrustProjectile`, `SwordfishTuning`, `SwordfishFx`).
+
+How it works: the GlobalItem's `Shoot` spawns ONE held projectile per burst (ai[0] = seed + 10000 * mode, ai[1] = 0 until an endless chain gets its end age + 1, ai[2] = aim in the player's frame). `HeldSpearProjectile` finds the running thrust from its own age (`ThrustChain.Locate`), poses the arm, pushes the spear along the aim by the timeline's extension, hits along the shaft only on the thrust and hold ticks (swept line test, every enemy once per thrust), lays one streak per thrust and hands the old one to `DetachedTrails`. The jitter is `AimSpread.Offset(seed, index, spread)`, identical on every machine. After the burst the owner starts a cooldown in `ThrustPlayer` (per item type). The Swordfish decides its rage in `Shoot` (in liquid = mode 1, an endless chain); at the start of each thrust the owner asks `ShouldContinue` (button held and still in liquid) and, if not, writes the end of that thrust into ai[1].
+
+Decisions: the owner re-aims at the cursor at the start of every thrust after the first (`RetargetEachThrust`); the spear sprite is the vanilla item sprite (no art, no hjson edit: tModLoader adds the two projectile names on the next build); damage per thrust is the item's damage times `DamageMultiplier` (Spear 0.8, Swordfish 0.7, enraged 0.6), so balance is one number per weapon.
+
+Next (patch 2): `PlayerDash`, `DashPlayer`, `BounceMath`, `Immunity` and the Trident. It derives from `HeldSpearProjectile` with a one-thrust chain and adds the dash on top.
 
 ### Test checklists
 

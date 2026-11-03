@@ -1,22 +1,23 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-03 | 81 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-03 | 99 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(16) DetachedTrails(15) AfterimageTrail(13) IceFx(10) BoomerangFlight(8) FlamerangTuning(7) BloodButchererTuning(7) StarfuryTuning(6) ShroomerangTuning(5) PixelTrail(5) PixelLine(5) FlamerangFx(5) WoodenBoomerangTuning(4) ThornChakramTuning(4) SweepTrail(4) SunfuryTuning(4) IceBoomerangTuning(4) HeldSwordPose(4) CameraShake(4) TrimarangTuning(3)
+RemoteHitTracker(17) DetachedTrails(16) AfterimageTrail(13) IceFx(10) BoomerangFlight(8) FlamerangTuning(7) BloodButchererTuning(7) ThrustPalette(6) StarfuryTuning(6) ThrustChain(5) SweepTrail(5) ShroomerangTuning(5) PixelTrail(5) PixelLine(5) HeldSwordPose(5) FlamerangFx(5) WoodenBoomerangTuning(4) ThrustTimeline(4) ThornChakramTuning(4) SweepTrailStyle(4)
 
 ## Inheritance
 Project bases -> derived:
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
+- HeldSpearProjectile: SpearThrustProjectile, SwordfishThrustProjectile
 - PixelTrailStyle: BloodButchererJawTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
-- SweepTrailStyle: BloodButchererSpinTrailStyle, IceBladeTrailStyle, StarfurySweepTrailStyle
+- SweepTrailStyle: BloodButchererSpinTrailStyle, IceBladeTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle
 tModLoader/other bases -> project types:
-- ModProjectile (26): BloodButchererSwingProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
-- GlobalItem (11): BloodButchererGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, ShroomerangGlobalItem, StarfuryGlobalItem, SunfuryGlobalItem, ThornChakramGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
+- ModProjectile (27): BloodButchererSwingProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
+- GlobalItem (13): BloodButchererGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
+- ModPlayer (2): StarfuryPlayer, ThrustPlayer
 - GlobalNPC (1): BloodButchererGripNPC
 - Mod (1): IsmailsWeaponReworks
-- ModPlayer (1): StarfuryPlayer
 - ModSystem (1): DetachedTrails
 
 ## Files
@@ -31,6 +32,9 @@ tModLoader/other bases -> project types:
     +Position:Vector2 +Rotation:float +Scale:float +Width:float +Color:Color +Birth:int
   class AfterimageTrail
     +Sprite(Texture2D,int,float)[s] +IsEmpty:bool +Add(Vector2,float,float,Color,float) +Tick() +Draw()
+**AimSpread.cs**
+  static class AimSpread
+    +Offset(int,int,float)[s]
 **BoomerangFlight.cs**
   static class BoomerangFlight
     +StepReturn(Projectile,Player,float,float,float,float)[s] +StepForceReturn(Projectile,Player,float,float,float,float)[s] +StepOutbound(Projectile,float,float,float,float)[s]
@@ -40,12 +44,23 @@ tModLoader/other bases -> project types:
 **DetachedTrails.cs** uses: AfterimageTrail, PixelTrail, SweepTrail
   class DetachedTrails : ModSystem
     +Hand(PixelTrail)[s] +Hand(SweepTrail)[s] +Hand(AfterimageTrail)[s] +PostUpdateEverything()[ov] +PostDrawTiles()[ov] +OnWorldUnload()[ov] +Unload()[ov]
+**HeldAim.cs**
+  static class HeldAim
+    +Capture(Player)[s] +ToWorld(Player,float)[s] +ToWorldDirection(Player,float)[s] +Facing(float)[s]
+**HeldSpearProjectile.cs** uses: AimSpread, DetachedTrails, HeldAim, Mode, RemoteHitTracker, SegmentHit, SpearPose, SweepTrail, ThrustChain, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTimeline, ThrustTrailStyle
+  abstract class HeldSpearProjectile : ModProjectile
+    #ItemType:int[ab] #Chain:ThrustChain[ab] #Reach:float[ab] #Palette:ThrustPalette[ab] #SpearScale:float[v] #GripFraction:float[v] #HitWidth:float[v] #RetargetEachThrust:bool[v] #TrailLifeTicks:int[v] #TrailRails:int[v] #TrailOpacity:float[v] #PixelSize:float[v] #OnThrustStart(int)[v] #OnTipStep(Vector2,Vector2,float)[v] #OnTipHit(NPC,HitInfo,int)[v] #ShouldContinue(int)[v] #ThrustPitch(int)[v] +Texture:string[ov] #Owner:Player #IsOwner:bool #BaseAim:float #Seed:int #Mode:int #EndAge:int #Age:int #ThrustIndex:int #Extension:float #Striking:bool #Butt:Vector2 #Tip:Vector2 #Direction:Vector2 +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 **HeldSwordPose.cs**
   static class HeldSwordPose
     +ToWorld(int,float)[s] +Hand(Player,int,float)[s] +BladeDirection(Player,int,float,float)[s] +HandWorld(Player,float)[s] +BladeDirectionWorld(Player,float)[s] +Sprite(Texture2D,int,out Vector2,out float,out SpriteEffects)[s]
 **IceFx.cs**
   static class IceFx
     +Burst(Vector2,int,float,float)[s] +Ring(Vector2,int,float,float)[s] +Gather(Vector2,float)[s] +DrawPixel(Vector2,float,Color,float)[s]
+**LiquidState.cs**
+  enum LiquidKind
+    {None, Water, Lava, Honey, Shimmer}
+  static class LiquidState
+    +Touching(Player)[s] +HeadUnder(Player)[s] +Kind(Player)[s]
 **PixelLine.cs**
   static class PixelLine
     +Draw(Vector2,float,int,float,Func<float, float>,Func<float, Color>)[s]
@@ -59,6 +74,12 @@ tModLoader/other bases -> project types:
 **RemoteHitTracker.cs**
   class RemoteHitTracker
     +Update(Projectile,int,Action<NPC>) +TouchOnce(Projectile,Action<NPC>)[s]
+**SegmentHit.cs**
+  static class SegmentHit
+    +Overlaps(Rectangle,Vector2,Vector2,float)[s] +Sweep(Rectangle,Vector2,Vector2,Vector2,Vector2,float,int)[s] +ClosestPoint(Vector2,Vector2,Vector2)[s] +ClearLocalImmunity(Projectile)[s]
+**SpearPose.cs** uses: HeldSwordPose
+  static class SpearPose
+    +Arm(Player,float)[s] +Hand(Player,float)[s] +DrawSprite(Texture2D,Vector2,float,int,float,Color)[s]
 **SweepTrail.cs** uses: PixelLine
   abstract class SweepTrailStyle
     +Grid:float[v] +LifeTicks:int[v] +Rails:int[v] +Fade:SweepFade[v] +TailLifeScale:float[v] +GetColor(float,float)[ab] #Falloff(float)[s] #ThreeStop(float,Color,Color,Color)[s]
@@ -66,6 +87,23 @@ tModLoader/other bases -> project types:
     {Uniform, TailFirst}
   class SweepTrail
     +Style:SweepTrailStyle +IsOwner:bool +Count:int +IsEmpty:bool +Add(Vector2,Vector2,float) +Tick() +Draw()
+**ThrustChain.cs** uses: ThrustTimeline
+  struct ThrustChain
+    +Timeline:ThrustTimeline +Count:int +GapTicks:int +SpreadDeg:float +CooldownTicks:int +Endless:bool +PeriodTicks:int +FiniteTotalTicks:int +IsFinished(int) +Locate(int,out int,out int) +EndOfThrust(int)
+**ThrustFx.cs**
+  struct ThrustPalette
+    +Core:Color +Mid:Color +Halo:Color +DustA:int +DustB:int
+  static class ThrustFx
+    +PlayThrust(Vector2,float)[s] +TipStreak(Vector2,Vector2,ThrustPalette)[s] +HitSpark(Vector2,ThrustPalette)[s]
+**ThrustPlayer.cs**
+  class ThrustPlayer : ModPlayer
+    +CooldownUntil:uint +CooldownItem:int +StartCooldown(int,int) +OnCooldown(int) +CanUse(Player,int,int)[s]
+**ThrustTimeline.cs**
+  struct ThrustTimeline
+    +WindupTicks:int +ThrustTicks:int +HoldTicks:int +RecoverTicks:int +PullBack:float +EasePower:float +TotalTicks:int +StrikeStart:int +StrikeEnd:int +IsStriking(int) +Extension(int)
+**ThrustTrailStyle.cs** uses: SweepTrailStyle, ThrustPalette
+  class ThrustTrailStyle : SweepTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +GetColor(float,float)[ov]
 
 ### Content/Weapons/BloodButcherer/
 **BloodButchererFx.cs** uses: BloodButchererTuning, IceFx
@@ -218,6 +256,17 @@ tModLoader/other bases -> project types:
   static class ShroomerangTuning
     +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +SpinSpeed:float[s] +AfterimageTicks:int[s] +FirstSpawnDelayTicks:int[s] +SpawnIntervalTicks:int[s] +MaxMushrooms:int[s] +MushroomLifeTicks:int[s] +PopTicks:int[s] +WarnTicks:int[s] +InheritVelocity:float[s] +ScatterSpeed:float[s] +Drag:float[s] +MushroomSpinSpeed:float[s] +ArmTicks:int[s] +TriggerPadding:float[s] +TriggerCheckInterval:int[s] +BurstRadius:float[s] +BurstDamageMultiplier:float[s] +BurstLifeTicks:int[s] +GlowColor:Color[s] +CloudColor:Color[s]
 
+### Content/Weapons/Spear/
+**SpearGlobalItem.cs** uses: HeldAim, SpearThrustProjectile, SpearTuning, ThrustPlayer
+  class SpearGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**SpearThrustProjectile.cs** uses: HeldSpearProjectile, SpearTuning, ThrustChain, ThrustPalette
+  class SpearThrustProjectile : HeldSpearProjectile
+    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov]
+**SpearTuning.cs** uses: ThrustChain, ThrustPalette, ThrustTimeline
+  static class SpearTuning
+    +Thrusts:int[s] +WindupTicks:int[s] +ThrustTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +GapTicks:int[s] +SpreadDeg:float[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +Chain:ThrustChain[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +Palette:ThrustPalette[s]
+
 ### Content/Weapons/Starfury/
 **StarfuryBlastProjectile.cs** uses: CameraShake, StarfuryFx, StarfuryTuning
   class StarfuryBlastProjectile : ModProjectile
@@ -271,6 +320,20 @@ tModLoader/other bases -> project types:
 **SunfuryTuning.cs**
   static class SunfuryTuning
     +ChargeTicks(int)[s] +WindowEarlyGraceTicks:int[s] +WindowLateGraceTicks:int[s] +MinReach:float[s] +MaxReach:float[s] +EllipseWidthRatio:float[s] +ThrowSpeed(int)[s] +ReleaseBlendTicks:int[s] +MinHalfTicks:int[s] +TierDamageMultiplier(int)[s] +HitCooldownTicks:int[s] +HeadSize:float[s] +BurnTicks:int[s] +SpinRadiusMin:float[s] +SpinRadiusMax:float[s] +SpinRadiusSmoothing:float[s] +SpinOmegaStart:float[s] +SpinOmegaEnd:float[s] +SpecialSpeed:float[s] +SpecialMinReach:float[s] +SpecialMaxReach:float[s] +SpecialStopsOnTiles:bool[s] +SpecialPathDamageMultiplier:float[s] +SpecialHangTicks:int[s] +RetractSpeed:float[s] +CatchDistance:float[s] +FailRetractSpeed:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastKnockbackMultiplier:float[s] +BlastLifeTicks:int[s] +BlastBurnTicks:int[s] +ShakeStrength:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailWidth(int)[s] +TrailJitter:float[s] +AfterimageTicks:int[s] +FlashTicks:int[s] +GlowColor(int)[s] +HotColor(int)[s] +ChainColor:Color[s] +ChainLightColor:Color[s]
+
+### Content/Weapons/Swordfish/
+**SwordfishFx.cs**
+  static class SwordfishFx
+    +RageBurst(Vector2)[s] +RageTip(Vector2,Vector2)[s]
+**SwordfishGlobalItem.cs** uses: HeldAim, LiquidState, SwordfishThrustProjectile, SwordfishTuning, ThrustPlayer
+  class SwordfishGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**SwordfishThrustProjectile.cs** uses: HeldSpearProjectile, LiquidState, Mode, SwordfishFx, SwordfishTuning, ThrustChain, ThrustPalette
+  class SwordfishThrustProjectile : HeldSpearProjectile
+    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov] #ShouldContinue(int)[ov] #ThrustPitch(int)[ov] #OnThrustStart(int)[ov] #OnTipStep(Vector2,Vector2,float)[ov]
+**SwordfishTuning.cs** uses: ThrustChain, ThrustPalette, ThrustTimeline
+  static class SwordfishTuning
+    +Thrusts:int[s] +WindupTicks:int[s] +ThrustTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +GapTicks:int[s] +SpreadDeg:float[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +Chain:ThrustChain[s] +RageWindupTicks:int[s] +RageThrustTicks:int[s] +RageHoldTicks:int[s] +RageRecoverTicks:int[s] +RagePullBack:float[s] +RageSpreadDeg:float[s] +RageCooldownTicks:int[s] +RageDamageMultiplier:float[s] +RageChain:ThrustChain[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +Palette:ThrustPalette[s] +RagePalette:ThrustPalette[s]
 
 ### Content/Weapons/ThornChakram/
 **ThornChakramFx.cs** uses: ThornChakramTuning
