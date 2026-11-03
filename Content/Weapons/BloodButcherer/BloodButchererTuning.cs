@@ -32,15 +32,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static int LockTicks => 4;             // the aim stops following the cursor this many ticks before the throw
         public static int ReleaseTicks => 8;          // the jaws fly open and the blade follows through
         public static int ReleaseOpenTicks => 3;      // how fast they fly open
-        public static float SpinOffset => 14f;        // how far the blade is pushed out from the hand while it spins
+        public static float SpinOffset => 50f;        // how far the blade is pushed out from the hand while it spins
         public static float SpinFollow => 0.5f;       // radians per tick the sweep may change while it follows the cursor
         public static float PinRatio => 0.6f;         // where in the shut jaws the enemy is pinned (0 = pivot, 1 = tips)
-        public static float LaunchSpeed => 20f;       // pixels per tick toward the cursor
+        public static float LaunchSpeed => 15f;       // pixels per tick toward the cursor
         public static int LaunchAiOffTicks => 25;    // the thrown enemy cannot steer or attack for this long (normal gravity and tile collision)
         public static float LaunchGravity => 0.3f;
         public static float LaunchMaxFall => 12f;
         public static float GripTickDamageMultiplier => 0.3f; // while it is held
-        public static int GripTickInterval => 6;      // ticks between those hits
+        public static int GripTickInterval => 3;      // ticks between those hits
         public static float LaunchDamageMultiplier => 1.6f;   // the throw
         public static float MaxGrabSize => 120f;      // an enemy bigger than this (width or height) is clamped, not gripped
         public static float LaunchShake => 6f;
@@ -50,10 +50,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         // ---- blood tether (patch 2): a crimson strand from the player's real hand to the handle of the blade ----
         public static float TetherRestLength => ThrustDistance + BiteLungeDistance + 1f; // closer than this and the strand droops
         public static float TetherWidth => 5f;
-        public static float TetherThinWidth => 2f;    // how thin it gets at full stretch
+        public static float TetherThinWidth => 5f;    // how thin it gets at full stretch
         public static float TetherSag => 1f;
         public static float TetherMaxSag => 12f;
-        public static float TetherTrailing => 60f;    // a spinning blade drags the middle of the strand behind it: pixels per (radian per tick)
+        public static float TetherTrailing => 0f;    // a spinning blade drags the middle of the strand behind it: pixels per (radian per tick)
         public static float TetherMaxTrailing => 20f;
         public static float TetherWobble => 1.5f;
         public static int TetherSegments => 14;
