@@ -46,8 +46,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         // Per-machine state: counters and visuals, never synced.
         int ticks;               // ticks this machine has run this projectile
         float timer;             // ticks along the timeline (frozen while waiting for the owner's decision)
+        float speedScale = 1f;   // timeline ticks per real tick (melee attack speed), read from the spawn velocity on the first tick
         int waited;              // ticks spent waiting for it
-        int lastEventTick = -1;  // the timeline tick the one-shot effects last ran for
         bool decided;            // owner only: the catch decision has been made
         bool clampPlayed;        // the clamp effects have played
         float flash;             // 1 right after a bite or a clamp, fades to 0
@@ -113,26 +113,33 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             }
         }
 
-        int RecoverStart
+        // Timeline times are floats: the timeline advances by speedScale per tick, so it does not land on whole numbers any more.
+        float RecoverStart
         {
             get
             {
                 switch (Resolved)
                 {
-                    case Branch.Clamp: return chompStop >= 0f ? (int)chompStop : BiteEnd + BloodButchererTuning.ChompCount * BloodButchererTuning.ChompTicks;
-                    case Branch.Grip: return (int)(windStart >= 0f ? windStart : SpinEnd) + BloodButchererTuning.WindDownTicks; // the blade keeps spinning and slows down until then
+                    case Branch.Clamp: return chompStop >= 0f ? chompStop : BiteEnd + BloodButchererTuning.ChompCount * BloodButchererTuning.ChompTicks;
+                    case Branch.Grip: return (windStart >= 0f ? windStart : SpinEnd) + BloodButchererTuning.WindDownTicks; // the blade keeps spinning and slows down until then
                     default: return BiteEnd;
                 }
             }
         }
-        int TotalTicks => RecoverStart + (Resolved == Branch.Grip ? BloodButchererTuning.WindDownRecoverTicks : BloodButchererTuning.RecoverTicks);
+        float TotalTicks => RecoverStart + (Resolved == Branch.Grip ? BloodButchererTuning.WindDownRecoverTicks : BloodButchererTuning.RecoverTicks);
+
+        // The timeline stepped over this time during this tick (one-shot effects use it: a fast timeline can skip whole ticks).
+        bool Crossed(float at)
+        {
+            return prevTimer < at && timer >= at;
+        }
         bool Caught => Resolved == Branch.Clamp || Resolved == Branch.Grip;
         // The bite, then (grip) the held ticks until the spin ends, then only the throw's own tick or two. An enemy that died first ends it at once.
         bool BiteDamaging => timer >= BiteStart && timer < BiteEnd;
         // The pinned enemy takes its hits while it is held and for the throw's own tick or two. An enemy that died first closes it at once.
         bool CaughtDamaging => Resolved == Branch.Grip && timer >= BiteEnd && (windStart < 0f ? timer < SpinEnd + 2f : thrown && timer < windStart + 2f);
         // The spinning blade cuts any other enemy it passes through while it is fast (also during the wind-down, also if the gripped enemy died).
-        bool SweepHitting => Resolved == Branch.Grip && timer >= PullEnd && timer < RecoverStart && Math.Abs(OmegaAt(timer)) >= BloodButchererTuning.SpinSweepMinSpeed;
+        bool SweepHitting => Resolved == Branch.Grip && timer >= PullEnd && timer < RecoverStart && Math.Abs(RealOmegaAt(timer)) >= BloodButchererTuning.SpinSweepMinSpeed;
         // The chomps only damage while one is closing.
         bool ChompClosing => Resolved == Branch.Clamp && timer >= BiteEnd && timer < RecoverStart && ChompPhase(timer) >= 0.5f;
         bool Damaging => BiteDamaging || CaughtDamaging || SweepHitting || ChompClosing;
@@ -189,6 +196,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             if (windStart >= 0f && time >= windStart)
                 return windOmega * (1f - MathHelper.Clamp((time - windStart) / Math.Max(1, BloodButchererTuning.WindDownTicks), 0f, 1f));
             return SpinOmegaAt(time);
+        }
+
+        // The same in radians per REAL tick (the timeline may run faster or slower than one tick per tick): what trails, dust, sounds and the
+        // cutting threshold care about.
+        float RealOmegaAt(float time)
+        {
+            return OmegaAt(time) * speedScale;
         }
 
         float SpinAngleAt(float time)
@@ -354,6 +368,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             {
                 lastOwnerCenter = owner.Center;
                 startAim = Projectile.ai[2]; // the spawn packet carries it, so every machine starts from the same aim
+                speedScale = Projectile.velocity.X > 0.01f ? MathHelper.Clamp(Projectile.velocity.X, BloodButchererTuning.SpeedScaleMin, BloodButchererTuning.SpeedScaleMax) : 1f; // also from the spawn packet
+                Projectile.velocity = Vector2.Zero;
                 facing = Math.Cos(startAim) >= 0.0 ? 1 : -1;
                 if (IsOwner)
                     owner.ChangeDir(Facing);
@@ -367,7 +383,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             owner.itemTime = 2;
             ApplyPose(owner);
 
-            if (IsOwner && !decided && (int)timer == BiteStart)
+            if (IsOwner && !decided && timer >= BiteStart)
                 Decide();
 
             GripStep();
@@ -385,12 +401,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             ticks++;
 
             // At the end of the bite a machine that has not heard the owner's decision yet holds the shut pose for a moment.
-            bool waiting = (int)timer >= BiteEnd && Decision == Branch.Undecided && waited < BloodButchererTuning.DecideWaitTicks;
+            // The timeline advances by speedScale per tick and arrives exactly on the end of the bite while it waits.
+            bool undecided = Decision == Branch.Undecided && waited < BloodButchererTuning.DecideWaitTicks;
             prevTimer = timer;
-            if (waiting)
+            if (undecided && timer >= BiteEnd)
                 waited++;
+            else if (undecided && timer + speedScale >= BiteEnd)
+                timer = BiteEnd;
             else
-                timer++;
+                timer += speedScale;
         }
 
         // ---- grip: aim, spin, pin and throw ----
@@ -440,7 +459,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             float target = Math.Min(MathHelper.TwoPi + ahead, cap);
             float step = BloodButchererTuning.SpinFollow;
             if (timer >= LockAt)
-                step = Math.Max(step, Math.Abs(target - spinTotal) / Math.Max(1f, SpinEnd - timer));
+                step = Math.Max(step, Math.Abs(target - spinTotal) / Math.Max(1f, (SpinEnd - timer) / speedScale));
             spinTotal = Math.Min(spinTotal + MathHelper.Clamp(target - spinTotal, -step, step), cap);
         }
 
@@ -755,29 +774,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
 
         void Effects()
         {
-            int t = (int)timer;
             Vector2 mouth = pivot + bladeDir * jawLength * 0.6f;
 
-            if (t != lastEventTick)
+            // The one-shot effects fire when the timeline crosses their time.
+            if (Crossed(ThrustStart))
+                BloodButchererFx.PlayLunge(handPos);
+            if (Crossed(OpenStart))
             {
-                lastEventTick = t;
-                if (t == ThrustStart)
-                    BloodButchererFx.PlayLunge(handPos);
-                if (t == OpenStart)
-                {
-                    BloodButchererFx.PlayOpen(pivot);
-                    BloodButchererFx.MouthMist(pivot, bladeDir);
-                }
-                if (t == BiteStart)
-                {
-                    flash = 1f;
-                    BloodButchererFx.PlayBite(mouth);
-                    BloodButchererFx.BiteSnap(mouth);
-                }
+                BloodButchererFx.PlayOpen(pivot);
+                BloodButchererFx.MouthMist(pivot, bladeDir);
+            }
+            if (Crossed(BiteStart))
+            {
+                flash = 1f;
+                BloodButchererFx.PlayBite(mouth);
+                BloodButchererFx.BiteSnap(mouth);
             }
 
             // The clamp lands once the bite is over and the decision says something was caught.
-            if (!clampPlayed && t >= BiteEnd && Caught)
+            if (!clampPlayed && timer >= BiteEnd && Caught)
             {
                 clampPlayed = true;
                 flash = 1f;
@@ -794,7 +809,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             // The spin and the wind-down: blood flies off the tip along the tangent, and the blade whooshes while it is still fast.
             if (Resolved == Branch.Grip && timer >= PullEnd && timer < RecoverStart)
             {
-                float omega = OmegaAt(timer);
+                float omega = RealOmegaAt(timer);
                 float speed = Math.Abs(omega);
                 if (speed > 0.12f && Main.rand.NextBool(2))
                     BloodButchererFx.SpinFling(pivot + bladeDir * jawLength, bladeDir.RotatedBy(Math.Sign(omega) * MathHelper.PiOver2) * (speed * jawLength * 0.7f));
@@ -823,7 +838,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
                 jawB?.FadeWithin(BloodButchererTuning.JawTrailCutTicks);
             }
 
-            int samples = Math.Max(1, BloodButchererTuning.TrailSamplesPerTick);
+            int samples = Math.Max(1, (int)Math.Ceiling(BloodButchererTuning.TrailSamplesPerTick * speedScale));
             for (int k = 1; k <= samples; k++)
             {
                 float fraction = k / (float)samples;
@@ -835,7 +850,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             // The spin and the wind-down leave a fan along the whole blade instead (a few more samples per tick: the tip moves fast).
             if (Resolved == Branch.Grip)
             {
-                int spinSamples = Math.Max(1, BloodButchererTuning.SpinTrailSamplesPerTick);
+                int spinSamples = Math.Max(1, (int)Math.Ceiling(BloodButchererTuning.SpinTrailSamplesPerTick * speedScale));
                 for (int k = 1; k <= spinSamples; k++)
                 {
                     float fraction = k / (float)spinSamples;
@@ -861,7 +876,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             Vector2 shift = Vector2.Lerp(lastOwnerCenter, Owner.Center, fraction) - Owner.Center;
             Vector2 hand = HeldSwordPose.HandWorld(Owner, aim) + shift + direction * OffsetAt(time);
             float length = BloodButchererTuning.BladeLength * Projectile.scale;
-            float fill = MathHelper.Clamp(Math.Abs(OmegaAt(time)) / Math.Max(0.01f, BloodButchererTuning.TrailFullSpeed), 0f, 1f);
+            float fill = MathHelper.Clamp(Math.Abs(RealOmegaAt(time)) / Math.Max(0.01f, BloodButchererTuning.TrailFullSpeed), 0f, 1f);
             float inner = MathHelper.Lerp(1f, BloodButchererTuning.TrailFillTo, MathHelper.SmoothStep(0f, 1f, fill));
 
             spinTrail ??= new SweepTrail(new BloodButchererSpinTrailStyle(), IsOwner);

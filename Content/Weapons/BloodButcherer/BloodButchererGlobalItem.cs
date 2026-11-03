@@ -46,8 +46,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             if (player.gravDir == -1f)
                 aim = -aim;
 
+            // The timeline speed (the owner's melee attack speed) travels in the spawn velocity's X: the projectile never moves by its
+            // velocity, reads it back on its first tick on every machine and clears it, so no machine has to guess another player's stats.
+            float speed = MathHelper.Clamp(1f + (player.GetTotalAttackSpeed(DamageClass.Melee) - 1f) * BloodButchererTuning.AttackSpeedInfluence, BloodButchererTuning.SpeedScaleMin, BloodButchererTuning.SpeedScaleMax);
+
             // ai[0] = the catch decision (0 = undecided yet), ai[1] = caught enemy index + 1 (0 = none), ai[2] = the aim angle.
-            Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, damage, knockback, player.whoAmI, 0f, 0f, aim);
+            Projectile.NewProjectile(source, player.MountedCenter, new Vector2(speed, 0f), type, damage, knockback, player.whoAmI, 0f, 0f, aim);
             return false;
         }
 

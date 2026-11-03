@@ -4,7 +4,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
 {
     /// <summary>
     /// Every tunable number of the Blood Butcherer rework in one place (ticks: 60 = 1 second). Properties instead of fields, so hot
-    /// reload can tweak them. All lengths are pixels at scale 1. The bite is one fixed timeline (not scaled by melee speed):
+    /// reload can tweak them. All lengths are pixels at scale 1. The bite is one timeline (melee attack speed plays it faster or slower, see AttackSpeedInfluence):
     /// WINDUP (pull back) > THRUST (lunge along the aim) > OPEN (the jaws pivot open) > GAPE (hangs open, the forgiving part)
     /// > BITE (the jaws slam shut; the only part that damages and catches) > CLAMP (held shut, only when something was caught)
     /// > RECOVER (retract).
@@ -29,7 +29,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static float ChompDamageMultiplier => 0.6f; // per close
         public static float ChompShake => 2.5f;       // a small camera punch per close
         public static int RecoverTicks => 12;
-        public static int DecideWaitTicks => 20;      // another machine waits this long for the owner's catch decision, then assumes a miss
+        public static int DecideWaitTicks => 20;      // another machine waits this long for the owner's catch decision, then assumes a miss (real ticks, not scaled)
+
+        // ---- attack speed (patch 4): the owner's melee attack speed plays the whole timeline faster or slower ----
+        public static float AttackSpeedInfluence => 1f; // 1 = the timeline runs at exactly your melee attack speed, 0 = ignores it, 0.5 = half of the bonus
+        public static float SpeedScaleMin => 0.6f;
+        public static float SpeedScaleMax => 2.5f;    // keep it below the shortest damaging window (the 4-tick bite), or a tick could step over it
 
         // ---- grip, spin and launch (patch 2): an enemy that can be gripped is pinned in the shut jaws, spun a full circle and thrown at the cursor ----
         public static int PullTicks => 6;             // the blade drags the enemy in from where it was caught to the middle of the mouth
