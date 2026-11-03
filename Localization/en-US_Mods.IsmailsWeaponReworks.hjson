@@ -28,4 +28,6 @@ Projectiles: {
 	BloodButchererSwingProjectile.DisplayName: Blood Butcherer Swing Projectile
 	SpearThrustProjectile.DisplayName: Spear Thrust Projectile
 	SwordfishThrustProjectile.DisplayName: Swordfish Thrust Projectile
+	StormSpearThrustProjectile.DisplayName: Storm Spear Thrust Projectile
+	TridentThrustProjectile.DisplayName: Trident Thrust Projectile
 }
