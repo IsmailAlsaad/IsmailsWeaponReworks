@@ -29,6 +29,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         public static float SpearScale => 1.15f;
         public static float GripFraction => 0.45f;       // how much of the shaft sticks out behind the hand
         public static float Reach => 24f;                 // pixels the fork is pushed out from the hand along its direction
+        public static int ArmSwitchesPerTurn => 2;        // the arm flips between raised and lowered this many times per full turn of the fork
+        public static float ArmUpAngle => -1.4f;          // the raised arm (radians in the player's own frame: 0 = forward, negative = up)
+        public static float ArmDownAngle => 1.0f;         // the lowered arm (positive = down)
 
         // ---- the javelin (right click) ----
         public static float JavelinSpeed => 16f;            // pixels per tick (42 ticks = about 42 tiles)
@@ -45,6 +48,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         public static float BlastDamageMultiplier => 0.75f; // of the javelin hit's damage
         public static float CarriedBlastMultiplier => 1.5f; // extra damage for each impaled enemy
         public static float BlastKnockback => 7f;
+        public static float CarriedKnockback => 16f;        // speed (pixels per tick) an impaled enemy is flung at along the flight direction, times its knockback resistance factor
         public static float BlastShake => 3f;               // camera punch of the explosion (nearby players)
 
         // ---- look ----
@@ -53,6 +57,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         public static float TrailOpacity => 0.8f;
         public static float TrailInnerFraction => 0.6f;  // how far down the shaft (from the tip toward the butt) the fan reaches
         public static float PixelSize => 2f;
+        public static float JavelinTrailTaper => 0.7f;   // the oldest part of the javelin streak is a point that widens to full width this far (0 to 1) along it
         public static ThrustPalette Palette => new ThrustPalette(new Color(255, 200, 185), new Color(205, 50, 60), new Color(110, 15, 35), DustID.Blood, DustID.RedTorch);
     }
 }

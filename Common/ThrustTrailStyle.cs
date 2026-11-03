@@ -14,19 +14,22 @@ namespace IsmailsWeaponReworks.Common
         readonly int rails;
         readonly float grid;
         readonly float opacity;
+        readonly float taper;
 
-        public ThrustTrailStyle(ThrustPalette palette, int lifeTicks, int rails, float grid, float opacity)
+        public ThrustTrailStyle(ThrustPalette palette, int lifeTicks, int rails, float grid, float opacity, float taper = 0f)
         {
             this.palette = palette;
             life = lifeTicks;
             this.rails = rails;
             this.grid = grid;
             this.opacity = opacity;
+            this.taper = taper;
         }
 
         public override float Grid => grid;
         public override int LifeTicks => life;
         public override int Rails => rails;
+        public override float TaperFraction => taper;
 
         public override Color GetColor(float across, float age)
         {

@@ -110,14 +110,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             Vector2 lastButt = butt;
             Vector2 lastTip = tip;
 
-            SpearPose.Arm(owner, aim);
-            Vector2 hand = SpearPose.Hand(owner, aim);
+            // No custom hand animation: the arm only flips between two fixed vanilla poses (raised, lowered) as the fork turns. The fork
+            // pivots around a steady point (the hand of a forward-held arm), so it does not jump when the arm flips.
+            int armPhase = (int)(turned / (MathHelper.TwoPi / Math.Max(1, RottedForkTuning.ArmSwitchesPerTurn)));
+            float armLocal = armPhase % 2 == 0 ? RottedForkTuning.ArmUpAngle : RottedForkTuning.ArmDownAngle;
+            owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, HeldSwordPose.ToWorld(owner.direction, armLocal) - MathHelper.PiOver2);
+            Vector2 hand = SpearPose.Hand(owner, HeldSwordPose.ToWorld(owner.direction, 0f));
             direction = HeldAim.ToWorldDirection(owner, aim);
             butt = hand + direction * (-shaft * RottedForkTuning.GripFraction + RottedForkTuning.Reach);
             tip = butt + direction * shaft;
             Projectile.Center = owner.MountedCenter; // knockback pushes away from the player
             Projectile.rotation = direction.ToRotation();
-            Projectile.spriteDirection = 1;          // a full turn: the sprite is simply rotated, never flipped
+            Projectile.spriteDirection = SpinDirection; // flipped while the fork turns counter-clockwise on screen
             owner.heldProj = Projectile.whoAmI;      // also ends the projectile when the player swaps items
             owner.itemAnimation = 2;                 // keeps the item "in use" for as long as the fork spins
             owner.itemTime = 2;
@@ -203,9 +207,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             float rotation = Projectile.rotation;
             float glow = 0.3f + 0.7f * MathHelper.Clamp(speedFraction, 0f, 1f);
 
-            SpearPose.DrawSprite(texture, butt, rotation, 1, scale * 1.18f, palette.Halo * (0.45f * glow));
-            SpearPose.DrawSprite(texture, butt, rotation, 1, scale * 1.07f, palette.Mid * (0.5f * glow));
-            SpearPose.DrawSprite(texture, butt, rotation, 1, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
+            int flip = Projectile.spriteDirection;
+            SpearPose.DrawSprite(texture, butt, rotation, flip, scale * 1.18f, palette.Halo * (0.45f * glow));
+            SpearPose.DrawSprite(texture, butt, rotation, flip, scale * 1.07f, palette.Mid * (0.5f * glow));
+            SpearPose.DrawSprite(texture, butt, rotation, flip, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
             return false;
         }
     }

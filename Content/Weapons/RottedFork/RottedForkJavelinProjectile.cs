@@ -45,6 +45,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         Vector2 prevButt;
         Vector2 prevTip;
         float shaft;
+        Vector2 flightDirection = Vector2.UnitX; // the last direction it flew in (a tile hit zeroes the velocity before OnKill)
         SweepTrail trail;
         RemoteHitTracker remoteHits;
 
@@ -72,6 +73,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         public override void AI()
         {
             Vector2 direction = Projectile.velocity.SafeNormalize(Vector2.UnitX);
+            flightDirection = direction;
             Projectile.scale = RottedForkTuning.SpearScale;
             Item sample = ContentSamples.ItemsByType[ItemID.TheRottedFork];
             shaft = new Vector2(sample.width, sample.height).Length() * Projectile.scale;
@@ -144,7 +146,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             RottedForkFx.Flecks(tip, tip - prevTip, 1f, palette);
             Lighting.AddLight(tip, palette.Mid.ToVector3() * 0.6f);
 
-            trail ??= new SweepTrail(new ThrustTrailStyle(palette, RottedForkTuning.TrailLifeTicks, RottedForkTuning.TrailRails, RottedForkTuning.PixelSize, RottedForkTuning.TrailOpacity), IsOwner);
+            trail ??= new SweepTrail(new ThrustTrailStyle(palette, RottedForkTuning.TrailLifeTicks, RottedForkTuning.TrailRails, RottedForkTuning.PixelSize, RottedForkTuning.TrailOpacity, RottedForkTuning.JavelinTrailTaper), IsOwner);
             for (int i = 1; i <= 2; i++)
             {
                 float f = i / 2f;
@@ -219,10 +221,27 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
                 }
             }
 
+            // The impaled enemies are released and flung the way the fork was flying. Server (or single player) only: it sets the velocity and
+            // syncs it. The carry stamp is cleared first so the enemy's AI is back on this tick and the velocity is kept.
+            for (int i = 0; i < list.Count; i++)
+            {
+                NPC npc = Carried(list[i]);
+                if (npc == null)
+                    continue;
+                CarriedNPC.Release(npc);
+                if (Main.netMode != NetmodeID.MultiplayerClient)
+                {
+                    npc.velocity = flightDirection * RottedForkTuning.CarriedKnockback * npc.knockBackResist;
+                    npc.netUpdate = true;
+                }
+            }
+
             if (IsOwner)
             {
                 Blast(center, list);
-                Main.player[Projectile.owner].GetModPlayer<ThrustPlayer>().StartCooldown(ItemID.TheRottedFork, RottedForkTuning.JavelinCooldownTicks);
+                Player owner = Main.player[Projectile.owner];
+                owner.GetModPlayer<ThrustPlayer>().StartCooldown(ItemID.TheRottedFork, RottedForkTuning.JavelinCooldownTicks);
+                owner.GetModPlayer<RottedForkPlayer>().AutoThrow = owner.controlUseTile; // right click still held: throw again once the cooldown is over
             }
 
             DetachedTrails.Hand(trail); // the streak keeps fading on its own
@@ -240,18 +259,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             {
                 NPC npc = Carried(carried[i]);
                 if (npc != null && done.Add(npc.whoAmI))
-                    Strike(npc, center, carriedDamage);
+                    Strike(npc, flightDirection.X >= 0f ? 1 : -1, carriedDamage, 0f); // the knockback is the fling in OnKill
             }
             AreaEffect.ForEachNpc(center, RottedForkTuning.BlastRadius, npc =>
             {
                 if (done.Add(npc.whoAmI))
-                    Strike(npc, center, damage);
+                    Strike(npc, npc.Center.X >= center.X ? 1 : -1, damage, RottedForkTuning.BlastKnockback);
             });
         }
 
-        void Strike(NPC npc, Vector2 center, int damage)
+        void Strike(NPC npc, int direction, int damage, float knockback)
         {
-            npc.SimpleStrikeNPC(damage, npc.Center.X >= center.X ? 1 : -1, false, RottedForkTuning.BlastKnockback, DamageClass.Melee);
+            npc.SimpleStrikeNPC(damage, direction, false, knockback, DamageClass.Melee);
         }
 
         public override bool PreDraw(ref Color lightColor)

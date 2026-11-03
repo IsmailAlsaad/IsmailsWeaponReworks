@@ -39,6 +39,13 @@ namespace IsmailsWeaponReworks.Common
                 npc.netUpdate = true; // the server's copy is the authority
         }
 
+        // Ends the carry at once (the stamp would run out in a moment anyway): the enemy's AI and own movement work again from this tick,
+        // so a velocity given right after this is kept.
+        public static void Release(NPC npc)
+        {
+            npc.GetGlobalNPC<CarriedNPC>().HoldTick = -1000;
+        }
+
         // Walks from 'from' toward 'target' and stops before the first spot where the enemy's box would be inside tiles, so a carried
         // enemy is never dragged into a wall.
         public static Vector2 ClampToOpenAir(Vector2 from, Vector2 target, NPC npc)

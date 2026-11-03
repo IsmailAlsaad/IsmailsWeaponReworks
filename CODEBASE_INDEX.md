@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-03 | 122 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-03 | 123 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(19) DetachedTrails(19) ThrustPalette(16) AfterimageTrail(13) IceFx(10) ThrustChain(9) ThrustPlayer(8) BoomerangFlight(8) SweepTrail(7) HeldAim(7) FlamerangTuning(7) BloodButchererTuning(7) ThrustTimeline(6) StarfuryTuning(6) PixelTrail(6) CameraShake(6) ShroomerangTuning(5) PixelLine(5) HeldSwordPose(5) FlamerangFx(5)
+RemoteHitTracker(19) DetachedTrails(19) ThrustPalette(16) AfterimageTrail(13) IceFx(10) ThrustPlayer(9) ThrustChain(9) BoomerangFlight(8) SweepTrail(7) HeldAim(7) FlamerangTuning(7) BloodButchererTuning(7) ThrustTimeline(6) StarfuryTuning(6) PixelTrail(6) HeldSwordPose(6) CameraShake(6) ShroomerangTuning(5) PixelLine(5) FlamerangFx(5)
 
 ## Inheritance
 Project bases -> derived:
@@ -15,7 +15,7 @@ Project bases -> derived:
 tModLoader/other bases -> project types:
 - ModProjectile (29): BloodButchererSwingProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
 - GlobalItem (16): BloodButchererGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
-- ModPlayer (5): DashPlayer, ImmunityPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer
+- ModPlayer (6): DashPlayer, ImmunityPlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer
 - GlobalNPC (2): BloodButchererGripNPC, CarriedNPC
 - Mod (1): IsmailsWeaponReworks
 - ModSystem (1): DetachedTrails
@@ -54,7 +54,7 @@ tModLoader/other bases -> project types:
     +Punch(Vector2,float,int,string)[s]
 **CarriedNPC.cs**
   class CarriedNPC : GlobalNPC
-    +InstancePerEntity:bool[ov] +HoldTick:long +Held:bool +CanCarry(NPC,float)[s] +Hold(NPC,Vector2)[s] +ClampToOpenAir(Vector2,Vector2,NPC)[s] +PreAI(NPC)[ov] +CanHitPlayer(NPC,Player,ref int)[ov]
+    +InstancePerEntity:bool[ov] +HoldTick:long +Held:bool +CanCarry(NPC,float)[s] +Hold(NPC,Vector2)[s] +Release(NPC)[s] +ClampToOpenAir(Vector2,Vector2,NPC)[s] +PreAI(NPC)[ov] +CanHitPlayer(NPC,Player,ref int)[ov]
 **DashPlayer.cs** uses: BounceMath, DashSettings, Immunity, Phase
   enum DashPhase
     {None, Dash, HitStop, Bounce}
@@ -114,7 +114,7 @@ tModLoader/other bases -> project types:
     +Arm(Player,float)[s] +Hand(Player,float)[s] +DrawSprite(Texture2D,Vector2,float,int,float,Color)[s]
 **SweepTrail.cs** uses: PixelLine
   abstract class SweepTrailStyle
-    +Grid:float[v] +LifeTicks:int[v] +Rails:int[v] +Fade:SweepFade[v] +TailLifeScale:float[v] +GetColor(float,float)[ab] #Falloff(float)[s] #ThreeStop(float,Color,Color,Color)[s]
+    +Grid:float[v] +LifeTicks:int[v] +Rails:int[v] +TaperFraction:float[v] +Fade:SweepFade[v] +TailLifeScale:float[v] +GetColor(float,float)[ab] #Falloff(float)[s] #ThreeStop(float,Color,Color,Color)[s]
   enum SweepFade
     {Uniform, TailFirst}
   class SweepTrail
@@ -135,7 +135,7 @@ tModLoader/other bases -> project types:
     +WindupTicks:int +ThrustTicks:int +HoldTicks:int +RecoverTicks:int +PullBack:float +EasePower:float +TotalTicks:int +StrikeStart:int +StrikeEnd:int +IsStriking(int) +Extension(int)
 **ThrustTrailStyle.cs** uses: SweepTrailStyle, ThrustPalette
   class ThrustTrailStyle : SweepTrailStyle
-    +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +GetColor(float,float)[ov]
+    +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +TaperFraction:float[ov] +GetColor(float,float)[ov]
 **TileSound.cs**
   static class TileSound
     +PlayHit(int,int)[s]
@@ -275,16 +275,19 @@ tModLoader/other bases -> project types:
     +SpinUp(Vector2,float)[s] +Whoosh(Vector2,float)[s] +Throw(Vector2)[s] +Impale(Vector2,Vector2)[s] +Drip(Vector2)[s] +Explode(Vector2,float)[s] +Flecks(Vector2,Vector2,float,ThrustPalette)[s]
 **RottedForkGlobalItem.cs** uses: HeldAim, RottedForkJavelinProjectile, RottedForkSpinProjectile, RottedForkTuning, ThrustPlayer
   class RottedForkGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**RottedForkJavelinProjectile.cs** uses: AreaEffect, CarriedNPC, DetachedTrails, RemoteHitTracker, RottedForkFx, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
+    +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +Throw(Player,IEntitySource,int,float)[s] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**RottedForkJavelinProjectile.cs** uses: AreaEffect, CarriedNPC, DetachedTrails, RemoteHitTracker, RottedForkFx, RottedForkPlayer, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
   class RottedForkJavelinProjectile : ModProjectile
     +Texture:string[ov] +OnSpawn(IEntitySource)[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**RottedForkSpinProjectile.cs** uses: DetachedTrails, HeldAim, RemoteHitTracker, RottedForkFx, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
+**RottedForkPlayer.cs** uses: RottedForkGlobalItem, RottedForkJavelinProjectile, RottedForkSpinProjectile, ThrustPlayer
+  class RottedForkPlayer : ModPlayer
+    +AutoThrow:bool +PreUpdate()[ov]
+**RottedForkSpinProjectile.cs** uses: DetachedTrails, HeldAim, HeldSwordPose, RemoteHitTracker, RottedForkFx, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
   class RottedForkSpinProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 **RottedForkTuning.cs** uses: ThrustPalette
   static class RottedForkTuning
-    +SpinSpeed:float[s] +RampTicks:int[s] +StartSpeedFraction:float[s] +WindDownTicks:int[s] +MinSpinTicks:int[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +HitCooldownTicks:int[s] +MinHitSpeed:float[s] +HitWidth:float[s] +SpearScale:float[s] +GripFraction:float[s] +Reach:float[s] +JavelinSpeed:float[s] +JavelinLifeTicks:int[s] +JavelinDamageMultiplier:float[s] +JavelinHitWidth:float[s] +JavelinCooldownTicks:int[s] +MaxImpaled:int[s] +MaxCarrySize:float[s] +CarryFollow:float[s] +CarryFrontGap:float[s] +CarryGap:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +CarriedBlastMultiplier:float[s] +BlastKnockback:float[s] +BlastShake:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailInnerFraction:float[s] +PixelSize:float[s] +Palette:ThrustPalette[s]
+    +SpinSpeed:float[s] +RampTicks:int[s] +StartSpeedFraction:float[s] +WindDownTicks:int[s] +MinSpinTicks:int[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +HitCooldownTicks:int[s] +MinHitSpeed:float[s] +HitWidth:float[s] +SpearScale:float[s] +GripFraction:float[s] +Reach:float[s] +ArmSwitchesPerTurn:int[s] +ArmUpAngle:float[s] +ArmDownAngle:float[s] +JavelinSpeed:float[s] +JavelinLifeTicks:int[s] +JavelinDamageMultiplier:float[s] +JavelinHitWidth:float[s] +JavelinCooldownTicks:int[s] +MaxImpaled:int[s] +MaxCarrySize:float[s] +CarryFollow:float[s] +CarryFrontGap:float[s] +CarryGap:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +CarriedBlastMultiplier:float[s] +BlastKnockback:float[s] +CarriedKnockback:float[s] +BlastShake:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailInnerFraction:float[s] +PixelSize:float[s] +JavelinTrailTaper:float[s] +Palette:ThrustPalette[s]
 
 ### Content/Weapons/Shroomerang/
 **ShroomerangBurstProjectile.cs** uses: IceFx, RemoteHitTracker, ShroomerangFx, ShroomerangTuning

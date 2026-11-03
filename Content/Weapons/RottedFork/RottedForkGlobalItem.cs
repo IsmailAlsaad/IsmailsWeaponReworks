@@ -55,11 +55,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             // owner writes the end age + 1 here when the button is released), ai[2] = the first aim in the player's own frame.
             if (player.altFunctionUse == 2)
             {
-                // Right click: the javelin flies straight at the cursor (its velocity is the throw, synced with the spawn).
-                Vector2 direction = (Main.MouseWorld - player.MountedCenter).SafeNormalize(new Vector2(player.direction, 0f));
-                player.ChangeDir(direction.X >= 0f ? 1 : -1);
-                int javelinDamage = Math.Max(1, (int)(damage * RottedForkTuning.JavelinDamageMultiplier));
-                Projectile.NewProjectile(source, player.MountedCenter + direction * 24f, direction * RottedForkTuning.JavelinSpeed, ModContent.ProjectileType<RottedForkJavelinProjectile>(), javelinDamage, knockback, player.whoAmI);
+                Throw(player, source, damage, knockback);
                 return false;
             }
 
@@ -67,6 +63,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             int spinDamage = Math.Max(1, (int)(damage * RottedForkTuning.DamageMultiplier));
             Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, spinDamage, knockback, player.whoAmI, HeldAim.Facing(aim), 0f, aim);
             return false;
+        }
+
+        // Right click: the javelin flies straight at the cursor (its velocity is the throw, synced with the spawn). Owner's client only.
+        // Called by Shoot (the first throw) and by RottedForkPlayer (the automatic re-throw while the button stays held).
+        public static void Throw(Player player, IEntitySource source, int damage, float knockback)
+        {
+            Vector2 direction = (Main.MouseWorld - player.MountedCenter).SafeNormalize(new Vector2(player.direction, 0f));
+            player.ChangeDir(direction.X >= 0f ? 1 : -1);
+            int javelinDamage = Math.Max(1, (int)(damage * RottedForkTuning.JavelinDamageMultiplier));
+            Projectile.NewProjectile(source, player.MountedCenter + direction * 24f, direction * RottedForkTuning.JavelinSpeed, ModContent.ProjectileType<RottedForkJavelinProjectile>(), javelinDamage, knockback, player.whoAmI);
         }
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
