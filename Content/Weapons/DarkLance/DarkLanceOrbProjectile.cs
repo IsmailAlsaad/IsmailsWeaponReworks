@@ -49,7 +49,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
 
         public override void OnSpawn(IEntitySource source)
         {
-            Projectile.timeLeft = Math.Max(1, DarkLanceTuning.OrbLifeTicks);
+            //Projectile.timeLeft = Math.Max(1, DarkLanceTuning.OrbLifeTicks);
         }
 
         public override void AI()
