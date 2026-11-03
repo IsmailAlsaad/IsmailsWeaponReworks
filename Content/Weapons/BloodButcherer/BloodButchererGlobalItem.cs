@@ -57,7 +57,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            //tooltips.Add(new TooltipLine(Mod, "BloodButcherer1", "The blade opens its jaws and bites"));
+            tooltips.Add(new TooltipLine(Mod, "BloodButcherer1", "Hold to keep biting"));
         }
     }
 }

@@ -52,8 +52,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static int LaunchAiOffTicks => 25;    // the thrown enemy cannot steer or attack for this long (normal gravity and tile collision)
         public static float LaunchGravity => 0.3f;
         public static float LaunchMaxFall => 12f;
-        public static float GripTickDamageMultiplier => 0.3f; // while it is held
-        public static int GripTickInterval => 3;      // ticks between those hits
+        public static float GripTickDamageMultiplier => 1f; // while it is held
+        public static int GripTickInterval => 24;      // ticks between those hits
         public static float LaunchDamageMultiplier => 1.6f;   // the throw
         public static float MaxGrabSize => 120f;      // an enemy bigger than this (width or height) is clamped, not gripped
         public static float LaunchShake => 6f;
