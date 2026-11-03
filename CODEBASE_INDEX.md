@@ -507,7 +507,7 @@ tModLoader/other bases -> project types:
     +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +SpinSpeed:float[s] +AfterimageTicks:int[s] +ShardDamageMultiplier:float[s] +ShardMaxHits:int[s] +ShardLifeTicks:int[s] +ShardHitCooldownTicks:int[s] +ShardSpeed:float[s] +ShardSpreadAngle:float[s] +ShardHop:float[s] +ShardGravity:float[s] +ShardMaxFallSpeed:float[s] +ShardDrag:float[s] +BreakOnTilesWhileReturning:bool[s] +GlowColor:Color[s] +WoodDust:int[s]
 
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
-- (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; patch_shader_bisect.ps1, patch_shader_rewrite.ps1; build.txt, description.txt, description_workshop.txt
+- (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; patch_shader_bisect.ps1, patch_shader_reorder.ps1, patch_shader_rewrite.ps1; build.txt, description.txt, description_workshop.txt
 - Content/Sounds/: ElectricEel.wav
 - Effects/: DarkFlameOrb.fx, PixelGlow.fx; PixelShared.fxh; PixelGlow.xnb
 - Localization/: en-US_Mods.IsmailsWeaponReworks.hjson
