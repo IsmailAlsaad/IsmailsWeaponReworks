@@ -22,13 +22,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         public override int LifeTicks => IceBladeTuning.TrailLifeTicks;
         public override int Rails => IceBladeTuning.TrailRails;
 
+        public override SweepFade Fade => SweepFade.Uniform; // the whole fan fades away together
+
         public override Color GetColor(float across, float age)
         {
-            float fade = (1f - age) * (1f - age) * IceBladeTuning.TrailOpacity(tier);
+            float fade = Falloff(age) * IceBladeTuning.TrailOpacity(tier);
             // Bright core on the tip edge, mid blue in the middle, deep halo blue toward the hand; the inner side is fainter.
-            Color color = across < 0.5f
-                ? Color.Lerp(IceBladeTuning.CoreColor, IceBladeTuning.MidColor, across * 2f)
-                : Color.Lerp(IceBladeTuning.MidColor, IceBladeTuning.HaloColor, (across - 0.5f) * 2f);
+            Color color = ThreeStop(across, IceBladeTuning.CoreColor, IceBladeTuning.MidColor, IceBladeTuning.HaloColor);
             return color * (fade * (1f - 0.65f * across));
         }
     }

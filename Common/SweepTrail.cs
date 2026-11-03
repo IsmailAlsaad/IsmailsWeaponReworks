@@ -16,7 +16,38 @@ namespace IsmailsWeaponReworks.Common
         public virtual int LifeTicks => 30;
         public virtual int Rails => 7;   // parallel pixel lines that fill the area between the outer and the inner edge
 
+        // How the trail fades (see SweepFade). Uniform = the whole trail fades together (the Ice Blade); TailFirst = the tail fades out
+        // first and the fade travels up to the tip (the Starfury). Override it in the weapon's style; nothing else has to change.
+        public virtual SweepFade Fade => SweepFade.Uniform;
+        public virtual float TailLifeScale => 0.45f; // TailFirst only: the first (oldest) point lives this fraction as long as the newest
+
         public abstract Color GetColor(float across, float age);
+
+        // The usual fade-out curve for GetColor: 1 when just laid, 0 when about to vanish, falling fast at first.
+        protected static float Falloff(float age)
+        {
+            return (1f - age) * (1f - age);
+        }
+
+        // The usual three-stop color across the fan: 'tip' on the outer edge (across 0), 'mid' in the middle, 'inner' on the inner edge (across 1).
+        protected static Color ThreeStop(float across, Color tip, Color mid, Color inner)
+        {
+            return across < 0.5f
+                ? Color.Lerp(tip, mid, across * 2f)
+                : Color.Lerp(mid, inner, (across - 0.5f) * 2f);
+        }
+    }
+
+    /// <summary>
+    /// How a SweepTrail's samples age. Uniform: every sample lives the same LifeTicks, so a trail laid in a short swing fades away
+    /// together. TailFirst: the sample laid at the start of the swing lives only Style.TailLifeScale of the life of the last one (the
+    /// caller says where in the swing a sample is with the 'along' argument of Add), so the trailing end fades first and the fade
+    /// travels up to the tip.
+    /// </summary>
+    public enum SweepFade
+    {
+        Uniform,
+        TailFirst
     }
 
     /// <summary>
@@ -51,14 +82,18 @@ namespace IsmailsWeaponReworks.Common
         public int Count => outers.Count;
         public bool IsEmpty => outers.Count == 0;
 
-        // lifeScale (0..1] shortens this sample's life: a swing that lays its tail with a small scale and its tip with 1 makes the
-        // trailing end fade out first, and the fade then travels up to the tip. The default keeps every other trail exactly as it was.
-        public void Add(Vector2 outer, Vector2 inner, float lifeScale = 1f)
+        // 'along' (0..1) is where in the swing this sample is laid (0 = the start, 1 = the end). Only a TailFirst style uses it: the
+        // sample then lives from Style.TailLifeScale (at 0) up to a full life (at 1), so the trailing end fades out first. A Uniform
+        // style ignores it, so callers that do not care can leave the default.
+        public void Add(Vector2 outer, Vector2 inner, float along = 1f)
         {
+            float life = Style.Fade == SweepFade.TailFirst
+                ? MathHelper.Lerp(Style.TailLifeScale, 1f, MathHelper.Clamp(along, 0f, 1f))
+                : 1f;
             outers.Add(outer);
             inners.Add(inner);
             births.Add(clock);
-            scales.Add(MathHelper.Clamp(lifeScale, 0.05f, 1f));
+            scales.Add(MathHelper.Clamp(life, 0.05f, 1f));
         }
 
         public void Tick()

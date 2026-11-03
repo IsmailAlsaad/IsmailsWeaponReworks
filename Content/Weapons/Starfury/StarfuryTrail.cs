@@ -23,12 +23,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public override int LifeTicks => StarfuryTuning.TrailLifeTicks;
         public override int Rails => StarfuryTuning.TrailRails;
 
+        public override SweepFade Fade => SweepFade.TailFirst;       // the tail fades out first, the fade travels up to the tip
+        public override float TailLifeScale => StarfuryTuning.TailLifeScale;
+
         public override Color GetColor(float across, float age)
         {
-            float fade = (1f - age) * (1f - age) * StarfuryTuning.TrailOpacityAt(charge);
-            Color color = across < 0.5f
-                ? Color.Lerp(StarfuryTuning.CoreColor, StarfuryTuning.GoldColor, across * 2f)
-                : Color.Lerp(StarfuryTuning.GoldColor, StarfuryTuning.PinkColor, (across - 0.5f) * 2f);
+            float fade = Falloff(age) * StarfuryTuning.TrailOpacityAt(charge);
+            Color color = ThreeStop(across, StarfuryTuning.CoreColor, StarfuryTuning.GoldColor, StarfuryTuning.PinkColor);
             return color * (fade * (1f - 0.6f * across));
         }
     }

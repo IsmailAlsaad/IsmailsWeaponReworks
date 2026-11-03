@@ -5,7 +5,6 @@ using System;
 using Terraria;
 using Terraria.Audio;
 using Terraria.GameContent;
-using Terraria.Graphics.CameraModifiers;
 using Terraria.ID;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
@@ -196,15 +195,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
 
             SoundEngine.PlaySound(SoundID.Item14 with { Volume = 1f, Pitch = -0.3f }, center);
             SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.9f, Pitch = -0.4f }, center);
-            Shake(center, SunfuryTuning.ShakeStrength);
-        }
-
-        // Camera shake; every machine runs it and the strength falls off with distance from the blast.
-        public static void Shake(Vector2 center, float strength)
-        {
-            if (Main.dedServ)
-                return;
-            Main.instance.CameraModifiers.Add(new PunchCameraModifier(center, Main.rand.NextFloat(MathHelper.TwoPi).ToRotationVector2(), strength, 7f, 22, 1400f, "SunfuryBlast"));
+            CameraShake.Punch(center, SunfuryTuning.ShakeStrength, 22, "SunfuryBlast");
         }
 
         // ---- drawing helpers ----

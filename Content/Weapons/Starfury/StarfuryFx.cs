@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Terraria;
 using Terraria.Audio;
-using Terraria.Graphics.CameraModifiers;
 using Terraria.ID;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Starfury
@@ -236,14 +235,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 return;
             SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.9f, Pitch = 0.1f }, position);
             SoundEngine.PlaySound(SoundID.Item9 with { Volume = 0.7f, Pitch = 0.6f }, position);
-        }
-
-        // A punch of camera shake that fades with distance.
-        public static void Shake(Vector2 center, float strength)
-        {
-            if (Main.dedServ)
-                return;
-            Main.instance.CameraModifiers.Add(new PunchCameraModifier(center, Main.rand.NextFloat(MathHelper.TwoPi).ToRotationVector2(), strength, 7f, 20, 1400f, "StarfuryBlast"));
         }
     }
 }

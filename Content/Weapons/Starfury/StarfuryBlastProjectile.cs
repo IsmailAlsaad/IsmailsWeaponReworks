@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Common;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.GameContent;
@@ -40,7 +41,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             {
                 StarfuryFx.BlastBurst(Projectile.Center);
                 StarfuryFx.PlayBlast(Projectile.Center);
-                StarfuryFx.Shake(Projectile.Center, StarfuryTuning.BlastShake);
+                CameraShake.Punch(Projectile.Center, StarfuryTuning.BlastShake, 20, "StarfuryBlast");
             }
             float fade = Projectile.timeLeft / (float)System.Math.Max(1, StarfuryTuning.BlastTicks);
             Lighting.AddLight(Projectile.Center, StarfuryTuning.GenerationColor(StarfuryTuning.MaxBats).ToVector3() * 2.5f * fade);

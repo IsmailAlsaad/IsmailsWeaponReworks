@@ -291,9 +291,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             float charge = ChargeFractionAtStart;
             float inner = MathHelper.Lerp(1f, StarfuryTuning.TrailInnerAt(charge), expand);
             trail ??= new SweepTrail(new StarfurySweepTrailStyle(charge), IsOwner);
-            // The tail of the swing lives shorter than its tip, so the trailing end fades out first and the fade travels up to the tip.
+            // 'along' = where in the strike this sample is; the style (TailFirst) makes the tail live shorter, so it fades out first.
             float along = MathHelper.Clamp((time - StrikeStart) / Math.Max(1, StarfuryTuning.SwingTicks), 0f, 1f);
-            trail.Add(hand + direction * length, hand + direction * length * inner, MathHelper.Lerp(StarfuryTuning.TailLifeScale, 1f, along));
+            trail.Add(hand + direction * length, hand + direction * length * inner, along);
         }
 
         void UpdateCall()

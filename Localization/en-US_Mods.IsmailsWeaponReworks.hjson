@@ -25,4 +25,5 @@ Projectiles: {
 	ShroomerangMushroomProjectile.DisplayName: Shroomerang Mushroom Projectile
 	ShroomerangBurstProjectile.DisplayName: Shroomerang Burst Projectile
 	StarfuryBlastProjectile.DisplayName: Starfury Blast Projectile
+	BloodButchererSwingProjectile.DisplayName: Blood Butcherer Swing Projectile
 }
