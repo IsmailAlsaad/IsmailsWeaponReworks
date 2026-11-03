@@ -35,6 +35,7 @@ namespace IsmailsWeaponReworks.Common
         readonly List<Vector2> outers = new List<Vector2>();
         readonly List<Vector2> inners = new List<Vector2>();
         readonly List<int> births = new List<int>();
+        readonly List<float> scales = new List<float>(); // per sample: how long it lives, as a fraction of Style.LifeTicks
         Vector2[] points = new Vector2[0];
         float[] ts = new float[0];
         float[] gaps = new float[0];
@@ -50,24 +51,28 @@ namespace IsmailsWeaponReworks.Common
         public int Count => outers.Count;
         public bool IsEmpty => outers.Count == 0;
 
-        public void Add(Vector2 outer, Vector2 inner)
+        // lifeScale (0..1] shortens this sample's life: a swing that lays its tail with a small scale and its tip with 1 makes the
+        // trailing end fade out first, and the fade then travels up to the tip. The default keeps every other trail exactly as it was.
+        public void Add(Vector2 outer, Vector2 inner, float lifeScale = 1f)
         {
             outers.Add(outer);
             inners.Add(inner);
             births.Add(clock);
+            scales.Add(MathHelper.Clamp(lifeScale, 0.05f, 1f));
         }
 
         public void Tick()
         {
             clock++;
             int expired = 0;
-            while (expired < births.Count && clock - births[expired] > Style.LifeTicks)
+            while (expired < births.Count && clock - births[expired] > Style.LifeTicks * scales[expired])
                 expired++;
             if (expired > 0)
             {
                 outers.RemoveRange(0, expired);
                 inners.RemoveRange(0, expired);
                 births.RemoveRange(0, expired);
+                scales.RemoveRange(0, expired);
             }
         }
 
@@ -97,7 +102,7 @@ namespace IsmailsWeaponReworks.Common
             {
                 ts[i] = i / (float)(count - 1);
                 gaps[i] = (outers[i] - inners[i]).Length();
-                ages[i] = MathHelper.Clamp((clock - births[i]) / (float)Math.Max(1, Style.LifeTicks), 0f, 1f);
+                ages[i] = MathHelper.Clamp((clock - births[i]) / Math.Max(1f, Style.LifeTicks * scales[i]), 0f, 1f);
             }
 
             float grid = Style.Grid;

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 {
@@ -41,16 +42,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static float CallTiltDeg => -10f;      // arm plus tilt = the blade points straight up
         public static float CallKickDeg => 6f;        // the arm kicks up this much when the star is born
         public static int CallCooldownTicks => 24;    // from the right click to the next allowed right click
-        public static float CallFrontDistance => 56f; // the star comes down this far in front of the player (within sword reach) ...
+        public static float CallFrontDistance => 30f; // the star comes down this far in front of the player (within sword reach) ...
         public static float CallTargetHeight => -8f;  // ... and this far above the player's center (negative = up)
         public static float CallRestArmDeg => 25f;    // where a call starts when no swing came right before it (facing-local arm angle)
         public static int FlashTicks => 12;
 
-        // ---- the called star ----
-        public static float SpawnSideOffset => 140f;  // the star starts this far sideways of the target, on the side the player does NOT face
-        public static float SpawnAboveScreen => 120f; // and this far above the top of the screen ...
-        public static float MinFallDistance => 500f;  // ... or at least this far above the target
-        public static float CalledStarSpeed => 10f;
+        // ---- the called star: it is born at the blade tip, hops on a small parabola to the point in front of the player, then keeps falling ----
+        public static float CallHopHeight => 50f;     // the hop rises this far above the blade tip (pixels); the flight time follows from it and from where the star must land
+        public static int CallBlockGraceTicks => 8;   // the star ignores blocks this long after it is born (it starts above the player's head)
         public static float CalledStarDamageMultiplier => 0.35f; // deliberately unimpressive on its own
         public static float CalledStarKnockbackMultiplier => 0.5f;
         public static int StarLifeTicks => 300;
@@ -71,7 +70,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static int LaunchLifeTicks => 90;
 
         // ---- bounce: a launched star that hits an enemy arcs back to the player on a solved parabola ----
-        public static float BounceFrontDistance => 48f; // it lands this far in front of the player (within sword reach) ...
+        public static float BounceFrontDistance => 30f; // it lands this far in front of the player (within sword reach) ...
         public static float BounceTargetHeight => -10f; // ... and this far above the player's center (negative = up)
         public static float BounceSpeedTarget => 9f;    // flight time = distance / this (pixels per tick), then clamped:
         public static int BounceMinTicks => 24;
@@ -90,18 +89,28 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static float BlastKnockbackMultiplier => 2f;
         public static float BlastShake => 5f;                  // camera shake strength (pixels)
 
-        // ---- melee: a true blade hit may call a star down, exactly like the right click (from offscreen to the point in front of the player) ----
-        public static float MeleeStarChance => 0.5f;           // chance per true blade hit
-        public static int MeleeStarsPerSwing => 1;             // so a swing through a crowd does not flood the screen
+        // ---- charge: the first enemy the blade hits in a swing charges the sword; a right click tosses a star of the charged tier and spends it ----
+        public static int HitsPerLevel => 4;          // swings that hit an enemy per charge level
+        public static int MaxLevel => 2;              // the top level = the generation of the star it tosses; one bat makes it the exploding generation (keep it below MaxBats)
+        public static int MaxHits => HitsPerLevel * MaxLevel;
+        public static int LevelOf(int hits) { return Math.Min(Math.Max(0, hits) / Math.Max(1, HitsPerLevel), MaxLevel); }
 
         // ---- pixel look ----
         public static float PixelSize => 2f;
         public static int TrailLifeTicks => 22;
-        public static float TrailThickness => 7f;
-        public static float TrailOpacity => 0.5f;
+        // The trail gets stronger with the charge like the Ice Blade's tiers: three anchors (no charge, half, full) and a blend between them.
+        public static float TrailOpacityLow => 0.4f;
+        public static float TrailOpacityMid => 0.65f;
+        public static float TrailOpacityHigh => 0.95f;
+        public static float TrailOpacityAt(float charge) { return charge < 0.5f ? MathHelper.Lerp(TrailOpacityLow, TrailOpacityMid, charge * 2f) : MathHelper.Lerp(TrailOpacityMid, TrailOpacityHigh, (charge - 0.5f) * 2f); }
+        public static float TailLifeScale => 0.45f;       // the first point of a swing's trail lives this fraction as long as the last one, so the trailing end fades out first
         public static int TrailRails => 7;                // parallel pixel lines that fill the fan
         public static float TrailExpandBy => 0.9f;        // the fan has fully expanded this far into the swing (0..1)
-        public static float TrailInnerFraction => 0.45f;  // fully expanded, the fan reaches down the blade to this fraction of its length
+        // Fully expanded, the fan reaches down the blade to this fraction of its length (lower = a bigger fan), by charge like the opacity.
+        public static float TrailInnerLow => 0.5f;
+        public static float TrailInnerMid => 0.33f;
+        public static float TrailInnerHigh => 0.12f;
+        public static float TrailInnerAt(float charge) { return charge < 0.5f ? MathHelper.Lerp(TrailInnerLow, TrailInnerMid, charge * 2f) : MathHelper.Lerp(TrailInnerMid, TrailInnerHigh, (charge - 0.5f) * 2f); }
         public static int TrailSamplesPerTick => 8;       // trail points laid per tick (the strike is fast, so many keep the fan smooth)
         public static Color GoldColor => new Color(255, 215, 110, 0);
         public static Color PinkColor => new Color(255, 140, 190, 0);

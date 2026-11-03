@@ -154,6 +154,53 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 SparkGen(position, Main.rand.NextVector2Circular(4f, 4f), 1.2f, generation);
         }
 
+        // ---- charge (the color is the generation of the star the sword will toss: gold, ice, pink) ----
+
+        // A blade hit charged the sword: a few motes of the current tier's color shoot off the tip.
+        public static void ChargeHit(Vector2 tip, int level)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 6; i++)
+                SparkGen(tip, Main.rand.NextVector2Circular(3f, 3f), 1f, level);
+        }
+
+        // The sword reached the next level: a ring and a column of sparks in the new color.
+        public static void ChargeUp(Vector2 tip, int level)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 18; i++)
+                SparkGen(tip, (MathHelper.TwoPi * i / 18f).ToRotationVector2() * 5.5f, 1.4f, level);
+            for (int i = 0; i < 12; i++)
+                SparkGen(tip, new Vector2(Main.rand.NextFloat(-1f, 1f), -Main.rand.NextFloat(2f, 7f)), 1.3f, level);
+        }
+
+        public static void PlayChargeUp(Vector2 position, int level)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.7f, Pitch = 0.1f + 0.25f * level }, position);
+            SoundEngine.PlaySound(SoundID.Item25 with { Volume = 0.4f, Pitch = 0.2f + 0.25f * level }, position);
+        }
+
+        // The charge is spent on a tossed star: the stored energy sprays off the tip.
+        public static void ChargeRelease(Vector2 tip, int level)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 22; i++)
+                SparkGen(tip, Main.rand.NextVector2CircularEdge(1f, 1f) * Main.rand.NextFloat(3f, 8f), 1.4f, level);
+        }
+
+        // A mote somewhere along a charged blade.
+        public static void ChargeSparkle(Vector2 hand, Vector2 tip, int level)
+        {
+            if (Main.dedServ)
+                return;
+            SparkGen(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Circular(0.6f, 0.6f) + new Vector2(0f, -0.3f), 0.9f, level);
+        }
+
         // The finisher: three rings, a spray and some gold, all in the hot color of the last generation.
         public static void BlastBurst(Vector2 position)
         {

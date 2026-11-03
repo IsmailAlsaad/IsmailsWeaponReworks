@@ -11,7 +11,7 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 {
     /// <summary>
-    /// The star of the Starfury. A called star flies a straight line at a constant speed (no gravity) and does small damage to the first
+    /// The star of the Starfury. A called star hops from the blade tip to a point in front of the player on a parabola (Mode.Toss) and does small damage to the first
     /// enemy it touches: the weak baseline for a star nobody bats. A swing that touches it bats it (StarfurySwingProjectile): it
     /// becomes the next generation (its own color) and flies fast toward where the owner decided. A launched star that hits an enemy
     /// arcs back to the player on a solved parabola so it can be batted again; after the last bat it ends on its first hit instead. Every star ends
@@ -20,6 +20,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
     /// through everything on its way to the cursor point (like the vanilla falling stars, so it also works underground).
     /// ai[2] = mode: 0 Straight (called, no gravity), 1 Launched (batted, straight and fast), 2 Parabolic (unused now: it was the star
     /// born at a melee hit; kept so the ai[2] values stay stable), 3 Arc (the bounce back to the player: gravity without the usual fall-speed cap, so the solved arc stays exact).
+    /// 4 Toss (a called star: the same arc physics as Arc, but ai[1] = ticks before it may touch blocks, and it ends on its first enemy hit; Straight is no longer used).
     /// MULTIPLAYER: stars are spawned by the owner (so tModLoader syncs them) and every machine moves them the same way. The owner's
     /// client decides everything else (the bat, its direction, the doubling, the bounce angle, the end) and syncs it through ai[] and
     /// velocity with netUpdate; every machine notices a changed generation or mode on its own and plays the bat or bounce effect, so
@@ -30,7 +31,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         // The vanilla falling-star projectile sprite (no art needed).
         public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Starfury;
 
-        public enum Mode { Straight = 0, Launched = 1, Parabolic = 2, Arc = 3 }
+        public enum Mode { Straight = 0, Launched = 1, Parabolic = 2, Arc = 3, Toss = 4 }
 
         public int Generation => (int)Projectile.ai[0];
         public Mode CurrentMode => (Mode)(int)Projectile.ai[2];
@@ -63,6 +64,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                     Main.projectile[index].timeLeft = StarfuryTuning.LaunchLifeTicks;
             }
             return index;
+        }
+
+        // Owner only: the launch velocity of a called star. It starts at 'from' (the blade tip), rises CallHopHeight above it and lands, at the
+        // end of the arc, at a point just in front of the player (the side they face, within sword reach), where the player will be by then.
+        // Same arc math as SolveArc: gravity is added before the move every tick, so after n ticks y = vy * n + g * n * (n + 1) / 2. The flight
+        // time n is the one that makes a rise of CallHopHeight end at the target height (a quadratic), rounded to whole ticks; the exact
+        // velocity for that n is then solved.
+        public static Vector2 SolveToss(Vector2 from, Player owner, int facing)
+        {
+            float g = StarfuryTuning.Gravity;
+            Vector2 front = owner.MountedCenter + new Vector2(facing * StarfuryTuning.CallFrontDistance, StarfuryTuning.CallTargetHeight);
+            float vy0 = -(float)Math.Sqrt(2f * g * Math.Max(0f, StarfuryTuning.CallHopHeight));
+            float b = vy0 + g * 0.5f;
+            float flight = (-b + (float)Math.Sqrt(Math.Max(0f, b * b + 2f * g * (front.Y - from.Y)))) / g;
+            int n = Math.Max(8, (int)Math.Round(flight));
+            Vector2 delta = front + owner.velocity * (n * StarfuryTuning.BounceLead) - from;
+            return new Vector2(delta.X / n, delta.Y / n - g * (n + 1) * 0.5f);
         }
 
         public static int CountOwned(int owner)
@@ -170,6 +188,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                     if (Projectile.ai[1] > 0f)
                         Projectile.ai[1]--; // every machine counts the same, so every machine switches block collision on the same tick
                     Projectile.tileCollide = Projectile.ai[1] <= 0f;
+                    break;
+                case Mode.Toss:
+                    if (Projectile.ai[1] > 0f)
+                        Projectile.ai[1]--; // every machine counts the same, so every machine switches block collision on the same tick
+                    Projectile.tileCollide = Projectile.ai[1] <= 0f;
+                    Projectile.velocity.Y = Math.Min(Projectile.velocity.Y + StarfuryTuning.Gravity, StarfuryTuning.ArcMaxFallSpeed);
                     break;
                 case Mode.Parabolic:
                     Projectile.tileCollide = true;

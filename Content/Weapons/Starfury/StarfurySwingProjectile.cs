@@ -14,11 +14,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
     /// SWING DOWN / SWING UP (left click): a custom melee chop centered on the cursor (the middle of the slash points at it): a slow heavy
     /// anticipation, a fast strike that decelerates, a short recover. Consecutive swings alternate down, up, down ... and each one starts
     /// where the previous one ended, so a held button flows. An expanding sweep trail (SweepTrail) fills the area the blade crosses. A true
-    /// blade hit may call a star down the same way the right click does.
+    /// blade hit (the first one of each swing) charges the sword: the glow and the trail get stronger and the next toss is a higher tier.
     /// CALL (right click): the arm lifts until the sword points straight up, a burst of star dust marks the moment, and on that tick the
-    /// owner spawns a StarfuryStarProjectile far above, which falls in a straight line to a point in front of the player.
+    /// owner spawns a StarfuryStarProjectile at the blade tip, which hops on a small parabola to a point in front of the player and spends the charge.
     /// MULTIPLAYER: the owner's client decides everything (which use it is, where the arm starts, the aim, the star spawn) and
-    /// passes what the other machines need in the spawn packet: ai[0] = phase, ai[1] = start arm angle (a swing: relative to the aim;
+    /// passes what the other machines need in the spawn packet: ai[0] = phase + 10 * charge hits (the owner raises the hits mid-swing
+    /// when a blade hit charges the sword, with netUpdate), ai[1] = start arm angle (a swing: relative to the aim;
     /// a call: facing-local radians), ai[2] = the aim angle captured at the click (radians, the player's own frame).
     /// Every machine then runs the same timers for the pose, sounds, dust and trail. Swing hits are detected by the owner's client
     /// like any projectile; the star is a normal spawned (and therefore synced) projectile. No custom packets.
@@ -30,7 +31,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 
         public enum Phase { SwingDown = 0, SwingUp = 1, Call = 2 }
 
-        Phase CurrentPhase => (Phase)(int)Projectile.ai[0];
+        Phase CurrentPhase => (Phase)((int)Projectile.ai[0] % 10);
+        int Charge => (int)Projectile.ai[0] / 10; // the sword's charge hits
         float StartArm => Projectile.ai[1];
         float Aim => Projectile.ai[2];
         Player Owner => Main.player[Projectile.owner];
@@ -52,7 +54,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         Vector2 prevCenter;      // the blade's hand position and angle on the previous tick: the hit test sweeps from them
         float prevRotation;
         SweepTrail trail;      // the fan behind the blade (null until a swing lays a point)
-        int meleeStars;        // owner only: stars this swing has called down (capped per swing)
+        bool hitCounted;       // owner only: this swing has already charged the sword (only the first hit of a swing counts)
+        int chargeAtStart;     // the charge when this use began: the trail's strength for the whole swing
+        int lastCharge;        // per machine: lets every machine notice a hit the owner added to the charge
+        float chargeShown;     // 0..1, the glow's strength: follows the charge smoothly and drains away when the star is tossed
+        bool discharged;       // the call has spent the charge (the glow drains)
 
         public override void SetDefaults()
         {
@@ -187,6 +193,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 prevRotation = Projectile.rotation;
             }
 
+            UpdateCharge();
+
             if (IsCall)
             {
                 CallEffects();
@@ -204,6 +212,38 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             lastOwnerCenter = owner.Center;
             ticks++;
             timer++;
+        }
+
+        float ChargeFractionAtStart => MathHelper.Clamp(chargeAtStart / (float)Math.Max(1, StarfuryTuning.MaxHits), 0f, 1f);
+
+        // Every machine: smooths the glow and notices a hit (or a whole level) the owner added to the charge through ai[0].
+        void UpdateCharge()
+        {
+            int charge = Charge;
+            if (ticks == 0)
+            {
+                chargeAtStart = charge;
+                lastCharge = charge;
+                chargeShown = charge / (float)Math.Max(1, StarfuryTuning.MaxHits);
+            }
+            else if (charge > lastCharge)
+            {
+                int level = StarfuryTuning.LevelOf(charge);
+                flash = Math.Max(flash, 0.5f);
+                StarfuryFx.ChargeHit(tipPosition, level);
+                if (level > StarfuryTuning.LevelOf(lastCharge))
+                {
+                    flash = 1f;
+                    StarfuryFx.ChargeUp(tipPosition, level);
+                    StarfuryFx.PlayChargeUp(tipPosition, level);
+                }
+                lastCharge = charge;
+            }
+
+            float target = discharged ? 0f : charge / (float)Math.Max(1, StarfuryTuning.MaxHits);
+            chargeShown = MathHelper.Lerp(chargeShown, target, discharged ? 0.2f : 0.35f);
+            if (chargeShown > 0.02f && Main.rand.NextFloat() < 0.15f + 0.5f * chargeShown)
+                StarfuryFx.ChargeSparkle(Projectile.Center, tipPosition, StarfuryTuning.LevelOf(charge));
         }
 
         void UpdateSwing()
@@ -248,9 +288,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             float length = StarfuryTuning.BladeLength * Projectile.scale * 0.9f;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
             float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / Math.Max(0.01f, StarfuryTuning.TrailExpandBy), 0f, 1f));
-            float inner = MathHelper.Lerp(1f, StarfuryTuning.TrailInnerFraction, expand);
-            trail ??= new SweepTrail(new StarfurySweepTrailStyle(), IsOwner);
-            trail.Add(hand + direction * length, hand + direction * length * inner);
+            float charge = ChargeFractionAtStart;
+            float inner = MathHelper.Lerp(1f, StarfuryTuning.TrailInnerAt(charge), expand);
+            trail ??= new SweepTrail(new StarfurySweepTrailStyle(charge), IsOwner);
+            // The tail of the swing lives shorter than its tip, so the trailing end fades out first and the fade travels up to the tip.
+            float along = MathHelper.Clamp((time - StrikeStart) / Math.Max(1, StarfuryTuning.SwingTicks), 0f, 1f);
+            trail.Add(hand + direction * length, hand + direction * length * inner, MathHelper.Lerp(StarfuryTuning.TailLifeScale, 1f, along));
         }
 
         void UpdateCall()
@@ -273,6 +316,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 flash = 1f;
                 StarfuryFx.CallBurst(tipPosition);
                 StarfuryFx.PlayCall(tipPosition);
+                if (Charge > 0)
+                {
+                    discharged = true;
+                    StarfuryFx.ChargeRelease(tipPosition, StarfuryTuning.LevelOf(Charge));
+                }
                 if (IsOwner)
                     SpawnStar();
             }
@@ -284,18 +332,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 Lighting.AddLight(tipPosition, 0.5f + 0.6f * flash, 0.4f + 0.5f * flash, 0.15f + 0.3f * flash);
         }
 
-        // Owner only. The target is a point in front of the player, within sword reach (the cursor does not matter). The star starts far
-        // above it (on the side the player does not face) and flies a straight line through it.
+        // Owner only. The star is born at the blade tip (the sword points straight up) and hops on a small parabola to a point just in front
+        // of the player, on the side they face (StarfuryStarProjectile.SolveToss); after that it keeps falling. Its generation is the sword's
+        // charge level, and tossing it spends the whole charge.
         void SpawnStar()
         {
-            Vector2 target = Owner.MountedCenter + new Vector2(Facing * StarfuryTuning.CallFrontDistance, StarfuryTuning.CallTargetHeight);
-            float side = -Facing * StarfuryTuning.SpawnSideOffset;
-            float y = Math.Min(Main.screenPosition.Y - StarfuryTuning.SpawnAboveScreen, target.Y - StarfuryTuning.MinFallDistance);
-            Vector2 spawn = new Vector2(target.X + side, Math.Max(y, 64f));
-            Vector2 velocity = (target - spawn).SafeNormalize(Vector2.UnitY) * StarfuryTuning.CalledStarSpeed;
-            float ticksToTarget = (target - spawn).Length() / StarfuryTuning.CalledStarSpeed;
-            StarfuryStarProjectile.Spawn(Projectile.GetSource_FromThis(), spawn, velocity, 0, StarfuryStarProjectile.Mode.Straight, ticksToTarget,
-                Projectile.damage, Projectile.knockBack, Projectile.owner);
+            StarfuryPlayer state = Owner.GetModPlayer<StarfuryPlayer>();
+            int level = StarfuryTuning.LevelOf(state.ChargeHits);
+            state.ChargeHits = 0;
+            Vector2 velocity = StarfuryStarProjectile.SolveToss(tipPosition, Owner, Facing);
+            StarfuryStarProjectile.Spawn(Projectile.GetSource_FromThis(), tipPosition, velocity, level, StarfuryStarProjectile.Mode.Toss,
+                StarfuryTuning.CallBlockGraceTicks, Projectile.damage, Projectile.knockBack, Projectile.owner);
         }
 
         // The blade is a line from the hand to the tip. The strike is fast, so the test sweeps: it checks the line at a few poses between the
@@ -372,6 +419,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             if (enemy < 0)
                 return LaunchDirection(star);
             return (Main.npc[enemy].Center - star.Center).SafeNormalize(LaunchDirection(star));
+            //return LaunchDirection(star);
         }
 
         // The fallback when no enemy is in range: toward the cursor when the player faces the cursor's side; otherwise the star reflects off
@@ -431,12 +479,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             StarfuryFx.HitSpark(target.Center);
-            // The roll only happens when a star could be called, so a failed roll does not use up the swing's allowance.
-            if (IsOwner && meleeStars < StarfuryTuning.MeleeStarsPerSwing && StarfuryStarProjectile.CountOwned(Projectile.owner) < StarfuryTuning.MaxStars
-                && Main.rand.NextFloat() < StarfuryTuning.MeleeStarChance)
+            // Owner only: the first enemy the blade hits in a swing adds one hit to the sword's charge. The raised value reaches the other
+            // machines through ai[0] (they notice it in UpdateCharge and play the same effect).
+            if (IsOwner && !hitCounted)
             {
-                SpawnStar(); // the same star the right click calls: from offscreen to the point in front of the player
-                meleeStars++;
+                hitCounted = true;
+                StarfuryPlayer state = Owner.GetModPlayer<StarfuryPlayer>();
+                if (state.AddHit())
+                {
+                    Projectile.ai[0] = (float)(int)CurrentPhase + 10f * state.ChargeHits;
+                    Projectile.netUpdate = true;
+                }
             }
         }
 
@@ -468,6 +521,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             Vector2 position = Projectile.Center - Main.screenPosition;
             float rotation = Projectile.rotation + rotationOffset;
             float scale = Projectile.scale;
+
+            // The charge: a halo in the color of the star the sword will toss, stronger with every hit and pulsing; it drains away when the star is tossed.
+            if (chargeShown > 0.02f)
+            {
+                Color chargeColor = StarfuryTuning.GenerationColor(StarfuryTuning.LevelOf(Charge));
+                float pulse = 0.8f + 0.2f * (float)Math.Sin(ticks * 0.4f);
+                Main.EntitySpriteDraw(texture, position, null, chargeColor * (0.6f * chargeShown * pulse), rotation, origin, scale * (1.35f + 0.15f * chargeShown), effects, 0);
+                Main.EntitySpriteDraw(texture, position, null, chargeColor * (0.5f * chargeShown * pulse), rotation, origin, scale * 1.15f, effects, 0);
+            }
 
             // Glow: steady while the sword is out, flaring when the star is called.
             float glow = 0.25f + flash;

@@ -11,13 +11,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
     /// </summary>
     public class StarfurySweepTrailStyle : SweepTrailStyle
     {
+        readonly float charge;
+
+        // charge = 0..1 (hits / StarfuryTuning.MaxHits) when the swing started: a higher charge leaves a stronger trail.
+        public StarfurySweepTrailStyle(float charge)
+        {
+            this.charge = charge;
+        }
+
         public override float Grid => StarfuryTuning.PixelSize;
         public override int LifeTicks => StarfuryTuning.TrailLifeTicks;
         public override int Rails => StarfuryTuning.TrailRails;
 
         public override Color GetColor(float across, float age)
         {
-            float fade = (1f - age) * (1f - age) * StarfuryTuning.TrailOpacity;
+            float fade = (1f - age) * (1f - age) * StarfuryTuning.TrailOpacityAt(charge);
             Color color = across < 0.5f
                 ? Color.Lerp(StarfuryTuning.CoreColor, StarfuryTuning.GoldColor, across * 2f)
                 : Color.Lerp(StarfuryTuning.GoldColor, StarfuryTuning.PinkColor, (across - 0.5f) * 2f);

@@ -11,7 +11,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
     /// <summary>
     /// Overhauls the vanilla Starfury: the item itself fires nothing. Left click starts a StarfurySwingProjectile that swings the sword
     /// (alternating down and up, centered on the cursor), right click starts the same projectile in its call pose, which sends a star
-    /// falling from offscreen to a point in front of the player. Recipe, drops and base stats stay vanilla.
+    /// hopping from the blade tip to a point in front of the player; the sword's charge (from blade hits) sets its tier. Recipe, drops and base stats stay vanilla.
     /// </summary>
     public class StarfuryGlobalItem : GlobalItem
     {
@@ -85,15 +85,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                 startArm = afterSwing ? state.LastEndArm : MathHelper.ToRadians(StarfuryTuning.RestArmDeg); // relative to the aim
             }
 
-            Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, damage, knockback, player.whoAmI, (float)phase, startArm, aim);
+            // ai[0] = phase + 10 * the sword's charge hits, so every machine draws the same glow and trail strength.
+            Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, damage, knockback, player.whoAmI, (float)phase + 10f * state.ChargeHits, startArm, aim);
             return false;
         }
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Starfury1", "Right click to call a star down in front of you"));
-            tooltips.Add(new TooltipLine(Mod, "Starfury2", "Hit a falling star with a swing to bat it at the closest enemy; the third bat makes it explode"));
-            tooltips.Add(new TooltipLine(Mod, "Starfury3", "Hitting an enemy with the blade can call a star down"));
+            tooltips.Add(new TooltipLine(Mod, "Starfury1", "Right click to call a star"));
+            tooltips.Add(new TooltipLine(Mod, "Starfury2", "Hit a star with a swing to bat it"));
+            //tooltips.Add(new TooltipLine(Mod, "Starfury3", $"Each swing that hits an enemy charges the sword ({StarfuryTuning.HitsPerLevel} hits per level); tossing a star spends the charge on a higher tier star"));
         }
     }
 }

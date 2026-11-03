@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Starfury
@@ -14,5 +16,27 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public uint LastEndTick;         // Main.GameUpdateCount when it ended
         public uint LastCallTick;        // when the last right click happened (the call cooldown counts from it)
         public float LastEndWorldArm;    // the same end pose as a world angle (a call starts from it, whatever the aim was)
+
+        // The sword's charge: blade hits so far (0..StarfuryTuning.MaxHits), owner's machine only. Other machines learn it from the swing
+        // and call projectiles (it travels in their ai[0]), which is the only time the sword is visible. It is spent by a tossed star
+        // and lost when the player swaps to another item or dies; it is never saved.
+        public int ChargeHits;
+
+        // Owner only. Adds one hit; false when the sword is already fully charged.
+        public bool AddHit()
+        {
+            if (ChargeHits >= StarfuryTuning.MaxHits)
+                return false;
+            ChargeHits++;
+            return true;
+        }
+
+        public override void PostUpdate()
+        {
+            if (Player.whoAmI != Main.myPlayer || ChargeHits <= 0)
+                return;
+            if (Player.dead || Player.HeldItem.type != ItemID.Starfury)
+                ChargeHits = 0;
+        }
     }
 }
