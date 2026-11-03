@@ -16,7 +16,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trident
                 return;
             ThrustPalette palette = TridentTuning.Palette;
             if (liquid)
-                SoundEngine.PlaySound(SoundID.Splash with { Volume = 0.6f, Pitch = 0.1f }, center);
+                //SoundEngine.PlaySound(SoundID.Splash with { Volume = 0.6f, Pitch = 0.1f }, center);
 
             for (int i = 0; i < 16; i++)
             {
@@ -53,7 +53,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trident
             if (Main.dedServ)
                 return;
             ThrustPalette palette = TridentTuning.Palette;
-            SoundEngine.PlaySound((tile ? SoundID.Tink : SoundID.NPCHit4) with { Volume = 0.9f, Pitch = -0.1f }, position);
+            SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = -0.1f }, position);
 
             for (int i = 0; i < 18; i++)
             {
