@@ -27,8 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
 
         // ---- the fork ----
         public static float SpearScale => 1.15f;
-        public static float GripFraction => 0.45f;       // how much of the shaft sticks out behind the hand
-        public static float Reach => 24f;                 // pixels the fork is pushed out from the hand along its direction
+        public static float JointOffset => 0f;            // pixels the joint of the two forks is pushed along the aim from the middle of the player (0 = centred)
 
         // ---- the javelin (right click) ----
         public static float JavelinSpeed => 16f;            // pixels per tick (42 ticks = about 42 tiles)
@@ -49,7 +48,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         public static float BlastShake => 3f;               // camera punch of the explosion (nearby players)
 
         // ---- look ----
-        public static int TrailLifeTicks => 12;
+        public static int TrailLifeTicks => 8;
         public static int TrailRails => 6;
         public static float TrailOpacity => 0.8f;
         public static float TrailInnerFraction => 0.6f;  // how far down the shaft (from the tip toward the butt) the fan reaches

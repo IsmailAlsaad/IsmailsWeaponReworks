@@ -43,7 +43,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         Vector2 direction;
         Vector2 prevButt;
         Vector2 prevTip;
+        Vector2 tip2;          // the tip of the second fork (the copy pointing the other way)
+        Vector2 prevTip2;
         SweepTrail trail;
+        SweepTrail trail2;
         RemoteHitTracker remoteHits; // created on first use: a field initializer here would be shared by every projectile of the type
 
         public override void SetDefaults()
@@ -109,14 +112,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
 
             Vector2 lastButt = butt;
             Vector2 lastTip = tip;
+            Vector2 lastTip2 = tip2;
 
             // Like the vanilla Sleepy Octopod: no arm pose of our own. The item uses the Shoot use style while it spins (see
             // RottedForkGlobalItem.CanUseItem) and vanilla picks the body frame (arm out, raised or lowered) from itemRotation, which is set
             // below. The fork spins around the middle of the player, like the Octopod's staff.
             Vector2 hand = owner.RotatedRelativePoint(owner.MountedCenter, false, true);
             direction = HeldAim.ToWorldDirection(owner, aim);
-            butt = hand + direction * (-shaft * RottedForkTuning.GripFraction + RottedForkTuning.Reach);
+            butt = hand + direction * RottedForkTuning.JointOffset; // the joint where the two forks meet (the middle of the player)
             tip = butt + direction * shaft;
+            tip2 = butt - direction * shaft;                        // the second fork: a copy pointing the other way, so it is one long spear with two heads
             Projectile.Center = owner.MountedCenter; // knockback pushes away from the player
             Projectile.rotation = direction.ToRotation();
             Projectile.spriteDirection = SpinDirection; // flipped while the fork turns counter-clockwise on screen
@@ -127,6 +132,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
 
             prevButt = hasPose ? lastButt : butt;
             prevTip = hasPose ? lastTip : tip;
+            prevTip2 = hasPose ? lastTip2 : tip2;
             hasPose = true;
 
             if (!Main.dedServ)
@@ -134,7 +140,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
 
             // Other players' machines do not run OnHitNPC; they find the hit themselves and only show the sparks.
             if (!IsOwner && !Main.dedServ && speedFraction >= RottedForkTuning.MinHitSpeed)
-                (remoteHits ??= new RemoteHitTracker()).Update(Projectile, age / Math.Max(1, RottedForkTuning.HitCooldownTicks), npc => ThrustFx.HitSpark(SegmentHit.ClosestPoint(butt, tip, npc.Center), RottedForkTuning.Palette));
+                (remoteHits ??= new RemoteHitTracker()).Update(Projectile, age / Math.Max(1, RottedForkTuning.HitCooldownTicks), npc => ThrustFx.HitSpark(SegmentHit.ClosestPoint(tip2, tip, npc.Center), RottedForkTuning.Palette));
 
             age++;
         }
@@ -155,27 +161,35 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             }
 
             RottedForkFx.Flecks(tip, tip - prevTip, speedFraction, palette);
+            RottedForkFx.Flecks(tip2, tip2 - prevTip2, speedFraction, palette);
             Lighting.AddLight(tip, palette.Mid.ToVector3() * 0.6f * speedFraction);
+            Lighting.AddLight(tip2, palette.Mid.ToVector3() * 0.6f * speedFraction);
 
-            trail ??= new SweepTrail(new ThrustTrailStyle(palette, RottedForkTuning.TrailLifeTicks, RottedForkTuning.TrailRails, RottedForkTuning.PixelSize, RottedForkTuning.TrailOpacity), IsOwner);
+            ThrustTrailStyle MakeStyle() => new ThrustTrailStyle(palette, RottedForkTuning.TrailLifeTicks, RottedForkTuning.TrailRails, RottedForkTuning.PixelSize, RottedForkTuning.TrailOpacity);
+            trail ??= new SweepTrail(MakeStyle(), IsOwner);
+            trail2 ??= new SweepTrail(MakeStyle(), IsOwner);
             if (speedFraction > 0.15f)
             {
                 for (int i = 1; i <= 2; i++)
                 {
                     float f = i / 2f;
-                    Vector2 outer = Vector2.Lerp(prevTip, tip, f);
                     Vector2 root = Vector2.Lerp(prevButt, butt, f);
+                    Vector2 outer = Vector2.Lerp(prevTip, tip, f);
                     trail.Add(outer, Vector2.Lerp(outer, root, RottedForkTuning.TrailInnerFraction));
+                    Vector2 outer2 = Vector2.Lerp(prevTip2, tip2, f);
+                    trail2.Add(outer2, Vector2.Lerp(outer2, root, RottedForkTuning.TrailInnerFraction));
                 }
             }
             trail.Tick();
+            trail2.Tick();
         }
 
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
         {
             if (!hasPose || speedFraction < RottedForkTuning.MinHitSpeed)
                 return false;
-            return SegmentHit.Sweep(targetHitbox, prevButt, prevTip, butt, tip, RottedForkTuning.HitWidth * Projectile.scale, 3);
+            float width = RottedForkTuning.HitWidth * Projectile.scale;
+            return SegmentHit.Sweep(targetHitbox, prevButt, prevTip, butt, tip, width, 3) || SegmentHit.Sweep(targetHitbox, prevButt, prevTip2, butt, tip2, width, 3);
         }
 
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
@@ -185,20 +199,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            ThrustFx.HitSpark(SegmentHit.ClosestPoint(butt, tip, target.Center), RottedForkTuning.Palette);
+            ThrustFx.HitSpark(SegmentHit.ClosestPoint(tip2, tip, target.Center), RottedForkTuning.Palette);
         }
 
         public override void OnKill(int timeLeft)
         {
             if (IsOwner)
                 Owner.GetModPlayer<ThrustPlayer>().StartCooldown(ItemID.TheRottedFork, RottedForkTuning.CooldownTicks);
-            DetachedTrails.Hand(trail); // the fan keeps fading on its own
+            DetachedTrails.Hand(trail); // the fans keep fading on their own
+            DetachedTrails.Hand(trail2);
             trail = null;
+            trail2 = null;
         }
 
         public override bool PreDraw(ref Color lightColor)
         {
             trail?.Draw();
+            trail2?.Draw();
 
             Texture2D texture = TextureAssets.Projectile[Type].Value;
             ThrustPalette palette = RottedForkTuning.Palette;
@@ -207,9 +224,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             float glow = 0.3f + 0.7f * MathHelper.Clamp(speedFraction, 0f, 1f);
 
             int flip = Projectile.spriteDirection;
-            SpearPose.DrawSprite(texture, butt, rotation, flip, scale * 1.18f, palette.Halo * (0.45f * glow));
-            SpearPose.DrawSprite(texture, butt, rotation, flip, scale * 1.07f, palette.Mid * (0.5f * glow));
-            SpearPose.DrawSprite(texture, butt, rotation, flip, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
+            for (int side = 0; side < 2; side++)
+            {
+                float turn = rotation + side * MathHelper.Pi; // the second fork is the first one turned half a circle around the joint
+                SpearPose.DrawSprite(texture, butt, turn, flip, scale * 1.18f, palette.Halo * (0.45f * glow));
+                SpearPose.DrawSprite(texture, butt, turn, flip, scale * 1.07f, palette.Mid * (0.5f * glow));
+                SpearPose.DrawSprite(texture, butt, turn, flip, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
+            }
             return false;
         }
     }
