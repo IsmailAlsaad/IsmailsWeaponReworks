@@ -12,6 +12,7 @@
 	<ItemGroup>
 	  <Folder Include="Localization\" />
 	  <Folder Include="tools\" />
+	  <Folder Include="tools\flat\" />
 	</ItemGroup>
 
 </Project>
