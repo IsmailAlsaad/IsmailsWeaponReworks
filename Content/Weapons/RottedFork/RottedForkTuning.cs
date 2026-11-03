@@ -38,7 +38,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         public static int JavelinLifeTicks => 42;           // the flight ends (in an explosion) after this long if nothing stops it
         public static float JavelinDamageMultiplier => 2f;  // the pierce hit, times the item's damage
         public static float JavelinHitWidth => 20f;         // thickness of the hit line (pixels at scale 1)
-        public static int JavelinCooldownTicks => 10;       // after the explosion, before the fork can be used again
+        public static int JavelinCooldownTicks => 20;       // after the explosion, before the fork can be used again
         public static int MaxImpaled => 3;                  // enemies carried at once
         public static float MaxCarrySize => 72f;            // an enemy bigger than this (width or height) is pierced, not impaled
         public static float CarryFollow => 0.55f;           // how fast an impaled enemy slides into its slot (0 to 1 per tick)
@@ -57,7 +57,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         public static float TrailOpacity => 0.8f;
         public static float TrailInnerFraction => 0.6f;  // how far down the shaft (from the tip toward the butt) the fan reaches
         public static float PixelSize => 2f;
-        public static float JavelinTrailTaper => 0.7f;   // the oldest part of the javelin streak is a point that widens to full width this far (0 to 1) along it
+        public static float JavelinTrailTaper => 1f;   // the oldest part of the javelin streak is a point that widens to full width this far (0 to 1) along it
         public static ThrustPalette Palette => new ThrustPalette(new Color(255, 200, 185), new Color(205, 50, 60), new Color(110, 15, 35), DustID.Blood, DustID.RedTorch);
     }
 }
