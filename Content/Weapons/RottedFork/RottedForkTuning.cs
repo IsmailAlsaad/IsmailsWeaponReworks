@@ -29,9 +29,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         public static float SpearScale => 1.15f;
         public static float GripFraction => 0.45f;       // how much of the shaft sticks out behind the hand
         public static float Reach => 24f;                 // pixels the fork is pushed out from the hand along its direction
-        public static int ArmSwitchesPerTurn => 2;        // the arm flips between raised and lowered this many times per full turn of the fork
-        public static float ArmUpAngle => -1.4f;          // the raised arm (radians in the player's own frame: 0 = forward, negative = up)
-        public static float ArmDownAngle => 1.0f;         // the lowered arm (positive = down)
 
         // ---- the javelin (right click) ----
         public static float JavelinSpeed => 16f;            // pixels per tick (42 ticks = about 42 tiles)

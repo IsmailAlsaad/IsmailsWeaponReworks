@@ -45,7 +45,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         {
             if (player.ownedProjectileCounts[ModContent.ProjectileType<RottedForkSpinProjectile>()] > 0 || player.ownedProjectileCounts[ModContent.ProjectileType<RottedForkJavelinProjectile>()] > 0)
                 return false;
-            return !player.GetModPlayer<ThrustPlayer>().OnCooldown(ItemID.TheRottedFork);
+            if (player.GetModPlayer<ThrustPlayer>().OnCooldown(ItemID.TheRottedFork))
+                return false;
+            // The spin (left click) uses the Shoot use style like the vanilla Sleepy Octopod, so vanilla picks the arm frame from the
+            // itemRotation the spin projectile sets. The javelin throw (right click) keeps the Swing pose.
+            item.useStyle = player.altFunctionUse == 2 ? ItemUseStyleID.Swing : ItemUseStyleID.Shoot;
+            return true;
         }
 
         public override bool Shoot(Item item, Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)

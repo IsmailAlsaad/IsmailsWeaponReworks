@@ -4,7 +4,7 @@ generated 2026-11-03 | 123 .cs files | regenerate: `python index_codebase.py` (p
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(19) DetachedTrails(19) ThrustPalette(16) AfterimageTrail(13) IceFx(10) ThrustPlayer(9) ThrustChain(9) BoomerangFlight(8) SweepTrail(7) HeldAim(7) FlamerangTuning(7) BloodButchererTuning(7) ThrustTimeline(6) StarfuryTuning(6) PixelTrail(6) HeldSwordPose(6) CameraShake(6) ShroomerangTuning(5) PixelLine(5) FlamerangFx(5)
+RemoteHitTracker(19) DetachedTrails(19) ThrustPalette(16) AfterimageTrail(13) IceFx(10) ThrustPlayer(9) ThrustChain(9) BoomerangFlight(8) SweepTrail(7) HeldAim(7) FlamerangTuning(7) BloodButchererTuning(7) ThrustTimeline(6) StarfuryTuning(6) PixelTrail(6) CameraShake(6) ShroomerangTuning(5) PixelLine(5) HeldSwordPose(5) FlamerangFx(5)
 
 ## Inheritance
 Project bases -> derived:
@@ -282,12 +282,12 @@ tModLoader/other bases -> project types:
 **RottedForkPlayer.cs** uses: RottedForkGlobalItem, RottedForkJavelinProjectile, RottedForkSpinProjectile, ThrustPlayer
   class RottedForkPlayer : ModPlayer
     +AutoThrow:bool +PreUpdate()[ov]
-**RottedForkSpinProjectile.cs** uses: DetachedTrails, HeldAim, HeldSwordPose, RemoteHitTracker, RottedForkFx, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
+**RottedForkSpinProjectile.cs** uses: DetachedTrails, HeldAim, RemoteHitTracker, RottedForkFx, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
   class RottedForkSpinProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 **RottedForkTuning.cs** uses: ThrustPalette
   static class RottedForkTuning
-    +SpinSpeed:float[s] +RampTicks:int[s] +StartSpeedFraction:float[s] +WindDownTicks:int[s] +MinSpinTicks:int[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +HitCooldownTicks:int[s] +MinHitSpeed:float[s] +HitWidth:float[s] +SpearScale:float[s] +GripFraction:float[s] +Reach:float[s] +ArmSwitchesPerTurn:int[s] +ArmUpAngle:float[s] +ArmDownAngle:float[s] +JavelinSpeed:float[s] +JavelinLifeTicks:int[s] +JavelinDamageMultiplier:float[s] +JavelinHitWidth:float[s] +JavelinCooldownTicks:int[s] +MaxImpaled:int[s] +MaxCarrySize:float[s] +CarryFollow:float[s] +CarryFrontGap:float[s] +CarryGap:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +CarriedBlastMultiplier:float[s] +BlastKnockback:float[s] +CarriedKnockback:float[s] +BlastShake:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailInnerFraction:float[s] +PixelSize:float[s] +JavelinTrailTaper:float[s] +Palette:ThrustPalette[s]
+    +SpinSpeed:float[s] +RampTicks:int[s] +StartSpeedFraction:float[s] +WindDownTicks:int[s] +MinSpinTicks:int[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +HitCooldownTicks:int[s] +MinHitSpeed:float[s] +HitWidth:float[s] +SpearScale:float[s] +GripFraction:float[s] +Reach:float[s] +JavelinSpeed:float[s] +JavelinLifeTicks:int[s] +JavelinDamageMultiplier:float[s] +JavelinHitWidth:float[s] +JavelinCooldownTicks:int[s] +MaxImpaled:int[s] +MaxCarrySize:float[s] +CarryFollow:float[s] +CarryFrontGap:float[s] +CarryGap:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +CarriedBlastMultiplier:float[s] +BlastKnockback:float[s] +CarriedKnockback:float[s] +BlastShake:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailInnerFraction:float[s] +PixelSize:float[s] +JavelinTrailTaper:float[s] +Palette:ThrustPalette[s]
 
 ### Content/Weapons/Shroomerang/
 **ShroomerangBurstProjectile.cs** uses: IceFx, RemoteHitTracker, ShroomerangFx, ShroomerangTuning

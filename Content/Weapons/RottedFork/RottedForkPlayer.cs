@@ -35,6 +35,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             if (Player.GetModPlayer<ThrustPlayer>().OnCooldown(ItemID.TheRottedFork))
                 return;
 
+            item.useStyle = ItemUseStyleID.Swing; // the throw keeps the swing pose (the spin leaves the Shoot style behind)
             RottedForkGlobalItem.Throw(Player, Player.GetSource_ItemUse(item), Player.GetWeaponDamage(item), Player.GetWeaponKnockback(item, item.knockBack));
             Player.itemAnimation = item.useAnimation; // the vanilla swing pose plays for the throw, like the first one
             Player.itemAnimationMax = item.useAnimation;

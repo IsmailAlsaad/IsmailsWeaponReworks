@@ -110,12 +110,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             Vector2 lastButt = butt;
             Vector2 lastTip = tip;
 
-            // No custom hand animation: the arm only flips between two fixed vanilla poses (raised, lowered) as the fork turns. The fork
-            // pivots around a steady point (the hand of a forward-held arm), so it does not jump when the arm flips.
-            int armPhase = (int)(turned / (MathHelper.TwoPi / Math.Max(1, RottedForkTuning.ArmSwitchesPerTurn)));
-            float armLocal = armPhase % 2 == 0 ? RottedForkTuning.ArmUpAngle : RottedForkTuning.ArmDownAngle;
-            owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, HeldSwordPose.ToWorld(owner.direction, armLocal) - MathHelper.PiOver2);
-            Vector2 hand = SpearPose.Hand(owner, HeldSwordPose.ToWorld(owner.direction, 0f));
+            // Like the vanilla Sleepy Octopod: no arm pose of our own. The item uses the Shoot use style while it spins (see
+            // RottedForkGlobalItem.CanUseItem) and vanilla picks the body frame (arm out, raised or lowered) from itemRotation, which is set
+            // below. The fork spins around the middle of the player, like the Octopod's staff.
+            Vector2 hand = owner.RotatedRelativePoint(owner.MountedCenter, false, true);
             direction = HeldAim.ToWorldDirection(owner, aim);
             butt = hand + direction * (-shaft * RottedForkTuning.GripFraction + RottedForkTuning.Reach);
             tip = butt + direction * shaft;
@@ -123,8 +121,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             Projectile.rotation = direction.ToRotation();
             Projectile.spriteDirection = SpinDirection; // flipped while the fork turns counter-clockwise on screen
             owner.heldProj = Projectile.whoAmI;      // also ends the projectile when the player swaps items
-            owner.itemAnimation = 2;                 // keeps the item "in use" for as long as the fork spins
-            owner.itemTime = 2;
+            owner.SetDummyItemTime(2);               // keeps the item "in use" for as long as the fork spins (the vanilla way, same as the Octopod)
+            float seenFromRight = owner.direction == 1 ? aim : MathHelper.Pi - aim; // the aim as a right-facing player would have it
+            owner.itemRotation = MathHelper.WrapAngle(seenFromRight + MathHelper.PiOver4) * owner.direction; // what the Octopod's staff rotation gives vanilla
 
             prevButt = hasPose ? lastButt : butt;
             prevTip = hasPose ? lastTip : tip;
