@@ -21,6 +21,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.FlowerOfFire
         public static int QuadSize => 192;         // side of the square the shader is drawn on, in world px (must cover the tail and the burst)
         public static float FlameSpeed => 1f;      // flame time per real second
         public static int ColorBands => 6;
+        public static float Dither => 1f;          // 0 = hard bands, 1 = Bayer dither
         public static Vector3 LightColor => new Vector3(1.0f, 0.55f, 0.15f);
     }
 }
