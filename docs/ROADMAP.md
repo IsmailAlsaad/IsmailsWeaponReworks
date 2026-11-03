@@ -37,6 +37,7 @@ Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projecti
 - [~] Rotted Fork fix round 1 (2026-11-03): the left click spin uses only the vanilla raised and lowered arm poses (no custom hand pose), the sprite flips on a counter-clockwise spin, the javelin streak tapers to a point at its tail (`SweepTrailStyle.TaperFraction`), holding right click throws again by itself (`RottedForkPlayer`), and the blood explosion flings the impaled enemies along the flight direction (applied, untested)
 - [~] Rotted Fork fix round 2 (2026-11-03): the spin arm now copies the vanilla Sleepy Octopod exactly (Shoot use style, `SetDummyItemTime`, `itemRotation` from the spin angle; vanilla picks the raised, out or lowered arm frame), replacing round 1's custom two-pose cycle (applied, untested)
 - [~] Rotted Fork fix round 3 (2026-11-03): the spin is two-sided (a copy of the fork points the other way and spins with it: one long spear with two heads, each with its own trail, flecks and light, both hurt), and the trails live shorter (`TrailLifeTicks` 12 to 8, spin and javelin) (applied, untested)
+- [~] Dark Lance fix round 1 (2026-11-04): orb flames break off as shader embers that stay in the world, smooth halo falloff (orb and lance tip glow), orb trail on the shared `PixelTrail` (applied, untested; shaders `DarkFlameOrb` and the new `PixelGlow` must be compiled)
 - [~] Common: shared pixel shader tool (2026-11-04, section 13): `Common/PixelShaderFx` + `PixelShaderParams` draw any `Effects/*.fx`; `Effects/PixelShared.fxh` holds the standard uniforms and the helpers; no dither anywhere; its test host (the Flower of Fire fireball, shader test passed and looked good) was removed again, so its first customer is the Dark Lance orb (`Effects/DarkFlameOrb.fx`, spears patch 6) (applied, untested as shipped: the include and the helpers have never been compiled by a shader of the mod)
 
 ## 1. Ice Boomerang (vanilla `ItemID.IceBoomerang`) [DONE]
@@ -362,6 +363,20 @@ Shader: the .fx is in the patch; compile it to `Effects/DarkFlameOrb.xnb` the sa
 Patch 7 notes: `ai[2]` of the orb is reserved for "collected"; the left click will be `CanUseItem`-gated the same way; the charged count is `ownedProjectileCounts` of the orb type.
 
 Next (patch 7): Dark Lance part 2 (`ItemID.DarkLance`): left click cycles a fast 360 degree sweep and a strong thrust; the sweep collects every orb its tip passes; the thrust is bigger and stronger per orb (start: +12% size and +15% damage per orb); 8 orbs = an evil explosion on the first enemy hit. New chat prompt: "continue patch 7 for spears in the docs/roadmap".
+
+### Dark Lance fix round 1 (2026-11-04, applied, untested)
+
+Files: `Effects/DarkFlameOrb.fx` (rewritten body), `Effects/PixelGlow.fx` (new), `Content/Weapons/DarkLance/` (`DarkLanceFx`, `DarkLanceTuning`, `DarkLanceOrbProjectile`, `DarkLanceChargeProjectile`, new `DarkLanceOrbTrail`).
+
+- Embers: the long flame tongues of the orb are gone. 10 hidden circles per orb live inside the shader; each is a pure function of time and the orb's seed (own phase, new random numbers every life). They break off the upper rim of the ball, rise (`EmberRise`), drift sideways (`EmberDrift`), cool from the palette's core to its dark halo color and shrink to nothing over `EmberLifeSeconds`. The shader pixelates them to the world grid and merges them with the ball in one field (metaball sum), so a fresh ember grows out of the ball and separates; merged pixels take the posterized average temperature of the circles that overlap there.
+- Detached: the ember stays where it was in the WORLD. `DrawOrb` passes the vector from the orb to the point it turns around, the angular speed (`OrbSpin` x 60), the owner's velocity and `EmberLag` (0 = travels with the orb, 1 = fully left behind; eased in while the orb flies out of the lance). The shader moves the birth point back along the orbit (exact for a circular orbit) and with the owner.
+- Smooth halo: the orb halo is a continuous additive falloff that reaches zero at `HaloReach` (no more two hard levels ending at about 6 px); `HaloStrength` is its brightness. The lance tip glow is no longer three nested hard squares: `PixelGlow.fx` draws a smooth round glow (`TipGlowMinRadius` to `TipGlowMaxRadius` with the charge, `TipGlowFalloff`, `TipGlowStrength`). The pixels are still blocks on the world grid, only the brightness is smooth.
+- Trail: the orb's trail is now a `PixelTrail` (`DarkLanceOrbTrailStyle`, two layers: dark halo line and a hot thin line), handed to `DetachedTrails` in `OnKill`. `AfterimageTicks` became `TrailLifeTicks` and `TrailWidth`.
+- `OrbQuadSize` 80 to 288 so the halo and the left-behind embers fit; it is the main cost knob (every pixel of the quad runs the shader), lower it if the frame rate suffers with 8 orbs.
+
+Multiplayer: visual only, nothing synced. Every input is something each machine already has: the orb's age and spawn serial, the owner's synced position and velocity, the shared orbit constants. No new state, no packets.
+
+Test checklist: both shaders compile (`tools\compile_shader.ps1 -Shader DarkFlameOrb`, then `-Shader PixelGlow`) and a full Build + Reload; an orb sheds embers that visibly separate from the ball, rise, drift, darken, shrink and vanish; embers hang behind in the world when the orbit turns and when the player runs; the halo fades out smoothly with no visible edge; the lance tip glow swells smoothly with the charge, no squares; the orb trail is a smooth line and keeps fading after the orb pops; a second player sees the same; 8 orbs do not drop the frame rate (else lower `OrbQuadSize`).
 
 ### Spears fix round 1 (2026-11-03, applied, untested)
 

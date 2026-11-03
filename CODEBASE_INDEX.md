@@ -1,16 +1,16 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-04 | 130 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-04 | 131 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-DetachedTrails(20) ThrustPalette(19) RemoteHitTracker(19) AfterimageTrail(14) IceFx(12) ThrustPlayer(11) ThrustChain(9) HeldAim(8) BoomerangFlight(8) SweepTrail(7) FlamerangTuning(7) CameraShake(7) BloodButchererTuning(7) ThrustTimeline(6) StarfuryTuning(6) PixelTrail(6) ShroomerangTuning(5) PixelLine(5) HeldSwordPose(5) FlamerangFx(5)
+ThrustPalette(20) DetachedTrails(20) RemoteHitTracker(19) AfterimageTrail(13) ThrustPlayer(11) IceFx(10) ThrustChain(9) HeldAim(8) BoomerangFlight(8) SweepTrail(7) PixelTrail(7) FlamerangTuning(7) CameraShake(7) BloodButchererTuning(7) ThrustTimeline(6) StarfuryTuning(6) ShroomerangTuning(5) PixelTrailStyle(5) PixelLine(5) HeldSwordPose(5)
 
 ## Inheritance
 Project bases -> derived:
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
-- PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
+- PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - SweepTrailStyle: BloodButchererSpinTrailStyle, IceBladeTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle
 tModLoader/other bases -> project types:
 - ModProjectile (31): BloodButchererSwingProjectile, DarkLanceChargeProjectile, DarkLanceOrbProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
@@ -174,24 +174,27 @@ tModLoader/other bases -> project types:
     +BladeLength:float[s] +HandleLength:float[s] +SwordScale:float[s] +WindupTicks:int[s] +ThrustTicks:int[s] +OpenTicks:int[s] +GapeTicks:int[s] +BiteTicks:int[s] +ChompCount:int[s] +ChompTicks:int[s] +ChompOpenAmount:float[s] +ChompDamageMultiplier:float[s] +ChompShake:float[s] +RecoverTicks:int[s] +DecideWaitTicks:int[s] +AttackSpeedInfluence:float[s] +SpeedScaleMin:float[s] +SpeedScaleMax:float[s] +PullTicks:int[s] +SpinTicks:int[s] +LockTicks:int[s] +SpinTopSpeed:float[s] +ChompTurnSpeed:float[s] +WindDownTicks:int[s] +WindDownRecoverTicks:int[s] +ReleaseHoldTicks:int[s] +ReleaseOpenTicks:int[s] +SpinOffset:float[s] +PinRatio:float[s] +LaunchSpeed:float[s] +LaunchAiOffTicks:int[s] +LaunchGravity:float[s] +LaunchMaxFall:float[s] +GripTickDamageMultiplier:float[s] +GripTickInterval:int[s] +LaunchDamageMultiplier:float[s] +MaxGrabSize:float[s] +LaunchShake:float[s] +SpinWhooshPitchLow:float[s] +SpinWhooshPitchHigh:float[s] +JawTrailCutTicks:int[s] +SpinSweepDamageMultiplier:float[s] +SpinSweepHitInterval:int[s] +SpinSweepMinSpeed:float[s] +SpinSweepWidth:float[s] +ImpactMinSpeed:float[s] +ImpactDamageMultiplier:float[s] +ImpactMaxMultiplier:float[s] +ImpactShake:float[s] +ImpactCooldownTicks:int[s] +TrailFullSpeed:float[s] +TrailFillTo:float[s] +SpinTrailLifeTicks:int[s] +SpinTrailRails:int[s] +SpinTrailOpacity:float[s] +SpinTrailSamplesPerTick:int[s] +TetherRestLength:float[s] +TetherWidth:float[s] +TetherThinWidth:float[s] +TetherSag:float[s] +TetherMaxSag:float[s] +TetherTrailing:float[s] +TetherMaxTrailing:float[s] +TetherWobble:float[s] +TetherSegments:int[s] +TetherDarkColor:Color[s] +TetherMidColor:Color[s] +TetherGlowColor:Color[s] +WindupPullback:float[s] +ThrustDistance:float[s] +BiteLungeDistance:float[s] +JawOpenDeg:float[s] +CatchPadding:float[s] +BiteDamageMultiplier:float[s] +OtherDamageMultiplier:float[s] +ClampShake:float[s] +PixelSize:float[s] +TeethCount:int[s] +ToothLength:float[s] +FlashTicks:int[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +TrailSamplesPerTick:int[s] +CrimsonColor:Color[s] +BrightColor:Color[s] +BoneColor:Color[s]
 
 ### Content/Weapons/DarkLance/
-**DarkLanceChargeProjectile.cs** uses: DarkLanceFx, DarkLanceOrbProjectile, DarkLancePlayer, DarkLanceTuning, HeldAim, IceFx, SpearPose, ThrustPalette, ThrustPlayer
+**DarkLanceChargeProjectile.cs** uses: DarkLanceFx, DarkLanceOrbProjectile, DarkLancePlayer, DarkLanceTuning, HeldAim, SpearPose, ThrustPalette, ThrustPlayer
   class DarkLanceChargeProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 **DarkLanceFx.cs** uses: DarkLanceTuning, OrbitRing, PixelShaderFx, PixelShaderParams, ThrustPalette
   static class DarkLanceFx
-    +Glow(Color)[s] +DrawOrb(Vector2,float,float,float,float)[s] +ChargeStart(Vector2)[s] +Gather(Vector2,float)[s] +Ring(Vector2,int,float,float)[s] +OrbBorn(Vector2,int,int)[s] +Shed(Vector2)[s] +Pop(Vector2,float)[s] +Fizzle(Vector2)[s]
+    +Glow(Color)[s] +DrawOrb(Vector2,float,float,float,float,Vector2,float,Vector2,float)[s] +DrawGlow(Vector2,float,float)[s] +ChargeStart(Vector2)[s] +Gather(Vector2,float)[s] +Ring(Vector2,int,float,float)[s] +OrbBorn(Vector2,int,int)[s] +Shed(Vector2)[s] +Pop(Vector2,float)[s] +Fizzle(Vector2)[s]
 **DarkLanceGlobalItem.cs** uses: DarkLanceChargeProjectile, ThrustPlayer
   class DarkLanceGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**DarkLanceOrbProjectile.cs** uses: Afterimage, AfterimageTrail, AreaEffect, CameraShake, DarkLanceFx, DarkLancePlayer, DarkLanceTuning, DetachedTrails, IceFx, OrbitRing
+**DarkLanceOrbProjectile.cs** uses: AreaEffect, CameraShake, DarkLanceFx, DarkLanceOrbTrailStyle, DarkLancePlayer, DarkLanceTuning, DetachedTrails, OrbitRing, PixelTrail
   class DarkLanceOrbProjectile : ModProjectile
     +Texture:string[ov] +OnSpawn(IEntitySource)[ov] +AI()[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**DarkLanceOrbTrail.cs** uses: DarkLanceFx, DarkLanceTuning, PixelTrailStyle, ThrustPalette
+  class DarkLanceOrbTrailStyle : PixelTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
 **DarkLancePlayer.cs** uses: DarkLanceOrbProjectile
   class DarkLancePlayer : ModPlayer
     +OrbTurn:float +Serial:int +PostUpdate()[ov]
 **DarkLanceTuning.cs** uses: ThrustPalette
   static class DarkLanceTuning
-    +ChargeIntervalTicks:int[s] +MaxOrbs:int[s] +ChargeWindDownTicks:int[s] +ChargeCooldownTicks:int[s] +LanceScale:float[s] +LanceTilt:float[s] +ArmRaise:float[s] +HandOffsetX:float[s] +HandOffsetY:float[s] +TremblePerOrb:float[s] +OrbRadius:float[s] +OrbBob:float[s] +OrbSpin:float[s] +OrbEase:float[s] +OrbSpawnTicks:int[s] +OrbLifeTicks:int[s] +OrbHitSize:float[s] +OrbPopGraceTicks:int[s] +PopRadius:float[s] +PopBuffTicks:int[s] +PopShake:float[s] +AfterimageTicks:int[s] +PixelSize:float[s] +ColorBands:int[s] +OrbQuadSize:int[s] +OrbUnitPx:float[s] +Palette:ThrustPalette[s]
+    +ChargeIntervalTicks:int[s] +MaxOrbs:int[s] +ChargeWindDownTicks:int[s] +ChargeCooldownTicks:int[s] +LanceScale:float[s] +LanceTilt:float[s] +ArmRaise:float[s] +HandOffsetX:float[s] +HandOffsetY:float[s] +TremblePerOrb:float[s] +OrbRadius:float[s] +OrbBob:float[s] +OrbSpin:float[s] +OrbEase:float[s] +OrbSpawnTicks:int[s] +OrbLifeTicks:int[s] +OrbHitSize:float[s] +OrbPopGraceTicks:int[s] +PopRadius:float[s] +PopBuffTicks:int[s] +PopShake:float[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +PixelSize:float[s] +ColorBands:int[s] +OrbQuadSize:int[s] +OrbUnitPx:float[s] +HaloReach:float[s] +HaloStrength:float[s] +EmberRise:float[s] +EmberLifeSeconds:float[s] +EmberSize:float[s] +EmberDrift:float[s] +EmberLag:float[s] +TipGlowMinRadius:float[s] +TipGlowMaxRadius:float[s] +TipGlowFalloff:float[s] +TipGlowStrength:float[s] +Palette:ThrustPalette[s]
 
 ### Content/Weapons/EnchantedBoomerang/
 **EnchantedBoomerangBase.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, EnchantedBoomerangFx, EnchantedBoomerangTuning, EtherealBoomerangProjectile, RemoteHitTracker, StardustBurstProjectile
@@ -504,9 +507,9 @@ tModLoader/other bases -> project types:
     +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +SpinSpeed:float[s] +AfterimageTicks:int[s] +ShardDamageMultiplier:float[s] +ShardMaxHits:int[s] +ShardLifeTicks:int[s] +ShardHitCooldownTicks:int[s] +ShardSpeed:float[s] +ShardSpreadAngle:float[s] +ShardHop:float[s] +ShardGravity:float[s] +ShardMaxFallSpeed:float[s] +ShardDrag:float[s] +BreakOnTilesWhileReturning:bool[s] +GlowColor:Color[s] +WoodDust:int[s]
 
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
-- (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; build.txt, description.txt, description_workshop.txt
+- (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; patch_darklance_embers2.ps1; build.txt, description.txt, description_workshop.txt
 - Content/Sounds/: ElectricEel.wav
-- Effects/: DarkFlameOrb.fx; PixelShared.fxh
+- Effects/: DarkFlameOrb.fx, PixelGlow.fx; PixelShared.fxh
 - Localization/: en-US_Mods.IsmailsWeaponReworks.hjson
 - Properties/: launchSettings.json
 - docs/: ROADMAP.md

@@ -17,10 +17,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
 
         // Draws one orb: Effects/DarkFlameOrb.fx over a square quad centered on it (visual only, never synced, every machine draws it from
         // the projectile's own state). 'time' in seconds, 'seed' something every machine knows (the spawn serial), 'appear' 0 to about 1.25
-        // (the pop-in with overshoot), 'flicker' around 1. A missing .xnb shows a small purple square instead of the orb.
-        public static void DrawOrb(Vector2 center, float time, float seed, float appear, float flicker)
+        // (the pop-in with overshoot), 'flicker' around 1. The embers break off the ball and stay where they were in the world, so the
+        // shader needs to know how the orb moves: 'toOrbitCenter' = from the orb to the point it turns around (px), 'angularSpeed' = how
+        // fast it turns (radians per second), 'centerVelocity' = how fast that point moves (px per second), 'lag' 0 to 1 = how much the
+        // embers stay behind (0 = they travel with the orb). A missing .xnb shows a small purple square instead of the orb.
+        public static void DrawOrb(Vector2 center, float time, float seed, float appear, float flicker, Vector2 toOrbitCenter, float angularSpeed, Vector2 centerVelocity, float lag)
         {
             ThrustPalette palette = DarkLanceTuning.Palette;
+            float unit = DarkLanceTuning.OrbUnitPx;
+            Vector4 orbit = new Vector4(toOrbitCenter.X / unit, toOrbitCenter.Y / unit, angularSpeed, lag);
+            Vector2 velocity = centerVelocity / unit;
             PixelShaderParams p = new PixelShaderParams
             {
                 Grid = DarkLanceTuning.PixelSize,
@@ -31,10 +37,33 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                 ColorA = palette.Halo,
                 ColorB = palette.Mid,
                 ColorC = palette.Core,
-                Params = new Vector4(DarkLanceTuning.OrbUnitPx, appear, 0f, 0f),
+                Params = new Vector4(unit, appear, DarkLanceTuning.HaloReach, DarkLanceTuning.HaloStrength),
+                Params2 = new Vector4(DarkLanceTuning.EmberRise, DarkLanceTuning.EmberLifeSeconds, DarkLanceTuning.EmberSize, DarkLanceTuning.EmberDrift),
+                Configure = fx =>
+                {
+                    PixelShaderFx.Set(fx, "uOrbit", orbit);
+                    PixelShaderFx.Set(fx, "uOwnerVel", velocity);
+                },
                 FallbackColor = palette.Mid
             };
             PixelShaderFx.Draw("DarkFlameOrb", center, DarkLanceTuning.OrbQuadSize, p);
+        }
+
+        // A soft round glow (Effects/PixelGlow.fx): the palette's core in the middle, then its mid and halo colors, fading smoothly to
+        // nothing at 'radius' (px). 'strength' is the peak brightness (0 to 1). Visual only.
+        public static void DrawGlow(Vector2 center, float radius, float strength)
+        {
+            ThrustPalette palette = DarkLanceTuning.Palette;
+            PixelShaderParams p = new PixelShaderParams
+            {
+                Grid = DarkLanceTuning.PixelSize,
+                ColorA = palette.Halo,
+                ColorB = palette.Mid,
+                ColorC = palette.Core,
+                Params = new Vector4(radius, DarkLanceTuning.TipGlowFalloff, strength, 0f),
+                FallbackColor = palette.Mid
+            };
+            PixelShaderFx.Draw("PixelGlow", center, (int)System.Math.Ceiling(radius * 2f) + 4, p);
         }
 
         // The lance goes up and the charge begins.

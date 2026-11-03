@@ -37,11 +37,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float PopShake => 1.5f;            // camera punch of a pop (nearby players)
 
         // ---- look ----
-        public static int AfterimageTicks => 10;
+        public static int TrailLifeTicks => 10;          // the orb's trail (Common PixelTrail) fades out over this long
+        public static float TrailWidth => 12f;           // px at its newest end; it shrinks as it ages
         public static float PixelSize => 2f;             // world px per shader pixel (the orb's shader and the afterimages)
         public static int ColorBands => 5;               // the orb shader's hard color bands
-        public static int OrbQuadSize => 80;             // world px: the square the orb shader is drawn over (must cover the glow)
+        public static int OrbQuadSize => 288;            // world px: the square the orb shader is drawn over (must cover the halo and where the embers hang behind a moving orb; smaller = cheaper)
         public static float OrbUnitPx => 28f;            // world px per shader unit (the orb's body radius is half of it)
+        public static float HaloReach => 1.5f;           // the halo fades to nothing this many units beyond the ball (smooth falloff)
+        public static float HaloStrength => 0.8f;        // brightness of the halo right at the ball (0 to 1)
+        public static float EmberRise => 1.6f;           // units an ember rises before it is gone
+        public static float EmberLifeSeconds => 0.75f;   // how long an ember lives (10 embers per orb, each one restarts when it is gone)
+        public static float EmberSize => 0.13f;          // units: the radius of an ember at birth (random 0.6 to 1.4 times this), it shrinks to nothing
+        public static float EmberDrift => 0.45f;         // units an ember wanders sideways
+        public static float EmberLag => 1f;              // 1 = a broken-off ember stays where it was in the world, 0 = it travels with the orb
+        public static float TipGlowMinRadius => 16f;     // px: the glow at the lance tip with no charge
+        public static float TipGlowMaxRadius => 46f;     // px: fully charged
+        public static float TipGlowFalloff => 1.6f;      // 1 = soft cone, 2 = tight bright core
+        public static float TipGlowStrength => 0.9f;
         public static ThrustPalette Palette => new ThrustPalette(new Color(240, 215, 255), new Color(160, 60, 235), new Color(70, 20, 130), DustID.Shadowflame, DustID.PurpleTorch);
     }
 }

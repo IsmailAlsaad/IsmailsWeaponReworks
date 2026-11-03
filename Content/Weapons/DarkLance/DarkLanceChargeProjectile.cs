@@ -135,18 +135,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             ThrustPalette palette = DarkLanceTuning.Palette;
             float glow = 0.25f + 0.75f * charge;
             float scale = Projectile.scale;
-            float grid = DarkLanceTuning.PixelSize;
 
             SpearPose.DrawSprite(texture, butt, Projectile.rotation, Projectile.spriteDirection, scale * 1.18f, palette.Halo * (0.45f * glow));
             SpearPose.DrawSprite(texture, butt, Projectile.rotation, Projectile.spriteDirection, scale * 1.07f, palette.Mid * (0.5f * glow));
             SpearPose.DrawSprite(texture, butt, Projectile.rotation, Projectile.spriteDirection, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
 
-            // A dark glow gathering at the tip: it swells with the charge and pulses.
+            // A dark glow gathering at the tip: it swells with the charge and pulses, with a smooth falloff (no hard squares).
             float pulse = 1f + 0.15f * (float)Math.Sin(age * 0.4f);
-            float size = (10f + 26f * charge) * pulse;
-            IceFx.DrawPixel(tip, size * 1.6f, DarkLanceFx.Glow(palette.Halo) * 0.5f, grid);
-            IceFx.DrawPixel(tip, size, DarkLanceFx.Glow(palette.Mid) * 0.7f, grid);
-            IceFx.DrawPixel(tip, size * 0.45f, DarkLanceFx.Glow(palette.Core) * 0.9f, grid);
+            float radius = MathHelper.Lerp(DarkLanceTuning.TipGlowMinRadius, DarkLanceTuning.TipGlowMaxRadius, charge) * pulse;
+            DarkLanceFx.DrawGlow(tip, radius, DarkLanceTuning.TipGlowStrength * (0.6f + 0.4f * charge));
             return false;
         }
     }
