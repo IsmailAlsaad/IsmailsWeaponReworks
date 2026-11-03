@@ -69,7 +69,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.StormSpear
                 dust.noGravity = true;
             }
             SoundStyle electricEel = new SoundStyle("IsmailsWeaponReworks/Content/Sounds/ElectricEel");
-            SoundEngine.PlaySound(electricEel with { PitchVariance = 0.15f});
+            SoundEngine.PlaySound(electricEel with { PitchVariance = 0.15f , MaxInstances = 1});
         }
     }
 }
