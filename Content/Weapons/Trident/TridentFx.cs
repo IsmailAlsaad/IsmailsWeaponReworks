@@ -53,7 +53,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trident
             if (Main.dedServ)
                 return;
             ThrustPalette palette = TridentTuning.Palette;
-            SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = -0.1f }, position);
+
+            if (tile)
+            {
+                SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = -0.1f }, position);
+            }
 
             for (int i = 0; i < 18; i++)
             {

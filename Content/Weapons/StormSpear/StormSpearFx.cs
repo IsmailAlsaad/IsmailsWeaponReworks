@@ -1,6 +1,8 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.Audio;
+using Terraria.ID;
 
 namespace IsmailsWeaponReworks.Content.Weapons.StormSpear
 {
@@ -35,7 +37,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.StormSpear
                 return;
             ThrustPalette palette = StormSpearTuning.Palette;
             ArcBolt.Spawn(from, to, Style(), StormSpearTuning.BoltJag, 1);
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Vector2 position = Vector2.Lerp(from, to, Main.rand.NextFloat()) + Main.rand.NextVector2Circular(10f, 14f);
                 Dust dust = Dust.NewDustPerfect(position, i == 0 ? palette.DustB : palette.DustA, Main.rand.NextVector2Circular(1.5f, 1.5f) - direction * 0.8f, 100, default, Main.rand.NextFloat(1f, 1.6f));
@@ -50,11 +52,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.StormSpear
                 return;
             ThrustPalette palette = StormSpearTuning.Palette;
             ArcBolt.Spawn(tip, target, Style(), StormSpearTuning.BoltJag, 2);
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Dust dust = Dust.NewDustPerfect(target, palette.DustA, Main.rand.NextVector2Circular(5f, 5f), 100, default, Main.rand.NextFloat(1.2f, 1.8f));
                 dust.noGravity = true;
             }
+            SoundStyle electricEel = new SoundStyle("IsmailsWeaponReworks/Content/Sounds/ElectricEel");
+            SoundEngine.PlaySound(electricEel with { PitchVariance = 0.15f});
         }
     }
 }

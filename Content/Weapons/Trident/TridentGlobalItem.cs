@@ -50,8 +50,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trident
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Trident1", "Dashes toward the cursor and bounces off what it hits"));
-            tooltips.Add(new TooltipLine(Mod, "Trident2", "Grants Gills and Flipper while your head is under water"));
+            //tooltips.Add(new TooltipLine(Mod, "Trident1", "Dashes toward the cursor and bounces off what it hits"));
+            tooltips.RemoveAll(line => line.Mod == "Terraria" && line.Name.StartsWith("Tooltip"));
+            tooltips.Add(new TooltipLine(Mod, "Trident2", "Allows free movements underwater"));
         }
     }
 }

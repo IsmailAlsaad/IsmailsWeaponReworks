@@ -48,8 +48,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.StormSpear
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "StormSpear1", "Dashes toward the cursor, piercing and electrifying everything"));
-            tooltips.Add(new TooltipLine(Mod, "StormSpear2", "You cannot be hurt during the dash"));
+            //tooltips.Add(new TooltipLine(Mod, "StormSpear1", "Dashes toward the cursor, piercing and electrifying everything"));
+            //tooltips.Add(new TooltipLine(Mod, "StormSpear2", "You cannot be hurt during the dash"));
         }
     }
 }
