@@ -25,7 +25,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         {
             item.shoot = ModContent.ProjectileType<RottedForkSpinProjectile>();
             item.shootSpeed = 1f;
-            item.useStyle = ItemUseStyleID.Shoot; // the held projectile moves the arm itself
+            item.useStyle = ItemUseStyleID.Swing; // the held projectile moves the arm itself
+            item.useAnimation = 16;
             item.noMelee = true;                  // the projectile is the weapon
             item.noUseGraphic = true;             // the projectile draws the fork
             item.channel = false;                 // the projectile watches the button itself (controlUseItem)
@@ -70,7 +71,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            //tooltips.Add(new TooltipLine(Mod, "RottedFork1", "Hold to spin the fork around you"));
+            tooltips.Add(new TooltipLine(Mod, "RottedFork1", "Right click to throw like a javelin"));
         }
     }
 }

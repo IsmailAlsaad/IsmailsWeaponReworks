@@ -28,14 +28,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         // ---- the fork ----
         public static float SpearScale => 1.15f;
         public static float GripFraction => 0.45f;       // how much of the shaft sticks out behind the hand
-        public static float Reach => 8f;                 // pixels the fork is pushed out from the hand along its direction
+        public static float Reach => 24f;                 // pixels the fork is pushed out from the hand along its direction
 
         // ---- the javelin (right click) ----
         public static float JavelinSpeed => 16f;            // pixels per tick (42 ticks = about 42 tiles)
         public static int JavelinLifeTicks => 42;           // the flight ends (in an explosion) after this long if nothing stops it
         public static float JavelinDamageMultiplier => 2f;  // the pierce hit, times the item's damage
         public static float JavelinHitWidth => 20f;         // thickness of the hit line (pixels at scale 1)
-        public static int JavelinCooldownTicks => 30;       // after the explosion, before the fork can be used again
+        public static int JavelinCooldownTicks => 10;       // after the explosion, before the fork can be used again
         public static int MaxImpaled => 3;                  // enemies carried at once
         public static float MaxCarrySize => 72f;            // an enemy bigger than this (width or height) is pierced, not impaled
         public static float CarryFollow => 0.55f;           // how fast an impaled enemy slides into its slot (0 to 1 per tick)
@@ -45,7 +45,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         public static float BlastDamageMultiplier => 0.75f; // of the javelin hit's damage
         public static float CarriedBlastMultiplier => 1.5f; // extra damage for each impaled enemy
         public static float BlastKnockback => 7f;
-        public static float BlastShake => 7f;               // camera punch of the explosion (nearby players)
+        public static float BlastShake => 3f;               // camera punch of the explosion (nearby players)
 
         // ---- look ----
         public static int TrailLifeTicks => 12;

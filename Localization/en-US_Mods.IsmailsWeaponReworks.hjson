@@ -30,4 +30,6 @@ Projectiles: {
 	SwordfishThrustProjectile.DisplayName: Swordfish Thrust Projectile
 	StormSpearThrustProjectile.DisplayName: Storm Spear Thrust Projectile
 	TridentThrustProjectile.DisplayName: Trident Thrust Projectile
+	RottedForkJavelinProjectile.DisplayName: Rotted Fork Javelin Projectile
+	RottedForkSpinProjectile.DisplayName: Rotted Fork Spin Projectile
 }
