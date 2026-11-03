@@ -58,8 +58,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.StormSpear
         {
             if (!IsOwner)
                 return;
-            target.AddBuff(BuffID.Electrified, StormSpearTuning.ElectrifiedTicks);
-            StormSpearFx.Zap(Tip, target.Center, target.HasBuff(BuffID.Electrified)); // a grey puff instead of a bolt means the enemy resisted it
+            //target.AddBuff(BuffID.ShadowFlame, StormSpearTuning.ElectrifiedTicks);
+            StormSpearFx.Zap(Tip, target.Center, true);//target.HasBuff(BuffID.Electrified));
         }
     }
 }
