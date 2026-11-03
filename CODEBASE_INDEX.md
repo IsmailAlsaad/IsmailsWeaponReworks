@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-03 | 114 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-03 | 119 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(17) DetachedTrails(17) AfterimageTrail(13) ThrustPalette(12) IceFx(10) ThrustChain(9) BoomerangFlight(8) FlamerangTuning(7) BloodButchererTuning(7) ThrustTimeline(6) StarfuryTuning(6) PixelTrail(6) ThrustPlayer(5) SweepTrail(5) ShroomerangTuning(5) PixelLine(5) HeldSwordPose(5) HeldAim(5) FlamerangFx(5) CameraShake(5)
+RemoteHitTracker(18) DetachedTrails(18) ThrustPalette(15) AfterimageTrail(13) IceFx(10) ThrustChain(9) BoomerangFlight(8) ThrustPlayer(7) HeldAim(7) FlamerangTuning(7) BloodButchererTuning(7) ThrustTimeline(6) SweepTrail(6) StarfuryTuning(6) PixelTrail(6) ShroomerangTuning(5) PixelLine(5) HeldSwordPose(5) FlamerangFx(5) CameraShake(5)
 
 ## Inheritance
 Project bases -> derived:
@@ -13,8 +13,8 @@ Project bases -> derived:
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - SweepTrailStyle: BloodButchererSpinTrailStyle, IceBladeTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle
 tModLoader/other bases -> project types:
-- ModProjectile (27): BloodButchererSwingProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
-- GlobalItem (15): BloodButchererGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
+- ModProjectile (28): BloodButchererSwingProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
+- GlobalItem (16): BloodButchererGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
 - ModPlayer (5): DashPlayer, ImmunityPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer
 - GlobalNPC (1): BloodButchererGripNPC
 - Mod (1): IsmailsWeaponReworks
@@ -79,6 +79,9 @@ tModLoader/other bases -> project types:
     {None, Water, Lava, Honey, Shimmer}
   static class LiquidState
     +Touching(Player)[s] +HeadUnder(Player)[s] +Kind(Player)[s]
+**OrbitRing.cs**
+  static class OrbitRing
+    +Angle(float,int,int,float)[s] +Position(Vector2,float,float)[s]
 **PixelLine.cs**
   static class PixelLine
     +Draw(Vector2,float,int,float,Func<float, float>,Func<float, Color>)[s]
@@ -259,6 +262,20 @@ tModLoader/other bases -> project types:
 **IceCrystalProjectile.cs** uses: IceBoomerangChill, IceBoomerangFx, IceBoomerangTuning
   class IceCrystalProjectile : ModProjectile
     +Texture:string[ov] +Load()[ov] +Unload()[ov] +RandomFrame()[s] +RegisterBounce(Projectile)[s] +EvictForNewCrystal(int)[s] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+
+### Content/Weapons/RottedFork/
+**RottedForkFx.cs** uses: OrbitRing, ThrustPalette
+  static class RottedForkFx
+    +SpinUp(Vector2,float)[s] +Whoosh(Vector2,float)[s] +Flecks(Vector2,Vector2,float,ThrustPalette)[s]
+**RottedForkGlobalItem.cs** uses: HeldAim, RottedForkSpinProjectile, RottedForkTuning, ThrustPlayer
+  class RottedForkGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**RottedForkSpinProjectile.cs** uses: DetachedTrails, HeldAim, RemoteHitTracker, RottedForkFx, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
+  class RottedForkSpinProjectile : ModProjectile
+    +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**RottedForkTuning.cs** uses: ThrustPalette
+  static class RottedForkTuning
+    +SpinSpeed:float[s] +RampTicks:int[s] +StartSpeedFraction:float[s] +WindDownTicks:int[s] +MinSpinTicks:int[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +HitCooldownTicks:int[s] +MinHitSpeed:float[s] +HitWidth:float[s] +SpearScale:float[s] +GripFraction:float[s] +Reach:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailInnerFraction:float[s] +PixelSize:float[s] +Palette:ThrustPalette[s]
 
 ### Content/Weapons/Shroomerang/
 **ShroomerangBurstProjectile.cs** uses: IceFx, RemoteHitTracker, ShroomerangFx, ShroomerangTuning
