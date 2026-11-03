@@ -22,7 +22,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static int OpenTicks => 8;
         public static int GapeTicks => 3;
         public static int BiteTicks => 4;
-        public static int ClampTicks => 6;            // held shut: only for an enemy that cannot be gripped (boss, worm, immovable, too big); patch 3 replaces it with the chomp
+        // ---- chomp (patch 3): an enemy that cannot be gripped (boss, worm, immovable, too big) is chewed: the jaws snap open and shut very fast ----
+        public static int ChompCount => 6;
+        public static int ChompTicks => 6;            // one open-and-shut cycle: it opens over the first half and slams shut over the second (the closing is the only part that damages)
+        public static float ChompOpenAmount => 0.7f;  // how far the jaws open in a chomp (1 = the full gape of the bite)
+        public static float ChompDamageMultiplier => 0.6f; // per close
+        public static float ChompShake => 2.5f;       // a small camera punch per close
         public static int RecoverTicks => 12;
         public static int DecideWaitTicks => 20;      // another machine waits this long for the owner's catch decision, then assumes a miss
 
@@ -48,6 +53,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static float LaunchShake => 6f;
         public static float SpinWhooshPitchLow => 0f;
         public static float SpinWhooshPitchHigh => 0.7f;
+        public static int SpinMaxCircles => 2;        // hard cap on how many full circles the spin sweep can ever be (the minimum is always one)
+        public static float SpinCursorSlack => 0.8f;  // radians: a cursor up to this far BEHIND the first aim counts as exactly on it, so a cursor that drifts a hair backwards cannot turn one circle into two
+        public static int JawTrailCutTicks => 3;      // when the spin starts, the two jaw lines left by the bite vanish within this many ticks and only the spin fan remains
+        public static float SpinSweepDamageMultiplier => 0.7f; // the spinning blade cutting an enemy that is not the pinned one
+        public static int SpinSweepHitInterval => 10; // ticks before the blade may cut the same enemy again
+        public static float SpinSweepMinSpeed => 0.12f; // radians per tick: a blade slower than this no longer cuts
+        public static float SpinSweepWidth => 16f;    // thickness of the blade's hit line
+
+        // ---- a thrown enemy hitting a tile (patch 3): it takes damage from the speed it loses ----
+        public static float ImpactMinSpeed => 5f;     // pixels per tick lost; less than this does nothing
+        public static float ImpactDamageMultiplier => 2f; // damage multiplier when it loses LaunchSpeed (scales with the speed lost)
+        public static float ImpactMaxMultiplier => 4f;
+        public static float ImpactShake => 5f;        // camera punch when it loses LaunchSpeed (scales with the speed lost)
+        public static int ImpactCooldownTicks => 6;
 
         // ---- spin trail (patch 2b): a fan along the blade that fills it up as the blade speeds up and thins out as it slows down ----
         public static float TrailFullSpeed => 0.4f;   // the fan covers the whole blade at this angular speed (radians per tick)

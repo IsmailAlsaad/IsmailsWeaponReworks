@@ -155,6 +155,54 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             }
         }
 
+        // One chomp closing: a small burst in the middle of the mouth.
+        public static void ChompSnap(Vector2 center)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 8; i++)
+            {
+                Dust dust = Dust.NewDustPerfect(center + Main.rand.NextVector2Circular(6f, 6f), DustID.Blood, Main.rand.NextVector2Circular(4f, 4f), 0, default, Main.rand.NextFloat(1f, 1.6f));
+                dust.noGravity = Main.rand.NextBool(2);
+            }
+        }
+
+        public static void PlayChomp(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.6f, Pitch = 0.5f, PitchVariance = 0.15f }, position);
+            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.5f, Pitch = -0.1f, PitchVariance = 0.15f }, position);
+        }
+
+        // A thrown enemy slams into a tile: blood sprays back off the surface, more of it the more speed it lost.
+        public static void ImpactBurst(Vector2 point, Vector2 normal, float speed)
+        {
+            if (Main.dedServ)
+                return;
+            int count = 10 + (int)MathHelper.Clamp(speed * 1.5f, 0f, 30f);
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 velocity = normal.RotatedByRandom(1.1f) * Main.rand.NextFloat(2f, 4f + speed * 0.5f);
+                Dust dust = Dust.NewDustPerfect(point + Main.rand.NextVector2Circular(6f, 6f), DustID.Blood, velocity, 0, default, Main.rand.NextFloat(1.2f, 2f));
+                dust.noGravity = Main.rand.NextBool(3);
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                Dust smoke = Dust.NewDustPerfect(point, DustID.Smoke, normal * Main.rand.NextFloat(0.5f, 2.5f) + Main.rand.NextVector2Circular(1f, 1f), 150, default, 1.4f);
+                smoke.noGravity = true;
+            }
+        }
+
+        public static void PlayImpact(Vector2 position, float speed)
+        {
+            if (Main.dedServ)
+                return;
+            float strength = MathHelper.Clamp(speed / Math.Max(1f, BloodButchererTuning.LaunchSpeed), 0.3f, 1f);
+            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = strength, Pitch = -0.5f }, position);
+            SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.6f * strength, Pitch = -0.2f }, position);
+        }
+
         public static void HitBlood(Vector2 position)
         {
             if (Main.dedServ)

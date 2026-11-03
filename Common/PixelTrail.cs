@@ -66,6 +66,15 @@ namespace IsmailsWeaponReworks.Common
             births.Add(clock);
         }
 
+        // Makes every point vanish within 'ticks' ticks from now (a trail that has to give way to another one). Points that are already
+        // older than that are left alone, so nothing gets younger.
+        public void FadeWithin(int ticks)
+        {
+            int latestBirth = clock - Style.LifeTicks + Math.Max(1, ticks);
+            for (int i = 0; i < births.Count; i++)
+                births[i] = Math.Min(births[i], latestBirth);
+        }
+
         public void Tick()
         {
             clock++;
