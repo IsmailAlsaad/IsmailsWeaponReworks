@@ -61,7 +61,7 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     float wsum = bodyField * bodyField;                     // weights for averaging the temperature (nearer circles count more)
     float tsum = 0.55 * wsum;                               // the ball's own temperature is a middle one
     [loop]
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 1; i++)
     {
         float fi = i;
         float x = t / life + hash(float2(fi * 1.37 + 3.1 + uSeed * 0.173, 4.7 + uSeed * 0.311));
