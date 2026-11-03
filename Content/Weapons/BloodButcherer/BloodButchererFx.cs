@@ -54,7 +54,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             if (Main.dedServ)
                 return;
             SoundEngine.PlaySound(SoundID.Item1 with { Volume = 1f, Pitch = 0.7f }, position);
-            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 1f, Pitch = -0.4f }, position);
+            SoundEngine.PlaySound(SoundID.NPCDeath5 with { Volume = 0.7f, Pitch = Main.rand.NextFloat(0f,-0.3f)}, position);
         }
 
         // ---- dust ----

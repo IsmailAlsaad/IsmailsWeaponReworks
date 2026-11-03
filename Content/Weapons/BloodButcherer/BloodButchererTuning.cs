@@ -61,7 +61,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static int SpinMaxCircles => 2;        // hard cap on how many full circles the spin sweep can ever be (the minimum is always one)
         public static float SpinCursorSlack => 0.8f;  // radians: a cursor up to this far BEHIND the first aim counts as exactly on it, so a cursor that drifts a hair backwards cannot turn one circle into two
         public static int JawTrailCutTicks => 3;      // when the spin starts, the two jaw lines left by the bite vanish within this many ticks and only the spin fan remains
-        public static float SpinSweepDamageMultiplier => 0.7f; // the spinning blade cutting an enemy that is not the pinned one
+        public static float SpinSweepDamageMultiplier => 1.3f; // the spinning blade cutting an enemy that is not the pinned one
         public static int SpinSweepHitInterval => 10; // ticks before the blade may cut the same enemy again
         public static float SpinSweepMinSpeed => 0.12f; // radians per tick: a blade slower than this no longer cuts
         public static float SpinSweepWidth => 16f;    // thickness of the blade's hit line
