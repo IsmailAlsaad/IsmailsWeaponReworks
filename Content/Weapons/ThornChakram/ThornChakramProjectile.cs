@@ -38,6 +38,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
         Vector2 sweepStart;          // center at the start of this tick, for swept hit tests
         RemoteHitTracker hitTracker; // other machines only
         int latchTicks;              // ticks since the latch began on this machine (the owner's copy decides when it ends)
+        int spentTicks;              // ticks since this machine saw the explosion (times the second ring)
+        AfterimageTrail afterimages; // visual only, never synced
         bool latchEffectPlayed;      // visual only
 
         public override void Load()
@@ -111,8 +113,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
 
             if (phase == Phase.Spent)
             {
-                ExplosionVisuals();
-                Projectile.Kill(); // every machine removes its own copy
+                // The first ring was spawned by Explode. Every machine counts its own ticks: the owner spawns the second ring (turned half
+                // a step) when the delay is up, everyone shows the explosion again, and then every machine removes its own copy.
+                if (spentTicks == 0)
+                    ExplosionVisuals();
+                if (spentTicks == ThornChakramTuning.ExplosionSecondDelayTicks)
+                {
+                    if (isOwner)
+                        SpawnStingers(ThornChakramTuning.ExplosionCount, 0f, ThornChakramTuning.ExplosionSpeed, ThornChakramTuning.ExplosionStingerLifeTicks,
+                            ThornChakramTuning.ExplosionDamageMultiplier, true, (int)Projectile.ai[1], MathHelper.Pi / Math.Max(1, ThornChakramTuning.ExplosionCount));
+                    ExplosionVisuals();
+                }
+                if (++spentTicks > ThornChakramTuning.ExplosionSecondDelayTicks)
+                    Projectile.Kill(); // every machine removes its own copy
                 return;
             }
 
@@ -224,13 +237,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
                 ThornChakramTuning.BurstStingerLifeTicks, ThornChakramTuning.BurstDamageMultiplier, false);
         }
 
-        void SpawnStingers(int count, float radius, float speed, int lifeTicks, float damageMultiplier, bool piercing, int ignoreNpc = -1)
+        void SpawnStingers(int count, float radius, float speed, int lifeTicks, float damageMultiplier, bool piercing, int ignoreNpc = -1, float angleOffset = 0f)
         {
             int damage = Math.Max(1, (int)(Projectile.damage * damageMultiplier));
             int type = ModContent.ProjectileType<ThornChakramStingerProjectile>();
             for (int i = 0; i < count; i++)
             {
-                Vector2 direction = (Projectile.rotation + MathHelper.TwoPi * i / count).ToRotationVector2();
+                Vector2 direction = (Projectile.rotation + angleOffset + MathHelper.TwoPi * i / count).ToRotationVector2();
                 // ai[0]: 1 = piercing, ai[1]: life in ticks, ai[2]: 2 * (index of the one enemy it must not hurt + 1) + 1 if this one plays the burst sound (one per ring)
                 Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center + direction * radius, direction * speed, type, damage, Projectile.knockBack,
                     Projectile.owner, piercing ? 1f : 0f, lifeTicks, (i == 0 ? 1f : 0f) + 2f * (ignoreNpc + 1));
@@ -338,6 +351,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
             hitTracker.Update(Projectile, segment, npc => ThornChakramFx.Shred(npc.Center, 2));
         }
 
+        // One afterimage per tick while it flies (visual only, never synced). OnKill hands the trail to DetachedTrails, so the
+        // leftovers fade out on their own when the chakram is caught, explodes or dies.
+        public override void PostAI()
+        {
+            if (Main.dedServ || !Projectile.active)
+                return;
+            afterimages ??= AfterimageTrail.Sprite(art?.Value ?? TextureAssets.Projectile[Type].Value, ThornChakramTuning.AfterimageTicks, 0.7f);
+            afterimages.Tick();
+            if (InFlight)
+                afterimages.Add(Projectile.Center, Projectile.rotation, 1f, ThornChakramTuning.GlowColor * 0.45f);
+        }
+
+        public override void OnKill(int timeLeft)
+        {
+            DetachedTrails.Hand(afterimages);
+            afterimages = null;
+        }
+
         public override bool PreDraw(ref Color lightColor)
         {
             if (CurrentPhase == Phase.Spent)
@@ -349,15 +380,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
             bool latched = CurrentPhase == Phase.Latched;
             float t = latched ? MathHelper.Clamp(latchTicks / (float)ThornChakramTuning.LatchTicks, 0f, 1f) : 0f;
 
-            int length = ProjectileID.Sets.TrailCacheLength[Type];
-            for (int i = length - 1; i >= 1; i--)
-            {
-                Vector2 old = Projectile.oldPos[i];
-                if (old == Vector2.Zero)
-                    continue;
-                float fade = 1f - i / (float)length;
-                Main.EntitySpriteDraw(texture, old + Projectile.Size * 0.5f - Main.screenPosition, null, glow * (0.45f * fade), Projectile.oldRot[i], origin, 0.7f + 0.3f * fade, SpriteEffects.None, 0);
-            }
+            afterimages?.Draw();
 
             // Spin blur: faint copies trailing behind in rotation, longer the faster it spins.
             float spinStep = ThornChakramTuning.SpinSpeed * MathHelper.Lerp(1f, ThornChakramTuning.LatchSpinMaxMultiplier, t) * Projectile.localAI[1];

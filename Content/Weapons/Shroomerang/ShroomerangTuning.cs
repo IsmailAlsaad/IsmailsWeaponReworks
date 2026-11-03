@@ -24,6 +24,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Shroomerang
         // ---- hits ----
         public static int HitCooldownTicks => 12;         // infinite pierce: the same enemy can be hit again after this long
         public static float SpinSpeed => 0.5f;
+        public static int AfterimageTicks => 10;          // how long an afterimage lasts (it keeps fading after the boomerang is gone)
 
         // ---- mushrooms the boomerang drops ----
         public static int FirstSpawnDelayTicks => 4;

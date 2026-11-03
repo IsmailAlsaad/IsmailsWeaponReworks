@@ -72,7 +72,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
             Projectile.ignoreWater = true;
             Projectile.timeLeft = 600; // safety net only; the throw range ends it long before
             Projectile.usesLocalNPCImmunity = true;
-            Projectile.localNPCHitCooldown = -1;
+            Projectile.localNPCHitCooldown = IceBoomerangTuning.HitCooldownTicks; // immunity frames per enemy: no double hit while passing through, a new hit if it stays inside
         }
 
         // Settling is just a visual; every other phase hurts.

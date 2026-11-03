@@ -51,6 +51,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
+            tooltips.RemoveAll(line => line.Mod == "Terraria" && line.Name.StartsWith("Tooltip")); // drops the vanilla "Shoots icy bolts"
+            tooltips.Add(new TooltipLine(Mod, "IceBlade0", "Might freeze your hands"));
             //tooltips.Add(new TooltipLine(Mod, "IceBlade1", "Tap for a plain swing, hold to charge"));
             //tooltips.Add(new TooltipLine(Mod, "IceBlade2", "Release on one of the first three clicks to send out an ice wave; later clicks are stronger"));
             //tooltips.Add(new TooltipLine(Mod, "IceBlade3", "Hold past the fourth click and your hand freezes"));

@@ -47,6 +47,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.ThornChakram
         public static int ExplosionStingerLifeTicks => 28;
         public static float ExplosionDamageMultiplier => 0.9f; // of the chakram's damage, per hit
         public static int ExplosionHitCooldownTicks => 10; // the piercing stingers can hit the same enemy again after this long
+        public static int ExplosionSecondDelayTicks => 10; // the second ring of the explosion leaves this many ticks after the first (turned half a step so it fills the gaps)
+        public static int AfterimageTicks => 10;           // how long an afterimage lasts (it keeps fading after the chakram is gone)
 
         // ---- look ----
         public static Color GlowColor => new Color(90, 220, 80, 0);

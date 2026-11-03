@@ -31,6 +31,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.WoodenBoomerang
         Phase CurrentPhase => (Phase)(int)Projectile.ai[0];
 
         Vector2 sweepStart; // center at the start of this tick, for swept hit tests
+        AfterimageTrail afterimages; // visual only, never synced
 
         public static Texture2D Art()
         {
@@ -166,6 +167,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.WoodenBoomerang
             return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft() - half, targetHitbox.Size() + Projectile.Size, sweepStart, Projectile.Center);
         }
 
+        // One afterimage per tick while it flies (visual only, never synced). OnKill hands the trail to DetachedTrails, so the
+        // leftovers fade out on their own when the boomerang is caught or breaks.
+        public override void PostAI()
+        {
+            if (Main.dedServ || !Projectile.active)
+                return;
+            afterimages ??= AfterimageTrail.Sprite(Art(), WoodenBoomerangTuning.AfterimageTicks, 0.7f);
+            afterimages.Tick();
+            if (CurrentPhase != Phase.Broken)
+                afterimages.Add(Projectile.Center, Projectile.rotation, 1f, WoodenBoomerangTuning.GlowColor * 0.35f);
+        }
+
+        public override void OnKill(int timeLeft)
+        {
+            DetachedTrails.Hand(afterimages);
+            afterimages = null;
+        }
+
         public override bool PreDraw(ref Color lightColor)
         {
             if (CurrentPhase == Phase.Broken)
@@ -173,17 +192,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.WoodenBoomerang
 
             Texture2D texture = Art();
             Vector2 origin = texture.Size() * 0.5f;
-            Color glow = WoodenBoomerangTuning.GlowColor;
 
-            int length = ProjectileID.Sets.TrailCacheLength[Type];
-            for (int i = length - 1; i >= 1; i--)
-            {
-                Vector2 old = Projectile.oldPos[i];
-                if (old == Vector2.Zero)
-                    continue;
-                float fade = 1f - i / (float)length;
-                Main.EntitySpriteDraw(texture, old + Projectile.Size * 0.5f - Main.screenPosition, null, glow * (0.35f * fade), Projectile.oldRot[i], origin, 0.7f + 0.3f * fade, SpriteEffects.None, 0);
-            }
+            afterimages?.Draw();
 
             Main.EntitySpriteDraw(texture, Projectile.Center - Main.screenPosition, null, lightColor, Projectile.rotation, origin, 1f, SpriteEffects.None, 0);
             return false;

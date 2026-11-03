@@ -193,6 +193,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         // explodes on the enemy (the finisher). Every other star just ends.
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
+            if (CurrentMode == Mode.Arc)
+                return; // after the bounce the star pierces every enemy (each one again after BounceImmunityTicks) until its life or a block ends it
             if (CurrentMode == Mode.Launched && Generation < StarfuryTuning.MaxBats)
             {
                 Bounce();

@@ -21,6 +21,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.WoodenBoomerang
         public static float CatchDistance => 28f;
         public static int FlightMaxTicks => 900;          // safety net: a boomerang that never gets back is removed
         public static float SpinSpeed => 0.45f;
+        public static int AfterimageTicks => 10;          // how long an afterimage lasts (it keeps fading after the boomerang is gone)
 
         // ---- shards (it breaks in half on the first enemy or block it hits) ----
         public static float ShardDamageMultiplier => 0.6f; // of the boomerang's damage, per hit

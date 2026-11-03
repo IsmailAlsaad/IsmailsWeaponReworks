@@ -29,6 +29,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBoomerang
         public static int BlastLifeTicks => 6;
         public static int BlastFlashTicks => 12;             // crystal flash when it explodes
         public static int FlightMaxTicks => 1800;            // safety net for a chain/return (30 s)
+        public static int HitCooldownTicks => 12;            // the same enemy can be hit again after this long while the boomerang keeps touching it (a timer per enemy)
 
         // --- Crystals ---
         public static int MaxCrystals => 5;           // the 6th evicts the oldest

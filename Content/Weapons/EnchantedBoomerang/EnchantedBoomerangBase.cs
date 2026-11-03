@@ -201,18 +201,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
 
                 Vector2 contact = (Vector2.Lerp(sweepStart, Projectile.Center, t) + Vector2.Lerp(partner.sweepStart, other.Center, t)) * 0.5f;
                 Vector2 apart = Projectile.Center - other.Center;
-                BounceAway(apart);
-                partner.BounceAway(-apart);
+                Vector2 axis = SidewaysAway(apart); // ONE axis for the pair, so the two always leave in exactly opposite directions
+                BounceAlong(axis);
+                partner.BounceAlong(-axis);
                 int damage = Math.Max(1, (int)(Projectile.damage * EnchantedBoomerangTuning.BurstDamageMultiplier));
                 Projectile.NewProjectile(Projectile.GetSource_FromThis(), contact, Vector2.Zero, ModContent.ProjectileType<StardustBurstProjectile>(), damage, Projectile.knockBack, Projectile.owner);
                 return;
             }
         }
 
-        // Owner only: a sideways IMPULSE, 90 degrees to the travel direction on the side that leads away from the other boomerang. There
-        // is no separate bounce phase: the boomerang goes straight into the force-based return, and the pull toward the player bends
-        // that impulse into one smooth arc.
-        void BounceAway(Vector2 awayFromOther)
+        // Owner only: the bounce axis of the pair. It is 90 degrees to THIS boomerang's travel direction, on the side that leads away
+        // from the other one. The normal boomerang flies along it and the ethereal one along the opposite, so the two never end up
+        // going the same way.
+        Vector2 SidewaysAway(Vector2 awayFromOther)
         {
             Vector2 direction = Projectile.velocity;
             if (direction.LengthSquared() < 0.01f)
@@ -221,8 +222,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang
             Vector2 perpendicular = new Vector2(-direction.Y, direction.X);
             if (Vector2.Dot(perpendicular, awayFromOther) < 0f)
                 perpendicular = -perpendicular;
+            return perpendicular;
+        }
 
-            Projectile.velocity = perpendicular * EnchantedBoomerangTuning.BounceSpeed;
+        // Owner only: a sideways IMPULSE along the given unit direction. There is no separate bounce phase: the boomerang goes straight
+        // into the force-based return, and the pull toward the player bends that impulse into one smooth arc.
+        void BounceAlong(Vector2 direction)
+        {
+            Projectile.velocity = direction * EnchantedBoomerangTuning.BounceSpeed;
             Projectile.ai[0] = (float)Phase.Bounced;
             Array.Clear(Projectile.localNPCImmunity, 0, Projectile.localNPCImmunity.Length);
             bounced = true;
