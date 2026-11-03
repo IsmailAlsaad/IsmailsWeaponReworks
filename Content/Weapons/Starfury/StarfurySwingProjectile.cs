@@ -392,11 +392,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             flash = 0.8f;
         }
 
-        // Owner only: the closest enemy to the player (within BatTargetRange) that a star can be sent at, or -1.
+        // Owner only: the enemy a bat sends the star at, or -1: the closest boss within BatTargetRange if there is one (bosses have priority),
+        // otherwise the closest enemy. Only enemies a star can be sent at count.
         int ClosestEnemy(Projectile star)
         {
             int best = -1;
             float bestDistance = StarfuryTuning.BatTargetRange;
+            int bestBoss = -1;
+            float bestBossDistance = StarfuryTuning.BatTargetRange;
             for (int i = 0; i < Main.maxNPCs; i++)
             {
                 NPC npc = Main.npc[i];
@@ -408,8 +411,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
                     best = i;
                     bestDistance = distance;
                 }
+                if (npc.boss && distance < bestBossDistance)
+                {
+                    bestBoss = i;
+                    bestBossDistance = distance;
+                }
             }
-            return best;
+            return StarfuryTuning.BatPrefersBosses && bestBoss >= 0 ? bestBoss : best;
         }
 
         // A bat sends the star in a straight line at the enemy closest to the player; with none in range the old rule decides.
@@ -523,12 +531,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             float scale = Projectile.scale;
 
             // The charge: a halo in the color of the star the sword will toss, stronger with every hit and pulsing; it drains away when the star is tossed.
+            // It is drawn around the CENTER of the blade sprite (not the hilt), so it swells outward evenly instead of stretching toward the tip.
             if (chargeShown > 0.02f)
             {
                 Color chargeColor = StarfuryTuning.GenerationColor(StarfuryTuning.LevelOf(Charge));
                 float pulse = 0.8f + 0.2f * (float)Math.Sin(ticks * 0.4f);
-                Main.EntitySpriteDraw(texture, position, null, chargeColor * (0.6f * chargeShown * pulse), rotation, origin, scale * (1.35f + 0.15f * chargeShown), effects, 0);
-                Main.EntitySpriteDraw(texture, position, null, chargeColor * (0.5f * chargeShown * pulse), rotation, origin, scale * 1.15f, effects, 0);
+                Vector2 hiltToCenter = new Vector2(Projectile.spriteDirection > 0 ? texture.Width * 0.5f : -texture.Width * 0.5f, -texture.Height * 0.5f);
+                Vector2 centerPosition = position + (hiltToCenter * scale).RotatedBy(rotation);
+                Vector2 centerOrigin = texture.Size() * 0.5f;
+                Main.EntitySpriteDraw(texture, centerPosition, null, chargeColor * (0.6f * chargeShown * pulse), rotation, centerOrigin, scale * (1.35f + 0.15f * chargeShown), effects, 0);
+                Main.EntitySpriteDraw(texture, centerPosition, null, chargeColor * (0.5f * chargeShown * pulse), rotation, centerOrigin, scale * 1.15f, effects, 0);
             }
 
             // Glow: steady while the sword is out, flaring when the star is called.

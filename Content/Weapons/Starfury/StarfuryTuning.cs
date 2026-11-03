@@ -64,6 +64,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static float BatPadding => 14f;        // the star's hitbox is this much bigger for the swing's hit test (forgiving on purpose)
         public static int BatGraceTicks => 12;        // a star that just bounced cannot be batted again for this long
         public static float BatTargetRange => 700f;   // a bat sends the star at the enemy closest to the player within this distance (pixels)
+        public static bool BatPrefersBosses => true;  // a boss within that range is the target even when a smaller enemy is closer
         public static float LaunchSpeed(int generation) { return generation <= 1 ? 18f : generation == 2 ? 22f : 30f; }          // the 3rd hit is the fastest
         public static float LaunchDamageMultiplier(int generation) { return generation <= 1 ? 1f : generation == 2 ? 1.3f : 1.7f; } // times the weapon's damage
         public static float LaunchKnockbackMultiplier => 0.8f;

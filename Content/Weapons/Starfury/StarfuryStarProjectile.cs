@@ -11,7 +11,7 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 {
     /// <summary>
-    /// The star of the Starfury. A called star hops from the blade tip to a point in front of the player on a parabola (Mode.Toss) and does small damage to the first
+    /// The star of the Starfury. A called star hops from the blade tip to a point in front of the player on a parabola (Mode.Toss) and does small damage to every
     /// enemy it touches: the weak baseline for a star nobody bats. A swing that touches it bats it (StarfurySwingProjectile): it
     /// becomes the next generation (its own color) and flies fast toward where the owner decided. A launched star that hits an enemy
     /// arcs back to the player on a solved parabola so it can be batted again; after the last bat it ends on its first hit instead. Every star ends
@@ -20,7 +20,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
     /// through everything on its way to the cursor point (like the vanilla falling stars, so it also works underground).
     /// ai[2] = mode: 0 Straight (called, no gravity), 1 Launched (batted, straight and fast), 2 Parabolic (unused now: it was the star
     /// born at a melee hit; kept so the ai[2] values stay stable), 3 Arc (the bounce back to the player: gravity without the usual fall-speed cap, so the solved arc stays exact).
-    /// 4 Toss (a called star: the same arc physics as Arc, but ai[1] = ticks before it may touch blocks, and it ends on its first enemy hit; Straight is no longer used).
+    /// 4 Toss (a called star: the same arc physics as Arc, but ai[1] = ticks before it may touch blocks, and it pierces every enemy like Arc; Straight is no longer used).
     /// MULTIPLAYER: stars are spawned by the owner (so tModLoader syncs them) and every machine moves them the same way. The owner's
     /// client decides everything else (the bat, its direction, the doubling, the bounce angle, the end) and syncs it through ai[] and
     /// velocity with netUpdate; every machine notices a changed generation or mode on its own and plays the bat or bounce effect, so
@@ -217,8 +217,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         // explodes on the enemy (the finisher). Every other star just ends.
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            if (CurrentMode == Mode.Arc)
-                return; // after the bounce the star pierces every enemy (each one again after BounceImmunityTicks) until its life or a block ends it
+            if (CurrentMode == Mode.Arc || CurrentMode == Mode.Toss)
+                return; // after the bounce, and a tossed star from the start, the star pierces every enemy (each one again after BounceImmunityTicks) until its life or a block ends it
             if (CurrentMode == Mode.Launched && Generation < StarfuryTuning.MaxBats)
             {
                 Bounce();
