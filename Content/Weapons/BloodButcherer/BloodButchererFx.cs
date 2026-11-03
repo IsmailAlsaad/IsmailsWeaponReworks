@@ -86,6 +86,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             dust.noGravity = false;
         }
 
+        // Blood flung off the tip of the spinning blade, along the tangent.
+        public static void SpinFling(Vector2 tip, Vector2 velocity)
+        {
+            if (Main.dedServ)
+                return;
+            Dust dust = Dust.NewDustPerfect(tip, DustID.Blood, velocity + Main.rand.NextVector2Circular(1f, 1f), 0, default, Main.rand.NextFloat(1f, 1.5f));
+            dust.noGravity = true;
+        }
+
         // A drop falling off the slack tether.
         public static void TetherDrip(Vector2 position)
         {

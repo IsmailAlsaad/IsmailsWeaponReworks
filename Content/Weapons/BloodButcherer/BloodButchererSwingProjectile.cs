@@ -63,6 +63,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         float lastBlade;         // last tick's blade angle, for the angular speed
         float angularSpeed;      // radians per tick the blade turned this tick
         bool bladeKnown;
+        float windStart = -1f;   // the timeline time the spin ended (the throw, or the enemy dying first); -1 while it is still spinning
+        float windAngle;         // the blade's angle at that moment (the player's own frame)
+        float windOmega;         // its angular speed then (radians per tick, signed)
+        float windOffset;        // how far out it was pushed then
+        bool thrown;             // the enemy really was thrown (so the jaws fly open)
+        SweepTrail spinTrail;    // the fan the spinning blade leaves (null until the spin starts)
         bool grabbed;            // the pin has started on this machine
         Vector2 grabFrom;        // where the enemy was when it was caught (the pull starts here)
         int gripClock;           // ticks spent gripping (owner: paces the periodic hits)
@@ -89,7 +95,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         static int PullEnd => BiteEnd + BloodButchererTuning.PullTicks;        // grip: the enemy is dragged to the middle of the mouth
         static int SpinEnd => PullEnd + BloodButchererTuning.SpinTicks;        // grip: the full circle, ends in the throw
         static int LockAt => SpinEnd - BloodButchererTuning.LockTicks;         // grip: the aim stops following the cursor
-        static int ReleaseEnd => SpinEnd + BloodButchererTuning.ReleaseTicks;  // grip: the jaws are open, the blade follows through
 
         // What this machine believes happened: a non-owner that never hears the decision assumes a miss.
         Branch Resolved
@@ -108,15 +113,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
                 switch (Resolved)
                 {
                     case Branch.Clamp: return BiteEnd + BloodButchererTuning.ClampTicks;
-                    case Branch.Grip: return ReleaseEnd;
+                    case Branch.Grip: return (windStart >= 0f ? windStart : SpinEnd) + BloodButchererTuning.WindDownTicks; // the blade keeps spinning and slows down until then
                     default: return BiteEnd;
                 }
             }
         }
-        int TotalTicks => RecoverStart + BloodButchererTuning.RecoverTicks;
+        int TotalTicks => RecoverStart + (Resolved == Branch.Grip ? BloodButchererTuning.WindDownRecoverTicks : BloodButchererTuning.RecoverTicks);
         bool Caught => Resolved == Branch.Clamp || Resolved == Branch.Grip;
-        bool GripActive => Resolved == Branch.Grip && timer >= BiteEnd && timer < SpinEnd;
-        bool Damaging => (timer >= BiteStart && timer < BiteEnd) || (Resolved == Branch.Grip && timer >= BiteEnd && timer < SpinEnd + 2f);
+        // The bite, then (grip) the held ticks until the spin ends, then only the throw's own tick or two. An enemy that died first ends it at once.
+        bool Damaging => (timer >= BiteStart && timer < BiteEnd)
+            || (Resolved == Branch.Grip && timer >= BiteEnd && (windStart < 0f ? timer < SpinEnd + 2f : thrown && timer < windStart + 2f));
 
         NPC CaughtNpc
         {
@@ -139,14 +145,56 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             return (Owner.gravDir == -1f ? -aim : aim).ToRotationVector2();
         }
 
-        // The blade's angle (the player's own frame) at a time on the timeline: the first aim until the spin, then a full circle toward the
-        // side the player faces that ends on the live aim, accelerating (ease-in) so the throw leaves at the blade's top speed.
+        // The blade's angle (the player's own frame) at a time on the timeline: the first aim until the spin, then at least a full circle toward
+        // the side the first aim faced that ends on the live aim, accelerating (ease-in) so the throw leaves at the blade's top speed, then
+        // (after the throw, or when the enemy died first) it keeps that speed and slows down evenly to a stop.
         float AngleAt(float time)
         {
-            if (Resolved != Branch.Grip || time <= PullEnd)
+            if (Resolved != Branch.Grip)
+                return startAim;
+            if (windStart >= 0f && time >= windStart)
+            {
+                float span = Math.Max(1, BloodButchererTuning.WindDownTicks);
+                float s = MathHelper.Clamp((time - windStart) / span, 0f, 1f);
+                return windAngle + windOmega * span * (s - 0.5f * s * s);
+            }
+            return SpinAngleAt(time);
+        }
+
+        // Angular speed (radians per tick, signed) at a time: the same two phases as AngleAt.
+        float OmegaAt(float time)
+        {
+            if (Resolved != Branch.Grip)
+                return 0f;
+            if (windStart >= 0f && time >= windStart)
+                return windOmega * (1f - MathHelper.Clamp((time - windStart) / Math.Max(1, BloodButchererTuning.WindDownTicks), 0f, 1f));
+            return SpinOmegaAt(time);
+        }
+
+        float SpinAngleAt(float time)
+        {
+            if (time <= PullEnd)
                 return startAim;
             float u = MathHelper.Clamp((time - PullEnd) / Math.Max(1, BloodButchererTuning.SpinTicks), 0f, 1f);
             return startAim + Facing * spinTotal * u * u;
+        }
+
+        float SpinOmegaAt(float time)
+        {
+            if (time <= PullEnd)
+                return 0f;
+            float span = Math.Max(1, BloodButchererTuning.SpinTicks);
+            float u = MathHelper.Clamp((time - PullEnd) / span, 0f, 1f);
+            return Facing * spinTotal * 2f * u / span;
+        }
+
+        // The spin is over (the throw, or the enemy is gone): from here on the blade keeps its angle, speed and reach and slows down from them.
+        void BeginWindDown(float at)
+        {
+            windAngle = SpinAngleAt(at);
+            windOmega = SpinOmegaAt(at);
+            windOffset = OffsetAt(at);
+            windStart = at;
         }
 
         // How far the blade is pushed along the aim from the hand (negative = pulled back).
@@ -174,13 +222,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
                 if (Resolved != Branch.Grip)
                     return held;
                 float spin = BloodButchererTuning.SpinOffset;
+                if (windStart >= 0f && time >= windStart) // the wind-down: it comes back in to the player while it slows
+                    return MathHelper.Lerp(windOffset, 0f, MathHelper.SmoothStep(0f, 1f, (time - windStart) / Math.Max(1, BloodButchererTuning.WindDownTicks)));
                 if (time < PullEnd) // the blade comes back in, dragging the enemy
                     return MathHelper.Lerp(held, spin, MathHelper.SmoothStep(0f, 1f, (time - BiteEnd) / Math.Max(1, BloodButchererTuning.PullTicks)));
-                if (time < SpinEnd)
-                    return spin;
-                float v = (time - SpinEnd) / Math.Max(1, BloodButchererTuning.ReleaseTicks); // the throw: the blade follows through
-                return MathHelper.Lerp(spin, held, 1f - (1f - v) * (1f - v));
+                return spin;
             }
+            if (Resolved == Branch.Grip)
+                return 0f; // the blade is back in the hand
             return MathHelper.Lerp(held, 0f, MathHelper.SmoothStep(0f, 1f, (time - RecoverStart) / Math.Max(1, BloodButchererTuning.RecoverTicks)));
         }
 
@@ -201,17 +250,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
                 float u = (time - BiteStart) / Math.Max(1, BloodButchererTuning.BiteTicks);
                 return 1f - (float)Math.Pow(u, 2.5);
             }
-            if (Resolved != Branch.Grip || time < SpinEnd)
-                return 0f;
-            // The throw: the jaws fly open, hang open through the follow-through, then close again as the blade comes back.
-            if (time < SpinEnd + BloodButchererTuning.ReleaseOpenTicks)
+            if (Resolved != Branch.Grip || !thrown || windStart < 0f || time < windStart)
+                return 0f; // shut: the bite, the grip and the spin, and a blade whose enemy died before the throw
+            // The throw: the jaws fly open, hang open for a moment, then close again while the blade slows down.
+            float since = time - windStart;
+            if (since < BloodButchererTuning.ReleaseOpenTicks)
             {
-                float u = (time - SpinEnd) / Math.Max(1, BloodButchererTuning.ReleaseOpenTicks);
+                float u = since / Math.Max(1, BloodButchererTuning.ReleaseOpenTicks);
                 return 1f - (1f - u) * (1f - u);
             }
-            if (time < RecoverStart)
+            float holdEnd = BloodButchererTuning.ReleaseOpenTicks + BloodButchererTuning.ReleaseHoldTicks;
+            if (since < holdEnd)
                 return 1f;
-            return 1f - MathHelper.SmoothStep(0f, 1f, (time - RecoverStart) / Math.Max(1, BloodButchererTuning.RecoverTicks));
+            return 1f - MathHelper.SmoothStep(0f, 1f, (since - holdEnd) / Math.Max(1f, BloodButchererTuning.WindDownTicks - holdEnd));
         }
 
         // ---- AI ----
@@ -295,6 +346,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             flash = Math.Max(0f, flash - 1f / Math.Max(1, BloodButchererTuning.FlashTicks));
             jawA?.Tick();
             jawB?.Tick();
+            spinTrail?.Tick();
             lastOwnerCenter = owner.Center;
             ticks++;
 
@@ -316,6 +368,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             if (Resolved != Branch.Grip || timer < BiteEnd)
                 return;
 
+            // The player faces the cursor for the whole spin and the wind-down (the direction is synced like any player's).
+            if (IsOwner)
+                Owner.ChangeDir(Main.MouseWorld.X >= Owner.Center.X ? 1 : -1);
+            if (windStart >= 0f)
+                return; // the spin is over, the aim is final
+
             if (IsOwner && timer < LockAt)
             {
                 Vector2 toMouse = Main.MouseWorld - Owner.MountedCenter;
@@ -335,37 +393,46 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             if (IsOwner && prevTimer < LockAt && timer >= LockAt)
                 Projectile.netUpdate = true; // make sure the final aim is out
 
-            // The sweep in the spin direction: one full circle plus however far the cursor is ahead of (or behind) the first aim.
-            float ahead = MathHelper.WrapAngle(Facing * (Projectile.ai[2] - startAim));
+            // The sweep in the spin direction: ALWAYS at least one full circle, plus however far the cursor is ahead of the first aim (0 to
+            // 360 degrees more), so the blade finishes pointing at the cursor. It follows the cursor at a limited speed, and after the lock it
+            // closes the rest of the gap exactly by the end of the spin.
+            float ahead = Facing * (Projectile.ai[2] - startAim);
+            ahead -= MathHelper.TwoPi * (float)Math.Floor(ahead / MathHelper.TwoPi);
             float target = MathHelper.TwoPi + ahead;
             float step = BloodButchererTuning.SpinFollow;
+            if (timer >= LockAt)
+                step = Math.Max(step, Math.Abs(target - spinTotal) / Math.Max(1f, SpinEnd - timer));
             spinTotal += MathHelper.Clamp(target - spinTotal, -step, step);
         }
 
-        // Every machine: pin the enemy in the mouth while it is gripped, drip, whoosh, and throw it at the end of the spin.
+        // Every machine: pin the enemy in the mouth while it is gripped, drip and whoosh, and throw it at the end of the spin. If it dies (or
+        // leaves) first there is no throw: the blade just carries on spinning from where it is, slowing down, and comes back to the player.
         void GripStep()
         {
-            if (Resolved != Branch.Grip)
+            if (Resolved != Branch.Grip || windStart >= 0f || timer < BiteEnd)
                 return;
 
             NPC npc = CaughtNpc;
-            if (timer >= BiteEnd && timer < SpinEnd && npc == null)
-                timer = SpinEnd; // it died or left: let go
-
-            if (npc != null && GripActive)
+            if (npc == null)
             {
-                Pin(npc);
-                gripClock++;
-                if (IsOwner && gripClock % Math.Max(1, BloodButchererTuning.GripTickInterval) == 0)
-                    Projectile.localNPCImmunity[npc.whoAmI] = 0; // the next periodic hit may land
-                if (Main.rand.NextBool(3))
-                    BloodButchererFx.GripDrip(npc.Center);
-                if (timer >= PullEnd && spinSoundClock++ % 8 == 0)
-                    BloodButchererFx.PlaySpin(npc.Center, MathHelper.Lerp(BloodButchererTuning.SpinWhooshPitchLow, BloodButchererTuning.SpinWhooshPitchHigh, (timer - PullEnd) / Math.Max(1, BloodButchererTuning.SpinTicks)));
+                BeginWindDown(timer);
+                return;
+            }
+            if (timer >= SpinEnd)
+            {
+                Launch(npc);
+                BeginWindDown(timer);
+                return;
             }
 
-            if (prevTimer < SpinEnd && timer >= SpinEnd)
-                Launch(npc);
+            Pin(npc);
+            gripClock++;
+            if (IsOwner && gripClock % Math.Max(1, BloodButchererTuning.GripTickInterval) == 0)
+                Projectile.localNPCImmunity[npc.whoAmI] = 0; // the next periodic hit may land
+            if (Main.rand.NextBool(3))
+                BloodButchererFx.GripDrip(npc.Center);
+            if (timer >= PullEnd && spinSoundClock++ % 8 == 0)
+                BloodButchererFx.PlaySpin(npc.Center, MathHelper.Lerp(BloodButchererTuning.SpinWhooshPitchLow, BloodButchererTuning.SpinWhooshPitchHigh, (timer - PullEnd) / Math.Max(1, BloodButchererTuning.SpinTicks)));
         }
 
         // The enemy sits in the middle of the shut jaws: dragged in from where it was caught during the pull, then carried around by the spin.
@@ -430,6 +497,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
                     launchUntil = ticks + 1;
                 }
             }
+            thrown = npc != null;
             flash = 1f;
             BloodButchererFx.PlayThrow(where);
             BloodButchererFx.ThrowBurst(where, direction);
@@ -606,6 +674,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             if (jawOpen > 0.5f && Main.rand.NextBool(4))
                 BloodButchererFx.Drool(pivot + bladeDir.RotatedBy(Main.rand.NextBool() ? angle : -angle) * jawLength);
 
+            // The spin and the wind-down: blood flies off the tip along the tangent, and the blade whooshes while it is still fast.
+            if (Resolved == Branch.Grip && timer >= PullEnd && timer < RecoverStart)
+            {
+                float omega = OmegaAt(timer);
+                float speed = Math.Abs(omega);
+                if (speed > 0.12f && Main.rand.NextBool(2))
+                    BloodButchererFx.SpinFling(pivot + bladeDir * jawLength, bladeDir.RotatedBy(Math.Sign(omega) * MathHelper.PiOver2) * (speed * jawLength * 0.7f));
+                if (windStart >= 0f && speed > 0.1f && spinSoundClock++ % 8 == 0)
+                    BloodButchererFx.PlaySpin(pivot, MathHelper.Clamp(MathHelper.Lerp(BloodButchererTuning.SpinWhooshPitchLow, BloodButchererTuning.SpinWhooshPitchHigh, speed / 0.5f) - 0.3f, -1f, 1f));
+            }
+
             Lighting.AddLight(mouth, 0.45f + 0.5f * flash, 0.05f + 0.1f * flash, 0.05f + 0.1f * flash);
         }
 
@@ -627,12 +706,41 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
                 if (TrailActive(time))
                     AddJawSample(time, fraction);
             }
+
+            // The spin and the wind-down leave a fan along the whole blade instead (a few more samples per tick: the tip moves fast).
+            if (Resolved == Branch.Grip)
+            {
+                int spinSamples = Math.Max(1, BloodButchererTuning.SpinTrailSamplesPerTick);
+                for (int k = 1; k <= spinSamples; k++)
+                {
+                    float fraction = k / (float)spinSamples;
+                    float time = MathHelper.Lerp(prevTimer, timer, fraction);
+                    if (time >= PullEnd && time < RecoverStart)
+                        AddSpinSample(time, fraction);
+                }
+            }
         }
 
-        // The thrust and the bite, and for a grip also the pull, the spin (the shut jaws draw a red circle around the player) and the throw.
+        // The thrust and the bite: the two jaw lines.
         bool TrailActive(float time)
         {
-            return (time >= ThrustStart && time < BiteEnd) || (Resolved == Branch.Grip && time >= BiteEnd && time < ReleaseEnd);
+            return time >= ThrustStart && time < BiteEnd;
+        }
+
+        // One slice of the fan: the outer edge is the tip, the inner edge slides from the tip down the blade as the blade speeds up (like the
+        // Ice Blade's higher tiers covering more width) and back up again as it slows down. It works the same when the enemy died mid-spin.
+        void AddSpinSample(float time, float fraction)
+        {
+            float aim = AngleAt(time);
+            Vector2 direction = WorldDir(aim);
+            Vector2 shift = Vector2.Lerp(lastOwnerCenter, Owner.Center, fraction) - Owner.Center;
+            Vector2 hand = HeldSwordPose.HandWorld(Owner, aim) + shift + direction * OffsetAt(time);
+            float length = BloodButchererTuning.BladeLength * Projectile.scale;
+            float fill = MathHelper.Clamp(Math.Abs(OmegaAt(time)) / Math.Max(0.01f, BloodButchererTuning.TrailFullSpeed), 0f, 1f);
+            float inner = MathHelper.Lerp(1f, BloodButchererTuning.TrailFillTo, MathHelper.SmoothStep(0f, 1f, fill));
+
+            spinTrail ??= new SweepTrail(new BloodButchererSpinTrailStyle(), IsOwner);
+            spinTrail.Add(hand + direction * length, hand + direction * length * inner);
         }
 
         void AddJawSample(float time, float fraction)
@@ -706,14 +814,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         {
             DetachedTrails.Hand(jawA);
             DetachedTrails.Hand(jawB);
+            DetachedTrails.Hand(spinTrail);
             jawA = null;
             jawB = null;
+            spinTrail = null;
         }
 
         // ---- drawing ----
 
         public override bool PreDraw(ref Color lightColor)
         {
+            spinTrail?.Draw();
             jawA?.Draw();
             jawB?.Draw();
 

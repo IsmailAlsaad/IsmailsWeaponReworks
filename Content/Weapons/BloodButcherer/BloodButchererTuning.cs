@@ -14,7 +14,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         // ---- sword ----
         public static float BladeLength => 56f;       // hand to tip
         public static float HandleLength => 12f;      // hand to the jaw pivot; the jaws are the rest of the blade
-        public static float SwordScale => 1.1f;
+        public static float SwordScale => 1f;
 
         // ---- timeline ----
         public static int WindupTicks => 8;
@@ -30,7 +30,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static int PullTicks => 6;             // the blade drags the enemy in from where it was caught to the middle of the mouth
         public static int SpinTicks => 34;            // the full circle (ease-in: it gets faster until the throw)
         public static int LockTicks => 4;             // the aim stops following the cursor this many ticks before the throw
-        public static int ReleaseTicks => 8;          // the jaws fly open and the blade follows through
+        public static int WindDownTicks => 26;        // after the throw (or when the enemy dies first) the blade keeps spinning, slowing evenly to a stop, and comes back to the player
+        public static int WindDownRecoverTicks => 4;  // a short pause with the blade back in the hand before the next bite can start
+        public static int ReleaseHoldTicks => 6;      // the jaws stay open this long after they fly open, then close while the blade slows
         public static int ReleaseOpenTicks => 3;      // how fast they fly open
         public static float SpinOffset => 50f;        // how far the blade is pushed out from the hand while it spins
         public static float SpinFollow => 0.5f;       // radians per tick the sweep may change while it follows the cursor
@@ -46,6 +48,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static float LaunchShake => 6f;
         public static float SpinWhooshPitchLow => 0f;
         public static float SpinWhooshPitchHigh => 0.7f;
+
+        // ---- spin trail (patch 2b): a fan along the blade that fills it up as the blade speeds up and thins out as it slows down ----
+        public static float TrailFullSpeed => 0.4f;   // the fan covers the whole blade at this angular speed (radians per tick)
+        public static float TrailFillTo => 0.15f;     // fully expanded, the fan reaches down to this fraction of the blade length (0 = the hand)
+        public static int SpinTrailLifeTicks => 16;
+        public static int SpinTrailRails => 7;
+        public static float SpinTrailOpacity => 0.9f;
+        public static int SpinTrailSamplesPerTick => 5;
 
         // ---- blood tether (patch 2): a crimson strand from the player's real hand to the handle of the blade ----
         public static float TetherRestLength => ThrustDistance + BiteLungeDistance + 1f; // closer than this and the strand droops
