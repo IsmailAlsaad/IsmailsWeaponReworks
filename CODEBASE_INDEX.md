@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-03 | 123 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-03 | 127 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -13,8 +13,8 @@ Project bases -> derived:
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - SweepTrailStyle: BloodButchererSpinTrailStyle, IceBladeTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle
 tModLoader/other bases -> project types:
-- ModProjectile (29): BloodButchererSwingProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
-- GlobalItem (16): BloodButchererGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
+- ModProjectile (30): BloodButchererSwingProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, PixelFireballProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
+- GlobalItem (17): BloodButchererGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, FlowerOfFireGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
 - ModPlayer (6): DashPlayer, ImmunityPlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer
 - GlobalNPC (2): BloodButchererGripNPC, CarriedNPC
 - Mod (1): IsmailsWeaponReworks
@@ -222,6 +222,20 @@ tModLoader/other bases -> project types:
 **ObsidianShardProjectile.cs** uses: FlamerangFx, FlamerangTuning, RemoteHitTracker
   class ObsidianShardProjectile : ModProjectile
     +Texture:string[ov] +Load()[ov] +Unload()[ov] +Break() +MakeRoom(int,int)[s] +CanHitNPC(NPC)[ov] +OnKill(int)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+
+### Content/Weapons/FlowerOfFire/
+**FlowerOfFireFx.cs** uses: FlowerOfFireTuning
+  static class FlowerOfFireFx
+    +Burst(Vector2)[s] +DrawFireball(Vector2,float,float,float)[s]
+**FlowerOfFireGlobalItem.cs** uses: FlowerOfFireTuning, PixelFireballProjectile
+  class FlowerOfFireGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov]
+**FlowerOfFireTuning.cs**
+  static class FlowerOfFireTuning
+    +Speed:float[s] +FlightTicks:int[s] +HitSize:float[s] +BurnTicks:int[s] +BurstTicks:int[s] +PixelSize:float[s] +UnitScale:float[s] +QuadSize:int[s] +FlameSpeed:float[s] +ColorBands:int[s] +Dither:float[s] +LightColor:Vector3[s]
+**PixelFireballProjectile.cs** uses: FlowerOfFireFx, FlowerOfFireTuning
+  class PixelFireballProjectile : ModProjectile
+    +Texture:string[ov] +OnSpawn(IEntitySource)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
 
 ### Content/Weapons/IceBlade/
 **IceBladeFx.cs** uses: IceFx
@@ -481,6 +495,7 @@ tModLoader/other bases -> project types:
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; build.txt, description.txt, description_workshop.txt
 - Content/Sounds/: ElectricEel.wav
+- Effects/: PixelFireball.fx
 - Localization/: en-US_Mods.IsmailsWeaponReworks.hjson
 - Properties/: launchSettings.json
 - docs/: ROADMAP.md

@@ -3,6 +3,7 @@ Projectiles: {
 	StarfuryStarProjectile.DisplayName: Starfury Star Projectile
 	SunfuryFlailProjectile.DisplayName: Sunfury Flail Projectile
 	SunfuryBlastProjectile.DisplayName: Sunfury Blast Projectile
+	PixelFireballProjectile.DisplayName: Pixel Fireball Projectile
 	FlamerangProjectile.DisplayName: Flamerang Projectile
 	MoltenBoomerangProjectile.DisplayName: Molten Boomerang Projectile
 	FlamerangBlastProjectile.DisplayName: Flamerang Blast Projectile
