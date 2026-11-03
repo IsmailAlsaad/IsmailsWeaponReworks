@@ -40,6 +40,7 @@ namespace IsmailsWeaponReworks.Common
         protected virtual float PixelSize => 2f;
 
         protected virtual void OnThrustStart(int index) { }
+        protected virtual void OnStrikeStart(int index) { }  // every machine, the tick the spear starts to shoot out (Direction, Tip and Butt are already posed)
         protected virtual void OnTipStep(Vector2 tip, Vector2 direction, float extension) { }
         protected virtual void OnTipHit(NPC target, NPC.HitInfo hit, int damageDone) { }
         protected virtual bool ShouldContinue(int index) { return false; } // endless chains only: owner decides at each thrust start
@@ -151,7 +152,10 @@ namespace IsmailsWeaponReworks.Common
             hasPose = true;
 
             if (tickIn == timeline.StrikeStart)
+            {
                 ThrustFx.PlayThrust(Tip, ThrustPitch(index));
+                OnStrikeStart(index);
+            }
 
             if (striking && extension > 0.3f)
             {
