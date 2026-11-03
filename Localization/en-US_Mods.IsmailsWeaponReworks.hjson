@@ -32,4 +32,6 @@ Projectiles: {
 	TridentThrustProjectile.DisplayName: Trident Thrust Projectile
 	RottedForkJavelinProjectile.DisplayName: Rotted Fork Javelin Projectile
 	RottedForkSpinProjectile.DisplayName: Rotted Fork Spin Projectile
+	DarkLanceChargeProjectile.DisplayName: Dark Lance Charge Projectile
+	DarkLanceOrbProjectile.DisplayName: Dark Lance Orb Projectile
 }
