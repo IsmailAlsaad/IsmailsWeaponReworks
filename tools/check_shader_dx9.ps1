@@ -1,9 +1,11 @@
 ﻿# Compiles Effects\<Shader>.fx as ps_3_0 with the DirectX 9 shader compiler (d3dx9_NN.dll), the compiler family the XNA effect pipeline (and so
 # fxcompiler.exe) uses internally, and PRINTS its real errors with the offending line. fxcompiler.exe itself prints nothing on failure.
 # Writes nothing. Needs one of d3dx9_24.dll ... d3dx9_43.dll (the DirectX End-User Runtime; many PCs with games already have it).
-# Usage: powershell -ExecutionPolicy Bypass -File .\tools\check_shader_dx9.ps1 -Shader DarkFlameOrb
+# Usage: powershell -ExecutionPolicy Bypass -File .\tools\check_shader_dx9.ps1 -Shader DarkFlameOrb [-NoOptimize]
+# -NoOptimize compiles with the optimizer off (debug mode): the code gets much longer, which is how to see whether the instruction limit is the problem.
 param(
     [Parameter(Mandatory = $true)][string]$Shader,
+    [switch]$NoOptimize,
     [string]$Root = 'C:\Users\ismai\OneDrive\Documents\My Games\Terraria\tModLoader\ModSources\IsmailsWeaponReworks'
 )
 $ErrorActionPreference = 'Stop'
@@ -54,7 +56,7 @@ public static class Dx9
     }
 
     // Tries d3dx9_43 down to d3dx9_24; returns the name of the dll used, or "" when none is installed.
-    public static string Compile(byte[] src, string entry, string profile, out int hr, out string messages)
+    public static string Compile(byte[] src, string entry, string profile, uint flags, out int hr, out string messages)
     {
         hr = 0;
         messages = "";
@@ -67,7 +69,7 @@ public static class Dx9
             if (proc == IntPtr.Zero) continue;
             CompileDelegate compile = (CompileDelegate)Marshal.GetDelegateForFunctionPointer(proc, typeof(CompileDelegate));
             IntPtr shader, errors, table;
-            hr = compile(src, (uint)src.Length, IntPtr.Zero, IntPtr.Zero, entry, profile, 0, out shader, out errors, out table);
+            hr = compile(src, (uint)src.Length, IntPtr.Zero, IntPtr.Zero, entry, profile, flags, out shader, out errors, out table);
             messages = Text(errors);
             return dll;
         }
@@ -80,7 +82,8 @@ Add-Type -TypeDefinition $cs
 $bytes = [Text.Encoding]::UTF8.GetBytes($flat)
 $messages = ''
 $hr = 0
-$dll = [Dx9]::Compile($bytes, 'PixelShaderFunction', 'ps_3_0', [ref]$hr, [ref]$messages)
+$flags = [uint32]$(if ($NoOptimize) { 5 } else { 0 })   # 5 = debug + skip optimization (what a debug build of the effect would do)
+$dll = [Dx9]::Compile($bytes, 'PixelShaderFunction', 'ps_3_0', $flags, [ref]$hr, [ref]$messages)
 if (-not $dll) {
     Write-Host 'No d3dx9_NN.dll found on this PC (looked for d3dx9_43 down to d3dx9_24). Install the "DirectX End-User Runtime" from Microsoft, then run this again.' -ForegroundColor Red
     exit 1
