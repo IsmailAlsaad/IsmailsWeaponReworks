@@ -52,8 +52,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Swordfish
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Swordfish1", $"Thrusts {SwordfishTuning.Thrusts} times in a row toward the cursor"));
-            tooltips.Add(new TooltipLine(Mod, "Swordfish2", "Enraged in liquid: thrusts without stopping"));
+            //tooltips.Add(new TooltipLine(Mod, "Swordfish1", $"Thrusts {SwordfishTuning.Thrusts} times in a row toward the cursor"));
+            tooltips.Add(new TooltipLine(Mod, "Swordfish2", "Enrages while submerged"));
         }
     }
 }

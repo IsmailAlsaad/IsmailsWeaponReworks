@@ -50,7 +50,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Spear
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Spear1", $"Thrusts {SpearTuning.Thrusts} times in a row toward the cursor"));
+            //tooltips.Add(new TooltipLine(Mod, "Spear1", $"Thrusts {SpearTuning.Thrusts} times in a row toward the cursor"));
         }
     }
 }

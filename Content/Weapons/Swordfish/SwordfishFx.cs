@@ -13,11 +13,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Swordfish
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.6f, Pitch = -0.3f }, position);
+            //SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.6f, Pitch = -0.3f }, position);
             for (int i = 0; i < 14; i++)
             {
                 Vector2 direction = (MathHelper.TwoPi * i / 14f).ToRotationVector2();
-                Dust dust = Dust.NewDustPerfect(position + direction * 10f, i % 3 == 0 ? DustID.Blood : DustID.Torch, direction * Main.rand.NextFloat(2f, 4.5f), 100, default, Main.rand.NextFloat(1.2f, 1.7f));
+                Dust dust = Dust.NewDustPerfect(position + direction * 10f, i % 3 == 0 ? DustID.Water : DustID.WaterCandle, direction * Main.rand.NextFloat(2f, 4.5f), 100, default, Main.rand.NextFloat(1.2f, 1.7f));
                 dust.noGravity = true;
             }
         }
@@ -27,7 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Swordfish
         {
             if (Main.dedServ)
                 return;
-            Dust dust = Dust.NewDustPerfect(tip + Main.rand.NextVector2Circular(4f, 4f), Main.rand.NextBool(3) ? DustID.Blood : DustID.Torch, -direction * Main.rand.NextFloat(0.5f, 2.5f) + Main.rand.NextVector2Circular(1f, 1f), 100, default, Main.rand.NextFloat(1.1f, 1.6f));
+            Dust dust = Dust.NewDustPerfect(tip + Main.rand.NextVector2Circular(4f, 4f), Main.rand.NextBool(3) ? DustID.Water : DustID.WaterCandle, -direction * Main.rand.NextFloat(0.5f, 2.5f) + Main.rand.NextVector2Circular(1f, 1f), 100, default, Main.rand.NextFloat(1.1f, 1.6f));
             dust.noGravity = true;
         }
     }

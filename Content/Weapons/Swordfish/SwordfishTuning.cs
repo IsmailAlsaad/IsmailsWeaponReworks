@@ -43,17 +43,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Swordfish
             0, GapTicks, RageSpreadDeg, RageCooldownTicks);
 
         // ---- the spear ----
-        public static float Reach => 40f;
+        public static float Reach => 25f;
         public static float SpearScale => 1f;
-        public static float GripFraction => 0.3f;
+        public static float GripFraction => 0.5f;
         public static float HitWidth => 22f;
 
         // ---- look ----
-        public static int TrailLifeTicks => 12;
-        public static int TrailRails => 5;
-        public static float TrailOpacity => 0.7f;
+        public static int TrailLifeTicks => 0;
+        public static int TrailRails => 0;
+        public static float TrailOpacity => 0f;
         public static float PixelSize => 2f;
         public static ThrustPalette Palette => new ThrustPalette(Color.White, new Color(140, 220, 240), new Color(60, 120, 200), DustID.BlueTorch, DustID.MagicMirror);
-        public static ThrustPalette RagePalette => new ThrustPalette(new Color(255, 235, 210), new Color(255, 120, 70), new Color(190, 40, 40), DustID.Torch, DustID.Blood);
+        public static ThrustPalette RagePalette => Palette;//new ThrustPalette(new Color(255, 235, 210), new Color(255, 120, 70), new Color(190, 40, 40), DustID.Torch, DustID.Blood);
     }
 }

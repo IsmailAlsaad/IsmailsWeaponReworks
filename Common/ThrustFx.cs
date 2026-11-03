@@ -46,6 +46,10 @@ namespace IsmailsWeaponReworks.Common
             {
                 Vector2 position = tip - direction * Main.rand.NextFloat(0f, 22f) + Main.rand.NextVector2Circular(3f, 3f);
                 int type = Main.rand.NextBool() ? palette.DustA : palette.DustB;
+                if(type == -1)
+                {
+                    continue;
+                }
                 Dust dust = Dust.NewDustPerfect(position, type, -direction * Main.rand.NextFloat(0.4f, 2f), 100, default, Main.rand.NextFloat(0.9f, 1.3f));
                 dust.noGravity = true;
             }
@@ -58,6 +62,10 @@ namespace IsmailsWeaponReworks.Common
             for (int i = 0; i < 8; i++)
             {
                 int type = i % 2 == 0 ? palette.DustA : palette.DustB;
+                if (type == -1)
+                {
+                    continue;
+                }
                 Dust dust = Dust.NewDustPerfect(position, type, Main.rand.NextVector2Circular(3.2f, 3.2f), 100, default, Main.rand.NextFloat(1f, 1.4f));
                 dust.noGravity = true;
             }

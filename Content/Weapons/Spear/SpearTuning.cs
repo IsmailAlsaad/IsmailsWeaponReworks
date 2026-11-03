@@ -28,16 +28,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Spear
             Thrusts, GapTicks, SpreadDeg, CooldownTicks);
 
         // ---- the spear ----
-        public static float Reach => 36f;        // pixels the spear is pushed forward at full extension
+        public static float Reach => 26f;        // pixels the spear is pushed forward at full extension
         public static float SpearScale => 1f;
-        public static float GripFraction => 0.35f; // how much of the shaft sticks out behind the hand at rest
+        public static float GripFraction => 0.45f; // how much of the shaft sticks out behind the hand at rest
         public static float HitWidth => 22f;
 
         // ---- look ----
-        public static int TrailLifeTicks => 12;
-        public static int TrailRails => 5;
-        public static float TrailOpacity => 0.7f;
+        public static int TrailLifeTicks => 0;
+        public static int TrailRails => 0;
+        public static float TrailOpacity => 0f;
         public static float PixelSize => 2f;
-        public static ThrustPalette Palette => new ThrustPalette(Color.White, new Color(190, 215, 235), new Color(120, 150, 190), DustID.MagicMirror, DustID.Smoke);
+        public static ThrustPalette Palette => new ThrustPalette(Color.White, new Color(190, 215, 235), new Color(120, 150, 190), -1, -1);
     }
 }
