@@ -12,7 +12,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
     public static class RottedForkTuning
     {
         // ---- the spin ----
-        public static float SpinSpeed => 0.3f;           // radians per tick at full speed (0.3 = about 3 turns a second)
+        public static float SpinSpeed => 0.25f;           // radians per tick at full speed (0.3 = about 3 turns a second)
         public static int RampTicks => 10;               // from the start speed up to full speed
         public static float StartSpeedFraction => 0.3f;  // the spin starts at this fraction of full speed
         public static int WindDownTicks => 10;           // after the button is released the spin slows to a stop over this long
@@ -21,7 +21,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
 
         // ---- damage ----
         public static float DamageMultiplier => 0.8f;    // per hit, times the item's damage (balance by damage per second)
-        public static int HitCooldownTicks => 14;        // the same enemy can be hit again after this long
+        public static int HitCooldownTicks => 10;        // the same enemy can be hit again after this long
         public static float MinHitSpeed => 0.35f;        // the fork only hurts while it is at least this fast (fraction of full speed)
         public static float HitWidth => 22f;             // thickness of the hit line (pixels at scale 1)
 
