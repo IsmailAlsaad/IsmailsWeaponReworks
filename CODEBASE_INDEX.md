@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-03 | 78 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-03 | 80 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-RemoteHitTracker(16) DetachedTrails(15) AfterimageTrail(13) IceFx(10) BoomerangFlight(8) FlamerangTuning(7) StarfuryTuning(6) ShroomerangTuning(5) PixelTrail(5) FlamerangFx(5) WoodenBoomerangTuning(4) ThornChakramTuning(4) SunfuryTuning(4) PixelLine(4) IceBoomerangTuning(4) HeldSwordPose(4) TrimarangTuning(3) SweepTrail(3) StarfuryFx(3) ShroomerangFx(3)
+RemoteHitTracker(16) DetachedTrails(15) AfterimageTrail(13) IceFx(10) BoomerangFlight(8) FlamerangTuning(7) StarfuryTuning(6) ShroomerangTuning(5) PixelTrail(5) PixelLine(5) FlamerangFx(5) BloodButchererTuning(5) WoodenBoomerangTuning(4) ThornChakramTuning(4) SunfuryTuning(4) IceBoomerangTuning(4) HeldSwordPose(4) TrimarangTuning(3) SweepTrail(3) StarfuryFx(3)
 
 ## Inheritance
 Project bases -> derived:
@@ -14,6 +14,7 @@ Project bases -> derived:
 tModLoader/other bases -> project types:
 - ModProjectile (26): BloodButchererSwingProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
 - GlobalItem (11): BloodButchererGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, ShroomerangGlobalItem, StarfuryGlobalItem, SunfuryGlobalItem, ThornChakramGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
+- GlobalNPC (1): BloodButchererGripNPC
 - Mod (1): IsmailsWeaponReworks
 - ModPlayer (1): StarfuryPlayer
 - ModSystem (1): DetachedTrails
@@ -69,21 +70,27 @@ tModLoader/other bases -> project types:
 ### Content/Weapons/BloodButcherer/
 **BloodButchererFx.cs** uses: BloodButchererTuning, IceFx
   static class BloodButchererFx
-    +PlayLunge(Vector2)[s] +PlayOpen(Vector2)[s] +PlayBite(Vector2)[s] +PlayClamp(Vector2)[s] +MouthMist(Vector2,Vector2)[s] +Drool(Vector2)[s] +BiteSnap(Vector2)[s] +ClampBurst(Vector2)[s] +HitBlood(Vector2)[s] +DrawTeeth(Vector2,Vector2,float,Vector2,float,float,Color)[s]
+    +PlayLunge(Vector2)[s] +PlayOpen(Vector2)[s] +PlayBite(Vector2)[s] +PlayClamp(Vector2)[s] +PlaySpin(Vector2,float)[s] +PlayThrow(Vector2)[s] +ThrowBurst(Vector2,Vector2)[s] +GripDrip(Vector2)[s] +TetherDrip(Vector2)[s] +MouthMist(Vector2,Vector2)[s] +Drool(Vector2)[s] +BiteSnap(Vector2)[s] +ClampBurst(Vector2)[s] +HitBlood(Vector2)[s] +DrawTeeth(Vector2,Vector2,float,Vector2,float,float,Color)[s]
 **BloodButchererGlobalItem.cs** uses: BloodButchererSwingProjectile
   class BloodButchererGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**BloodButchererSwingProjectile.cs** uses: BloodButchererFx, BloodButchererJawTrailStyle, BloodButchererTuning, CameraShake, DetachedTrails, HeldSwordPose, PixelTrail
+**BloodButchererGripNPC.cs** uses: BloodButchererTuning
+  class BloodButchererGripNPC : GlobalNPC
+    +InstancePerEntity:bool[ov] +HoldTick:long +LaunchTick:long +Held:bool +Launched:bool +PreAI(NPC)[ov] +CanHitPlayer(NPC,Player,ref int)[ov]
+**BloodButchererSwingProjectile.cs** uses: BloodButchererFx, BloodButchererGripNPC, BloodButchererJawTrailStyle, BloodButchererTether, BloodButchererTuning, CameraShake, DetachedTrails, HeldSwordPose, PixelTrail
   class BloodButchererSwingProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +CanDamage()[ov] +CanHitNPC(NPC)[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Branch
-      {Undecided, Miss, Clamp}
+      {Undecided, Miss, Clamp, Grip}
+**BloodButchererTether.cs** uses: BloodButchererTuning, PixelLine
+  class BloodButchererTether
+    +Draw(Vector2,Vector2,Vector2,float,float,int,Color)
 **BloodButchererTrail.cs** uses: BloodButchererTuning, PixelTrailStyle
   class BloodButchererJawTrailStyle : PixelTrailStyle
     +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
 **BloodButchererTuning.cs**
   static class BloodButchererTuning
-    +BladeLength:float[s] +HandleLength:float[s] +SwordScale:float[s] +WindupTicks:int[s] +ThrustTicks:int[s] +OpenTicks:int[s] +GapeTicks:int[s] +BiteTicks:int[s] +ClampTicks:int[s] +RecoverTicks:int[s] +DecideWaitTicks:int[s] +WindupPullback:float[s] +ThrustDistance:float[s] +BiteLungeDistance:float[s] +JawOpenDeg:float[s] +CatchPadding:float[s] +BiteDamageMultiplier:float[s] +OtherDamageMultiplier:float[s] +ClampShake:float[s] +PixelSize:float[s] +TeethCount:int[s] +ToothLength:float[s] +FlashTicks:int[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +TrailSamplesPerTick:int[s] +CrimsonColor:Color[s] +BrightColor:Color[s] +BoneColor:Color[s] +ArtPivot:Vector2[s]
+    +BladeLength:float[s] +HandleLength:float[s] +SwordScale:float[s] +WindupTicks:int[s] +ThrustTicks:int[s] +OpenTicks:int[s] +GapeTicks:int[s] +BiteTicks:int[s] +ClampTicks:int[s] +RecoverTicks:int[s] +DecideWaitTicks:int[s] +PullTicks:int[s] +SpinTicks:int[s] +LockTicks:int[s] +ReleaseTicks:int[s] +ReleaseOpenTicks:int[s] +SpinOffset:float[s] +SpinFollow:float[s] +PinRatio:float[s] +LaunchSpeed:float[s] +LaunchAiOffTicks:int[s] +LaunchGravity:float[s] +LaunchMaxFall:float[s] +GripTickDamageMultiplier:float[s] +GripTickInterval:int[s] +LaunchDamageMultiplier:float[s] +MaxGrabSize:float[s] +LaunchShake:float[s] +SpinWhooshPitchLow:float[s] +SpinWhooshPitchHigh:float[s] +TetherRestLength:float[s] +TetherWidth:float[s] +TetherThinWidth:float[s] +TetherSag:float[s] +TetherMaxSag:float[s] +TetherTrailing:float[s] +TetherMaxTrailing:float[s] +TetherWobble:float[s] +TetherSegments:int[s] +TetherDarkColor:Color[s] +TetherMidColor:Color[s] +TetherGlowColor:Color[s] +WindupPullback:float[s] +ThrustDistance:float[s] +BiteLungeDistance:float[s] +JawOpenDeg:float[s] +CatchPadding:float[s] +BiteDamageMultiplier:float[s] +OtherDamageMultiplier:float[s] +ClampShake:float[s] +PixelSize:float[s] +TeethCount:int[s] +ToothLength:float[s] +FlashTicks:int[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +TrailSamplesPerTick:int[s] +CrimsonColor:Color[s] +BrightColor:Color[s] +BoneColor:Color[s]
 
 ### Content/Weapons/EnchantedBoomerang/
 **EnchantedBoomerangBase.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, EnchantedBoomerangFx, EnchantedBoomerangTuning, EtherealBoomerangProjectile, RemoteHitTracker, StardustBurstProjectile

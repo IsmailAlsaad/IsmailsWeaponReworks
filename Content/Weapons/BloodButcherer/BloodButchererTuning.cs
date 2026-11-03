@@ -22,9 +22,44 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static int OpenTicks => 8;
         public static int GapeTicks => 3;
         public static int BiteTicks => 4;
-        public static int ClampTicks => 6;            // patch 1: held shut. Patch 2 replaces this with the spin.
+        public static int ClampTicks => 6;            // held shut: only for an enemy that cannot be gripped (boss, worm, immovable, too big); patch 3 replaces it with the chomp
         public static int RecoverTicks => 12;
         public static int DecideWaitTicks => 20;      // another machine waits this long for the owner's catch decision, then assumes a miss
+
+        // ---- grip, spin and launch (patch 2): an enemy that can be gripped is pinned in the shut jaws, spun a full circle and thrown at the cursor ----
+        public static int PullTicks => 6;             // the blade drags the enemy in from where it was caught to the middle of the mouth
+        public static int SpinTicks => 34;            // the full circle (ease-in: it gets faster until the throw)
+        public static int LockTicks => 4;             // the aim stops following the cursor this many ticks before the throw
+        public static int ReleaseTicks => 8;          // the jaws fly open and the blade follows through
+        public static int ReleaseOpenTicks => 3;      // how fast they fly open
+        public static float SpinOffset => 14f;        // how far the blade is pushed out from the hand while it spins
+        public static float SpinFollow => 0.5f;       // radians per tick the sweep may change while it follows the cursor
+        public static float PinRatio => 0.6f;         // where in the shut jaws the enemy is pinned (0 = pivot, 1 = tips)
+        public static float LaunchSpeed => 20f;       // pixels per tick toward the cursor
+        public static int LaunchAiOffTicks => 25;    // the thrown enemy cannot steer or attack for this long (normal gravity and tile collision)
+        public static float LaunchGravity => 0.3f;
+        public static float LaunchMaxFall => 12f;
+        public static float GripTickDamageMultiplier => 0.3f; // while it is held
+        public static int GripTickInterval => 6;      // ticks between those hits
+        public static float LaunchDamageMultiplier => 1.6f;   // the throw
+        public static float MaxGrabSize => 120f;      // an enemy bigger than this (width or height) is clamped, not gripped
+        public static float LaunchShake => 6f;
+        public static float SpinWhooshPitchLow => 0f;
+        public static float SpinWhooshPitchHigh => 0.7f;
+
+        // ---- blood tether (patch 2): a crimson strand from the player's real hand to the handle of the blade ----
+        public static float TetherRestLength => ThrustDistance + BiteLungeDistance + 1f; // closer than this and the strand droops
+        public static float TetherWidth => 5f;
+        public static float TetherThinWidth => 2f;    // how thin it gets at full stretch
+        public static float TetherSag => 1f;
+        public static float TetherMaxSag => 12f;
+        public static float TetherTrailing => 60f;    // a spinning blade drags the middle of the strand behind it: pixels per (radian per tick)
+        public static float TetherMaxTrailing => 20f;
+        public static float TetherWobble => 1.5f;
+        public static int TetherSegments => 14;
+        public static Color TetherDarkColor => new Color(105, 6, 16);    // opaque body
+        public static Color TetherMidColor => new Color(190, 18, 30);    // opaque inner stripe
+        public static Color TetherGlowColor => new Color(255, 90, 70, 0); // additive core
 
         // ---- movement ----
         public static float WindupPullback => 12f;    // how far the blade is pulled back along the aim before the thrust
@@ -50,8 +85,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static Color BrightColor => new Color(255, 80, 60, 0);
         public static Color BoneColor => new Color(236, 228, 208);
 
-        // Art (BloodButchererHandle / BloodButchererJawUpper / BloodButchererJawLower .png): the sword drawn horizontal, pointing right, all three on the
-        // same canvas, with this pixel as the jaw pivot (and the handle's join). Until all three exist the vanilla sprite is used.
-        public static Vector2 ArtPivot => new Vector2(12f, 16f);
+        // Art (BloodButchererHandle / BloodButchererJawUpper / BloodButchererJawLower .png): drawn like a vanilla sword, tip to the upper right at 45 degrees. Every
+        // sprite's pivot is the CENTRE of its own canvas, and that centre is placed on the jaw joint (where the handle meets the jaws), so pad each canvas
+        // with transparent pixels until the joint is in the middle. Until all three exist the vanilla sprite is used. HandleLength below is the distance from
+        // the joint back to the end of the handle (where the blood tether is tied), so match it to your handle art.
     }
 }

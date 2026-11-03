@@ -42,7 +42,58 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
             SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.4f, Pitch = 0.5f }, position);
         }
 
+        public static void PlaySpin(Vector2 position, float pitch)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.7f, Pitch = pitch, PitchVariance = 0.05f }, position);
+        }
+
+        public static void PlayThrow(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 1f, Pitch = 0.7f }, position);
+            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 1f, Pitch = -0.4f }, position);
+        }
+
         // ---- dust ----
+
+        // The throw: the jaws fly open and the enemy leaves in a spray of blood along its flight direction.
+        public static void ThrowBurst(Vector2 center, Vector2 direction)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 24; i++)
+            {
+                Vector2 velocity = direction.RotatedByRandom(0.6f) * Main.rand.NextFloat(3f, 11f);
+                Dust dust = Dust.NewDustPerfect(center + Main.rand.NextVector2Circular(8f, 8f), DustID.Blood, velocity, 0, default, Main.rand.NextFloat(1.2f, 2f));
+                dust.noGravity = Main.rand.NextBool(2);
+            }
+            for (int i = 0; i < 6; i++)
+            {
+                Dust smoke = Dust.NewDustPerfect(center, DustID.Smoke, Main.rand.NextVector2Circular(3f, 3f), 150, default, 1.5f);
+                smoke.noGravity = true;
+            }
+        }
+
+        // Small drips from the enemy while the jaws hold it.
+        public static void GripDrip(Vector2 center)
+        {
+            if (Main.dedServ)
+                return;
+            Dust dust = Dust.NewDustPerfect(center + Main.rand.NextVector2Circular(10f, 10f), DustID.Blood, Main.rand.NextVector2Circular(1.5f, 1.5f), 0, default, 1.2f);
+            dust.noGravity = false;
+        }
+
+        // A drop falling off the slack tether.
+        public static void TetherDrip(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            Dust dust = Dust.NewDustPerfect(position, DustID.Blood, new Vector2(Main.rand.NextFloat(-0.2f, 0.2f), Main.rand.NextFloat(0.2f, 0.8f)), 0, default, 1f);
+            dust.noGravity = false;
+        }
 
         // The jaws part: a spray of blood at the pivot, thrown forward along the blade.
         public static void MouthMist(Vector2 pivot, Vector2 direction)
