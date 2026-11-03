@@ -30,6 +30,7 @@ Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projecti
 - [~] Blood Butcherer patch 1 (2026-11-03): left click lunges a jawed blade along the aim, the jaws open and bite, a catch wedge decides caught or miss (the clamp is a placeholder until patch 2's spin); also `Common/CameraShake` (Sunfury and Starfury use it now) and `SweepTrailStyle.Fade` (`Uniform` / `TailFirst`, Ice Blade and Starfury moved onto it) (applied, untested)
 - [~] Blood Butcherer patch 2 (2026-11-03): a caught enemy that can be gripped is pinned in the shut jaws, spun a full circle and thrown at the cursor (new `BloodButchererGripNPC`); bosses, worms, immovable and big enemies are still only clamped (patch 3 = the chomp); a blood tether ties the blade's handle to the player's real hand (`BloodButchererTether`, drawn with `PixelLine`); the art convention is now 45 degree sprites with the pivot in the middle of each canvas (applied, untested)
 - [~] Blood Butcherer patch 2b (2026-11-03): spin feel round: at least one full 360 before the throw, the player faces the cursor while spinning, after the throw the blade keeps spinning and slows down back to the player, an enemy dying mid-spin no longer snaps the blade (it just winds down in place), and the spin trail is a fan that fills the blade as it speeds up (applied, untested)
+- [ ] Spears (design in section 12): patch 1 = `Common` held-spear core + Spear + Swordfish rage; patch 2 = dash helpers + Trident; patch 3 = `ArcBolt` + Storm Spear; patch 4 = `OrbitRing` + Rotted Fork spin; patch 5 = `CarriedNPC`/`AreaEffect` + Rotted Fork javelin; patch 6-7 = Dark Lance (orbs, then sweep/thrust/explosion); patch 8 = optional cleanup (not started)
 - [~] Blood Butcherer patch 3 (2026-11-03): the immovable chomp (a boss, worm, immovable or too big enemy is chewed six times instead of clamped, `ClampTicks` is gone); the spin sweep is wrapped on the angle difference with a dead zone and a hard cap of `SpinMaxCircles` 2; the bite's two jaw lines vanish when the spin starts so the fan is the only trail (`PixelTrail.FadeWithin`); the spinning blade cuts every other enemy it passes through; a thrown enemy takes damage from the speed it loses hitting a tile (applied, untested)
 - [~] Blood Butcherer patch 4 (2026-11-03): melee attack speed plays the whole timeline faster or slower (`AttackSpeedInfluence`, `SpeedScaleMin`, `SpeedScaleMax`); the speed rides in the spawn velocity so every machine runs the same pace; one-shot events fire on crossing a time instead of on an exact tick (applied, untested)
 
@@ -233,6 +234,80 @@ Multiplayer design (patch 4): the speed is decided by the owner's client (the on
 Test checklist (patch 4): with no melee speed bonus the Blood Butcherer plays exactly as before (bite, grip and spin, throw, wind-down, chomp, miss). To test without gear, hot reload `SpeedScaleMin => 2f` and `SpeedScaleMax => 2f` (everything twice as fast: the bite still lands and still catches, the grip and the throw still work, the spin trail still fills and fades, the sounds all play once) and then `0.6f` / `0.6f` (slow motion: nothing stalls, nothing plays twice). With a real bonus (Fire Gauntlet, Berserker's Glove, an armor set): the swing is visibly quicker; a boss chomps six times still, each close hitting once; the spinning blade still cuts a second enemy; the thrown enemy still takes the wall impact; two players: the other player sees the same pace and the thrown enemy ends up in the same place. Unverified names to check first if the build complains: `Player.GetTotalAttackSpeed(DamageClass)` (checked against the tModLoader source).
 
 Next (for a new chat): "Blood Butcherer patches 3 and 4 results: <what worked / what felt off>". Feel changes are tuning in `BloodButchererTuning` (`SpinTicks`, `SpinOffset`, `LaunchSpeed`, `PinRatio`, `GripTickDamageMultiplier`, `LaunchDamageMultiplier`, `TetherWidth`, `TetherSag`, `TetherTrailing`).
+
+## 12. Spears (vanilla `ItemID.Spear`, `Swordfish`, `Trident`, `ThunderSpear` = Storm Spear, `TheRottedFork`, `DarkLance`) [PLANNED, nothing built]
+
+Verify every item id against the API source when the first patch is written. Each spear gets its own folder `Content/Weapons/<Weapon>/` (GlobalItem, projectiles, Tuning, Fx). Like the Blood Butcherer, the GlobalItem sets `shoot` to a held projectile, `noMelee`, `noUseGraphic`, `useStyle = Shoot`; the item itself swings nothing. Art: none needed (vanilla item sprites drawn along the aim, vanilla dust and sounds). Later Ismail art drops in as `<Weapon>Spear.png`, 45 degree sprite with the pivot in the middle of the canvas, loaded with `RequestIfExists`. All numbers below are STARTING VALUES that live in each `<Weapon>Tuning`.
+
+### Design per weapon (Ismail's notes)
+
+- **Spear**: a burst of 3 consecutive thrusts toward the cursor, each with a random angle variance, then a cooldown. Start: 3 thrusts, +-12 degrees, 14 ticks per thrust, 30 ticks cooldown, damage multiplier 0.8 per thrust (balance by DPS: the burst should stay near vanilla).
+- **Swordfish**: same as the Spear with more and faster thrusts (start: 5 thrusts, 9 ticks each, +-10 degrees, cooldown 30). While submerged in liquid it is ENRAGED: the thrusts continue endlessly while the button is held (no burst, no cooldown), a little faster (7 ticks), with a red/bubbly look. Leaving the liquid finishes the current thrust, then the normal cooldown.
+- **Trident**: ONE strong thrust that dashes the player toward the cursor. When the tip hits an enemy or a tile the player BOUNCES back (reflect off the hit normal, small hit-stop, camera shake, sparks); one bounce per dash. While the player is submerged and holds it: Gills (breathing) and Flipper buffs; the dash is longer in liquid. Start: dash 10 ticks at 18 px/tick (about 11 tiles), x1.6 longer submerged, cooldown 40.
+- **Storm Spear**: the same single strong thrust and dash, but the tip pierces infinitely (no bounce), the player has immunity frames for the whole dash, an electric trail stays behind (jagged lightning pixel lines plus electric dust that fades on its own), and every enemy hit gets `BuffID.Electrified`.
+- **Rotted Fork**: LEFT click (hold) spins the fork around the player continuously. RIGHT click throws it like a javelin at the cursor: it impales up to 3 enemies one after another (shish kebab), keeps flying with them still impaled and carried; when it hits a tile or its lifetime ends it explodes in blood and releases the enemies. Enemies that cannot be carried (bosses, immovable, worm segments) are pierced and damaged, not impaled. One javelin in flight; the item itself is never lost.
+- **Dark Lance**: RIGHT click (hold) points the lance up and charges dark energy: one purple dark flame ball every 20 ticks, up to 8, orbiting the player. LEFT click cycles between a fast 360 degree SWEEP and a strong THRUST (sweep, thrust, sweep...). The sweep COLLECTS every flame ball its tip passes; the thrust that follows is bigger and stronger per collected ball (start: +12% size and +15% damage per ball); with all 8 collected the thrust ends in an evil explosion on the first enemy hit. Enemies can also walk into a flame ball: it pops with NO damage and only inflicts an area `BuffID.ShadowFlame` debuff. Balls that are not collected last until the item is swapped or 30 s pass.
+
+### Shared helpers (all in `Common/`, namespace `IsmailsWeaponReworks.Common`)
+
+Rule 7 (extract when a second weapon needs it) is bent on purpose here, by Ismail's request: every helper below has at least two planned customers in this class, and each is built in the patch of its FIRST customer. Existing weapons keep their own copies until a cleanup patch moves them over.
+
+Patch 1 (held spear core):
+- `HeldAim.Capture(Player)` / `HeldAim.ToWorld(Player, angle)`: cursor angle in the player's own frame (gravity flip mirrored, facing fallback when the cursor is on the player). Same code the Starfury and Blood Butcherer have inline.
+- `AimSpread.Offset(seed, index, maxDeg)`: deterministic angle variance from a seed and a thrust index, so every machine computes the same jitter without a packet; successive thrusts never jitter the same way twice.
+- `ThrustTimeline` (struct: windup, thrust, hold, recover ticks, pull-back, ease power): `Extension(tick)` returns 0 to 1 (slightly negative while pulling back), plus the phase. A pure function of the tick.
+- `ThrustChain` (struct: count or 0 = endless, timeline, gap, spread, cooldown): `Locate(age, out index, out tickInThrust)`, `IsFinished(age)`. The projectile's age alone says which thrust it is in, so the whole burst mirrors with no sync.
+- `SpearPose`: hand position, tip position for an extension, and drawing the vanilla item sprite along the aim (built on the `HeldSwordPose.Sprite` math; check that file first).
+- `HeldSpearProjectile` (abstract `ModProjectile`): the shared held projectile. It reads the owner's captured aim (ai[2]), follows the hand, sets `heldProj`, item time and facing, dies on item swap or death, hits along the shaft (`Colliding` through `SegmentHit`), clears per-thrust hit immunity, and offers virtual hooks (`OnThrustStart(index)`, `OnTipHit(npc)`, `ModifyAim`, `DrawExtra`). Spear, Swordfish, Trident, Storm Spear and the Dark Lance thrust derive from it.
+- `ThrustPlayer` (`ModPlayer`): per-player cooldown and combo counter; `ThrustPlayer.CanUse(player, projType)` is the one gate every spear `CanUseItem` calls (one held spear at a time, cooldown over).
+- `LiquidState`: `Touching(Player)` (any liquid touches the player), `HeadUnder(Player)` (breath check), and the kind (water, lava, honey, shimmer). Swordfish rage uses `Touching`, Trident buffs use `HeadUnder`.
+- `SegmentHit`: `Overlaps(Rectangle, from, to, thickness)`, the contact point, and the per-thrust clearing of `localNPCImmunity`.
+- `ThrustFx`: the shared whoosh sound, tip streak, hit flash and spark burst, all taking colors, so each weapon only supplies a palette. Uses `IceFx.Burst` / `IceFx.Ring` for dust; the trail uses `SweepTrail`, `PixelTrail` and `DetachedTrails`.
+
+Patch 2 (dash):
+- `PlayerDash` + `DashPlayer` (`ModPlayer`): begin a dash (direction, speed, ticks), override the velocity and cancel gravity for its duration, end on a tile or enemy contact, hold the pose, and `Bounce(normal)`. Optional immunity and afterimage (`armorEffectDrawShadow`).
+- `BounceMath`: `Reflect(velocity, normal)`, tile normal estimate by probing `Collision.TileCollision`, NPC normal from the centers.
+- `Immunity.Grant(Player, ticks)`: wrapper over the player's immune timer (verify `SetImmuneTimeForAllTypes` and `immuneNoBlink` in the API source).
+
+Patch 3: `ArcBolt` (jagged lightning pixel line between two points with jitter, drawn with `PixelLine`, handed to `DetachedTrails`).
+
+Patch 4: `OrbitRing`: `Angle(age, slot, count, spin)`, `Position(center, radius, angle)`, and `Rank(projectile)` (its place among the owner's projectiles of the same type, ordered by a synced spawn serial in ai[1], so orbs stay evenly spaced when one pops). Used by the Rotted Fork spin and the Dark Lance orbs.
+
+Patch 5: `CarriedNPC` (`GlobalNPC`): the generalized form of `BloodButchererGripNPC` (a carrier projectile refreshes a stamp on every machine each tick; the NPC's AI is off, it cannot hurt the player, and it is placed at an offset; release restores it). `CarriedNPC.CanCarry(npc)` is the shared eligibility test. `AreaEffect`: `ForEachNpc(center, radius, action)` and `ApplyBuff(center, radius, buffId, ticks)`, owner client only (buffs sync through `NPC.AddBuff`). Blood Butcherer is NOT moved onto `CarriedNPC` until a cleanup patch after both are tested.
+
+Adding a future spear (Gungnir, Mythril Halberd, Obsidian Swordfish, Partisan...): a GlobalItem, a `<Weapon>Tuning` (a `ThrustChain` plus numbers), a projectile that derives from `HeldSpearProjectile` and overrides the hooks it needs, and an `<Weapon>Fx` palette. Nothing else.
+
+### Multiplayer design
+
+The owner's client decides everything (aim capture, burst start and end, enrage check, dash start, bounce, hit decisions, impale choices, orb pops); everyone else mirrors. Held spears: the spawn carries the aim in ai[2] and a seed in ai[1]; the thrust index, extension and jitter are pure functions of the projectile's age, so no per-thrust packets. Endless chains (Swordfish rage): the owner writes the end tick into a synced value and calls `netUpdate`; every machine finishes the current thrust and recovers. Dash: the player's position and velocity are owned by their client and synced by vanilla; the dash and bounce run only on the owner's client, while the held projectile's phase (ai) lets the other machines draw the pose, trail and afterimages. Immunity frames are set on the owner's client (the one that decides damage to its player). `Electrified`, `ShadowFlame` and every other NPC debuff go through `NPC.AddBuff` (synced). Rotted Fork: the carrier projectile moves the impaled NPCs on every machine (same method as the Blood Butcherer grip), the impaled indices travel through `SendExtraAI` / `ReceiveExtraAI` (verify the signatures in the API source), the owner decides each impale and the explosion. Dark Lance: each orb is its own projectile (position = `OrbitRing` from age, rank and the owner's position), the owner runs the pop test and the collection test, the server and all clients just draw. Hit sparks for other players come from `Common/RemoteHitTracker`. No custom packets planned.
+
+### Patches (one chat each, in this order)
+
+1. Common core (`HeldAim`, `AimSpread`, `ThrustTimeline`, `ThrustChain`, `SpearPose`, `HeldSpearProjectile`, `ThrustPlayer`, `LiquidState`, `SegmentHit`, `ThrustFx`) plus the Spear (`Content/Weapons/Spear/`) and the Swordfish with its rage (`Content/Weapons/Swordfish/`).
+2. `PlayerDash`, `DashPlayer`, `BounceMath`, `Immunity` plus the Trident (dash, bounce, longer dash and buffs submerged).
+3. `ArcBolt` plus the Storm Spear (pierce, immunity dash, electric trail, Electrified).
+4. `OrbitRing` plus the Rotted Fork left click spin (held spin, continuous, trail fan).
+5. `CarriedNPC`, `AreaEffect` plus the Rotted Fork javelin (impale 3, carry, blood explosion).
+6. Dark Lance part 1: right click charge, up to 8 orbiting orbs, orb pop with area Shadowflame.
+7. Dark Lance part 2: sweep and thrust cycle, orb collection, scaling thrust, full-8 evil explosion.
+8. Cleanup (optional, after testing): Blood Butcherer onto `CarriedNPC`, Starfury and Blood Butcherer onto `HeldAim`, R1 config toggles for the six spears.
+
+### Test checklists
+
+- Patch 1: left click fires a burst of 3 thrusts that each point near the cursor with a different angle; cooldown after the burst; thrusts hurt enemies along the whole shaft, each enemy once per thrust; the Swordfish does 5 faster thrusts; entering water/lava/honey with the Swordfish held and the button down makes it thrust endlessly with no cooldown, leaving the liquid ends it after the current thrust; swapping items mid-burst ends it cleanly; facing left, cursor on both sides, gravity flipped; two players: the other player sees the same thrust angles and the rage.
+- Patch 2: the Trident dashes toward the cursor, bounces once off a tile and once off an enemy, never gets stuck in a wall; underwater: Gills and Flipper while the head is under, longer dash; on land the dash is shorter; dashing into the ground or ceiling; two players: the other player sees the dash and the bounce without rubber-banding.
+- Patch 3: the Storm Spear dash pierces everything, no damage to the player during the dash, damage again right after it ends, an electric trail that keeps fading after the dash, Electrified on every enemy hit once.
+- Patch 4: holding left click spins the fork continuously, hits enemies with a hit cooldown, never hits through a pause, stops when the button is released or the item is swapped.
+- Patch 5: right click throws the fork; up to 3 enemies are impaled one after another and fly along with it; a boss is pierced but not carried; a tile hit or the lifetime end makes a blood explosion that damages and releases them; killing a carried enemy mid-flight does not break the carrier; a second throw is impossible while one is in flight; two players: the other player sees the carried enemies in the right places.
+- Patch 6: holding right click raises the lance and adds one orb every 20 ticks up to 8; the orbs spin evenly spaced around the player, also after release; an enemy walking into one pops it with no damage but an area Shadowflame; swapping items fizzles the orbs; two players: the other player sees the same orbs and pops.
+- Patch 7: left click alternates sweep and thrust; the sweep collects the orbs its tip passes (they fly into the lance); the next thrust is visibly bigger and stronger per orb; 8 orbs = an evil explosion on the first enemy hit; a thrust with 0 orbs is a normal strong thrust; the collected count resets after the thrust.
+
+### Open decisions (defaults accepted unless Ismail says otherwise)
+
+- Gills and Flipper are real buffs refreshed every tick while submerged (icons show), not silent flags.
+- The Storm Spear's electric trail is visual only; making it a short damaging trail is an optional extra after testing.
+- Dark Lance orbs persist after the charge ends (until swapped or 30 s) instead of vanishing on release.
+- "Submerged" for the Swordfish means any liquid touching the player, including lava and honey.
 
 ## Fix round (2026-11-03) [applied, untested]
 
