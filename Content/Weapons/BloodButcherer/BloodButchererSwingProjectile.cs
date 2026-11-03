@@ -113,7 +113,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
                 switch (Resolved)
                 {
                     case Branch.Clamp: return BiteEnd + BloodButchererTuning.ClampTicks;
-                    case Branch.Grip: return (windStart >= 0f ? windStart : SpinEnd) + BloodButchererTuning.WindDownTicks; // the blade keeps spinning and slows down until then
+                    case Branch.Grip: return (int)(windStart >= 0f ? windStart : SpinEnd) + BloodButchererTuning.WindDownTicks; // the blade keeps spinning and slows down until then
                     default: return BiteEnd;
                 }
             }
