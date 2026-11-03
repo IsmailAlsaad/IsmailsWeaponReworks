@@ -38,6 +38,7 @@ namespace IsmailsWeaponReworks.Common
         protected virtual int TrailRails => 5;
         protected virtual float TrailOpacity => 0.7f;
         protected virtual float PixelSize => 2f;
+        protected virtual float TrailTaper => 0f;             // 0 = a streak of even width; 0.7 = the tail starts as a point and reaches full width 70% of the way through the strike
 
         protected virtual void OnThrustStart(int index) { }
         protected virtual void OnStrikeStart(int index) { }  // every machine, the tick the spear starts to shoot out (Direction, Tip and Butt are already posed)
@@ -224,11 +225,20 @@ namespace IsmailsWeaponReworks.Common
             if (tickIn >= timeline.StrikeStart && tickIn < timeline.StrikeEnd && extension > 0.05f)
             {
                 float back = (Tip - Butt).Length() * 0.5f;
+                float taper = TrailTaper;
+                int strikeLength = Math.Max(1, timeline.StrikeEnd - timeline.StrikeStart);
                 for (int i = 1; i <= 2; i++)
                 {
                     float f = i / 2f;
                     Vector2 outer = Vector2.Lerp(prevTip, Tip, f);
-                    trail.Add(outer, outer - Direction * back);
+                    // With a taper the oldest part of the streak is a thin point that widens toward the spear.
+                    float width = 1f;
+                    if (taper > 0f)
+                    {
+                        float along = (tickIn - timeline.StrikeStart - 1f + f) / strikeLength;
+                        width = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(along / taper, 0f, 1f));
+                    }
+                    trail.Add(outer, outer - Direction * (back * width));
                 }
             }
             trail.Tick();

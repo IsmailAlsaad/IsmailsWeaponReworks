@@ -56,7 +56,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trident
 
             if (tile)
             {
-                SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = -0.1f }, position);
+                // The sound of mining the tile that was hit (dirt thud, stone tink, wood...); Tink only if the tile's own sound is not available.
+                if (!(BounceMath.TileAt(Main.LocalPlayer, normal, out Point hit) && TileSound.PlayHit(hit.X, hit.Y)))
+                    SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = -0.1f }, position);
             }
 
             for (int i = 0; i < 18; i++)

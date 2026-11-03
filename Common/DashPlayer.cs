@@ -183,6 +183,8 @@ namespace IsmailsWeaponReworks.Common
                 Player.velocity = Direction * (Settings.Speed * 0.3f);
             else if (Phase == DashPhase.Bounce)
                 Player.velocity = bounceVelocity;
+            if (Settings.ImmuneTailTicks > 0 && !Player.dead)
+                Immunity.Grant(Player, Settings.ImmuneTailTicks); // the grace period after the dash, however it ended
             Phase = DashPhase.None;
             onBounce = null;
             HoldFall();

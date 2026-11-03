@@ -58,6 +58,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trident
         public static int TrailRails => 6;
         public static float TrailOpacity => 0.7f;
         public static float PixelSize => 2f;
+        public static float TrailTaper => 0.7f;          // the streak's tail tapers to a point; 0 = even width
         public static ThrustPalette Palette => new ThrustPalette(Color.White, new Color(90, 200, 255), new Color(30, 90, 200), DustID.BlueTorch, DustID.Water);
     }
 }

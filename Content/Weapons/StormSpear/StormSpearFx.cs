@@ -1,6 +1,7 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.ID;
 using Terraria.Audio;
 using Terraria.ID;
 
@@ -46,11 +47,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.StormSpear
         }
 
         // The tip hit an enemy (owner's screen): a bolt from the tip into the enemy and a burst of sparks.
-        public static void Zap(Vector2 tip, Vector2 target)
+        public static void Zap(Vector2 tip, Vector2 target, bool applied)
         {
             if (Main.dedServ)
                 return;
             ThrustPalette palette = StormSpearTuning.Palette;
+            if (!applied)
+            {
+                // The enemy is immune to Electrified: a grey puff, no bolt.
+                for (int i = 0; i < 8; i++)
+                {
+                    Dust puff = Dust.NewDustPerfect(target, DustID.Smoke, Main.rand.NextVector2Circular(2f, 2f), 150, default, 1.2f);
+                    puff.noGravity = true;
+                }
+                return;
+            }
             ArcBolt.Spawn(tip, target, Style(), StormSpearTuning.BoltJag, 2);
             for (int i = 0; i < 1; i++)
             {

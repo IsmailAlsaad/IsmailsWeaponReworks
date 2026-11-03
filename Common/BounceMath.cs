@@ -60,9 +60,42 @@ namespace IsmailsWeaponReworks.Common
             return true;
         }
 
+        // The full solid tile the player just ran into (the one nearest the point just beyond the player's edge, opposite the normal),
+        // so a weapon can play that tile's own sound. False when no full solid tile is found there.
+        public static bool TileAt(Player player, Vector2 normal, out Point tile)
+        {
+            Vector2 probe = player.Center + new Vector2(-normal.X * (player.width * 0.5f + 6f), -normal.Y * (player.height * 0.5f + 6f));
+            Point origin = probe.ToTileCoordinates();
+            tile = origin;
+            float best = float.MaxValue;
+            bool found = false;
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    int x = origin.X + dx;
+                    int y = origin.Y + dy;
+                    if (!WorldGen.InWorld(x, y, 1))
+                        continue;
+                    Tile candidate = Main.tile[x, y];
+                    if (!candidate.HasTile || candidate.IsActuated || !Main.tileSolid[candidate.TileType] || Main.tileSolidTop[candidate.TileType])
+                        continue;
+                    float distance = Vector2.DistanceSquared(new Vector2(x * 16f + 8f, y * 16f + 8f), probe);
+                    if (distance < best)
+                    {
+                        best = distance;
+                        tile = new Point(x, y);
+                        found = true;
+                    }
+                }
+            }
+            return found;
+        }
+
         static bool Blocked(Player player, Vector2 probe)
         {
-            Vector2 allowed = Collision.TileCollision(player.position, probe, player.width, player.height, player.controlDown, player.controlDown, (int)player.gravDir);
+            // fallThrough = true: platforms (solid-top tiles) are ignored, so only full solid tiles can bounce or stop a dash
+            Vector2 allowed = Collision.TileCollision(player.position, probe, player.width, player.height, true, true, (int)player.gravDir);
             return Vector2.DistanceSquared(allowed, probe) > 0.01f;
         }
     }

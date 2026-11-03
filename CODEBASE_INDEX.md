@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-03 | 113 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-03 | 114 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -45,7 +45,7 @@ tModLoader/other bases -> project types:
     +StepReturn(Projectile,Player,float,float,float,float)[s] +StepForceReturn(Projectile,Player,float,float,float,float)[s] +StepOutbound(Projectile,float,float,float,float)[s]
 **BounceMath.cs**
   static class BounceMath
-    +Reflect(Vector2,Vector2)[s] +PushAway(Vector2,Vector2,float)[s] +Slide(Vector2,Vector2)[s] +NpcNormal(Vector2,NPC,Vector2)[s] +TileNormal(Player,Vector2,out Vector2)[s]
+    +Reflect(Vector2,Vector2)[s] +PushAway(Vector2,Vector2,float)[s] +Slide(Vector2,Vector2)[s] +NpcNormal(Vector2,NPC,Vector2)[s] +TileNormal(Player,Vector2,out Vector2)[s] +TileAt(Player,Vector2,out Point)[s]
 **CameraShake.cs**
   static class CameraShake
     +Punch(Vector2,float,int,string)[s]
@@ -62,7 +62,7 @@ tModLoader/other bases -> project types:
     +Capture(Player)[s] +ToWorld(Player,float)[s] +ToWorldDirection(Player,float)[s] +Facing(float)[s]
 **HeldSpearProjectile.cs** uses: AimSpread, DetachedTrails, HeldAim, Mode, RemoteHitTracker, SegmentHit, SpearPose, SweepTrail, ThrustChain, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTimeline, ThrustTrailStyle
   abstract class HeldSpearProjectile : ModProjectile
-    #ItemType:int[ab] #Chain:ThrustChain[ab] #Reach:float[ab] #Palette:ThrustPalette[ab] #SpearScale:float[v] #GripFraction:float[v] #HitWidth:float[v] #RetargetEachThrust:bool[v] #TrailLifeTicks:int[v] #TrailRails:int[v] #TrailOpacity:float[v] #PixelSize:float[v] #OnThrustStart(int)[v] #OnStrikeStart(int)[v] #OnTipStep(Vector2,Vector2,float)[v] #OnTipHit(NPC,HitInfo,int)[v] #ShouldContinue(int)[v] #ThrustPitch(int)[v] +Texture:string[ov] #Owner:Player #IsOwner:bool #BaseAim:float #Seed:int #Mode:int #EndAge:int #Age:int #ThrustIndex:int #Extension:float #Striking:bool #Butt:Vector2 #Tip:Vector2 #Direction:Vector2 +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    #ItemType:int[ab] #Chain:ThrustChain[ab] #Reach:float[ab] #Palette:ThrustPalette[ab] #SpearScale:float[v] #GripFraction:float[v] #HitWidth:float[v] #RetargetEachThrust:bool[v] #TrailLifeTicks:int[v] #TrailRails:int[v] #TrailOpacity:float[v] #PixelSize:float[v] #TrailTaper:float[v] #OnThrustStart(int)[v] #OnStrikeStart(int)[v] #OnTipStep(Vector2,Vector2,float)[v] #OnTipHit(NPC,HitInfo,int)[v] #ShouldContinue(int)[v] #ThrustPitch(int)[v] +Texture:string[ov] #Owner:Player #IsOwner:bool #BaseAim:float #Seed:int #Mode:int #EndAge:int #Age:int #ThrustIndex:int #Extension:float #Striking:bool #Butt:Vector2 #Tip:Vector2 #Direction:Vector2 +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 **HeldSwordPose.cs**
   static class HeldSwordPose
     +ToWorld(int,float)[s] +Hand(Player,int,float)[s] +BladeDirection(Player,int,float,float)[s] +HandWorld(Player,float)[s] +BladeDirectionWorld(Player,float)[s] +Sprite(Texture2D,int,out Vector2,out float,out SpriteEffects)[s]
@@ -91,7 +91,7 @@ tModLoader/other bases -> project types:
     +Style:PixelTrailStyle +IsOwner:bool +Count:int +IsEmpty:bool +Clock:int +PointAt(int) +AgeAt(int) +Add(Vector2) +FadeWithin(int) +Tick() +Draw()
 **PlayerDash.cs** uses: Afterimage, DashPhase, DashPlayer, Phase
   struct DashSettings
-    +Speed:float +Ticks:int +BounceOnTile:bool +BounceSpeed:float +HitStopTicks:int +BounceTicks:int +ImmuneTicks:int +GrazeCos:float +BounceDrag:float
+    +Speed:float +Ticks:int +BounceOnTile:bool +BounceSpeed:float +HitStopTicks:int +BounceTicks:int +ImmuneTicks:int +GrazeCos:float +BounceDrag:float +ImmuneTailTicks:int
   static class PlayerDash
     +Begin(Player,Vector2,DashSettings,Action<Vector2, Vector2, bool>)[s] +Bounce(Player,Vector2)[s] +End(Player)[s] +IsDashing(Player)[s] +Afterimage(Player)[s]
 **RemoteHitTracker.cs**
@@ -127,6 +127,9 @@ tModLoader/other bases -> project types:
 **ThrustTrailStyle.cs** uses: SweepTrailStyle, ThrustPalette
   class ThrustTrailStyle : SweepTrailStyle
     +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +GetColor(float,float)[ov]
+**TileSound.cs**
+  static class TileSound
+    +PlayHit(int,int)[s]
 
 ### Content/Weapons/BloodButcherer/
 **BloodButchererFx.cs** uses: BloodButchererTuning, IceFx
@@ -323,7 +326,7 @@ tModLoader/other bases -> project types:
 ### Content/Weapons/StormSpear/
 **StormSpearFx.cs** uses: ArcBolt, ArcBoltStyle, StormSpearTuning, ThrustPalette
   static class StormSpearFx
-    +DashStart(Vector2,Vector2)[s] +BodyTrail(Vector2,Vector2,Vector2)[s] +Zap(Vector2,Vector2)[s]
+    +DashStart(Vector2,Vector2)[s] +BodyTrail(Vector2,Vector2,Vector2)[s] +Zap(Vector2,Vector2,bool)[s]
 **StormSpearGlobalItem.cs** uses: HeldAim, StormSpearThrustProjectile, StormSpearTuning, ThrustPlayer
   class StormSpearGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
@@ -332,7 +335,7 @@ tModLoader/other bases -> project types:
     #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov] #ThrustPitch(int)[ov] #OnStrikeStart(int)[ov] #OnTipStep(Vector2,Vector2,float)[ov] #OnTipHit(NPC,HitInfo,int)[ov]
 **StormSpearTuning.cs** uses: DashSettings, ThrustChain, ThrustPalette, ThrustTimeline
   static class StormSpearTuning
-    +DashSpeed:float[s] +DashTicks:int[s] +GrazeCos:float[s] +ImmuneTicks:int[s] +DamageMultiplier:float[s] +ElectrifiedTicks:int[s] +WindupTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +CooldownTicks:int[s] +Chain:ThrustChain[s] +Dash:DashSettings[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +BoltLifeTicks:int[s] +BoltWidth:float[s] +BoltJag:float[s] +BoltCore:Color[s] +BoltGlow:Color[s] +Palette:ThrustPalette[s]
+    +DashSpeed:float[s] +DashTicks:int[s] +GrazeCos:float[s] +ImmuneTicks:int[s] +ImmuneTailTicks:int[s] +DamageMultiplier:float[s] +ElectrifiedTicks:int[s] +WindupTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +CooldownTicks:int[s] +Chain:ThrustChain[s] +Dash:DashSettings[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +BoltLifeTicks:int[s] +BoltWidth:float[s] +BoltJag:float[s] +BoltCore:Color[s] +BoltGlow:Color[s] +Palette:ThrustPalette[s]
 
 ### Content/Weapons/Sunfury/
 **SunfuryBlastProjectile.cs** uses: IceFx, PixelLine, RemoteHitTracker, SunfuryFx, SunfuryTuning
@@ -392,7 +395,7 @@ tModLoader/other bases -> project types:
     +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +SpinSpeed:float[s] +BurstFirstDelayTicks:int[s] +BurstIntervalTicks:int[s] +BurstCount:int[s] +BurstRadius:float[s] +BurstSpeed:float[s] +BurstStingerLifeTicks:int[s] +BurstDamageMultiplier:float[s] +LatchTicks:int[s] +LatchOffset:float[s] +ShredIntervalTicks:int[s] +ShredDamageMultiplier:float[s] +LatchSpinMaxMultiplier:float[s] +ExplosionCount:int[s] +ExplosionSpeed:float[s] +ExplosionStingerLifeTicks:int[s] +ExplosionDamageMultiplier:float[s] +ExplosionHitCooldownTicks:int[s] +ExplosionSecondDelayTicks:int[s] +AfterimageTicks:int[s] +GlowColor:Color[s] +StingerSpriteRotationOffset:float[s] +StingerSpriteId:int[s] +LeafDust:int[s] +PoisonDust:int[s] +BloodDust:int[s]
 
 ### Content/Weapons/Trident/
-**TridentFx.cs** uses: CameraShake, ThrustPalette, TridentTuning
+**TridentFx.cs** uses: BounceMath, CameraShake, ThrustPalette, TileSound, TridentTuning
   static class TridentFx
     +DashStart(Vector2,Vector2,bool)[s] +DashBody(Vector2,Vector2,bool)[s] +Bounce(Vector2,Vector2,bool)[s]
 **TridentGlobalItem.cs** uses: HeldAim, LiquidState, ThrustPlayer, TridentThrustProjectile, TridentTuning
@@ -403,10 +406,10 @@ tModLoader/other bases -> project types:
     +PostUpdateEquips()[ov]
 **TridentThrustProjectile.cs** uses: Afterimage, BounceMath, HeldSpearProjectile, Mode, PlayerDash, ThrustChain, ThrustPalette, TridentFx, TridentTuning
   class TridentThrustProjectile : HeldSpearProjectile
-    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov] #ThrustPitch(int)[ov] #OnStrikeStart(int)[ov] #OnTipStep(Vector2,Vector2,float)[ov] #OnTipHit(NPC,HitInfo,int)[ov]
+    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov] #TrailTaper:float[ov] #ThrustPitch(int)[ov] #OnStrikeStart(int)[ov] #OnTipStep(Vector2,Vector2,float)[ov] #OnTipHit(NPC,HitInfo,int)[ov]
 **TridentTuning.cs** uses: DashSettings, ThrustChain, ThrustPalette, ThrustTimeline
   static class TridentTuning
-    +DashSpeed:float[s] +DashTicks:int[s] +LiquidDashMultiplier:float[s] +LiquidDashTicks:int[s] +BounceSpeed:float[s] +HitStopTicks:int[s] +BounceTicks:int[s] +BounceDrag:float[s] +GrazeCos:float[s] +BounceShake:float[s] +DamageMultiplier:float[s] +WindupTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +CooldownTicks:int[s] +Chain:ThrustChain[s] +LiquidChain:ThrustChain[s] +Dash:DashSettings[s] +LiquidDash:DashSettings[s] +BuffRefreshTicks:int[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +Palette:ThrustPalette[s]
+    +DashSpeed:float[s] +DashTicks:int[s] +LiquidDashMultiplier:float[s] +LiquidDashTicks:int[s] +BounceSpeed:float[s] +HitStopTicks:int[s] +BounceTicks:int[s] +BounceDrag:float[s] +GrazeCos:float[s] +BounceShake:float[s] +DamageMultiplier:float[s] +WindupTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +CooldownTicks:int[s] +Chain:ThrustChain[s] +LiquidChain:ThrustChain[s] +Dash:DashSettings[s] +LiquidDash:DashSettings[s] +BuffRefreshTicks:int[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +TrailTaper:float[s] +Palette:ThrustPalette[s]
 
 ### Content/Weapons/Trimarang/
 **TrimarangEtherealProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, RemoteHitTracker, TrimarangFx, TrimarangTuning
@@ -448,6 +451,7 @@ tModLoader/other bases -> project types:
 
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; build.txt, description.txt, description_workshop.txt
+- Content/Sounds/: ElectricEel.wav
 - Localization/: en-US_Mods.IsmailsWeaponReworks.hjson
 - Properties/: launchSettings.json
 - docs/: ROADMAP.md

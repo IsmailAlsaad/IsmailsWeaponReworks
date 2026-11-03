@@ -318,6 +318,14 @@ How it works: the same one-thrust chain and `PlayerDash` as the Trident (10 tick
 
 Next (patch 4): `OrbitRing` plus the Rotted Fork left click spin (`ItemID.TheRottedFork`): held spin around the player, continuous while the button is held, trail fan, hit cooldown. New chat prompt: "continue patch 4 for spears in the docs/roadmap".
 
+### Spears fix round 1 (2026-11-03, applied, untested)
+
+- Trident streak: `HeldSpearProjectile.TrailTaper` (virtual, default 0 = even width). The Trident sets `TridentTuning.TrailTaper` 0.7: the oldest part of the streak is a point that widens to full width 70% of the way through the strike.
+- Only full solid tiles bounce or stop a dash: `BounceMath.TileNormal` probes with fallThrough on, so platforms (solid-top tiles) are ignored (the player still lands on them like normal).
+- Trident bounce sound: `BounceMath.TileAt` finds the full solid tile hit and `TileSound.PlayHit` calls vanilla's own `WorldGen.KillTile_PlaySounds` (fail = true) by reflection, so the bounce sounds like mining that tile (Tink only if the lookup fails).
+- Storm Spear: `DashSettings.ImmuneTailTicks` (30 = half a second) is granted when the dash ends, however it ends (tile stop included).
+- Storm Spear Electrified: the call is made on every owner hit; the zap now shows a grey puff instead of a bolt when the enemy resisted the buff (`HasBuff` check), so an immune enemy (Target Dummy, many bosses) can be told from a bug. Vanilla Electrified on enemies is 15 damage per second, 60 while moving sideways.
+
 ### Test checklists
 
 - Patch 1: left click fires a burst of 3 thrusts that each point near the cursor with a different angle; cooldown after the burst; thrusts hurt enemies along the whole shaft, each enemy once per thrust; the Swordfish does 5 faster thrusts; entering water/lava/honey with the Swordfish held and the button down makes it thrust endlessly with no cooldown, leaving the liquid ends it after the current thrust; swapping items mid-burst ends it cleanly; facing left, cursor on both sides, gravity flipped; two players: the other player sees the same thrust angles and the rage.

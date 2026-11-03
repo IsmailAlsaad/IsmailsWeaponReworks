@@ -16,7 +16,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.StormSpear
         public static float DashSpeed => 18f;
         public static int DashTicks => 10;
         public static float GrazeCos => 0.3f;
-        public static int ImmuneTicks => DashTicks;      // immune for exactly the dash; hurt again the tick after it ends
+        public static int ImmuneTicks => DashTicks;      // immune for the whole dash
+        public static int ImmuneTailTicks => 30;         // and for half a second after it ends (also when a tile stops it early)
         public static float DamageMultiplier => 1.8f;    // balance this first (it pierces, so it hits everything in the path)
         public static int ElectrifiedTicks => 240;
 
@@ -31,7 +32,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.StormSpear
         public static ThrustChain Chain => new ThrustChain(
             new ThrustTimeline(WindupTicks, DashTicks, HoldTicks, RecoverTicks, PullBack, EasePower), 1, 0, 0f, CooldownTicks);
 
-        public static DashSettings Dash => new DashSettings(DashSpeed, DashTicks, false, 0f, 0, 0, ImmuneTicks, GrazeCos);
+        public static DashSettings Dash => new DashSettings(DashSpeed, DashTicks, false, 0f, 0, 0, ImmuneTicks, GrazeCos, 0.88f, ImmuneTailTicks);
 
         // ---- the spear ----
         public static float Reach => 30f;

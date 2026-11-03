@@ -21,8 +21,9 @@ namespace IsmailsWeaponReworks.Common
         public readonly int ImmuneTicks;
         public readonly float GrazeCos;
         public readonly float BounceDrag;
+        public readonly int ImmuneTailTicks;   // extra immunity after the dash ends, however it ends (0 = none)
 
-        public DashSettings(float speed, int ticks, bool bounceOnTile, float bounceSpeed, int hitStopTicks, int bounceTicks, int immuneTicks = 0, float grazeCos = 0.3f, float bounceDrag = 0.88f)
+        public DashSettings(float speed, int ticks, bool bounceOnTile, float bounceSpeed, int hitStopTicks, int bounceTicks, int immuneTicks = 0, float grazeCos = 0.3f, float bounceDrag = 0.88f, int immuneTailTicks = 0)
         {
             Speed = speed;
             Ticks = Math.Max(1, ticks);
@@ -33,6 +34,7 @@ namespace IsmailsWeaponReworks.Common
             ImmuneTicks = Math.Max(0, immuneTicks);
             GrazeCos = grazeCos;
             BounceDrag = bounceDrag;
+            ImmuneTailTicks = Math.Max(0, immuneTailTicks);
         }
     }
 

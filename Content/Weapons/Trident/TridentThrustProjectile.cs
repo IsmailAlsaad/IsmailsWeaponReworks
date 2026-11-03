@@ -27,6 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Trident
         protected override int TrailRails => TridentTuning.TrailRails;
         protected override float TrailOpacity => TridentTuning.TrailOpacity;
         protected override float PixelSize => TridentTuning.PixelSize;
+        protected override float TrailTaper => TridentTuning.TrailTaper;
 
         protected override float ThrustPitch(int index)
         {
