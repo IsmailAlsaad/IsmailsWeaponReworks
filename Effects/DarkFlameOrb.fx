@@ -34,7 +34,7 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     // ---- the ball: noise-shaped, hard color bands, only a short flicker of tongues (the long ones are the embers now) ----
     float up = max(-qb.y, 0.0);                             // how far above the center
     float2 sp = qb * 3.2 + seedShift() + float2(0.0, t * 2.4);   // the noise slides down = the flames flow up
-    float n1 = fbm4(sp);
+    float n1 = fbm3(sp);                                    // 3 octaves: the shader must stay under the 512 slots of ps_3_0
     float n2 = fbm3(sp * 1.9 + float2(t * 0.7, 7.0) + n1 * 1.5);   // domain warp
     float2 wv = qb;
     wv.x += (n1 - 0.5) * 0.3 * (0.1 + up);
@@ -48,7 +48,7 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     // ---- soft halo: a smooth additive falloff that reaches exactly zero at its reach (no ring that ends abruptly) ----
     float reach = max(uParams.z, 0.1);
     float gk = 3.0 / reach;
-    float gEdge = exp(-reach * gk);
+    float gEdge = 0.049787;                                 // = exp(-3): reach * gk is always 3, so no need to compute it
     float gd = max(bd - R, 0.0);
     float glow = saturate((exp(-gd * gk) - gEdge) / (1.0 - gEdge)) * uParams.w * uIntensity;
     float3 glowCol = lerp(uColorA, uColorB, saturate(glow * 0.8)) * glow;
@@ -73,8 +73,9 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
         // where the orb was at that moment, relative to where it is now: it turned on its orbit and moved with its owner
         float2 back = (uOrbit.xy - rotate2(uOrbit.xy, -uOrbit.z * dt) - uOwnerVel * dt) * uOrbit.w;
 
-        float ang = -1.5708 + (r.x - 0.5) * 2.4;            // breaks off somewhere on the upper rim
-        float2 start = float2(cos(ang), sin(ang)) * (R * 0.8 * grow);
+        float so, co;
+        sincos((r.x - 0.5) * 2.4, so, co);                  // breaks off somewhere on the upper rim, within +-1.2 rad of straight up
+        float2 start = float2(so, -co) * (R * 0.8 * grow);
         float rise = uParams2.x * ph * (1.25 - 0.25 * ph);  // quick at first, slower as it cools
         float sway = (r.x - 0.5) * 2.0 * ph + 0.35 * sin(ph * 5.0 + r.y * 6.283) * ph;
         float2 pos = back + start + float2(sway * uParams2.w, -rise);
