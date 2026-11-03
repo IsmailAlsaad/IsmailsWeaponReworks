@@ -509,8 +509,8 @@ tModLoader/other bases -> project types:
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; patch_darklance_embers2.ps1; build.txt, description.txt, description_workshop.txt
 - Content/Sounds/: ElectricEel.wav
-- Effects/: DarkFlameOrb.fx, PixelGlow.fx; PixelShared.fxh
+- Effects/: DarkFlameOrb.fx, PixelGlow.fx; PixelShared.fxh; PixelGlow.xnb
 - Localization/: en-US_Mods.IsmailsWeaponReworks.hjson
 - Properties/: launchSettings.json
 - docs/: ROADMAP.md
-- tools/: compile_shader.ps1, flatten_shader.ps1, patch_engine.ps1
+- tools/: check_shader.ps1, compile_shader.ps1, flatten_shader.ps1, patch_engine.ps1
