@@ -228,18 +228,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             }
             Lighting.AddLight(tip, palette.Mid.ToVector3() * 0.7f * speedFraction);
 
-            trail ??= new SweepTrail(new ThrustTrailStyle(palette, DarkLanceTuning.SweepTrailLifeTicks, DarkLanceTuning.SweepTrailRails, DarkLanceTuning.PixelSize, DarkLanceTuning.SweepTrailOpacity), IsOwner);
-            if (speedFraction > 0.15f)
-            {
-                for (int i = 1; i <= 2; i++)
-                {
-                    float f = i / 2f;
-                    Vector2 root = Vector2.Lerp(prevButt, butt, f);
-                    Vector2 outer = Vector2.Lerp(prevTip, tip, f);
-                    trail.Add(outer, Vector2.Lerp(outer, root, DarkLanceTuning.SweepTrailInner));
-                }
-            }
-            trail.Tick();
+            //trail ??= new SweepTrail(new ThrustTrailStyle(palette, DarkLanceTuning.SweepTrailLifeTicks, DarkLanceTuning.SweepTrailRails, DarkLanceTuning.PixelSize, DarkLanceTuning.SweepTrailOpacity), IsOwner);
+            //if (speedFraction > 0.15f)
+            //{
+            //    for (int i = 1; i <= 2; i++)
+            //    {
+            //        float f = i / 2f;
+            //        Vector2 root = Vector2.Lerp(prevButt, butt, f);
+            //        Vector2 outer = Vector2.Lerp(prevTip, tip, f);
+            //        trail.Add(outer, Vector2.Lerp(outer, root, DarkLanceTuning.SweepTrailInner));
+            //    }
+            //}
+            //trail.Tick();
         }
 
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
