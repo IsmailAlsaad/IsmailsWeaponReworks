@@ -46,19 +46,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float SweepEmberChance => 0.7f;    // chance per tick (times the speed) that the tip sheds an ember
 
         // ---- the thrust (every orb the sweep gathered makes it bigger and stronger) ----
-        public static int ThrustWindupTicks => 9;
+        public static int ThrustWindupTicks => 7;
         public static int ThrustTicks => 4;
         public static int ThrustHoldTicks => 3;
         public static int ThrustRecoverTicks => 14;
         public static float ThrustPullBack => 0.3f;
         public static float ThrustEasePower => 2f;
-        public static int ThrustCooldownTicks => 24;
+        public static int ThrustCooldownTicks => 0;
         public static float ThrustReach => 70f;
         public static float ThrustScale => 1.15f;
         public static float ThrustGrip => 0.35f;
         public static float ThrustHitWidth => 26f;
         public static float ThrustDamageMultiplier => 1.7f;  // times the item's damage, before the orbs
-        public static float SizePerOrb => 0.12f;         // +12% size (scale, reach and hit width) per gathered orb
+        public static float SizePerOrb => 0.05f;         // +5% size (scale, reach and hit width) per gathered orb
         public static float DamagePerOrb => 0.15f;       // +15% damage per gathered orb
         public static int ThrustTrailLifeTicks => 12;
         public static int ThrustTrailRails => 5;
