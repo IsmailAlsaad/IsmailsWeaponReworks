@@ -227,8 +227,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             for (int side = 0; side < 2; side++)
             {
                 float turn = rotation + side * MathHelper.Pi; // the second fork is the first one turned half a circle around the joint
-                SpearPose.DrawSprite(texture, butt, turn, flip, scale * 1.18f, palette.Halo * (0.45f * glow));
-                SpearPose.DrawSprite(texture, butt, turn, flip, scale * 1.07f, palette.Mid * (0.5f * glow));
+                SpearPose.DrawSprite(texture, butt, turn, flip, scale * 1.18f, palette.Halo * (0.45f * glow), 0f, default, scale);
+                SpearPose.DrawSprite(texture, butt, turn, flip, scale * 1.07f, palette.Mid * (0.5f * glow), 0f, default, scale);
                 SpearPose.DrawSprite(texture, butt, turn, flip, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
             }
             return false;

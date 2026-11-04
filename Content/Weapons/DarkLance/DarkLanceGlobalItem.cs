@@ -91,7 +91,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
             tooltips.Add(new TooltipLine(Mod, "DarkLance1", "Hold right click to accumulate dark flames"));
-            tooltips.Add(new TooltipLine(Mod, "DarkLance2", "Left click sweeps to gather the flames, then thrusts with them"));
+            //tooltips.Add(new TooltipLine(Mod, "DarkLance2", "Left click sweeps to gather the flames, then thrusts with them"));
         }
     }
 }

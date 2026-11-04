@@ -282,8 +282,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             float scale = Projectile.scale;
             float rotation = Projectile.rotation;
 
-            SpearPose.DrawSprite(texture, butt, rotation, 1, scale * 1.18f, palette.Halo * 0.45f);
-            SpearPose.DrawSprite(texture, butt, rotation, 1, scale * 1.07f, palette.Mid * 0.5f);
+            SpearPose.DrawSprite(texture, butt, rotation, 1, scale * 1.18f, palette.Halo * 0.45f, 0f, default, scale);
+            SpearPose.DrawSprite(texture, butt, rotation, 1, scale * 1.07f, palette.Mid * 0.5f, 0f, default, scale);
             SpearPose.DrawSprite(texture, butt, rotation, 1, scale, Color.Lerp(lightColor, Color.White, 0.5f));
             return false;
         }

@@ -38,6 +38,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Spear
         public static int TrailRails => 0;
         public static float TrailOpacity => 0f;
         public static float PixelSize => 2f;
-        public static ThrustPalette Palette => new ThrustPalette(Color.White, new Color(190, 215, 235), new Color(120, 150, 190), -1, -1);
+        //public static ThrustPalette Palette => new ThrustPalette(Color.White, new Color(190, 215, 235), new Color(120, 150, 190), -1, -1);
+
+        public static ThrustPalette Palette => new ThrustPalette(Color.White, Color.White * 0.7f, Color.White * 0.4f, -1, -1);
     }
 }

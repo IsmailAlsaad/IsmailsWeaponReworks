@@ -130,7 +130,7 @@ tModLoader/other bases -> project types:
     +Overlaps(Rectangle,Vector2,Vector2,float)[s] +Sweep(Rectangle,Vector2,Vector2,Vector2,Vector2,float,int)[s] +ClosestPoint(Vector2,Vector2,Vector2)[s] +ClearLocalImmunity(Projectile)[s]
 **SpearPose.cs** uses: HeldSwordPose
   static class SpearPose
-    +Arm(Player,float)[s] +Hand(Player,float)[s] +DrawSprite(Texture2D,Vector2,float,int,float,Color,float,Vector2)[s]
+    +Arm(Player,float)[s] +Hand(Player,float)[s] +DrawSprite(Texture2D,Vector2,float,int,float,Color,float,Vector2,float)[s]
 **SweepTrail.cs** uses: PixelLine
   abstract class SweepTrailStyle
     +Grid:float[v] +LifeTicks:int[v] +Rails:int[v] +TaperFraction:float[v] +Fade:SweepFade[v] +TailLifeScale:float[v] +GetColor(float,float)[ab] #Falloff(float)[s] #ThreeStop(float,Color,Color,Color)[s]

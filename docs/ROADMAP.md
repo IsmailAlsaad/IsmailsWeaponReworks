@@ -39,6 +39,7 @@ Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projecti
 - [~] Rotted Fork fix round 3 (2026-11-03): the spin is two-sided (a copy of the fork points the other way and spins with it: one long spear with two heads, each with its own trail, flecks and light, both hurt), and the trails live shorter (`TrailLifeTicks` 12 to 8, spin and javelin) (applied, untested)
 - [x] Dark Lance fix round 1 (2026-11-04, tested, all checks passed): the orb body AND its embers are merging metaball blobs through the shared `Common/MetaballLayer` tool (`DarkLanceBlobStyle`, `DarkLanceEmbers`), the embers live in the world and are not anchored to the orb, smooth halo falloff (orb and lance tip glow via `PixelGlow`, which compiles), orb trail on the shared `PixelTrail`; `DarkFlameOrb.fx` is no longer used (applied, untested)
 - [~] Dark Lance fix round 5 (2026-11-04, applied, untested): the sweep gathers EVERY orb every time: the per-tick wedge test is replaced by a cumulative-turn test (an orb is gathered when the lance's total turn has reached the angle the orb is at), plus a safety net that gathers whatever is left on the last tick of the turn
+- [~] Spear glow fix (2026-11-04, applied, untested): the two enlarged glow copies behind every spear sprite (held spears, Dark Lance charge/sweep/thrust, Rotted Fork spin/javelin) now grow around the middle of the sprite instead of the pivot (`SpearPose.DrawSprite` got `centerScale`)
 - [~] Dark Lance fix round 4 (2026-11-04, applied, untested): the thrust draws the long projectile sprite too (its length measured from it, rotation from `SweepSpriteRotation`), `SweepSpriteRotation` is read through a never-inlined method so hot reload changes take effect
 - [~] Dark Lance fix round 3 (2026-11-04, applied, untested): the sweep gathers orbs by ANGLE only (no colliders), the sweep draws the long projectile sprite (charge and thrust keep the item sprite) with a rotation knob `SweepSpriteRotation`
 - [x] Dark Lance fix round 2 (2026-11-04, tested, all checks passed): orbs glide (lerp) after the player instead of being glued, they stay when another item is held, gathering any number of orbs gives a smaller explosion, the gather test no longer misses orbs while the player moves, the left click after every charge is always the gathering sweep
@@ -408,6 +409,15 @@ Files: `Content/Weapons/DarkLance/DarkLanceSweepProjectile.cs`.
 Test checklist: charge 8 orbs and sweep standing still, then 20 times in a row (recharge when needed): all 8 gathered every time, thrust has the full-8 explosion; sweep while running left and right, while jumping, and while falling; sweep right after a dash or a grapple; sweep with some orbs already gathered by an earlier sweep and the rest still ringing; sweep facing left and right and with the cursor above and below the player; sweep while an enemy pops one orb mid-sweep: the others are still all gathered; two players: the other player sees every orb fly into the tip.
 
 Next prompt for a new chat: "continue the Dark Lance fix round 5 in the docs/roadmap: report which of its tests failed".
+
+### Spear glow fix (2026-11-04, applied, untested)
+
+Files: `Common/SpearPose.cs`, `Common/HeldSpearProjectile.cs`, `DarkLanceChargeProjectile`, `DarkLanceSweepProjectile`, `RottedForkSpinProjectile`, `RottedForkJavelinProjectile`.
+
+- Every spear sprite has two glow copies behind it (scale x1.18 in the palette's `Halo`, x1.07 in `Mid`). They were scaled around the sprite's pivot (the butt), so the glow stuck out mostly at the tip. `SpearPose.DrawSprite` has a new last parameter `centerScale` (the real sprite's scale); with it the copy is moved so its middle sits on the real sprite's middle, which makes an even outline. The Dark Lance sweep has its own `DrawLance` with the same `centerScale`.
+- Colors: each weapon's `Palette` in its `<Weapon>Tuning` (`Halo` = outer copy and trail edge, `Mid` = inner copy and trail body, `Core` = trail tip). The Trident and Storm Spear dash also leave the vanilla player afterimage (`PlayerDash.Afterimage`), which cannot be recolored.
+
+Test checklist: every spear shows an even glow outline around the whole sprite (not only the tip) in both facings, while thrusting, while the Dark Lance charges, sweeps and thrusts, and while the Rotted Fork spins (both heads) and flies as a javelin.
 
 ### Dark Lance fix round 3 (2026-11-04, applied, untested)
 

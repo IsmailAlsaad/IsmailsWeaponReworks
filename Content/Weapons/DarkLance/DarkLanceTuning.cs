@@ -58,7 +58,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float ThrustGrip => 0.35f;
         public static float ThrustHitWidth => 26f;
         public static float ThrustDamageMultiplier => 1.7f;  // times the item's damage, before the orbs
-        public static float SizePerOrb => 0.05f;         // +5% size (scale, reach and hit width) per gathered orb
+        public static float SizePerOrb => 0.025f;         // +5% size (scale, reach and hit width) per gathered orb
         public static float DamagePerOrb => 0.15f;       // +15% damage per gathered orb
         public static int ThrustTrailLifeTicks => 0;
         public static int ThrustTrailRails => 0;
@@ -113,7 +113,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float EmberWobble => 0.05f;        // sideways wander (px per tick squared)
         public static float EmberGlow => 0.3f;           // brightness of the soft glow around the blobs (0 = none)
         public static int EmberMax => 400;               // all machines together; the oldest are dropped first
-        public static float EmberHeat => 0.7f;          // temperature of an ember at birth (0 cold, 0.5 = the mid color, 1 = the bright core color); it cools to 0
+        public static float EmberHeat => 0.5f;          // temperature of an ember at birth (0 cold, 0.5 = the mid color, 1 = the bright core color); it cools to 0
         public static float BallRadius => 10f;           // px: the orb's body (a lone blob is this big; merged blobs and tongues make it a little bigger)
         public static float BallBodyHeat => 0.5f;        // the body's temperature (the mid purple)
         public static float BallCoreHeat => 1f;          // the small hot core in the middle (the bright color)

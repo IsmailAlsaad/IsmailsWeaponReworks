@@ -283,8 +283,8 @@ namespace IsmailsWeaponReworks.Common
             float rotation = Projectile.rotation;
             float glow = 0.2f + 0.8f * MathHelper.Clamp(extension, 0f, 1f);
 
-            SpearPose.DrawSprite(texture, Butt, rotation, Projectile.spriteDirection, scale * 1.18f, palette.Halo * (0.45f * glow), SpriteRotation, SpritePivot);
-            SpearPose.DrawSprite(texture, Butt, rotation, Projectile.spriteDirection, scale * 1.07f, palette.Mid * (0.5f * glow), SpriteRotation, SpritePivot);
+            SpearPose.DrawSprite(texture, Butt, rotation, Projectile.spriteDirection, scale * 1.18f, palette.Halo * (0.45f * glow), SpriteRotation, SpritePivot, scale);
+            SpearPose.DrawSprite(texture, Butt, rotation, Projectile.spriteDirection, scale * 1.07f, palette.Mid * (0.5f * glow), SpriteRotation, SpritePivot, scale);
             SpearPose.DrawSprite(texture, Butt, rotation, Projectile.spriteDirection, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow), SpriteRotation, SpritePivot);
             return false;
         }

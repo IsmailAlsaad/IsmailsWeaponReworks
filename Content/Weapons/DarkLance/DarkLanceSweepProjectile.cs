@@ -194,14 +194,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
 
         // The sprite with its butt at 'butt' pointing along the lance. DarkLanceTuning.SweepSpriteRotation (degrees) turns the art if it
         // looks off; it is mirrored with the sprite so the same number works facing either way.
-        void DrawLance(Texture2D texture, float scale, Color color)
+        void DrawLance(Texture2D texture, float scale, Color color, float centerScale = 0f)
         {
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
             float SpritePivotX = 100f;   // texture pixels (unscaled)
             float SpritePivotY = 0f;
             origin += new Vector2(SpritePivotX * (Projectile.spriteDirection >= 0 ? 1f : -1f), SpritePivotY);
             float extra = MathHelper.ToRadians(DarkLanceTuning.SweepSpriteRotation) * (Projectile.spriteDirection >= 0 ? 1f : -1f);
-            Main.EntitySpriteDraw(texture, butt - Main.screenPosition, null, color, Projectile.rotation + rotationOffset + extra, origin, scale, effects, 0);
+            float rotation = Projectile.rotation + rotationOffset + extra;
+            Vector2 position = butt;
+            if (centerScale > 0f && centerScale != scale)   // a glow copy grows around the middle of the sprite, not around the butt
+            {
+                Vector2 toCenter = texture.Size() * 0.5f - origin;
+                position += toCenter.RotatedBy(rotation) * (centerScale - scale);
+            }
+            Main.EntitySpriteDraw(texture, position - Main.screenPosition, null, color, rotation, origin, scale, effects, 0);
         }
 
         float Cross(Vector2 a, Vector2 b)
@@ -280,8 +287,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             float glow = 0.3f + 0.7f * speedFraction;
             int flip = Projectile.spriteDirection;
 
-            DrawLance(texture, scale * 1.18f, palette.Halo * (0.45f * glow));
-            DrawLance(texture, scale * 1.07f, palette.Mid * (0.5f * glow));
+            DrawLance(texture, scale * 1.18f, palette.Halo * (0.45f * glow), scale);
+            DrawLance(texture, scale * 1.07f, palette.Mid * (0.5f * glow), scale);
             DrawLance(texture, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
 
             // a dark glow on the tip that swells while the lance is fast

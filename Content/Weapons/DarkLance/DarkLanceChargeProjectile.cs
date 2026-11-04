@@ -139,8 +139,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             float glow = 0.25f + 0.75f * charge;
             float scale = Projectile.scale;
 
-            SpearPose.DrawSprite(texture, butt, Projectile.rotation, Projectile.spriteDirection, scale * 1.18f, palette.Halo * (0.45f * glow));
-            SpearPose.DrawSprite(texture, butt, Projectile.rotation, Projectile.spriteDirection, scale * 1.07f, palette.Mid * (0.5f * glow));
+            SpearPose.DrawSprite(texture, butt, Projectile.rotation, Projectile.spriteDirection, scale * 1.18f, palette.Halo * (0.45f * glow), 0f, default, scale);
+            SpearPose.DrawSprite(texture, butt, Projectile.rotation, Projectile.spriteDirection, scale * 1.07f, palette.Mid * (0.5f * glow), 0f, default, scale);
             SpearPose.DrawSprite(texture, butt, Projectile.rotation, Projectile.spriteDirection, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
 
             // A dark glow gathering at the tip: it swells with the charge and pulses, with a smooth falloff (no hard squares).
