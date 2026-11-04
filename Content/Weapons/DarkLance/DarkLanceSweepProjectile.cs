@@ -59,7 +59,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             Projectile.ignoreWater = true;
             Projectile.timeLeft = 2;               // kept alive by the AI, ended by the AI
             Projectile.usesLocalNPCImmunity = true;
-            Projectile.localNPCHitCooldown = -1;   // every enemy once per sweep
+            Projectile.localNPCHitCooldown = 12;   // every enemy once per sweep
             Projectile.ownerHitCheck = true;       // it cannot hit through walls
         }
 
