@@ -34,7 +34,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float SweepGrip => 0.25f;          // how much of the shaft sticks out behind the hand
         public static float SweepHitWidth => 34f;
         public static float SweepMinHitSpeed => 0.25f;   // 0 to 1 of the fastest tick: slower than this neither hits nor collects
-        public static float SweepSpriteRotation => 90f;   // degrees: turns the sweep's sprite if it looks off (try 90, -90 or 180); mirrored automatically when facing left
+        public static float SweepSpriteRotation => SpriteRotationDegrees();   // read through a method that is never inlined, so changing the number below with hot reload takes effect
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        static float SpriteRotationDegrees() => 90f;   // degrees: turns the sweep's sprite if it looks off (try 90, -90 or 180); mirrored automatically when facing left
         public static float CollectMinSpeed => 0.2f;
         public static int CollectTicks => 10;            // a gathered orb flies into the lance tip over this long
         public static int SweepTrailLifeTicks => 14;

@@ -36,6 +36,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         protected override float PixelSize => DarkLanceTuning.PixelSize;
         protected override float TrailTaper => 0.6f;
 
+        // The thrust draws the same long-handled vanilla projectile sprite as the sweep (the charge keeps the item sprite).
+        public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.DarkLance;
+
+        protected override float ShaftLength()
+        {
+            if (Main.dedServ)
+                return base.ShaftLength();   // a dedicated server has no textures
+            Microsoft.Xna.Framework.Graphics.Texture2D art = Terraria.GameContent.TextureAssets.Projectile[Type].Value;
+            return new Vector2(art.Width, art.Height).Length() * Projectile.scale;
+        }
+
+        protected override float SpriteRotation => MathHelper.ToRadians(DarkLanceTuning.SweepSpriteRotation);   // same art as the sweep: one number for both
+
         protected override float ThrustPitch(int index)
         {
             return base.ThrustPitch(index) - 0.04f * Gathered;

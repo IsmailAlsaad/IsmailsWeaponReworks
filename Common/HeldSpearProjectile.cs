@@ -46,6 +46,14 @@ namespace IsmailsWeaponReworks.Common
         protected virtual void OnTipHit(NPC target, NPC.HitInfo hit, int damageDone) { }
         protected virtual bool ShouldContinue(int index) { return false; } // endless chains only: owner decides at each thrust start
         protected virtual float ThrustPitch(int index) { return -0.05f + 0.08f * (index % 4); }
+        protected virtual float SpriteRotation => 0f;          // radians added when the sprite is drawn (mirrored with it), for art that is not drawn like the item sprite
+
+        // Butt to tip. The item sprite's diagonal by default; a spear that draws another texture measures that one.
+        protected virtual float ShaftLength()
+        {
+            Item sample = ContentSamples.ItemsByType[ItemType];
+            return new Vector2(sample.width, sample.height).Length() * Projectile.scale;
+        }
 
         // The vanilla item sprite is the projectile sprite.
         public override string Texture => "Terraria/Images/Item_" + ItemType;
@@ -130,8 +138,7 @@ namespace IsmailsWeaponReworks.Common
             float aim = fromAim + MathHelper.WrapAngle(toAim - fromAim) * blend;
 
             Projectile.scale = SpearScale * owner.GetAdjustedItemScale(owner.HeldItem);
-            Item sample = ContentSamples.ItemsByType[ItemType];
-            float shaft = new Vector2(sample.width, sample.height).Length() * Projectile.scale;
+            float shaft = ShaftLength();
 
             Vector2 lastButt = Butt;
             Vector2 lastTip = Tip;
@@ -275,9 +282,9 @@ namespace IsmailsWeaponReworks.Common
             float rotation = Projectile.rotation;
             float glow = 0.2f + 0.8f * MathHelper.Clamp(extension, 0f, 1f);
 
-            SpearPose.DrawSprite(texture, Butt, rotation, Projectile.spriteDirection, scale * 1.18f, palette.Halo * (0.45f * glow));
-            SpearPose.DrawSprite(texture, Butt, rotation, Projectile.spriteDirection, scale * 1.07f, palette.Mid * (0.5f * glow));
-            SpearPose.DrawSprite(texture, Butt, rotation, Projectile.spriteDirection, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
+            SpearPose.DrawSprite(texture, Butt, rotation, Projectile.spriteDirection, scale * 1.18f, palette.Halo * (0.45f * glow), SpriteRotation);
+            SpearPose.DrawSprite(texture, Butt, rotation, Projectile.spriteDirection, scale * 1.07f, palette.Mid * (0.5f * glow), SpriteRotation);
+            SpearPose.DrawSprite(texture, Butt, rotation, Projectile.spriteDirection, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow), SpriteRotation);
             return false;
         }
     }
