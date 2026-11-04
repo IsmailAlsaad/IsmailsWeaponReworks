@@ -27,7 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             return heat < 0.5f ? Color.Lerp(palette.Halo, palette.Mid, heat * 2f) : Color.Lerp(palette.Mid, palette.Core, (heat - 0.5f) * 2f);
         }
 
-        public override Color GetOutline() => Color.Lerp(DarkLanceTuning.Palette.Halo, Color.Black, 0.35f);
+        public override Color GetOutline() => Color.Lerp(DarkLanceTuning.Palette.Halo, Color.White * 0f, 0.35f);
 
         public override Color GetGlow() => DarkLanceTuning.Palette.Mid;
     }
