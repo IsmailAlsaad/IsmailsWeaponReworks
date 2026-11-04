@@ -20,6 +20,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.CrystalShard;
 
         float Age => Projectile.localAI[0];
+        float Scale => DarkLanceTuning.BlastScale((int)Projectile.ai[0]);   // ai[0] = gathered orbs, set in the spawn (every machine agrees)
+        float Radius => DarkLanceTuning.BlastRadius * Scale;
 
         public override void SetDefaults()
         {
@@ -40,16 +42,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
         {
             Vector2 closest = new Vector2(MathHelper.Clamp(Projectile.Center.X, targetHitbox.Left, targetHitbox.Right), MathHelper.Clamp(Projectile.Center.Y, targetHitbox.Top, targetHitbox.Bottom));
-            return Vector2.DistanceSquared(Projectile.Center, closest) <= DarkLanceTuning.BlastRadius * DarkLanceTuning.BlastRadius;
+            return Vector2.DistanceSquared(Projectile.Center, closest) <= Radius * Radius;
         }
 
         public override void AI()
         {
             if (Projectile.localAI[0] == 0f)
             {
-                DarkLanceFx.Blast(Projectile.Center, DarkLanceTuning.BlastRadius);
+                DarkLanceFx.Blast(Projectile.Center, Radius, Scale);
                 if (Projectile.owner == Main.myPlayer)
-                    AreaEffect.ApplyBuff(Projectile.Center, DarkLanceTuning.BlastRadius, BuffID.ShadowFlame, DarkLanceTuning.BlastBuffTicks);
+                    AreaEffect.ApplyBuff(Projectile.Center, Radius, BuffID.ShadowFlame, DarkLanceTuning.BlastBuffTicks);
                 else
                     RemoteHitTracker.TouchOnce(Projectile, npc => ThrustFx.HitSpark(npc.Center, DarkLanceTuning.Palette)); // the owner gets these from OnHitNPC
             }
@@ -72,7 +74,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             ThrustPalette palette = DarkLanceTuning.Palette;
             for (int ring = 0; ring < 2; ring++)
             {
-                float radius = DarkLanceTuning.BlastRadius * (ring == 0 ? 1f : 0.6f) * (1f - (1f - u) * (1f - u));
+                float radius = Radius * (ring == 0 ? 1f : 0.6f) * (1f - (1f - u) * (1f - u));
                 int count = Math.Max(12, (int)(MathHelper.TwoPi * radius / grid));
                 Color color = (ring == 0 ? palette.Mid : palette.Core) * (0.9f * fade);
                 for (int i = 0; i < count; i++)
@@ -81,7 +83,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                     IceFx.DrawPixel(spot, grid * (1f + 2f * (1f - u)), color, grid);
                 }
             }
-            DarkLanceFx.DrawGlow(Projectile.Center, DarkLanceTuning.BlastRadius * (0.5f + 0.5f * u), fade);
+            DarkLanceFx.DrawGlow(Projectile.Center, Radius * (0.5f + 0.5f * u), fade);
             return false;
         }
     }

@@ -126,7 +126,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public override void OnKill(int timeLeft)
         {
             if (IsOwner)
+            {
                 Owner.GetModPlayer<ThrustPlayer>().StartCooldown(ItemID.DarkLance, DarkLanceTuning.ChargeCooldownTicks);
+                Owner.GetModPlayer<DarkLancePlayer>().NextIsThrust = false;   // after every charge the next left click is the gathering sweep
+            }
         }
 
         public override bool PreDraw(ref Color lightColor)

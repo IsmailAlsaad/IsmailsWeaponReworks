@@ -64,15 +64,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                 DarkLanceEmbers.Shed(tip - direction * 10f, -direction * 1.2f);
         }
 
-        // Owner only (OnHitNPC runs on the owner's client): all orbs gathered = the first enemy hit blows up, once.
+        // Owner only (OnHitNPC runs on the owner's client): any gathered orbs = the first enemy hit blows up, once (the fewer orbs, the smaller the blast).
         protected override void OnTipHit(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            if (exploded || Gathered < DarkLanceTuning.MaxOrbs)
+            if (exploded || Gathered < 1)
                 return;
             exploded = true;
             int blastDamage = Math.Max(1, (int)(Projectile.damage * DarkLanceTuning.BlastDamageMultiplier));
             Vector2 point = SegmentHit.ClosestPoint(Butt, Tip, target.Center);
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), point, Vector2.Zero, ModContent.ProjectileType<DarkLanceBlastProjectile>(), blastDamage, Projectile.knockBack, Projectile.owner);
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), point, Vector2.Zero, ModContent.ProjectileType<DarkLanceBlastProjectile>(), blastDamage, Projectile.knockBack, Projectile.owner, Gathered);   // ai[0] = orbs: sets the size on every machine
         }
 
         public override bool PreDraw(ref Color lightColor)

@@ -104,13 +104,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         }
 
         // A burst of blobs thrown outward from 'center' (the 8-orb explosion); they merge, rise, shrink and cool like the embers.
-        public static void Burst(Vector2 center, float radius)
+        public static void Burst(Vector2 center, float radius, float scale)
         {
             if (Main.dedServ)
                 return;
 
             MetaballLayer layer = MetaballLayers.Of<DarkLanceBlobStyle>();
-            for (int i = 0; i < 36; i++)
+            for (int i = 0, n = Math.Max(8, (int)(36 * scale)); i < n; i++)
             {
                 Vector2 direction = Main.rand.NextVector2Unit();
                 Vector2 velocity = direction * radius * 0.03f * Main.rand.NextFloat(0.4f, 1.2f);

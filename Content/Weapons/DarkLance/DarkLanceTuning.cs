@@ -37,6 +37,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float CollectSize => 30f;          // the box around an orb the lance has to touch to gather it
         public static float CollectWidth => 36f;         // thickness of the lance line when it gathers
         public static float CollectMinSpeed => 0.2f;
+        public static float CollectReachSlack => 24f;    // extra reach (px) of the gather test around the hand: orbs that lag behind a running player still count
         public static int CollectTicks => 10;            // a gathered orb flies into the lance tip over this long
         public static int SweepTrailLifeTicks => 14;
         public static int SweepTrailRails => 5;
@@ -66,8 +67,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             new ThrustTimeline(ThrustWindupTicks, ThrustTicks, ThrustHoldTicks, ThrustRecoverTicks, ThrustPullBack, ThrustEasePower),
             1, 0, 0f, ThrustCooldownTicks);
 
-        // ---- the explosion (a thrust with all 8 orbs, on the first enemy it hits) ----
-        public static float BlastRadius => 150f;
+        // ---- the explosion (a thrust with any gathered orbs, on the first enemy it hits; fewer orbs = a smaller one) ----
+        public static float BlastRadius => 150f;          // with all MaxOrbs gathered
+        public static float BlastMinScale => 0.35f;       // size (radius, dust, sound, shake) with just 1 orb, as a fraction of the full one
+        public static float BlastScale(int orbs) => MathHelper.Lerp(BlastMinScale, 1f, MathHelper.Clamp((orbs - 1f) / System.Math.Max(1, MaxOrbs - 1), 0f, 1f));
         public static float BlastDamageMultiplier => 1.5f;   // times the thrust's damage, every enemy in the circle once
         public static int BlastLifeTicks => 8;
         public static float BlastShake => 4f;
@@ -78,6 +81,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float OrbBob => 2.5f;                // the radius breathes by this much
         public static float OrbSpin => 0.015f;           // radians per tick
         public static float OrbEase => 0.1f;             // how fast an orb glides to its new slot when one is added or popped
+        public static float OrbFollow => 0.12f;          // each tick an orb covers this fraction of the way to its slot: smaller = lazier, floatier
+        public static float OrbSnapDistance => 480f;     // farther than this from its slot (a teleport) the orb jumps instead of gliding
         public static int OrbSpawnTicks => 14;           // an orb flies from the lance tip out to its orbit over this long
         public static int OrbLifeTicks => 1800;          // an orb that is never collected fizzles after 30 s
         public static float OrbHitSize => 26f;           // the pop zone: a box this wide around the orb

@@ -22,7 +22,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
     public class DarkLanceSweepProjectile : ModProjectile
     {
         // The vanilla item sprite is the projectile sprite.
-        public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.DarkLance;
+        public override string Texture => "Terraria/Images/Item_" + ItemID.DarkLance;
 
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
@@ -40,6 +40,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         Vector2 tip;
         Vector2 prevButt;
         Vector2 prevTip;
+        Vector2 dir;           // the lance's direction this tick and last tick, and the hand it turns around (the gather test)
+        Vector2 prevDir;
+        Vector2 pivot;
+        float reach;           // hand to tip
         SweepTrail trail;
         RemoteHitTracker remoteHits; // created on first use: a field initializer here would be shared by every projectile of the type
 
@@ -95,6 +99,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             Item sample = ContentSamples.ItemsByType[ItemID.DarkLance];
             float shaft = new Vector2(sample.width, sample.height).Length() * Projectile.scale;
 
+            Vector2 lastDir = dir;
             Vector2 lastButt = butt;
             Vector2 lastTip = tip;
 
@@ -103,6 +108,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             Vector2 hand = owner.RotatedRelativePoint(owner.MountedCenter, false, true);
             Vector2 direction = HeldAim.ToWorldDirection(owner, aim);
             butt = hand - direction * shaft * DarkLanceTuning.SweepGrip;
+            dir = direction;
+            pivot = hand;
+            reach = shaft * (1f - DarkLanceTuning.SweepGrip);
             tip = butt + direction * shaft;
             Projectile.Center = owner.MountedCenter; // knockback pushes away from the player
             Projectile.rotation = direction.ToRotation();
@@ -112,13 +120,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             float seenFromRight = owner.direction == 1 ? aim : MathHelper.Pi - aim; // the aim as a right-facing player would have it
             owner.itemRotation = MathHelper.WrapAngle(seenFromRight + MathHelper.PiOver4) * owner.direction;
 
+            prevDir = hasPose ? lastDir : dir;
             prevButt = hasPose ? lastButt : butt;
             prevTip = hasPose ? lastTip : tip;
             hasPose = true;
 
             owner.GetModPlayer<DarkLancePlayer>().LanceTip = tip; // gathered orbs fly to it (every machine)
 
-            if (IsOwner && striking)
+            if (IsOwner && age >= windup && age < windup + sweep)   // the whole turn, also its slow start and end
                 Gather();
 
             if (!Main.dedServ)
@@ -151,13 +160,47 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                 Projectile orb = Main.projectile[i];
                 if (!orb.active || orb.owner != Projectile.owner || orb.type != orbType || orb.ai[0] >= 1f || orb.ai[2] >= 1f)
                     continue;
-                Rectangle box = Utils.CenteredRectangle(orb.Center, new Vector2(DarkLanceTuning.CollectSize));
-                if (!SegmentHit.Sweep(box, prevButt, prevTip, butt, tip, DarkLanceTuning.CollectWidth, 3))
+                if (!Touches(orb))
                     continue;
                 orb.ai[2] = 1f;
                 orb.netUpdate = true;
                 state.Collected = Math.Min(DarkLanceTuning.MaxOrbs, state.Collected + 1);
             }
+        }
+
+        // Does the lance gather this orb? Two tests, either is enough, so an orb that moves while the lance turns is never missed:
+        // 1. the shaft swept this tick against a box around the orb where it is AND where it was a tick ago;
+        // 2. an angle test around the hand: the orb lies between last tick's and this tick's lance direction and within reach (plus slack).
+        // The angle test does not care how the hand, the orbs or the lance tip moved, and cannot be skipped over by a fast turn.
+        bool Touches(Projectile orb)
+        {
+            Vector2 size = new Vector2(DarkLanceTuning.CollectSize);
+            Vector2 now = orb.Center;
+            Vector2 before = now;
+            if (orb.ModProjectile is DarkLanceOrbProjectile ball && ball.PreviousCenter != Vector2.Zero)
+                before = ball.PreviousCenter;
+
+            if (SegmentHit.Sweep(Utils.CenteredRectangle(now, size), prevButt, prevTip, butt, tip, DarkLanceTuning.CollectWidth, 3))
+                return true;
+            if (before != now && SegmentHit.Sweep(Utils.CenteredRectangle(before, size), prevButt, prevTip, butt, tip, DarkLanceTuning.CollectWidth, 3))
+                return true;
+
+            Vector2 v = now - pivot;
+            float distance = v.Length();
+            if (distance < 1f || distance > reach + DarkLanceTuning.CollectSize * 0.5f + DarkLanceTuning.CollectReachSlack)
+                return false;
+            float whole = Cross(prevDir, dir);
+            if (Math.Abs(whole) < 0.00001f)
+                return false;
+            float a = Cross(prevDir, v);
+            float b = Cross(v, dir);
+            bool between = whole > 0f ? (a >= 0f && b >= 0f) : (a <= 0f && b <= 0f);
+            return between && Vector2.Dot(prevDir + dir, v) > 0f;
+        }
+
+        float Cross(Vector2 a, Vector2 b)
+        {
+            return a.X * b.Y - a.Y * b.X;
         }
 
         // Every machine: the start ring, the whoosh, flecks and embers off the tip, the light and the trail fan.

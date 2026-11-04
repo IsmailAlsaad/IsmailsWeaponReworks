@@ -10,7 +10,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
 {
     /// <summary>
     /// One dark flame orb orbiting the player. It deals no damage: an enemy that walks into it pops it, and the pop puts an area
-    /// Shadowflame debuff on every enemy near it. It lasts until the Dark Lance is put away, the player dies, or OrbLifeTicks (30 s) pass.
+    /// Shadowflame debuff on every enemy near it. It follows the player loosely (lerp) and stays when another item is held; it ends when popped, gathered, the player dies, or it times out.
     /// SPAWN VALUES (the charge projectile passes them): ai[0] = 0 (1 = popped, decided by the owner), ai[1] = the spawn serial,
     /// ai[2] = 0 (patch 7 uses it for "collected").
     /// MULTIPLAYER: the owner's client decides the pop (it tests every enemy's box against the orb), applies the Shadowflame with
@@ -33,10 +33,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         bool placed;
         float shown;          // the angle the orb is drawn at (glides to its slot when the ring changes)
         Vector2 startPos;     // where the orb left the lance
+        Vector2 smooth;       // where the orb really is: it glides toward its slot instead of being glued to it
         Vector2 lastCenter;   // where the orb was last tick (the embers it sheds get a little of its speed at birth)
         int collectAge;       // ticks since this machine saw it gathered
         Vector2 collectStart; // where it was when it was gathered
         PixelTrail trail;     // the shared pixel trail (Common), handed to DetachedTrails when the orb ends
+
+        public Vector2 PreviousCenter => lastCenter;   // the sweep's gather test also checks where the orb was a tick ago
 
         public override void SetDefaults()
         {
@@ -60,8 +63,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         {
             Player owner = Owner;
 
-            // Popped (decided by the owner), or the lance was put away, or the player is gone: this copy ends. OnKill tells them apart.
-            if (Popped || !owner.active || owner.dead || owner.HeldItem.type != ItemID.DarkLance)
+            // Popped (decided by the owner) or the player is gone: this copy ends. OnKill tells them apart. Putting the lance away does NOT end it.
+            if (Popped || !owner.active || owner.dead)
             {
                 Projectile.Kill();
                 return;
@@ -93,7 +96,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             float grow = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(age / (float)Math.Max(1, DarkLanceTuning.OrbSpawnTicks), 0f, 1f));
             float radius = DarkLanceTuning.OrbRadius + DarkLanceTuning.OrbBob * (float)Math.Sin(age * 0.09f + rank * 1.3f);
             Vector2 orbit = OrbitRing.Position(owner.Center, radius, shown);
-            Projectile.Center = Vector2.Lerp(startPos, orbit, grow);
+            Vector2 anchor = Vector2.Lerp(startPos, orbit, grow);   // where the slot is right now
+            // The orb does not sit on its slot: it glides toward it every tick, so it trails behind a moving player (every machine does the same math).
+            if (age == 0)
+                smooth = Projectile.Center;
+            else if (Vector2.DistanceSquared(smooth, anchor) > DarkLanceTuning.OrbSnapDistance * DarkLanceTuning.OrbSnapDistance)
+                smooth = anchor;
+            else
+                smooth = Vector2.Lerp(smooth, anchor, DarkLanceTuning.OrbFollow);
+            Projectile.Center = smooth;
             Projectile.velocity = Vector2.Zero;
 
             // The owner decides the pop: any enemy box touching the orb.
@@ -138,7 +149,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                 DarkLanceFx.CollectPing(Projectile.Center, plr.NextPing());
             }
             float u = MathHelper.Clamp(collectAge / (float)Math.Max(1, DarkLanceTuning.CollectTicks), 0f, 1f);
-            Projectile.Center = Vector2.Lerp(collectStart, plr.LanceTip, u * u);
+            Vector2 destination = owner.HeldItem.type == ItemID.DarkLance ? plr.LanceTip : owner.Center;
+            Projectile.Center = Vector2.Lerp(collectStart, destination, u * u);
             Projectile.velocity = Vector2.Zero;
             if (!Main.dedServ)
             {

@@ -96,29 +96,32 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                 SoundEngine.PlaySound(SoundID.Item45 with { Volume = 0.8f, Pitch = -0.6f }, tip);
         }
 
-        // The evil explosion of a thrust with all 8 orbs: a deep boom, rings, a flash of dust and a burst of metaball blobs.
-        public static void Blast(Vector2 center, float radius)
+        // The evil explosion of a thrust with gathered orbs: a deep boom, rings, a flash of dust and a burst of metaball blobs.
+        // 'scale' is 1 with all 8 orbs and smaller with fewer: quieter, higher, fewer particles, a smaller camera punch.
+        public static void Blast(Vector2 center, float radius, float scale)
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item14 with { Volume = 1f, Pitch = -0.5f }, center);
-            SoundEngine.PlaySound(SoundID.Item45 with { Volume = 1f, Pitch = -0.7f }, center);
-            SoundEngine.PlaySound(SoundID.NPCDeath6 with { Volume = 0.6f, Pitch = -0.4f }, center);
-            CameraShake.Punch(center, DarkLanceTuning.BlastShake, 22, "DarkLanceBlast");
-            Lighting.AddLight(center, DarkLanceTuning.Palette.Mid.ToVector3() * 2f);
-            for (int i = 0; i < 50; i++)
+            float loud = 0.5f + 0.5f * scale;
+            float high = 0.3f * (1f - scale);
+            SoundEngine.PlaySound(SoundID.Item14 with { Volume = loud, Pitch = -0.5f + high }, center);
+            SoundEngine.PlaySound(SoundID.Item45 with { Volume = loud, Pitch = -0.7f + high }, center);
+            SoundEngine.PlaySound(SoundID.NPCDeath6 with { Volume = 0.6f * loud, Pitch = -0.4f + high }, center);
+            CameraShake.Punch(center, DarkLanceTuning.BlastShake * scale, 22, "DarkLanceBlast");
+            Lighting.AddLight(center, DarkLanceTuning.Palette.Mid.ToVector3() * 2f * scale);
+            for (int i = 0; i < (int)(50 * scale); i++)
             {
                 Dust dust = Dust.NewDustPerfect(center, DustID.Shadowflame, Main.rand.NextVector2Circular(11f, 11f), 100, default, Main.rand.NextFloat(1.4f, 2.2f));
                 dust.noGravity = true;
             }
-            for (int i = 0; i < 24; i++)
+            for (int i = 0; i < (int)(24 * scale); i++)
             {
                 Dust dust = Dust.NewDustPerfect(center, DustID.PurpleTorch, Main.rand.NextVector2Circular(7f, 7f), 100, default, Main.rand.NextFloat(1.2f, 1.8f));
                 dust.noGravity = true;
             }
             Ring(center, 24, 16f, 9f);
             Ring(center, 36, radius * 0.5f, 5f);
-            DarkLanceEmbers.Burst(center, radius);
+            DarkLanceEmbers.Burst(center, radius, scale);
         }
 
         // The lance goes up and the charge begins.
