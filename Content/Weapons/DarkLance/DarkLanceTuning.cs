@@ -41,15 +41,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float TrailWidth => 12f;           // px at its newest end; it shrinks as it ages
         public static float PixelSize => 2f;             // world px per shader pixel (the orb's shader and the afterimages)
         public static int ColorBands => 5;               // the orb shader's hard color bands
-        public static int OrbQuadSize => 288;            // world px: the square the orb shader is drawn over (must cover the halo and where the embers hang behind a moving orb; smaller = cheaper)
+        public static int OrbQuadSize => 144;            // world px: the square the orb shader is drawn over (must cover the ball and its halo; smaller = cheaper)
         public static float OrbUnitPx => 28f;            // world px per shader unit (the orb's body radius is half of it)
         public static float HaloReach => 1.5f;           // the halo fades to nothing this many units beyond the ball (smooth falloff)
         public static float HaloStrength => 0.8f;        // brightness of the halo right at the ball (0 to 1)
-        public static float EmberRise => 1.6f;           // units an ember rises before it is gone
-        public static float EmberLifeSeconds => 0.75f;   // how long an ember lives (10 embers per orb, each one restarts when it is gone)
-        public static float EmberSize => 0.13f;          // units: the radius of an ember at birth (random 0.6 to 1.4 times this), it shrinks to nothing
-        public static float EmberDrift => 0.45f;         // units an ember wanders sideways
-        public static float EmberLag => 1f;              // 1 = a broken-off ember stays where it was in the world, 0 = it travels with the orb
+        // embers: world particles drawn as merging blobs (DarkLanceEmbers), not anchored to the orb after they are born
+        public static int EmberSpawnTicks => 3;          // each orb sheds one ember every this many ticks
+        public static int EmberLifeTicks => 50;          // average life; each ember gets 0.7 to 1.3 times this
+        public static float EmberSize => 5f;             // px: radius at birth (random 0.6 to 1.4 times this); it shrinks to nothing
+        public static float EmberMerge => 2.2f;          // how far an ember's field reaches, in radii: bigger = blobs join from further away and bridge more
+        public static float EmberOutline => 0.2f;        // thickness of the merged outline (field units; 0.1 = thin, 0.4 = thick)
+        public static float EmberRise => 0.03f;          // upward push per tick (px per tick squared)
+        public static float EmberDrag => 0.97f;          // velocity kept per tick
+        public static float EmberKick => 1.1f;           // px per tick: the speed an ember leaves the rim with (upward, random sideways)
+        public static float EmberInherit => 0.35f;       // how much of the orb's own velocity an ember gets at birth (after that it is on its own)
+        public static float EmberWobble => 0.05f;        // sideways wander (px per tick squared)
+        public static float EmberGlow => 0.3f;           // brightness of the soft glow around the blobs (0 = none)
+        public static int EmberMax => 400;               // all machines together; the oldest are dropped first
         public static float TipGlowMinRadius => 16f;     // px: the glow at the lance tip with no charge
         public static float TipGlowMaxRadius => 46f;     // px: fully charged
         public static float TipGlowFalloff => 1.6f;      // 1 = soft cone, 2 = tight bright core

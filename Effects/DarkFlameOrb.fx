@@ -1,9 +1,6 @@
-﻿// Dark flame orb of the Dark Lance (STAGE 1, kept deliberately simple so the XNA effect compiler accepts it): a pixelated, procedural ball
-// of purple shadowflame with embers that break off it. One pixel shader, no particle objects. Drawn by DarkLanceFx.DrawOrb through
-// Common/PixelShaderFx over a square quad centered on the orb.
-// The embers are "hidden circles": 6 per orb, each a pure function of time (its own phase, new random numbers every life), pixelated and
-// merged into one blob field with the ball. An ember breaks off the upper rim, rises, drifts sideways, cools (bright to dark to gone) and
-// shrinks. Stage 2 adds the "stay behind in the world" part (uOrbit / uOwnerVel) and the uParams2 tuning numbers back.
+﻿// Dark flame orb of the Dark Lance: a pixelated, procedural ball of purple shadowflame with a smooth halo. One pixel shader, no loops (a loop
+// of embers is what fxcompiler.exe rejects). The embers are NOT drawn here: they are world particles merged as metaballs on the CPU
+// (Content/Weapons/DarkLance/DarkLanceEmbers.cs). Drawn by DarkLanceFx.DrawOrb through Common/PixelShaderFx over a square quad centered on the orb.
 // Standard uniforms of PixelShared.fxh:
 //   uParams.x = world px per shader unit (the ball's radius is 0.5 units), .y = pop-in scale (0..1.25, 1 = full size),
 //   .z = halo reach in units beyond the ball, .w = halo strength
@@ -23,35 +20,7 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     float R = 0.5;
     float bd = length(q / appear);                          // distance from the center (pop-in: the ball and its halo grow)
 
-    // ---- embers first: circles that nobody sees, pixelated and merged. The ball is part of the field, so a fresh ember grows out of it ----
-    float tl = t * 1.3333 + uSeed * 0.37;                   // one ember life = 0.75 s
-    float bodyField = 0.42 / max(bd, 0.05);
-    bodyField *= bodyField;
-    float F = bodyField;                                    // summed field of everything: >= 1 = inside the merged blob
-    float wsum = bodyField * bodyField;                     // weights for averaging the temperature (nearer circles count more)
-    float tsum = 0.55 * wsum;                               // the ball's own temperature is a middle one
-    float fi = 0.0;
-    for (int i = 0; i < 6; i++)
-    {
-        float x = tl + fi * 0.1667 + frac(fi * 0.7548) * 0.05;   // the embers are spread over one life
-        float cyc = floor(x);                               // which life of this ember it is
-        float ph = x - cyc;                                 // 0 = just broke off, 1 = gone
-        float2 r = frac(float2(0.618034, 0.754878) * (fi * 3.7 + cyc * 7.31 + uSeed + 1.0));   // new random numbers every life
-        float sx = (r.x - 0.5) * 1.6;                       // breaks off the upper rim, to either side of straight up
-        float2 start = float2(sx, -1.0 + 0.5 * sx * sx) * (0.4 * grow);
-        float2 pos = start + float2((r.y - 0.5) * 0.9 * ph, -1.6 * ph * (1.25 - 0.25 * ph));   // drifts sideways and rises, quick at first
-        float2 dv = q - pos;
-        float rad = 0.13 * (0.6 + 0.8 * frac(r.x + r.y)) * (1.0 - ph * ph) * grow;   // shrinks to nothing
-        float f = rad * rad / max(dot(dv, dv), 0.0004);
-        float wgt = f * f;
-        F += f;
-        wsum += wgt;
-        tsum += (1.0 - ph) * wgt;                           // hot at birth, cold at the end
-        fi += 1.0;
-    }
-    float emberOn = step(1.0, F);
-    float temp = tsum / max(wsum, 0.00001);
-    float3 emberCol = paletteRamp(posterize(temp, uBands)) * lerp(0.4, 1.0, saturate(temp * 2.5));   // a cold ember is dark ash
+
 
     // ---- the ball: one noise lookup plus two sines, hard color bands ----
     float2 qb = q / appear;
@@ -71,7 +40,7 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     float3 glowCol = lerp(uColorA, uColorB, saturate(glow * 0.8)) * glow;
 
     float4 outc = float4(glowCol, 0.0);
-    outc = lerp(outc, float4(emberCol, 1.0), emberOn);
+
     outc = lerp(outc, float4(flameCol, 1.0), inFlame);
     return outc;
 }

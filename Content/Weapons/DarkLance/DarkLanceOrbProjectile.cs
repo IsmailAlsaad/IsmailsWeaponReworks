@@ -32,6 +32,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         bool placed;
         float shown;          // the angle the orb is drawn at (glides to its slot when the ring changes)
         Vector2 startPos;     // where the orb left the lance
+        Vector2 lastCenter;   // where the orb was last tick (the embers it sheds get a little of its speed at birth)
         PixelTrail trail;     // the shared pixel trail (Common), handed to DetachedTrails when the orb ends
 
         public override void SetDefaults()
@@ -106,10 +107,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                     DarkLanceFx.OrbBorn(Projectile.Center, count, DarkLanceTuning.MaxOrbs);
                 if (age % 2 == 0)
                     DarkLanceFx.Shed(Projectile.Center);
+                if (age >= 4 && age % System.Math.Max(1, DarkLanceTuning.EmberSpawnTicks) == 0)
+                    DarkLanceEmbers.Spawn(Projectile.Center, Projectile.Center - lastCenter);   // world particles: they do not follow the orb afterwards
                 Color mid = DarkLanceTuning.Palette.Mid;
                 Lighting.AddLight(Projectile.Center, mid.ToVector3() * 0.6f * grow);
             }
 
+            lastCenter = Projectile.Center;
             age++;
         }
 
@@ -156,10 +160,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             float t = MathHelper.Clamp(age / (float)Math.Max(1, DarkLanceTuning.OrbSpawnTicks), 0f, 1f);
             float appear = t < 1f ? (float)Math.Sin(t * MathHelper.PiOver2) + 0.25f * (float)Math.Sin(t * MathHelper.Pi) : 1f;
             float flicker = 1f + 0.08f * (float)Math.Sin(age * 0.55f + Projectile.ai[1]);
-            // The embers break off and stay in the world: the shader is told where the orb turns around, how fast, and how fast that point moves.
-            // The values come from the owner's synced position and velocity, so every machine draws the same thing (visual only).
-            float lag = DarkLanceTuning.EmberLag * MathHelper.SmoothStep(0f, 1f, t);
-            DarkLanceFx.DrawOrb(Projectile.Center, age / 60f, Projectile.ai[1] % 64f, appear, flicker, Owner.Center - Projectile.Center, DarkLanceTuning.OrbSpin * 60f, Owner.velocity * 60f, lag); // the seed is the spawn serial: every machine knows it
+            DarkLanceFx.DrawOrb(Projectile.Center, age / 60f, Projectile.ai[1] % 64f, appear, flicker); // the seed is the spawn serial: every machine knows it
             return false;
         }
     }
