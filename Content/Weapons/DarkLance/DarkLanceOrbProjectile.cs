@@ -107,6 +107,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                     DarkLanceFx.OrbBorn(Projectile.Center, count, DarkLanceTuning.MaxOrbs);
                 if (age % 2 == 0)
                     DarkLanceFx.Shed(Projectile.Center);
+                DarkLanceEmbers.Ball(Projectile.Center, AppearScale(), age / 60f, Projectile.ai[1] % 64f);   // the body: metaballs for this tick (the seed is the spawn serial, every machine knows it)
                 if (age >= 4 && age % System.Math.Max(1, DarkLanceTuning.EmberSpawnTicks) == 0)
                     DarkLanceEmbers.Spawn(Projectile.Center, Projectile.Center - lastCenter);   // world particles: they do not follow the orb afterwards
                 Color mid = DarkLanceTuning.Palette.Mid;
@@ -152,15 +153,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             trail = null;
         }
 
+        // Pops in with a little overshoot: 0 to about 1.25, then 1.
+        float AppearScale()
+        {
+            float t = MathHelper.Clamp(age / (float)Math.Max(1, DarkLanceTuning.OrbSpawnTicks), 0f, 1f);
+            return t < 1f ? (float)Math.Sin(t * MathHelper.PiOver2) + 0.25f * (float)Math.Sin(t * MathHelper.Pi) : 1f;
+        }
+
         public override bool PreDraw(ref Color lightColor)
         {
             trail?.Draw();
 
-            // Pops in with a little overshoot, then flickers; the shader (Effects/DarkFlameOrb.fx) draws the flame ball itself.
-            float t = MathHelper.Clamp(age / (float)Math.Max(1, DarkLanceTuning.OrbSpawnTicks), 0f, 1f);
-            float appear = t < 1f ? (float)Math.Sin(t * MathHelper.PiOver2) + 0.25f * (float)Math.Sin(t * MathHelper.Pi) : 1f;
+            // The body and the embers are metaballs (DarkLanceEmbers, drawn after the tiles); only the smooth halo is drawn here.
+            float appear = AppearScale();
             float flicker = 1f + 0.08f * (float)Math.Sin(age * 0.55f + Projectile.ai[1]);
-            DarkLanceFx.DrawOrb(Projectile.Center, age / 60f, Projectile.ai[1] % 64f, appear, flicker); // the seed is the spawn serial: every machine knows it
+            float haloRadius = (DarkLanceTuning.HaloReach * DarkLanceTuning.OrbUnitPx + DarkLanceTuning.BallRadius) * appear;
+            if (haloRadius > 2f)
+                DarkLanceFx.DrawGlow(Projectile.Center, haloRadius, DarkLanceTuning.HaloStrength * flicker * Math.Min(appear, 1f));
             return false;
         }
     }

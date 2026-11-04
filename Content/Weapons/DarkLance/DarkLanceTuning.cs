@@ -41,7 +41,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float TrailWidth => 12f;           // px at its newest end; it shrinks as it ages
         public static float PixelSize => 2f;             // world px per shader pixel (the orb's shader and the afterimages)
         public static int ColorBands => 5;               // the orb shader's hard color bands
-        public static int OrbQuadSize => 144;            // world px: the square the orb shader is drawn over (must cover the ball and its halo; smaller = cheaper)
+        // (the orb body is drawn by the metaball layer; its halo is DarkLanceFx.DrawGlow, which reads HaloReach, OrbUnitPx and HaloStrength)
         public static float OrbUnitPx => 28f;            // world px per shader unit (the orb's body radius is half of it)
         public static float HaloReach => 1.5f;           // the halo fades to nothing this many units beyond the ball (smooth falloff)
         public static float HaloStrength => 0.8f;        // brightness of the halo right at the ball (0 to 1)
@@ -58,6 +58,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float EmberWobble => 0.05f;        // sideways wander (px per tick squared)
         public static float EmberGlow => 0.3f;           // brightness of the soft glow around the blobs (0 = none)
         public static int EmberMax => 400;               // all machines together; the oldest are dropped first
+        public static float EmberHeat => 0.7f;          // temperature of an ember at birth (0 cold, 0.5 = the mid color, 1 = the bright core color); it cools to 0
+        public static float BallRadius => 10f;           // px: the orb's body (a lone blob is this big; merged blobs and tongues make it a little bigger)
+        public static float BallBodyHeat => 0.5f;        // the body's temperature (the mid purple)
+        public static float BallCoreHeat => 1f;          // the small hot core in the middle (the bright color)
         public static float TipGlowMinRadius => 16f;     // px: the glow at the lance tip with no charge
         public static float TipGlowMaxRadius => 46f;     // px: fully charged
         public static float TipGlowFalloff => 1.6f;      // 1 = soft cone, 2 = tight bright core

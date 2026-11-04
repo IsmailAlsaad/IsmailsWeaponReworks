@@ -15,28 +15,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             return new Color(color.R, color.G, color.B, 0);
         }
 
-        // Draws one orb: Effects/DarkFlameOrb.fx over a square quad centered on it (visual only, never synced, every machine draws it from
-        // the projectile's own state). 'time' in seconds, 'seed' something every machine knows (the spawn serial), 'appear' 0 to about 1.25
-        // (the pop-in with overshoot), 'flicker' around 1. The embers are not part of it (see DarkLanceEmbers). A missing .xnb shows a
-        // small purple square instead of the orb.
-        public static void DrawOrb(Vector2 center, float time, float seed, float appear, float flicker)
-        {
-            ThrustPalette palette = DarkLanceTuning.Palette;
-            PixelShaderParams p = new PixelShaderParams
-            {
-                Grid = DarkLanceTuning.PixelSize,
-                Time = time,
-                Seed = seed,
-                Intensity = flicker,
-                Bands = DarkLanceTuning.ColorBands,
-                ColorA = palette.Halo,
-                ColorB = palette.Mid,
-                ColorC = palette.Core,
-                Params = new Vector4(DarkLanceTuning.OrbUnitPx, appear, DarkLanceTuning.HaloReach, DarkLanceTuning.HaloStrength),
-                FallbackColor = palette.Mid
-            };
-            PixelShaderFx.Draw("DarkFlameOrb", center, DarkLanceTuning.OrbQuadSize, p);
-        }
+        // The orb body is drawn by the shared metaball layer (DarkLanceEmbers.Ball); its halo is DrawGlow below.
 
         // A soft round glow (Effects/PixelGlow.fx): the palette's core in the middle, then its mid and halo colors, fading smoothly to
         // nothing at 'radius' (px). 'strength' is the peak brightness (0 to 1). Visual only.
