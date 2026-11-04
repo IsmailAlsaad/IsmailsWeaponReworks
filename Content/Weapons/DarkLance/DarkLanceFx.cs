@@ -67,7 +67,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.8f, Pitch = System.Math.Min(0.9f, -0.3f + 0.15f * chain) }, position);
+            SoundEngine.PlaySound(SoundID.Item20 with { Volume = 0.8f, Pitch = System.Math.Min(0.9f, -0.3f + 0.15f * chain) , MaxInstances = 0}, position);
             Ring(position, 8, 8f, 2.5f);
         }
 

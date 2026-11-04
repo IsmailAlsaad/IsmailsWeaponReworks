@@ -22,7 +22,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
     public class DarkLanceSweepProjectile : ModProjectile
     {
         // The vanilla item sprite is the projectile sprite.
-        public override string Texture => "Terraria/Images/Item_" + ItemID.DarkLance;
+        public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.DarkLance;
 
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
@@ -177,7 +177,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             {
                 DarkLanceFx.Flecks(tip, tip - prevTip, speedFraction, palette);
                 if (Main.rand.NextFloat() < DarkLanceTuning.SweepEmberChance * speedFraction)
-                    DarkLanceEmbers.Shed(tip, (tip - prevTip) * DarkLanceTuning.EmberInherit);
+                    DarkLanceEmbers.Shed(tip, (tip - prevTip) * DarkLanceTuning.EmberInherit * Main.rand.NextFloat(0.3f,0.7f));
             }
             Lighting.AddLight(tip, palette.Mid.ToVector3() * 0.7f * speedFraction);
 
