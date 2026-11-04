@@ -1,4 +1,6 @@
-﻿using Terraria;
+﻿using Microsoft.Xna.Framework;
+using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
@@ -12,9 +14,29 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
     {
         public float OrbTurn;
         public int Serial;   // owner's client only
+        public bool NextIsThrust;   // owner's client only: the left click cycles sweep, thrust, sweep ...
+        public int Collected;       // owner's client only: orbs the last sweep gathered, spent by the next thrust
+        public Vector2 LanceTip;    // every machine: where the lance tip is (the sweep and the thrust write it every tick); gathered orbs fly to it
+
+        int pingCount;
+        uint pingResetAt;
+
+        // The pitch step of the gather chime: it rises with every orb gathered in quick succession (every machine counts for itself).
+        public int NextPing()
+        {
+            if (Main.GameUpdateCount > pingResetAt)
+                pingCount = 0;
+            pingResetAt = Main.GameUpdateCount + 40;
+            return pingCount++;
+        }
 
         public override void PostUpdate()
         {
+            if (Player.dead || Player.HeldItem.type != ItemID.DarkLance)
+            {
+                Collected = 0;           // the lance was put away: the gathered charge is gone
+                NextIsThrust = false;
+            }
             if (Player.ownedProjectileCounts[ModContent.ProjectileType<DarkLanceOrbProjectile>()] > 0)
                 OrbTurn += 1f;
             else

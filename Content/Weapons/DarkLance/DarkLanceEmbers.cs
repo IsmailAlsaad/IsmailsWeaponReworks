@@ -71,5 +71,51 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             float size = DarkLanceTuning.EmberSize * Main.rand.NextFloat(0.6f, 1.4f);
             MetaballLayers.Of<DarkLanceBlobStyle>().Spawn(orbCenter + direction * DarkLanceTuning.BallRadius * 0.9f + Main.rand.NextVector2Circular(2f, 2f), velocity, life, size);
         }
+
+        // An ember that leaves exactly 'position' with 'velocity' (the sweep's lance tip sheds these).
+        public static void Shed(Vector2 position, Vector2 velocity)
+        {
+            if (Main.dedServ)
+                return;
+
+            Vector2 v = velocity + Main.rand.NextVector2Circular(0.8f, 0.8f) + new Vector2(0f, -DarkLanceTuning.EmberKick * 0.5f * Main.rand.NextFloat());
+            int life = Math.Max(4, (int)(DarkLanceTuning.EmberLifeTicks * Main.rand.NextFloat(0.6f, 1.1f)));
+            float size = DarkLanceTuning.EmberSize * Main.rand.NextFloat(0.5f, 1.2f);
+            MetaballLayers.Of<DarkLanceBlobStyle>().Spawn(position + Main.rand.NextVector2Circular(2f, 2f), v, life, size);
+        }
+
+        // The lance tip carries 'count' gathered orbs: a living blob that grows with the count. Call it every tick while the lance is out.
+        public static void TipCharge(Vector2 tip, int count, float time)
+        {
+            if (Main.dedServ || count <= 0)
+                return;
+
+            MetaballLayer layer = MetaballLayers.Of<DarkLanceBlobStyle>();
+            float fill = MathHelper.Clamp(count / (float)Math.Max(1, DarkLanceTuning.MaxOrbs), 0f, 1f);
+            float r = DarkLanceTuning.BallRadius * (0.35f + 0.8f * fill);
+            layer.AddBlob(tip, r, DarkLanceTuning.BallBodyHeat);
+            layer.AddBlob(tip, r * 0.55f, DarkLanceTuning.BallCoreHeat);
+            for (int i = 0; i < 2; i++)
+            {
+                float k = i * 2.7f;
+                Vector2 offset = new Vector2((float)Math.Sin(time * 3.4f + k) * 0.5f, -0.5f - 0.2f * (float)Math.Sin(time * 5.1f + k * 1.3f)) * r;
+                layer.AddBlob(tip + offset, r * 0.5f, DarkLanceTuning.BallBodyHeat * 0.8f);
+            }
+        }
+
+        // A burst of blobs thrown outward from 'center' (the 8-orb explosion); they merge, rise, shrink and cool like the embers.
+        public static void Burst(Vector2 center, float radius)
+        {
+            if (Main.dedServ)
+                return;
+
+            MetaballLayer layer = MetaballLayers.Of<DarkLanceBlobStyle>();
+            for (int i = 0; i < 36; i++)
+            {
+                Vector2 direction = Main.rand.NextVector2Unit();
+                Vector2 velocity = direction * radius * 0.03f * Main.rand.NextFloat(0.4f, 1.2f);
+                layer.Spawn(center + direction * Main.rand.NextFloat(0f, radius * 0.15f), velocity, Main.rand.Next(40, 71), Main.rand.NextFloat(6f, 11f));
+            }
+        }
     }
 }

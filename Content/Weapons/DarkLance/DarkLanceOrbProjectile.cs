@@ -26,6 +26,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
         bool Popped => Projectile.ai[0] >= 1f;
+        bool Collected => Projectile.ai[2] >= 1f;   // set by the owner when the sweep gathers it (synced with netUpdate)
 
         // Per-machine state: counters and visuals, never synced.
         int age;
@@ -33,6 +34,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         float shown;          // the angle the orb is drawn at (glides to its slot when the ring changes)
         Vector2 startPos;     // where the orb left the lance
         Vector2 lastCenter;   // where the orb was last tick (the embers it sheds get a little of its speed at birth)
+        int collectAge;       // ticks since this machine saw it gathered
+        Vector2 collectStart; // where it was when it was gathered
         PixelTrail trail;     // the shared pixel trail (Common), handed to DetachedTrails when the orb ends
 
         public override void SetDefaults()
@@ -64,8 +67,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                 return;
             }
 
+            // Gathered by the sweep (the owner decided): it flies into the lance tip and ends there. It leaves the ring at once.
+            if (Collected)
+            {
+                CollectedStep(owner);
+                return;
+            }
+
             // Its place in the ring: the rank among the owner's live orbs (by spawn serial) out of how many there are.
-            int rank = OrbitRing.Rank(Projectile, out int count, other => other.ai[0] < 1f);
+            int rank = OrbitRing.Rank(Projectile, out int count, other => other.ai[0] < 1f && other.ai[2] < 1f);
             DarkLancePlayer plr = owner.GetModPlayer<DarkLancePlayer>();
             float target = OrbitRing.Angle(plr.OrbTurn, rank, count, DarkLanceTuning.OrbSpin);
             if (!placed)
@@ -118,6 +128,30 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             age++;
         }
 
+        // Every machine, every tick while the orb is gathered: it speeds up into the lance tip (the tip moves with the sweep) and ends there.
+        void CollectedStep(Player owner)
+        {
+            DarkLancePlayer plr = owner.GetModPlayer<DarkLancePlayer>();
+            if (collectAge == 0)
+            {
+                collectStart = Projectile.Center;
+                DarkLanceFx.CollectPing(Projectile.Center, plr.NextPing());
+            }
+            float u = MathHelper.Clamp(collectAge / (float)Math.Max(1, DarkLanceTuning.CollectTicks), 0f, 1f);
+            Projectile.Center = Vector2.Lerp(collectStart, plr.LanceTip, u * u);
+            Projectile.velocity = Vector2.Zero;
+            if (!Main.dedServ)
+            {
+                DarkLanceEmbers.Ball(Projectile.Center, AppearScale() * (1f - 0.5f * u), age / 60f, Projectile.ai[1] % 64f);
+                Lighting.AddLight(Projectile.Center, DarkLanceTuning.Palette.Mid.ToVector3() * 0.6f);
+            }
+            lastCenter = Projectile.Center;
+            collectAge++;
+            age++;
+            if (u >= 1f)
+                Projectile.Kill();
+        }
+
         // Owner only: no damage, only the area Shadowflame; the flag makes every machine end its copy.
         void Pop()
         {
@@ -143,6 +177,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                 {
                     DarkLanceFx.Pop(Projectile.Center, DarkLanceTuning.PopRadius);
                     CameraShake.Punch(Projectile.Center, DarkLanceTuning.PopShake, 12, "DarkLancePop");
+                }
+                else if (Collected)
+                {
+                    DarkLanceFx.Absorb(Projectile.Center);
                 }
                 else
                 {

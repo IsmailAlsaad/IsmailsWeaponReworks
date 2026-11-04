@@ -1,20 +1,20 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-04 | 135 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-04 | 138 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-ThrustPalette(21) DetachedTrails(20) RemoteHitTracker(19) AfterimageTrail(13) ThrustPlayer(11) IceFx(10) ThrustChain(9) HeldAim(8) BoomerangFlight(8) SweepTrail(7) PixelTrail(7) FlamerangTuning(7) CameraShake(7) BloodButchererTuning(7) ThrustTimeline(6) StarfuryTuning(6) ShroomerangTuning(5) PixelTrailStyle(5) PixelLine(5) HeldSwordPose(5)
+ThrustPalette(24) RemoteHitTracker(21) DetachedTrails(21) AfterimageTrail(13) ThrustPlayer(12) ThrustChain(11) IceFx(11) HeldAim(10) DarkLanceTuning(9) CameraShake(9) SweepTrail(8) BoomerangFlight(8) ThrustTimeline(7) PixelTrail(7) FlamerangTuning(7) BloodButchererTuning(7) StarfuryTuning(6) DarkLanceFx(6) ThrustFx(5) SpearPose(5)
 
 ## Inheritance
 Project bases -> derived:
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
-- HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
+- HeldSpearProjectile: DarkLanceThrustProjectile, SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
 - MetaballStyle: DarkLanceBlobStyle
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - SweepTrailStyle: BloodButchererSpinTrailStyle, IceBladeTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle
 tModLoader/other bases -> project types:
-- ModProjectile (31): BloodButchererSwingProjectile, DarkLanceChargeProjectile, DarkLanceOrbProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
+- ModProjectile (33): BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceOrbProjectile, DarkLanceSweepProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
 - GlobalItem (17): BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, WoodenBoomerangGlobalItem
 - ModPlayer (7): DarkLancePlayer, DashPlayer, ImmunityPlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer
 - GlobalNPC (2): BloodButchererGripNPC, CarriedNPC
@@ -188,6 +188,9 @@ tModLoader/other bases -> project types:
     +BladeLength:float[s] +HandleLength:float[s] +SwordScale:float[s] +WindupTicks:int[s] +ThrustTicks:int[s] +OpenTicks:int[s] +GapeTicks:int[s] +BiteTicks:int[s] +ChompCount:int[s] +ChompTicks:int[s] +ChompOpenAmount:float[s] +ChompDamageMultiplier:float[s] +ChompShake:float[s] +RecoverTicks:int[s] +DecideWaitTicks:int[s] +AttackSpeedInfluence:float[s] +SpeedScaleMin:float[s] +SpeedScaleMax:float[s] +PullTicks:int[s] +SpinTicks:int[s] +LockTicks:int[s] +SpinTopSpeed:float[s] +ChompTurnSpeed:float[s] +WindDownTicks:int[s] +WindDownRecoverTicks:int[s] +ReleaseHoldTicks:int[s] +ReleaseOpenTicks:int[s] +SpinOffset:float[s] +PinRatio:float[s] +LaunchSpeed:float[s] +LaunchAiOffTicks:int[s] +LaunchGravity:float[s] +LaunchMaxFall:float[s] +GripTickDamageMultiplier:float[s] +GripTickInterval:int[s] +LaunchDamageMultiplier:float[s] +MaxGrabSize:float[s] +LaunchShake:float[s] +SpinWhooshPitchLow:float[s] +SpinWhooshPitchHigh:float[s] +JawTrailCutTicks:int[s] +SpinSweepDamageMultiplier:float[s] +SpinSweepHitInterval:int[s] +SpinSweepMinSpeed:float[s] +SpinSweepWidth:float[s] +ImpactMinSpeed:float[s] +ImpactDamageMultiplier:float[s] +ImpactMaxMultiplier:float[s] +ImpactShake:float[s] +ImpactCooldownTicks:int[s] +TrailFullSpeed:float[s] +TrailFillTo:float[s] +SpinTrailLifeTicks:int[s] +SpinTrailRails:int[s] +SpinTrailOpacity:float[s] +SpinTrailSamplesPerTick:int[s] +TetherRestLength:float[s] +TetherWidth:float[s] +TetherThinWidth:float[s] +TetherSag:float[s] +TetherMaxSag:float[s] +TetherTrailing:float[s] +TetherMaxTrailing:float[s] +TetherWobble:float[s] +TetherSegments:int[s] +TetherDarkColor:Color[s] +TetherMidColor:Color[s] +TetherGlowColor:Color[s] +WindupPullback:float[s] +ThrustDistance:float[s] +BiteLungeDistance:float[s] +JawOpenDeg:float[s] +CatchPadding:float[s] +BiteDamageMultiplier:float[s] +OtherDamageMultiplier:float[s] +ClampShake:float[s] +PixelSize:float[s] +TeethCount:int[s] +ToothLength:float[s] +FlashTicks:int[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +TrailSamplesPerTick:int[s] +CrimsonColor:Color[s] +BrightColor:Color[s] +BoneColor:Color[s]
 
 ### Content/Weapons/DarkLance/
+**DarkLanceBlastProjectile.cs** uses: AreaEffect, DarkLanceFx, DarkLanceTuning, IceFx, RemoteHitTracker, ThrustFx, ThrustPalette
+  class DarkLanceBlastProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
 **DarkLanceChargeProjectile.cs** uses: DarkLanceFx, DarkLanceOrbProjectile, DarkLancePlayer, DarkLanceTuning, HeldAim, SpearPose, ThrustPalette, ThrustPlayer
   class DarkLanceChargeProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
@@ -195,14 +198,14 @@ tModLoader/other bases -> project types:
   class DarkLanceBlobStyle : MetaballStyle
     +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +Rise:float[ov] +Drag:float[ov] +Wobble:float[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]
   static class DarkLanceEmbers
-    +Ball(Vector2,float,float,float)[s] +Spawn(Vector2,Vector2)[s]
-**DarkLanceFx.cs** uses: DarkLanceTuning, OrbitRing, PixelShaderFx, PixelShaderParams, ThrustPalette
+    +Ball(Vector2,float,float,float)[s] +Spawn(Vector2,Vector2)[s] +Shed(Vector2,Vector2)[s] +TipCharge(Vector2,int,float)[s] +Burst(Vector2,float)[s]
+**DarkLanceFx.cs** uses: CameraShake, DarkLanceEmbers, DarkLanceTuning, OrbitRing, PixelShaderFx, PixelShaderParams, ThrustPalette
   static class DarkLanceFx
-    +Glow(Color)[s] +DrawGlow(Vector2,float,float)[s] +ChargeStart(Vector2)[s] +Gather(Vector2,float)[s] +Ring(Vector2,int,float,float)[s] +OrbBorn(Vector2,int,int)[s] +Shed(Vector2)[s] +Pop(Vector2,float)[s] +Fizzle(Vector2)[s]
-**DarkLanceGlobalItem.cs** uses: DarkLanceChargeProjectile, ThrustPlayer
+    +Glow(Color)[s] +DrawGlow(Vector2,float,float)[s] +SweepStart(Vector2)[s] +SweepWhoosh(Vector2)[s] +Flecks(Vector2,Vector2,float,ThrustPalette)[s] +CollectPing(Vector2,int)[s] +Absorb(Vector2)[s] +ThrustStart(Vector2,int)[s] +Blast(Vector2,float)[s] +ChargeStart(Vector2)[s] +Gather(Vector2,float)[s] +Ring(Vector2,int,float,float)[s] +OrbBorn(Vector2,int,int)[s] +Shed(Vector2)[s] +Pop(Vector2,float)[s] +Fizzle(Vector2)[s]
+**DarkLanceGlobalItem.cs** uses: DarkLanceChargeProjectile, DarkLancePlayer, DarkLanceSweepProjectile, DarkLanceThrustProjectile, DarkLanceTuning, HeldAim, ThrustPlayer
   class DarkLanceGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**DarkLanceOrbProjectile.cs** uses: AreaEffect, CameraShake, DarkLanceEmbers, DarkLanceFx, DarkLanceOrbTrailStyle, DarkLancePlayer, DarkLanceTuning, DetachedTrails, OrbitRing, PixelTrail
+**DarkLanceOrbProjectile.cs** uses: AreaEffect, CameraShake, DarkLanceEmbers, DarkLanceFx, DarkLancePlayer, DarkLanceTuning, DetachedTrails, OrbitRing, PixelTrail
   class DarkLanceOrbProjectile : ModProjectile
     +Texture:string[ov] +OnSpawn(IEntitySource)[ov] +AI()[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 **DarkLanceOrbTrail.cs** uses: DarkLanceFx, DarkLanceTuning, PixelTrailStyle, ThrustPalette
@@ -210,10 +213,16 @@ tModLoader/other bases -> project types:
     +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
 **DarkLancePlayer.cs** uses: DarkLanceOrbProjectile
   class DarkLancePlayer : ModPlayer
-    +OrbTurn:float +Serial:int +PostUpdate()[ov]
-**DarkLanceTuning.cs** uses: ThrustPalette
+    +OrbTurn:float +Serial:int +NextIsThrust:bool +Collected:int +LanceTip:Vector2 +NextPing() +PostUpdate()[ov]
+**DarkLanceSweepProjectile.cs** uses: DarkLanceEmbers, DarkLanceFx, DarkLanceOrbProjectile, DarkLancePlayer, DarkLanceTuning, DetachedTrails, HeldAim, RemoteHitTracker, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
+  class DarkLanceSweepProjectile : ModProjectile
+    +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**DarkLanceThrustProjectile.cs** uses: CameraShake, DarkLanceBlastProjectile, DarkLanceEmbers, DarkLanceFx, DarkLancePlayer, DarkLanceTuning, HeldSpearProjectile, Mode, SegmentHit, ThrustChain, ThrustPalette
+  class DarkLanceThrustProjectile : HeldSpearProjectile
+    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #RetargetEachThrust:bool[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov] #TrailTaper:float[ov] #ThrustPitch(int)[ov] +AI()[ov] #OnStrikeStart(int)[ov] #OnTipStep(Vector2,Vector2,float)[ov] #OnTipHit(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**DarkLanceTuning.cs** uses: ThrustChain, ThrustPalette, ThrustTimeline
   static class DarkLanceTuning
-    +ChargeIntervalTicks:int[s] +MaxOrbs:int[s] +ChargeWindDownTicks:int[s] +ChargeCooldownTicks:int[s] +LanceScale:float[s] +LanceTilt:float[s] +ArmRaise:float[s] +HandOffsetX:float[s] +HandOffsetY:float[s] +TremblePerOrb:float[s] +OrbRadius:float[s] +OrbBob:float[s] +OrbSpin:float[s] +OrbEase:float[s] +OrbSpawnTicks:int[s] +OrbLifeTicks:int[s] +OrbHitSize:float[s] +OrbPopGraceTicks:int[s] +PopRadius:float[s] +PopBuffTicks:int[s] +PopShake:float[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +PixelSize:float[s] +ColorBands:int[s] +OrbUnitPx:float[s] +HaloReach:float[s] +HaloStrength:float[s] +EmberSpawnTicks:int[s] +EmberLifeTicks:int[s] +EmberSize:float[s] +EmberMerge:float[s] +EmberOutline:float[s] +EmberRise:float[s] +EmberDrag:float[s] +EmberKick:float[s] +EmberInherit:float[s] +EmberWobble:float[s] +EmberGlow:float[s] +EmberMax:int[s] +EmberHeat:float[s] +BallRadius:float[s] +BallBodyHeat:float[s] +BallCoreHeat:float[s] +TipGlowMinRadius:float[s] +TipGlowMaxRadius:float[s] +TipGlowFalloff:float[s] +TipGlowStrength:float[s] +Palette:ThrustPalette[s]
+    +ChargeIntervalTicks:int[s] +MaxOrbs:int[s] +ChargeWindDownTicks:int[s] +ChargeCooldownTicks:int[s] +LanceScale:float[s] +LanceTilt:float[s] +ArmRaise:float[s] +HandOffsetX:float[s] +HandOffsetY:float[s] +TremblePerOrb:float[s] +SweepWindupTicks:int[s] +SweepTicks:int[s] +SweepRecoverTicks:int[s] +SweepPullBack:float[s] +SweepCooldownTicks:int[s] +SweepDamageMultiplier:float[s] +SweepScale:float[s] +SweepGrip:float[s] +SweepHitWidth:float[s] +SweepMinHitSpeed:float[s] +CollectSize:float[s] +CollectWidth:float[s] +CollectMinSpeed:float[s] +CollectTicks:int[s] +SweepTrailLifeTicks:int[s] +SweepTrailRails:int[s] +SweepTrailOpacity:float[s] +SweepTrailInner:float[s] +SweepEmberChance:float[s] +ThrustWindupTicks:int[s] +ThrustTicks:int[s] +ThrustHoldTicks:int[s] +ThrustRecoverTicks:int[s] +ThrustPullBack:float[s] +ThrustEasePower:float[s] +ThrustCooldownTicks:int[s] +ThrustReach:float[s] +ThrustScale:float[s] +ThrustGrip:float[s] +ThrustHitWidth:float[s] +ThrustDamageMultiplier:float[s] +SizePerOrb:float[s] +DamagePerOrb:float[s] +ThrustTrailLifeTicks:int[s] +ThrustTrailRails:int[s] +ThrustTrailOpacity:float[s] +ThrustBurst:ThrustChain[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastLifeTicks:int[s] +BlastShake:float[s] +BlastBuffTicks:int[s] +OrbRadius:float[s] +OrbBob:float[s] +OrbSpin:float[s] +OrbEase:float[s] +OrbSpawnTicks:int[s] +OrbLifeTicks:int[s] +OrbHitSize:float[s] +OrbPopGraceTicks:int[s] +PopRadius:float[s] +PopBuffTicks:int[s] +PopShake:float[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +PixelSize:float[s] +ColorBands:int[s] +OrbUnitPx:float[s] +HaloReach:float[s] +HaloStrength:float[s] +EmberSpawnTicks:int[s] +EmberLifeTicks:int[s] +EmberSize:float[s] +EmberMerge:float[s] +EmberOutline:float[s] +EmberRise:float[s] +EmberDrag:float[s] +EmberKick:float[s] +EmberInherit:float[s] +EmberWobble:float[s] +EmberGlow:float[s] +EmberMax:int[s] +EmberHeat:float[s] +BallRadius:float[s] +BallBodyHeat:float[s] +BallCoreHeat:float[s] +TipGlowMinRadius:float[s] +TipGlowMaxRadius:float[s] +TipGlowFalloff:float[s] +TipGlowStrength:float[s] +Palette:ThrustPalette[s]
 
 ### Content/Weapons/EnchantedBoomerang/
 **EnchantedBoomerangBase.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, EnchantedBoomerangFx, EnchantedBoomerangTuning, EtherealBoomerangProjectile, RemoteHitTracker, StardustBurstProjectile

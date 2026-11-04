@@ -23,9 +23,59 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float HandOffsetY => -4f;
         public static float TremblePerOrb => 0.3f;       // pixels the lance shakes per orb
 
+        // ---- left click: a sweep, then a thrust, then a sweep ... (hold the button to keep cycling) ----
+        public static int SweepWindupTicks => 5;         // the lance is pulled back
+        public static int SweepTicks => 20;              // one fast 360 degree turn (smooth start and end)
+        public static int SweepRecoverTicks => 6;        // it stays at the start aim before the next click may begin
+        public static float SweepPullBack => 0.6f;       // radians the windup pulls back against the turn
+        public static int SweepCooldownTicks => 4;
+        public static float SweepDamageMultiplier => 0.8f;   // times the item's damage; every enemy once per sweep
+        public static float SweepScale => 1.15f;
+        public static float SweepGrip => 0.25f;          // how much of the shaft sticks out behind the hand
+        public static float SweepHitWidth => 34f;
+        public static float SweepMinHitSpeed => 0.25f;   // 0 to 1 of the fastest tick: slower than this neither hits nor collects
+        public static float CollectSize => 30f;          // the box around an orb the lance has to touch to gather it
+        public static float CollectWidth => 36f;         // thickness of the lance line when it gathers
+        public static float CollectMinSpeed => 0.2f;
+        public static int CollectTicks => 10;            // a gathered orb flies into the lance tip over this long
+        public static int SweepTrailLifeTicks => 14;
+        public static int SweepTrailRails => 5;
+        public static float SweepTrailOpacity => 0.8f;
+        public static float SweepTrailInner => 0.6f;     // how far down the lance the fan reaches
+        public static float SweepEmberChance => 0.7f;    // chance per tick (times the speed) that the tip sheds an ember
+
+        // ---- the thrust (every orb the sweep gathered makes it bigger and stronger) ----
+        public static int ThrustWindupTicks => 9;
+        public static int ThrustTicks => 4;
+        public static int ThrustHoldTicks => 3;
+        public static int ThrustRecoverTicks => 14;
+        public static float ThrustPullBack => 0.3f;
+        public static float ThrustEasePower => 2f;
+        public static int ThrustCooldownTicks => 24;
+        public static float ThrustReach => 70f;
+        public static float ThrustScale => 1.15f;
+        public static float ThrustGrip => 0.35f;
+        public static float ThrustHitWidth => 26f;
+        public static float ThrustDamageMultiplier => 1.7f;  // times the item's damage, before the orbs
+        public static float SizePerOrb => 0.12f;         // +12% size (scale, reach and hit width) per gathered orb
+        public static float DamagePerOrb => 0.15f;       // +15% damage per gathered orb
+        public static int ThrustTrailLifeTicks => 12;
+        public static int ThrustTrailRails => 5;
+        public static float ThrustTrailOpacity => 0.8f;
+        public static ThrustChain ThrustBurst => new ThrustChain(
+            new ThrustTimeline(ThrustWindupTicks, ThrustTicks, ThrustHoldTicks, ThrustRecoverTicks, ThrustPullBack, ThrustEasePower),
+            1, 0, 0f, ThrustCooldownTicks);
+
+        // ---- the explosion (a thrust with all 8 orbs, on the first enemy it hits) ----
+        public static float BlastRadius => 150f;
+        public static float BlastDamageMultiplier => 1.5f;   // times the thrust's damage, every enemy in the circle once
+        public static int BlastLifeTicks => 8;
+        public static float BlastShake => 4f;
+        public static int BlastBuffTicks => 360;         // Shadowflame on everything it reaches
+
         // ---- the orbs ----
         public static float OrbRadius => 64f;            // pixels from the middle of the player
-        public static float OrbBob => 5f;                // the radius breathes by this much
+        public static float OrbBob => 2.5f;                // the radius breathes by this much
         public static float OrbSpin => 0.015f;           // radians per tick
         public static float OrbEase => 0.1f;             // how fast an orb glides to its new slot when one is added or popped
         public static int OrbSpawnTicks => 14;           // an orb flies from the lance tip out to its orbit over this long

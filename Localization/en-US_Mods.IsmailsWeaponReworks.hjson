@@ -34,4 +34,7 @@ Projectiles: {
 	RottedForkSpinProjectile.DisplayName: Rotted Fork Spin Projectile
 	DarkLanceChargeProjectile.DisplayName: Dark Lance Charge Projectile
 	DarkLanceOrbProjectile.DisplayName: Dark Lance Orb Projectile
+	DarkLanceBlastProjectile.DisplayName: Dark Lance Blast Projectile
+	DarkLanceSweepProjectile.DisplayName: Dark Lance Sweep Projectile
+	DarkLanceThrustProjectile.DisplayName: Dark Lance Thrust Projectile
 }
