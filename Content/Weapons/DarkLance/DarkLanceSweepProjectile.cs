@@ -198,6 +198,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         void DrawLance(Texture2D texture, float scale, Color color)
         {
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
+            float SpritePivotX = 100f;   // texture pixels (unscaled)
+            float SpritePivotY = 0f;
+            origin += new Vector2(SpritePivotX * (Projectile.spriteDirection >= 0 ? 1f : -1f), SpritePivotY);
             float extra = MathHelper.ToRadians(DarkLanceTuning.SweepSpriteRotation) * (Projectile.spriteDirection >= 0 ? 1f : -1f);
             Main.EntitySpriteDraw(texture, butt - Main.screenPosition, null, color, Projectile.rotation + rotationOffset + extra, origin, scale, effects, 0);
         }
