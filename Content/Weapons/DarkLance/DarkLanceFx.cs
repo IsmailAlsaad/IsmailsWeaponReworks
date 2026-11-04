@@ -92,8 +92,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         {
             if (Main.dedServ)
                 return;
-            Dust dust = Dust.NewDustPerfect(center + Main.rand.NextVector2Circular(8f, 8f), Main.rand.NextBool(3) ? DustID.PurpleTorch : DustID.Shadowflame, new Vector2(Main.rand.NextFloat(-0.4f, 0.4f), Main.rand.NextFloat(-1.6f, -0.4f)), 100, default, Main.rand.NextFloat(0.9f, 1.4f));
-            dust.noGravity = true;
+            //Dust dust = Dust.NewDustPerfect(center + Main.rand.NextVector2Circular(8f, 8f), Main.rand.NextBool(3) ? DustID.PurpleTorch : DustID.Shadowflame, new Vector2(Main.rand.NextFloat(-0.4f, 0.4f), Main.rand.NextFloat(-1.6f, -0.4f)), 100, default, Main.rand.NextFloat(0.9f, 1.4f));
+            //dust.noGravity = true;
         }
 
         // An enemy walked into an orb: it pops in a cloud of Shadowflame (no damage, the debuff is applied by the owner).
@@ -108,13 +108,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                 Dust dust = Dust.NewDustPerfect(center, DustID.Shadowflame, Main.rand.NextVector2Circular(5f, 5f), 100, default, Main.rand.NextFloat(1.1f, 1.7f));
                 dust.noGravity = true;
             }
-            for (int i = 0; i < 14; i++)
+            for (int i = 0; i < 24; i++)
             {
-                Dust dust = Dust.NewDustPerfect(center, DustID.PurpleTorch, Main.rand.NextVector2Circular(3.5f, 3.5f), 100, default, Main.rand.NextFloat(1f, 1.5f));
+                Dust dust = Dust.NewDustPerfect(center, DustID.PurpleTorch, Main.rand.NextVector2Circular(8.5f, 8.5f), 100, default, Main.rand.NextFloat(1f, 1.5f));
                 dust.noGravity = true;
             }
-            Ring(center, 14, 14f, 4.5f);
-            Ring(center, 28, radius * 0.9f, 0.6f); // the edge of the cloud
+            //Ring(center, 14, 14f, 4.5f);
+            //Ring(center, 28, radius * 0.9f, 0.6f); // the edge of the cloud
         }
 
         // An orb ends without being popped (the item was swapped or its 30 s ran out).

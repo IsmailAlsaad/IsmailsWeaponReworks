@@ -45,7 +45,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             Projectile.penetrate = -1;
             Projectile.tileCollide = false;
             Projectile.ignoreWater = true;
-            Projectile.timeLeft = 1800;    // the real life is set in OnSpawn from DarkLanceTuning
+            //Projectile.timeLeft = 1800;    // the real life is set in OnSpawn from DarkLanceTuning
         }
 
         public override void OnSpawn(IEntitySource source)
@@ -130,9 +130,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         {
             if (Main.dedServ || !Projectile.active)
                 return;
-            trail ??= new PixelTrail(new DarkLanceOrbTrailStyle(), IsOwner);
-            trail.Tick();
-            trail.Add(Projectile.Center);
+            //trail ??= new PixelTrail(new DarkLanceOrbTrailStyle(), IsOwner);
+            //trail.Tick();
+            //trail.Add(Projectile.Center);
         }
 
         public override void OnKill(int timeLeft)

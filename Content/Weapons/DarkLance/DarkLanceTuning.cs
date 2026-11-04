@@ -26,15 +26,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         // ---- the orbs ----
         public static float OrbRadius => 64f;            // pixels from the middle of the player
         public static float OrbBob => 5f;                // the radius breathes by this much
-        public static float OrbSpin => 0.045f;           // radians per tick
-        public static float OrbEase => 0.2f;             // how fast an orb glides to its new slot when one is added or popped
+        public static float OrbSpin => 0.015f;           // radians per tick
+        public static float OrbEase => 0.1f;             // how fast an orb glides to its new slot when one is added or popped
         public static int OrbSpawnTicks => 14;           // an orb flies from the lance tip out to its orbit over this long
         public static int OrbLifeTicks => 1800;          // an orb that is never collected fizzles after 30 s
         public static float OrbHitSize => 26f;           // the pop zone: a box this wide around the orb
         public static int OrbPopGraceTicks => 20;        // a new orb cannot be popped for this long
         public static float PopRadius => 110f;           // the Shadowflame cloud when an enemy pops an orb
         public static int PopBuffTicks => 300;           // Shadowflame duration (5 s)
-        public static float PopShake => 1.5f;            // camera punch of a pop (nearby players)
+        public static float PopShake => 1f;            // camera punch of a pop (nearby players)
 
         // ---- look ----
         public static int TrailLifeTicks => 10;          // the orb's trail (Common PixelTrail) fades out over this long
@@ -50,7 +50,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static int EmberLifeTicks => 50;          // average life; each ember gets 0.7 to 1.3 times this
         public static float EmberSize => 5f;             // px: radius at birth (random 0.6 to 1.4 times this); it shrinks to nothing
         public static float EmberMerge => 2.2f;          // how far an ember's field reaches, in radii: bigger = blobs join from further away and bridge more
-        public static float EmberOutline => 0.2f;        // thickness of the merged outline (field units; 0.1 = thin, 0.4 = thick)
+        public static float EmberOutline => 0f;        // thickness of the merged outline (field units; 0.1 = thin, 0.4 = thick)
         public static float EmberRise => 0.03f;          // upward push per tick (px per tick squared)
         public static float EmberDrag => 0.97f;          // velocity kept per tick
         public static float EmberKick => 1.1f;           // px per tick: the speed an ember leaves the rim with (upward, random sideways)
