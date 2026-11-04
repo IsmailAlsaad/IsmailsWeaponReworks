@@ -22,9 +22,10 @@ namespace IsmailsWeaponReworks.Common
         }
 
         // Draws the item sprite with its butt at 'butt' pointing along 'worldRotation' (the world angle of the shaft).
-        public static void DrawSprite(Texture2D texture, Vector2 butt, float worldRotation, int spriteDirection, float scale, Color color, float extraRotation = 0f)
+        public static void DrawSprite(Texture2D texture, Vector2 butt, float worldRotation, int spriteDirection, float scale, Color color, float extraRotation = 0f, Vector2 pivotShift = default)
         {
             HeldSwordPose.Sprite(texture, spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
+            origin += new Vector2(pivotShift.X * (spriteDirection >= 0 ? 1f : -1f), pivotShift.Y);   // <- new line
             Main.EntitySpriteDraw(texture, butt - Main.screenPosition, null, color, worldRotation + rotationOffset + extraRotation * (spriteDirection >= 0 ? 1f : -1f), origin, scale, effects, 0);
         }
     }

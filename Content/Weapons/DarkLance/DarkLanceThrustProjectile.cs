@@ -36,6 +36,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         protected override float PixelSize => DarkLanceTuning.PixelSize;
         protected override float TrailTaper => 0.6f;
 
+        protected override Vector2 SpritePivot => new Vector2(100f, 0f);
+
         // The thrust draws the same long-handled vanilla projectile sprite as the sweep (the charge keeps the item sprite).
         public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.DarkLance;
 
