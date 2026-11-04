@@ -53,16 +53,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float ThrustPullBack => 0.3f;
         public static float ThrustEasePower => 2f;
         public static int ThrustCooldownTicks => 0;
-        public static float ThrustReach => 70f;
+        public static float ThrustReach => 60f;
         public static float ThrustScale => 1.15f;
         public static float ThrustGrip => 0.35f;
         public static float ThrustHitWidth => 26f;
         public static float ThrustDamageMultiplier => 1.7f;  // times the item's damage, before the orbs
         public static float SizePerOrb => 0.05f;         // +5% size (scale, reach and hit width) per gathered orb
         public static float DamagePerOrb => 0.15f;       // +15% damage per gathered orb
-        public static int ThrustTrailLifeTicks => 12;
-        public static int ThrustTrailRails => 5;
-        public static float ThrustTrailOpacity => 0.8f;
+        public static int ThrustTrailLifeTicks => 0;
+        public static int ThrustTrailRails => 0;
+        public static float ThrustTrailOpacity => 0f;
         public static ThrustChain ThrustBurst => new ThrustChain(
             new ThrustTimeline(ThrustWindupTicks, ThrustTicks, ThrustHoldTicks, ThrustRecoverTicks, ThrustPullBack, ThrustEasePower),
             1, 0, 0f, ThrustCooldownTicks);

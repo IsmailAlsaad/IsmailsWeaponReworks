@@ -40,9 +40,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         Vector2 tip;
         Vector2 prevButt;
         Vector2 prevTip;
-        Vector2 dir;           // the lance's direction this tick and last tick, and the hand it turns around (the gather test)
-        Vector2 prevDir;
-        Vector2 pivot;
+        Vector2 pivot;         // the hand the lance turns around (the gather test measures every orb's angle from it)
         SweepTrail trail;
         RemoteHitTracker remoteHits; // created on first use: a field initializer here would be shared by every projectile of the type
 
@@ -97,7 +95,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             Projectile.scale = DarkLanceTuning.SweepScale * owner.GetAdjustedItemScale(owner.HeldItem);
             float shaft = ShaftLength();
 
-            Vector2 lastDir = dir;
             Vector2 lastButt = butt;
             Vector2 lastTip = tip;
 
@@ -106,7 +103,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             Vector2 hand = owner.RotatedRelativePoint(owner.MountedCenter, false, true);
             Vector2 direction = HeldAim.ToWorldDirection(owner, aim);
             butt = hand - direction * shaft * DarkLanceTuning.SweepGrip;
-            dir = direction;
             pivot = hand;
             tip = butt + direction * shaft;
             Projectile.Center = owner.MountedCenter; // knockback pushes away from the player
@@ -117,7 +113,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             float seenFromRight = owner.direction == 1 ? aim : MathHelper.Pi - aim; // the aim as a right-facing player would have it
             owner.itemRotation = MathHelper.WrapAngle(seenFromRight + MathHelper.PiOver4) * owner.direction;
 
-            prevDir = hasPose ? lastDir : dir;
             prevButt = hasPose ? lastButt : butt;
             prevTip = hasPose ? lastTip : tip;
             hasPose = true;
@@ -152,12 +147,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         {
             DarkLancePlayer state = Owner.GetModPlayer<DarkLancePlayer>();
             int orbType = ModContent.ProjectileType<DarkLanceOrbProjectile>();
+            // The turn is over on this tick: a full circle has been made, so every orb that is still left has been turned past by definition.
+            bool lastTick = age >= Math.Max(0, DarkLanceTuning.SweepWindupTicks) + Math.Max(1, DarkLanceTuning.SweepTicks) - 1;
             for (int i = 0; i < Main.maxProjectiles; i++)
             {
                 Projectile orb = Main.projectile[i];
                 if (!orb.active || orb.owner != Projectile.owner || orb.type != orbType || orb.ai[0] >= 1f || orb.ai[2] >= 1f)
                     continue;
-                if (!Touches(orb))
+                if (!lastTick && !Touches(orb))
                     continue;
                 orb.ai[2] = 1f;
                 orb.netUpdate = true;
@@ -165,20 +162,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             }
         }
 
-        // Does the lance gather this orb? A pure ANGLE test, no colliders: the orb is gathered when its direction from the hand lies between
-        // the lance's direction last tick and this tick's. Where the orb is (near, far, lagging behind a running player, moving) does not
-        // matter, and a fast turn cannot skip it, so a sweep through every angle gathers every orb.
+        // Has the lance turned past this orb? A pure ANGLE test, no colliders and no crossing to catch. Every orb has a "need": how far the
+        // lance must turn from its start aim to point at it, measured along the turn and folded into [-pull, 2 pi - pull), the exact range
+        // the lance covers. The orb is gathered as soon as the TOTAL turn so far (turned) has reached its need. Because it compares totals and
+        // not "this tick's wedge", nothing can slip through: an orb that moves toward or past the lance (a running player, a grapple, the ring
+        // re-spacing itself after each gather) is simply already passed, and one that runs ahead is caught by the end, since the turn always
+        // reaches a full circle. Where the orb is (near, far, lagging) never matters.
         bool Touches(Projectile orb)
         {
             Vector2 v = orb.Center - pivot;
             if (v.LengthSquared() < 1f)
                 return true;   // exactly on the hand: every angle includes it
-            float whole = Cross(prevDir, dir);
-            if (Math.Abs(whole) < 0.00001f)
-                return false;  // the lance did not turn this tick
-            float a = Cross(prevDir, v);
-            float b = Cross(v, dir);
-            return whole > 0f ? (a >= 0f && b >= 0f) : (a <= 0f && b <= 0f);
+            float pull = DarkLanceTuning.SweepPullBack;
+            float worldSpin = Owner.gravDir == -1f ? -SpinDirection : SpinDirection;   // which way the lance turns on screen (the aim is mirrored with gravity)
+            float need = worldSpin * MathHelper.WrapAngle(v.ToRotation() - HeldAim.ToWorld(Owner, BaseAim));   // -pi to pi from the start aim, along the turn
+            need -= MathHelper.TwoPi * (float)Math.Floor((need + pull) / MathHelper.TwoPi);                  // folded into [-pull, 2 pi - pull)
+            return turned >= need;
         }
 
         // Butt to tip: the projectile texture's diagonal (a dedicated server has no textures and uses the item sprite's).
