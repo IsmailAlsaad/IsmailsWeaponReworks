@@ -21,8 +21,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
     /// </summary>
     public class DarkLanceSweepProjectile : ModProjectile
     {
-        // The vanilla item sprite is the projectile sprite.
-        public override string Texture => "Terraria/Images/Item_" + ItemID.DarkLance;
+        // The sweep draws the vanilla PROJECTILE sprite (the long-handled one); the charge and the thrust still use the item sprite.
+        public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.DarkLance;
 
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
@@ -43,7 +43,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         Vector2 dir;           // the lance's direction this tick and last tick, and the hand it turns around (the gather test)
         Vector2 prevDir;
         Vector2 pivot;
-        float reach;           // hand to tip
         SweepTrail trail;
         RemoteHitTracker remoteHits; // created on first use: a field initializer here would be shared by every projectile of the type
 
@@ -96,8 +95,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             float aim = BaseAim + SpinDirection * turned;
 
             Projectile.scale = DarkLanceTuning.SweepScale * owner.GetAdjustedItemScale(owner.HeldItem);
-            Item sample = ContentSamples.ItemsByType[ItemID.DarkLance];
-            float shaft = new Vector2(sample.width, sample.height).Length() * Projectile.scale;
+            float shaft = ShaftLength();
 
             Vector2 lastDir = dir;
             Vector2 lastButt = butt;
@@ -110,7 +108,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             butt = hand - direction * shaft * DarkLanceTuning.SweepGrip;
             dir = direction;
             pivot = hand;
-            reach = shaft * (1f - DarkLanceTuning.SweepGrip);
             tip = butt + direction * shaft;
             Projectile.Center = owner.MountedCenter; // knockback pushes away from the player
             Projectile.rotation = direction.ToRotation();
@@ -150,7 +147,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             return -pull + (MathHelper.TwoPi + pull) * MathHelper.SmoothStep(0f, 1f, u);
         }
 
-        // Owner only: every orb the shaft touches is gathered. The flag travels with the orb; every machine then flies it into the tip.
+        // Owner only: every orb the lance has turned past (by angle, see Touches) is gathered. The flag travels with the orb; every machine then flies it into the tip.
         void Gather()
         {
             DarkLancePlayer state = Owner.GetModPlayer<DarkLancePlayer>();
@@ -168,34 +165,41 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             }
         }
 
-        // Does the lance gather this orb? Two tests, either is enough, so an orb that moves while the lance turns is never missed:
-        // 1. the shaft swept this tick against a box around the orb where it is AND where it was a tick ago;
-        // 2. an angle test around the hand: the orb lies between last tick's and this tick's lance direction and within reach (plus slack).
-        // The angle test does not care how the hand, the orbs or the lance tip moved, and cannot be skipped over by a fast turn.
+        // Does the lance gather this orb? A pure ANGLE test, no colliders: the orb is gathered when its direction from the hand lies between
+        // the lance's direction last tick and this tick's. Where the orb is (near, far, lagging behind a running player, moving) does not
+        // matter, and a fast turn cannot skip it, so a sweep through every angle gathers every orb.
         bool Touches(Projectile orb)
         {
-            Vector2 size = new Vector2(DarkLanceTuning.CollectSize);
-            Vector2 now = orb.Center;
-            Vector2 before = now;
-            if (orb.ModProjectile is DarkLanceOrbProjectile ball && ball.PreviousCenter != Vector2.Zero)
-                before = ball.PreviousCenter;
-
-            if (SegmentHit.Sweep(Utils.CenteredRectangle(now, size), prevButt, prevTip, butt, tip, DarkLanceTuning.CollectWidth, 3))
-                return true;
-            if (before != now && SegmentHit.Sweep(Utils.CenteredRectangle(before, size), prevButt, prevTip, butt, tip, DarkLanceTuning.CollectWidth, 3))
-                return true;
-
-            Vector2 v = now - pivot;
-            float distance = v.Length();
-            if (distance < 1f || distance > reach + DarkLanceTuning.CollectSize * 0.5f + DarkLanceTuning.CollectReachSlack)
-                return false;
+            Vector2 v = orb.Center - pivot;
+            if (v.LengthSquared() < 1f)
+                return true;   // exactly on the hand: every angle includes it
             float whole = Cross(prevDir, dir);
             if (Math.Abs(whole) < 0.00001f)
-                return false;
+                return false;  // the lance did not turn this tick
             float a = Cross(prevDir, v);
             float b = Cross(v, dir);
-            bool between = whole > 0f ? (a >= 0f && b >= 0f) : (a <= 0f && b <= 0f);
-            return between && Vector2.Dot(prevDir + dir, v) > 0f;
+            return whole > 0f ? (a >= 0f && b >= 0f) : (a <= 0f && b <= 0f);
+        }
+
+        // Butt to tip: the projectile texture's diagonal (a dedicated server has no textures and uses the item sprite's).
+        float ShaftLength()
+        {
+            if (Main.dedServ)
+            {
+                Item sample = ContentSamples.ItemsByType[ItemID.DarkLance];
+                return new Vector2(sample.width, sample.height).Length() * Projectile.scale;
+            }
+            Texture2D art = TextureAssets.Projectile[Type].Value;
+            return new Vector2(art.Width, art.Height).Length() * Projectile.scale;
+        }
+
+        // The sprite with its butt at 'butt' pointing along the lance. DarkLanceTuning.SweepSpriteRotation (degrees) turns the art if it
+        // looks off; it is mirrored with the sprite so the same number works facing either way.
+        void DrawLance(Texture2D texture, float scale, Color color)
+        {
+            HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
+            float extra = MathHelper.ToRadians(DarkLanceTuning.SweepSpriteRotation) * (Projectile.spriteDirection >= 0 ? 1f : -1f);
+            Main.EntitySpriteDraw(texture, butt - Main.screenPosition, null, color, Projectile.rotation + rotationOffset + extra, origin, scale, effects, 0);
         }
 
         float Cross(Vector2 a, Vector2 b)
@@ -274,9 +278,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             float glow = 0.3f + 0.7f * speedFraction;
             int flip = Projectile.spriteDirection;
 
-            SpearPose.DrawSprite(texture, butt, rotation, flip, scale * 1.18f, palette.Halo * (0.45f * glow));
-            SpearPose.DrawSprite(texture, butt, rotation, flip, scale * 1.07f, palette.Mid * (0.5f * glow));
-            SpearPose.DrawSprite(texture, butt, rotation, flip, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
+            DrawLance(texture, scale * 1.18f, palette.Halo * (0.45f * glow));
+            DrawLance(texture, scale * 1.07f, palette.Mid * (0.5f * glow));
+            DrawLance(texture, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
 
             // a dark glow on the tip that swells while the lance is fast
             DarkLanceFx.DrawGlow(tip, DarkLanceTuning.TipGlowMinRadius + 0.5f * (DarkLanceTuning.TipGlowMaxRadius - DarkLanceTuning.TipGlowMinRadius) * speedFraction, DarkLanceTuning.TipGlowStrength * (0.4f + 0.6f * speedFraction));
