@@ -67,8 +67,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         public static Color DeepColor => new Color(40, 80, 220, 0);
 
         // ---- trail alignment: if the trail does not sit on the sprite, tune these (they are live under hot reload) ----
-        public static float TrailLagTicks => 0f;      // how many ticks the trail runs BEHIND the sprite (0 = exactly on it; the old fixed value was 0.8)
-        public static float TrailLengthScale => 1f;   // the trail's outer edge sits at BladeLength * this (the old fixed value was 0.9)
+        public static float TrailLagTicks => 0.15f;      // how many ticks the trail runs BEHIND the sprite (0 = exactly on it; the old fixed value was 0.8)
+        public static float TrailLengthScale => 1.2f;   // the trail's outer edge sits at BladeLength * this (the old fixed value was 0.9)
         public static bool ShowBladeDebug => false;   // true: magenta square = the hit-test tip, green square = where the trail's outer edge is laid
 
         // ---- the draw window (patch 2): hold the button on a fully sheathed sword and draw a path with the cursor ----
