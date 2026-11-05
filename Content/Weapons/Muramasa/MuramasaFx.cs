@@ -45,11 +45,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         }
 
         // The sword clicks shut: a ring of blue sparks around the hand.
-        public static void Click(Vector2 hand, Vector2 tip)
+        public static void Click(Vector2 hand, Vector2 tip, bool playSound)
         {
             if (Main.dedServ)
                 return;
-            PlayClick(hand);
+
+            if(playSound)
+                PlayClick(hand);
+
             int count = MuramasaTuning.ClickDustCount;
             for (int i = 0; i < count; i++)
             {

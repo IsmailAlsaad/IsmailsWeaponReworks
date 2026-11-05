@@ -107,7 +107,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             }
             if (clickFlash >= 1f)
             {
-                MuramasaFx.Click(Projectile.Center, tipPosition);
+                MuramasaFx.Click(Projectile.Center, tipPosition, true);
                 CameraShake.Punch(Projectile.Center, MuramasaTuning.ClickShake, 8);
             }
 

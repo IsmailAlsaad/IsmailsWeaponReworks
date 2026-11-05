@@ -72,7 +72,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         public static bool ShowBladeDebug => false;   // true: magenta square = the hit-test tip, green square = where the trail's outer edge is laid
 
         // ---- the draw window (patch 2): hold the button on a fully sheathed sword and draw a path with the cursor ----
-        public static int DrawWindowTicks => 40;       // how long the path can be drawn
+        public static int DrawWindowTicks => 20;       // how long the path can be drawn
         public static float DrawSampleSpacing => 6f;   // a new path point is only laid when the cursor moved this far (pixels)
         public static float DrawMinPathPixels => 32f;  // a path shorter than this (about 2 tiles) is a plain swing at the cursor instead
         public static int DrawMaxStrokes => 8;         // the path is simplified into at most this many straight strokes
