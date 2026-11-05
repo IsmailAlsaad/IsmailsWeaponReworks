@@ -27,7 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             item.noMelee = true;                  // the projectile is the weapon
             item.noUseGraphic = true;             // the projectiles draw the sword
             item.channel = false;
-            item.autoReuse = false;               // patch 2 gives holding the button its own meaning
+            item.autoReuse = true;                // holding the button repeats the plain swing; a fully sheathed sword refuses the use (CanUseItem) and opens the draw window instead
             item.UseSound = null;                 // the projectiles play their own sounds
         }
 
@@ -70,7 +70,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             }
 
             // ai[0] = the arm's start angle (facing-local), ai[1] = the blade tilt's start angle, ai[2] = the aim captured at the click.
-            Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, damage, knockback, player.whoAmI, startArm, startTilt, HeldAim.Capture(player));
+            float aim = HeldAim.Capture(player);
+            player.ChangeDir(HeldAim.Facing(aim)); // always face the side the cursor is on, from the first tick of every swing
+            Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, damage, knockback, player.whoAmI, startArm, startTilt, aim);
         }
     }
 }

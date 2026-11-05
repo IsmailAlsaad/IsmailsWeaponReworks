@@ -331,7 +331,7 @@ tModLoader/other bases -> project types:
     +Finished:bool +PathLength:float +Strokes:IList<Vector2> +Begin(Player) +Tick(Player,bool) +Draw()
 **MuramasaFx.cs** uses: MuramasaTuning
   static class MuramasaFx
-    +PlayScrape(Vector2)[s] +PlayClick(Vector2)[s] +PlaySwing(Vector2,bool)[s] +Click(Vector2,Vector2)[s] +BladeSparkle(Vector2,Vector2)[s] +DrawStart(Vector2)[s] +DrawDust(Vector2)[s] +DrawEnd(IList<Vector2>)[s] +PlaySlash(Vector2,int)[s] +SlashStart(Vector2,Vector2)[s] +SlashSweepDust(Vector2,Vector2)[s] +SlashEnd(Vector2,Vector2)[s] +IaidoDraw(Vector2,Vector2)[s] +SlashDust(Vector2,Vector2)[s] +HitSpark(Vector2)[s]
+    +PlayScrape(Vector2)[s] +PlayClick(Vector2)[s] +PlaySwing(Vector2,bool)[s] +Click(Vector2,Vector2,bool)[s] +BladeSparkle(Vector2,Vector2)[s] +DrawStart(Vector2)[s] +DrawDust(Vector2)[s] +DrawEnd(IList<Vector2>)[s] +PlaySlash(Vector2,int)[s] +SlashStart(Vector2,Vector2)[s] +SlashSweepDust(Vector2,Vector2)[s] +SlashEnd(Vector2,Vector2)[s] +IaidoDraw(Vector2,Vector2)[s] +SlashDust(Vector2,Vector2)[s] +HitSpark(Vector2)[s]
 **MuramasaGlobalItem.cs** uses: HeldAim, MuramasaIaidoProjectile, MuramasaPlayer, MuramasaStanceProjectile, MuramasaSwingProjectile, MuramasaTuning
   class MuramasaGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +StartSwing(Player,IEntitySource,int,float)[s]

@@ -44,8 +44,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         public bool IsDrawing => draw != null;
 
         // What the swing starts from (read by MuramasaGlobalItem on the owner's client).
-        public float ArmLocal => armLocal;
-        public float TiltRad => tiltRad;
+        // Before the first AI tick the pose is still the one the stance was spawned with (a held button can start the next swing that early).
+        public float ArmLocal => ticks == 0 ? StartArm : armLocal;
+        public float TiltRad => ticks == 0 ? StartTilt : tiltRad;
         public float Progress => MathHelper.Clamp(ticks / (float)Math.Max(1, MuramasaTuning.SheathTicks), 0f, 1f);
         public bool FullySheathed => ticks >= MuramasaTuning.SheathTicks;
 

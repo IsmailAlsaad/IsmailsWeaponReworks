@@ -144,8 +144,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                 return;
             }
 
-            if (ticks == 0 && IsOwner)
-                owner.ChangeDir(Facing);
+            if (IsOwner)
+                owner.ChangeDir(Facing); // every tick, so nothing (movement keys) can turn the player away from the swing
 
             Projectile.scale = MuramasaTuning.SwordScale * owner.GetAdjustedItemScale(owner.HeldItem);
 
