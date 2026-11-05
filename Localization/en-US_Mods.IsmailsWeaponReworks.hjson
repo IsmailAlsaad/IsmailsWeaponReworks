@@ -39,4 +39,6 @@ Projectiles: {
 	DarkLanceThrustProjectile.DisplayName: Dark Lance Thrust Projectile
 	MuramasaStanceProjectile.DisplayName: Muramasa Stance Projectile
 	MuramasaSwingProjectile.DisplayName: Muramasa Swing Projectile
+	MuramasaIaidoProjectile.DisplayName: Muramasa Iaido Projectile
+	MuramasaSlashProjectile.DisplayName: Muramasa Slash Projectile
 }
