@@ -204,13 +204,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             if (Main.dedServ)
                 return;
 
-            time -= 0.8f;
+            time -= MuramasaTuning.TrailLagTicks;
             float arm = SwingArmAt(time);
             float tilt = SwingTiltAt(time);
             Vector2 shift = Vector2.Lerp(lastOwnerCenter, Owner.Center, fraction) - Owner.Center;
             Vector2 hand = HeldSwordPose.HandWorld(Owner, WorldArm(arm)) + shift;
             Vector2 direction = HeldSwordPose.BladeDirectionWorld(Owner, WorldBlade(arm, tilt));
-            float length = MuramasaTuning.BladeLength * Projectile.scale * 0.9f;
+            float length = MuramasaTuning.BladeLength * Projectile.scale * MuramasaTuning.TrailLengthScale;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
             float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / Math.Max(0.01f, MuramasaTuning.TrailExpandBy), 0f, 1f));
             float inner = MathHelper.Lerp(1f, MuramasaTuning.TrailInner, expand);
@@ -316,7 +316,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             Main.EntitySpriteDraw(texture, position, null, Color.Lerp(lightColor, Color.White, 0.35f + 0.5f * flash), rotation, origin, scale, effects, 0);
             if (flash > 0.01f)
                 Main.EntitySpriteDraw(texture, position, null, MuramasaTuning.CoreColor * (0.8f * flash), rotation, origin, scale, effects, 0);
+            DrawBladeDebug();
             return false;
+        }
+
+        // MuramasaTuning.ShowBladeDebug: a magenta square on the tip the hit test uses and a green square where the trail's outer edge is
+        // laid for this tick, so BladeLength, TrailLengthScale and TrailLagTicks can be matched to the sprite by eye.
+        void DrawBladeDebug()
+        {
+            if (!MuramasaTuning.ShowBladeDebug)
+                return;
+            Texture2D pixel = TextureAssets.MagicPixel.Value;
+            Main.EntitySpriteDraw(pixel, tipPosition - Main.screenPosition, new Rectangle(0, 0, 1, 1), Color.Magenta, 0f, new Vector2(0.5f), 5f, SpriteEffects.None, 0);
+
+            float time = timer - 1f - MuramasaTuning.TrailLagTicks; // timer has already been advanced for this tick
+            float arm = SwingArmAt(time);
+            float tilt = SwingTiltAt(time);
+            Vector2 hand = HeldSwordPose.HandWorld(Owner, WorldArm(arm));
+            Vector2 direction = HeldSwordPose.BladeDirectionWorld(Owner, WorldBlade(arm, tilt));
+            Vector2 edge = hand + direction * MuramasaTuning.BladeLength * Projectile.scale * MuramasaTuning.TrailLengthScale;
+            Main.EntitySpriteDraw(pixel, edge - Main.screenPosition, new Rectangle(0, 0, 1, 1), Color.LimeGreen, 0f, new Vector2(0.5f), 5f, SpriteEffects.None, 0);
         }
     }
 }

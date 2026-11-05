@@ -65,5 +65,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         public static Color CoreColor => new Color(215, 240, 255, 0);
         public static Color BlueColor => new Color(80, 170, 255, 0);
         public static Color DeepColor => new Color(40, 80, 220, 0);
+
+        // ---- trail alignment: if the trail does not sit on the sprite, tune these (they are live under hot reload) ----
+        public static float TrailLagTicks => 0f;      // how many ticks the trail runs BEHIND the sprite (0 = exactly on it; the old fixed value was 0.8)
+        public static float TrailLengthScale => 1f;   // the trail's outer edge sits at BladeLength * this (the old fixed value was 0.9)
+        public static bool ShowBladeDebug => false;   // true: magenta square = the hit-test tip, green square = where the trail's outer edge is laid
+
+        // ---- the draw window (patch 2): hold the button on a fully sheathed sword and draw a path with the cursor ----
+        public static int DrawWindowTicks => 40;       // how long the path can be drawn
+        public static float DrawMaxRadiusTiles => 25f; // the path is clamped to this radius around the player
+        public static float DrawSampleSpacing => 6f;   // a new path point is only laid when the cursor moved this far (pixels)
+        public static float DrawMinPathPixels => 32f;  // a path shorter than this (about 2 tiles) is a plain swing at the cursor instead
+        public static int DrawMaxStrokes => 8;         // the path is simplified into at most this many straight strokes
+        public static float DrawSimplifyTolerance => 12f; // start tolerance of the simplification (pixels); it grows until the stroke limit holds
+        public static int DrawCooldownTicks => 20;     // pause after a draw before the next one can begin
+        public static int DrawPreviewTicks => 24;      // patch 2 only: how long the simplified strokes stay on screen after the release
+        public static float DrawLineWidth => 6f;       // thickness of the drawn path (pixels)
+        public static float DrawRingMax => 22f;        // the time ring at the cursor: radius with the whole window left ...
+        public static float DrawRingMin => 5f;         // ... and with none left
+        public static float DrawWarnFraction => 0.25f; // the ring blinks when this fraction of the window is left
     }
 }

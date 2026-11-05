@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-05 | 145 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-05 | 146 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-ThrustPalette(24) DetachedTrails(22) RemoteHitTracker(21) AfterimageTrail(13) ThrustPlayer(12) ThrustChain(11) IceFx(11) HeldAim(11) CameraShake(11) SweepTrail(9) DarkLanceTuning(9) HeldSwordPose(8) BoomerangFlight(8) ThrustTimeline(7) PixelTrail(7) FlamerangTuning(7) BloodButchererTuning(7) StarfuryTuning(6) MuramasaTuning(6) DarkLanceFx(6)
+ThrustPalette(24) DetachedTrails(22) RemoteHitTracker(21) AfterimageTrail(13) ThrustPlayer(12) ThrustChain(11) IceFx(11) HeldAim(11) CameraShake(11) SweepTrail(9) DarkLanceTuning(9) HeldSwordPose(8) BoomerangFlight(8) ThrustTimeline(7) PixelTrail(7) MuramasaTuning(7) FlamerangTuning(7) BloodButchererTuning(7) StarfuryTuning(6) PixelLine(6)
 
 ## Inheritance
 Project bases -> derived:
@@ -326,18 +326,21 @@ tModLoader/other bases -> project types:
     +Texture:string[ov] +Load()[ov] +Unload()[ov] +RandomFrame()[s] +RegisterBounce(Projectile)[s] +EvictForNewCrystal(int)[s] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 
 ### Content/Weapons/Muramasa/
+**MuramasaDrawState.cs** uses: MuramasaFx, MuramasaTuning, PixelLine
+  class MuramasaDrawState
+    +Finished:bool +PathLength:float +PreviewDone:bool +Strokes:IList<Vector2> +Begin(Player) +TickPreview() +Tick(Player,bool) +Draw()
 **MuramasaFx.cs** uses: MuramasaTuning
   static class MuramasaFx
-    +PlayScrape(Vector2)[s] +PlayClick(Vector2)[s] +PlaySwing(Vector2,bool)[s] +Click(Vector2,Vector2)[s] +BladeSparkle(Vector2,Vector2)[s] +SlashDust(Vector2,Vector2)[s] +HitSpark(Vector2)[s]
+    +PlayScrape(Vector2)[s] +PlayClick(Vector2)[s] +PlaySwing(Vector2,bool)[s] +Click(Vector2,Vector2)[s] +BladeSparkle(Vector2,Vector2)[s] +DrawStart(Vector2)[s] +DrawDust(Vector2)[s] +DrawEnd(IList<Vector2>)[s] +SlashDust(Vector2,Vector2)[s] +HitSpark(Vector2)[s]
 **MuramasaGlobalItem.cs** uses: HeldAim, MuramasaPlayer, MuramasaStanceProjectile, MuramasaSwingProjectile, MuramasaTuning
   class MuramasaGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov]
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +StartSwing(Player,IEntitySource,int,float)[s]
 **MuramasaPlayer.cs** uses: MuramasaStanceProjectile, MuramasaSwingProjectile, MuramasaTuning
   class MuramasaPlayer : ModPlayer
     +Find(int,int)[s] +PostUpdate()[ov]
-**MuramasaStanceProjectile.cs** uses: CameraShake, HeldSwordPose, MuramasaFx, MuramasaPlayer, MuramasaSwingProjectile, MuramasaTuning
+**MuramasaStanceProjectile.cs** uses: CameraShake, HeldSwordPose, MuramasaDrawState, MuramasaFx, MuramasaGlobalItem, MuramasaPlayer, MuramasaSwingProjectile, MuramasaTuning
   class MuramasaStanceProjectile : ModProjectile
-    +Texture:string[ov] +ArmLocal:float +TiltRad:float +Progress:float +FullySheathed:bool +Spawn(IEntitySource,Player,float,float)[s] +AI()[ov] +CanDamage()[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +IsDrawing:bool +ArmLocal:float +TiltRad:float +Progress:float +FullySheathed:bool +Spawn(IEntitySource,Player,float,float)[s] +AI()[ov] +CanDamage()[ov] +PreDraw(ref Color)[ov]
 **MuramasaSwingProjectile.cs** uses: CameraShake, DetachedTrails, HeldSwordPose, MuramasaFx, MuramasaStanceProjectile, MuramasaSweepTrailStyle, MuramasaTuning, SweepTrail
   class MuramasaSwingProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
@@ -346,7 +349,7 @@ tModLoader/other bases -> project types:
     +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
 **MuramasaTuning.cs**
   static class MuramasaTuning
-    +BladeLength:float[s] +SwordScale:float[s] +SheathTicks:int[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +SheathArmDeg:float[s] +SheathTiltDeg:float[s] +ScrapeAt:float[s] +ClickKickDeg:float[s] +ClickFlashTicks:int[s] +ClickDustCount:int[s] +ClickShake:float[s] +OutlineWidth:float[s] +OutlinePulseTicks:int[s] +OutlineMin:float[s] +OutlineMax:float[s] +OutlineFade:float[s] +GlowScale:float[s] +OutlineColor:Color[s] +OutlineCoreColor:Color[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +HitShake:float[s] +FlashTicks:int[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOpacity:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +BlueColor:Color[s] +DeepColor:Color[s]
+    +BladeLength:float[s] +SwordScale:float[s] +SheathTicks:int[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +SheathArmDeg:float[s] +SheathTiltDeg:float[s] +ScrapeAt:float[s] +ClickKickDeg:float[s] +ClickFlashTicks:int[s] +ClickDustCount:int[s] +ClickShake:float[s] +OutlineWidth:float[s] +OutlinePulseTicks:int[s] +OutlineMin:float[s] +OutlineMax:float[s] +OutlineFade:float[s] +GlowScale:float[s] +OutlineColor:Color[s] +OutlineCoreColor:Color[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +HitShake:float[s] +FlashTicks:int[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOpacity:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +BlueColor:Color[s] +DeepColor:Color[s] +TrailLagTicks:float[s] +TrailLengthScale:float[s] +ShowBladeDebug:bool[s] +DrawWindowTicks:int[s] +DrawMaxRadiusTiles:float[s] +DrawSampleSpacing:float[s] +DrawMinPathPixels:float[s] +DrawMaxStrokes:int[s] +DrawSimplifyTolerance:float[s] +DrawCooldownTicks:int[s] +DrawPreviewTicks:int[s] +DrawLineWidth:float[s] +DrawRingMax:float[s] +DrawRingMin:float[s] +DrawWarnFraction:float[s]
 
 ### Content/Weapons/RottedFork/
 **RottedForkFx.cs** uses: CameraShake, OrbitRing, RottedForkTuning, ThrustPalette

@@ -38,6 +38,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         float armLocal;        // facing-local arm angle (positive = down)
         float tiltRad;         // blade tilt relative to the arm
         Vector2 tipPosition;
+        MuramasaDrawState draw; // the path being drawn (owner's client only, never synced)
+        bool wasHeld;          // the button on the previous tick (owner's client)
+        int drawCooldown;
+
+        public bool IsDrawing => draw != null && !draw.Finished;
 
         // What the swing starts from (read by MuramasaGlobalItem on the owner's client).
         public float ArmLocal => armLocal;
@@ -115,7 +120,55 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                 Lighting.AddLight(tipPosition, 0.1f * outlineShown, 0.3f * outlineShown, 0.7f * outlineShown);
             }
 
+            if (Projectile.owner == Main.myPlayer && UpdateDraw(owner))
+                return; // a plain swing took over (this stance is dead)
+
             ticks++;
+        }
+
+        // The draw window (owner's client only). A press on a FULLY sheathed sword opens it; releasing the button or running out of time
+        // closes it. A path under DrawMinPathPixels is a plain swing at the cursor; a longer one is simplified into at most DrawMaxStrokes
+        // straight strokes (patch 2 shows them for a moment; patch 3 spawns a slash per stroke). Nothing here is synced: the sword stays
+        // sheathed for everybody else. Returns true when it started a swing (the stance is dead then).
+        bool UpdateDraw(Player owner)
+        {
+            bool held = owner.controlUseItem;
+            if (ticks == 0)
+                wasHeld = held; // a button that was already down when the stance began (the end of a swing) never opens the window
+            bool pressed = held && !wasHeld;
+            wasHeld = held;
+            if (drawCooldown > 0)
+                drawCooldown--;
+
+            if (draw != null && draw.Finished)
+            {
+                draw.TickPreview();
+                if (draw.PreviewDone)
+                    draw = null;
+            }
+
+            if (draw != null && !draw.Finished)
+            {
+                if (draw.Tick(owner, held))
+                {
+                    if (draw.PathLength < MuramasaTuning.DrawMinPathPixels)
+                    {
+                        draw = null;
+                        Item item = owner.HeldItem;
+                        MuramasaGlobalItem.StartSwing(owner, owner.GetSource_ItemUse(item), owner.GetWeaponDamage(item), owner.GetWeaponKnockback(item, item.knockBack));
+                        return true;
+                    }
+                    drawCooldown = MuramasaTuning.DrawCooldownTicks;
+                    MuramasaFx.DrawEnd(draw.Strokes);
+                }
+            }
+            else if (pressed && FullySheathed && drawCooldown <= 0)
+            {
+                draw = new MuramasaDrawState();
+                draw.Begin(owner);
+                MuramasaFx.DrawStart(Projectile.Center);
+            }
+            return false;
         }
 
         // Moves the owner's arm and puts the projectile in the hand; the blade points along Projectile.rotation.
@@ -149,6 +202,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
 
         public override bool PreDraw(ref Color lightColor)
         {
+            draw?.Draw();
+
             Texture2D texture = TextureAssets.Projectile[Type].Value;
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
 

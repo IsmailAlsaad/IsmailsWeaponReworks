@@ -31,16 +31,30 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             item.UseSound = null;                 // the projectiles play their own sounds
         }
 
-        // One swing at a time.
+        // One swing at a time. A fully sheathed sword is not "used": the stance watches the button itself (the draw window, patch 2) and
+        // starts the plain swing on its own when the drawn path turns out to be short.
         public override bool CanUseItem(Item item, Player player)
         {
-            return MuramasaPlayer.Find(player.whoAmI, ModContent.ProjectileType<MuramasaSwingProjectile>()) == null;
+            if (MuramasaPlayer.Find(player.whoAmI, ModContent.ProjectileType<MuramasaSwingProjectile>()) != null)
+                return false;
+            Projectile stance = MuramasaPlayer.Find(player.whoAmI, ModContent.ProjectileType<MuramasaStanceProjectile>());
+            if (stance != null && stance.ModProjectile is MuramasaStanceProjectile stanceState && stanceState.FullySheathed)
+                return false;
+            return true;
         }
 
         public override bool Shoot(Item item, Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)
         {
             // Shoot only runs on the attacking player's own client; the projectile is then synced to everyone else.
-            // The swing starts from the pose the stance is in right now, so there is no jump; the stance ends.
+            StartSwing(player, source, damage, knockback);
+            return false;
+        }
+
+        // Starts the plain swing at the cursor (owner's client only). It starts from the pose the stance is in right now, so there is no
+        // jump; the stance ends. Used by Shoot (a click before the sword is shut) and by the stance (a drawn path that was too short).
+        public static void StartSwing(Player player, IEntitySource source, int damage, float knockback)
+        {
+            int type = ModContent.ProjectileType<MuramasaSwingProjectile>();
             float startArm = MathHelper.ToRadians(MuramasaTuning.ReadyArmDeg);
             float startTilt = MathHelper.ToRadians(MuramasaTuning.ReadyTiltDeg);
             Projectile stance = MuramasaPlayer.Find(player.whoAmI, ModContent.ProjectileType<MuramasaStanceProjectile>());
@@ -56,7 +70,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
 
             // ai[0] = the arm's start angle (facing-local), ai[1] = the blade tilt's start angle, ai[2] = the aim captured at the click.
             Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, damage, knockback, player.whoAmI, startArm, startTilt, HeldAim.Capture(player));
-            return false;
         }
     }
 }

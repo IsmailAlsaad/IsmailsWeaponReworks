@@ -68,6 +68,36 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             Spark(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Circular(0.5f, 0.5f) + new Vector2(0f, -0.3f), 0.9f, Main.rand.NextBool());
         }
 
+        // The draw window opens (owner's client).
+        public static void DrawStart(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item28 with { Volume = 0.5f, Pitch = 0.5f }, position);
+            for (int i = 0; i < 8; i++)
+                Spark(position, (MathHelper.TwoPi * i / 8f).ToRotationVector2() * Main.rand.NextFloat(1f, 2.5f), 1f, i % 2 == 0);
+        }
+
+        // A point of the drawn path was laid under the cursor.
+        public static void DrawDust(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 2; i++)
+                Spark(position, Main.rand.NextVector2Circular(0.8f, 0.8f), 0.9f, Main.rand.NextBool());
+        }
+
+        // The draw window closed with a path (patch 2 shows the simplified strokes; patch 3 turns them into slashes).
+        public static void DrawEnd(System.Collections.Generic.IList<Vector2> points)
+        {
+            if (Main.dedServ || points == null || points.Count == 0)
+                return;
+            SoundEngine.PlaySound(SoundID.Item30 with { Volume = 0.6f, Pitch = 0.4f }, points[points.Count - 1]);
+            for (int i = 0; i < points.Count; i++)
+                for (int k = 0; k < 4; k++)
+                    Spark(points[i], Main.rand.NextVector2Circular(2.5f, 2.5f), 1.1f, k % 2 == 0);
+        }
+
         public static void SlashDust(Vector2 from, Vector2 to)
         {
             if (Main.dedServ)
