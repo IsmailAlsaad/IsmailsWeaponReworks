@@ -15,7 +15,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         public static float SwordScale => 1.1f;
 
         // ---- sheathing: after every attack (and when the sword is taken out) the player slowly lowers the sword to the hip ----
-        public static int SheathTicks => 50;          // fixed ticks, NOT scaled by melee speed
+        public static int SheathTicks => 150;          // fixed ticks, NOT scaled by melee speed
         public static float ReadyArmDeg => -20f;      // where the sword starts when it is first taken out (facing-local arm angle)
         public static float ReadyTiltDeg => -25f;
         public static float SheathArmDeg => 70f;      // the sheathed pose: the hand at the hip ...
@@ -50,17 +50,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         public static float SwingLowDeg => 65f;       // bottom of the arc
         public static float TiltHighDeg => -12f;
         public static float TiltLowDeg => 12f;
-        public static float HitShake => 2f;
+        public static float HitShake => 1f;
         public static int FlashTicks => 10;
 
         // ---- pixel look of the swing trail ----
         public static float PixelSize => 2f;
-        public static int TrailLifeTicks => 16;
+        public static int TrailLifeTicks => 10;
         public static float TailLifeScale => 0.45f;
-        public static int TrailRails => 7;
-        public static float TrailExpandBy => 0.9f;
+        public static int TrailRails => 8;
+        public static float TrailExpandBy => 0.5f;
         public static float TrailInner => 0.3f;       // fully expanded, the fan reaches down the blade to this fraction of its length
-        public static float TrailOpacity => 0.8f;
+        public static float TrailOpacity => 1f;
         public static int TrailSamplesPerTick => 8;
         public static Color CoreColor => new Color(215, 240, 255, 0);
         public static Color BlueColor => new Color(80, 170, 255, 0);

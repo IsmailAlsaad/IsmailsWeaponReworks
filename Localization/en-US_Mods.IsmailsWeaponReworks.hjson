@@ -37,4 +37,6 @@ Projectiles: {
 	DarkLanceBlastProjectile.DisplayName: Dark Lance Blast Projectile
 	DarkLanceSweepProjectile.DisplayName: Dark Lance Sweep Projectile
 	DarkLanceThrustProjectile.DisplayName: Dark Lance Thrust Projectile
+	MuramasaStanceProjectile.DisplayName: Muramasa Stance Projectile
+	MuramasaSwingProjectile.DisplayName: Muramasa Swing Projectile
 }

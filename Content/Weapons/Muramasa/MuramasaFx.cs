@@ -15,7 +15,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.3f, Pitch = -0.6f }, position);
+
+            // Make it a continous sound
+            //SoundEngine.PlaySound(SoundID.Item7 with { Volume = 1.3f, Pitch = 0f, MaxInstances = 0}, position);
         }
 
         // The click of the sword seating in the scabbard.
@@ -23,8 +25,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = 0.3f }, position);
-            SoundEngine.PlaySound(SoundID.Item35 with { Volume = 0.25f, Pitch = 0.5f }, position);
+            SoundEngine.PlaySound(SoundID.NPCHit52 with { Volume = 0.9f, Pitch = 0.3f }, position);
+            //SoundEngine.PlaySound(SoundID.Item35 with { Volume = 0.25f, Pitch = 0.5f }, position);
         }
 
         public static void PlaySwing(Vector2 position, bool up)
