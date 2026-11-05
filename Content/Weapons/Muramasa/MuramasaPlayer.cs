@@ -35,6 +35,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                 return;
             if (Find(Player.whoAmI, ModContent.ProjectileType<MuramasaSwingProjectile>()) != null)
                 return;
+            if (Find(Player.whoAmI, ModContent.ProjectileType<MuramasaIaidoProjectile>()) != null)
+                return;
             MuramasaStanceProjectile.Spawn(Player.GetSource_ItemUse(Player.HeldItem), Player,
                 MathHelper.ToRadians(MuramasaTuning.ReadyArmDeg), MathHelper.ToRadians(MuramasaTuning.ReadyTiltDeg));
         }

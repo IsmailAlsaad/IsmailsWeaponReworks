@@ -35,7 +35,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         // starts the plain swing on its own when the drawn path turns out to be short.
         public override bool CanUseItem(Item item, Player player)
         {
-            if (MuramasaPlayer.Find(player.whoAmI, ModContent.ProjectileType<MuramasaSwingProjectile>()) != null)
+            if (MuramasaPlayer.Find(player.whoAmI, ModContent.ProjectileType<MuramasaSwingProjectile>()) != null
+                || MuramasaPlayer.Find(player.whoAmI, ModContent.ProjectileType<MuramasaIaidoProjectile>()) != null)
                 return false;
             Projectile stance = MuramasaPlayer.Find(player.whoAmI, ModContent.ProjectileType<MuramasaStanceProjectile>());
             if (stance != null && stance.ModProjectile is MuramasaStanceProjectile stanceState && stanceState.FullySheathed)

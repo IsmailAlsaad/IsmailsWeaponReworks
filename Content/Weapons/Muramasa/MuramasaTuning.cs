@@ -73,16 +73,31 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
 
         // ---- the draw window (patch 2): hold the button on a fully sheathed sword and draw a path with the cursor ----
         public static int DrawWindowTicks => 40;       // how long the path can be drawn
-        public static float DrawMaxRadiusTiles => 25f; // the path is clamped to this radius around the player
         public static float DrawSampleSpacing => 6f;   // a new path point is only laid when the cursor moved this far (pixels)
         public static float DrawMinPathPixels => 32f;  // a path shorter than this (about 2 tiles) is a plain swing at the cursor instead
         public static int DrawMaxStrokes => 8;         // the path is simplified into at most this many straight strokes
         public static float DrawSimplifyTolerance => 12f; // start tolerance of the simplification (pixels); it grows until the stroke limit holds
-        public static int DrawCooldownTicks => 20;     // pause after a draw before the next one can begin
-        public static int DrawPreviewTicks => 24;      // patch 2 only: how long the simplified strokes stay on screen after the release
         public static float DrawLineWidth => 6f;       // thickness of the drawn path (pixels)
         public static float DrawRingMax => 22f;        // the time ring at the cursor: radius with the whole window left ...
         public static float DrawRingMin => 5f;         // ... and with none left
         public static float DrawWarnFraction => 0.25f; // the ring blinks when this fraction of the window is left
+
+        // ---- the iaido (patch 3): the released path becomes one slash per stroke, cut by a phantom Muramasa ----
+        public static int IaidoDrawTicks => 3;          // the arm whips from the hip to the aim; the sword vanishes when it gets there
+        public static int IaidoRecoverTicks => 8;       // after the last slash the sword is back in the hand and snaps to the ready pose
+        public static int SlashGapTicks => 3;           // each stroke starts this many ticks after the previous one
+        public static float SlashSpeed => 90f;          // phantom speed in pixels per tick (sets how long a stroke takes) ...
+        public static int SlashMinTravelTicks => 3;     // ... but never shorter than this ...
+        public static int SlashMaxTravelTicks => 10;    // ... and never longer than this
+        public static float SlashEasePower => 1.8f;     // 1 = even speed; higher = fast start and a decelerating end
+        public static float SlashDamageMultiplier => 2.5f; // damage of every stroke, times the item's own damage
+        public static float SlashWidth => 28f;          // how wide the cut is (pixels), for hits
+        public static float SlashLineWidth => 10f;      // how thick the drawn slash line is (pixels)
+        public static int SlashLingerTicks => 14;       // the slash line fades out for this long after the phantom arrived
+        public static int SlashAfterimageTicks => 8;    // life of the phantom's afterimages
+        public static float SlashShake => 1.5f;         // camera punch when a stroke starts
+        public static float SlashHitShake => 2f;        // camera punch when a stroke hits something
+        public static float SlashPitchLow => -0.1f;     // the stroke sounds rise in pitch from the first stroke ...
+        public static float SlashPitchHigh => 0.8f;     // ... to the eighth
     }
 }

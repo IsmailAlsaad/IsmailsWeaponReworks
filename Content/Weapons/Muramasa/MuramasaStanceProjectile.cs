@@ -40,9 +40,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         Vector2 tipPosition;
         MuramasaDrawState draw; // the path being drawn (owner's client only, never synced)
         bool wasHeld;          // the button on the previous tick (owner's client)
-        int drawCooldown;
 
-        public bool IsDrawing => draw != null && !draw.Finished;
+        public bool IsDrawing => draw != null;
 
         // What the swing starts from (read by MuramasaGlobalItem on the owner's client).
         public float ArmLocal => armLocal;
@@ -78,7 +77,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
 
             // Gone with the player, with the item in their hand, when they get crowd-controlled, or when a swing takes over.
             if (!owner.active || owner.dead || owner.noItems || owner.CCed || owner.HeldItem.type != ItemID.Muramasa
-                || MuramasaPlayer.Find(Projectile.owner, ModContent.ProjectileType<MuramasaSwingProjectile>()) != null)
+                || MuramasaPlayer.Find(Projectile.owner, ModContent.ProjectileType<MuramasaSwingProjectile>()) != null
+                || MuramasaPlayer.Find(Projectile.owner, ModContent.ProjectileType<MuramasaIaidoProjectile>()) != null)
             {
                 Projectile.Kill();
                 return;
@@ -121,15 +121,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             }
 
             if (Projectile.owner == Main.myPlayer && UpdateDraw(owner))
-                return; // a plain swing took over (this stance is dead)
+                return; // a swing or the iaido took over (this stance is dead)
 
             ticks++;
         }
 
         // The draw window (owner's client only). A press on a FULLY sheathed sword opens it; releasing the button or running out of time
         // closes it. A path under DrawMinPathPixels is a plain swing at the cursor; a longer one is simplified into at most DrawMaxStrokes
-        // straight strokes (patch 2 shows them for a moment; patch 3 spawns a slash per stroke). Nothing here is synced: the sword stays
-        // sheathed for everybody else. Returns true when it started a swing (the stance is dead then).
+        // straight strokes and MuramasaIaidoProjectile.Launch turns them into the iaido (one slash per stroke). The path itself is never
+        // synced: the slash projectiles carry everything. Returns true when this stance is dead (a swing or the iaido took over).
         bool UpdateDraw(Player owner)
         {
             bool held = owner.controlUseItem;
@@ -137,32 +137,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                 wasHeld = held; // a button that was already down when the stance began (the end of a swing) never opens the window
             bool pressed = held && !wasHeld;
             wasHeld = held;
-            if (drawCooldown > 0)
-                drawCooldown--;
 
-            if (draw != null && draw.Finished)
+            if (draw != null)
             {
-                draw.TickPreview();
-                if (draw.PreviewDone)
-                    draw = null;
-            }
+                if (!draw.Tick(owner, held))
+                    return false;
 
-            if (draw != null && !draw.Finished)
-            {
-                if (draw.Tick(owner, held))
+                MuramasaDrawState finished = draw;
+                draw = null;
+                if (finished.PathLength < MuramasaTuning.DrawMinPathPixels || finished.Strokes.Count < 2)
                 {
-                    if (draw.PathLength < MuramasaTuning.DrawMinPathPixels)
-                    {
-                        draw = null;
-                        Item item = owner.HeldItem;
-                        MuramasaGlobalItem.StartSwing(owner, owner.GetSource_ItemUse(item), owner.GetWeaponDamage(item), owner.GetWeaponKnockback(item, item.knockBack));
-                        return true;
-                    }
-                    drawCooldown = MuramasaTuning.DrawCooldownTicks;
-                    MuramasaFx.DrawEnd(draw.Strokes);
+                    Item item = owner.HeldItem;
+                    MuramasaGlobalItem.StartSwing(owner, owner.GetSource_ItemUse(item), owner.GetWeaponDamage(item), owner.GetWeaponKnockback(item, item.knockBack));
                 }
+                else
+                    MuramasaIaidoProjectile.Launch(owner, finished.Strokes);
+                return true;
             }
-            else if (pressed && FullySheathed && drawCooldown <= 0)
+
+            if (pressed && FullySheathed)
             {
                 draw = new MuramasaDrawState();
                 draw.Begin(owner);

@@ -98,6 +98,55 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                     Spark(points[i], Main.rand.NextVector2Circular(2.5f, 2.5f), 1.1f, k % 2 == 0);
         }
 
+        // A stroke starts: a swoosh that rises in pitch with the stroke's number, and a burst of sparks where it begins.
+        public static void PlaySlash(Vector2 position, int index)
+        {
+            if (Main.dedServ)
+                return;
+            float pitch = MathHelper.Lerp(MuramasaTuning.SlashPitchLow, MuramasaTuning.SlashPitchHigh, MathHelper.Clamp(index / 7f, 0f, 1f));
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.9f, Pitch = pitch }, position);
+            SoundEngine.PlaySound(SoundID.Item30 with { Volume = 0.35f, Pitch = pitch }, position);
+        }
+
+        public static void SlashStart(Vector2 start, Vector2 offset)
+        {
+            if (Main.dedServ)
+                return;
+            Vector2 direction = offset.SafeNormalize(Vector2.UnitX);
+            for (int i = 0; i < 8; i++)
+                Spark(start, direction.RotatedByRandom(0.6f) * Main.rand.NextFloat(1.5f, 4f), 1.2f, i % 2 == 0);
+        }
+
+        // Sparks laid along the part of the stroke the phantom crossed this tick.
+        public static void SlashSweepDust(Vector2 from, Vector2 to)
+        {
+            if (Main.dedServ)
+                return;
+            int count = 2 + (int)(Vector2.Distance(from, to) / 14f);
+            for (int i = 0; i < count; i++)
+                Spark(Vector2.Lerp(from, to, Main.rand.NextFloat()), Main.rand.NextVector2Circular(1.4f, 1.4f), 1.1f, Main.rand.NextBool());
+        }
+
+        public static void SlashEnd(Vector2 end, Vector2 offset)
+        {
+            if (Main.dedServ)
+                return;
+            Vector2 direction = offset.SafeNormalize(Vector2.UnitX);
+            for (int i = 0; i < 10; i++)
+                Spark(end, direction.RotatedByRandom(0.9f) * Main.rand.NextFloat(1f, 5f), 1.3f, i % 2 == 0);
+        }
+
+        // The sword is drawn: it flashes along its whole length and vanishes (the phantom takes over).
+        public static void IaidoDraw(Vector2 hand, Vector2 tip)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.8f, Pitch = 0.6f }, hand);
+            SoundEngine.PlaySound(SoundID.Item28 with { Volume = 0.5f, Pitch = 0.2f }, hand);
+            for (int i = 0; i < 14; i++)
+                Spark(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Circular(2.5f, 2.5f), 1.3f, i % 2 == 0);
+        }
+
         public static void SlashDust(Vector2 from, Vector2 to)
         {
             if (Main.dedServ)

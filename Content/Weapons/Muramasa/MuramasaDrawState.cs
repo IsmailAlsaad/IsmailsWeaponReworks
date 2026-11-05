@@ -8,11 +8,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
 {
     /// <summary>
     /// The path the owner draws with the cursor during the Muramasa's draw window (patch 2). Owner's client only: it is never synced.
-    /// Begin starts it, Tick samples the cursor once per tick (a point is only laid when the cursor moved DrawSampleSpacing, and every point
-    /// is clamped to DrawMaxRadiusTiles around the player) and returns true on the tick the window ends (button released or time up).
+    /// Begin starts it, Tick samples the cursor once per tick (a point is only laid when the cursor moved DrawSampleSpacing; there is no
+    /// distance limit) and returns true on the tick the window ends (button released or time up).
     /// When it ends the path is simplified (Douglas-Peucker, the tolerance grows until at most DrawMaxStrokes strokes are left) into
-    /// Strokes: a polyline whose points are the stroke ends. Draw shows the glowing path with the time ring at the cursor while it is live,
-    /// then the simplified strokes fading out for DrawPreviewTicks (patch 3 replaces that preview with the slash projectiles).
+    /// Strokes: a polyline whose points are the stroke ends (MuramasaIaidoProjectile.Launch turns them into slashes). Draw shows the
+    /// glowing path with the time ring at the cursor while the window is open.
     /// </summary>
     public class MuramasaDrawState
     {
@@ -20,7 +20,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         List<Vector2> strokes = new List<Vector2>();
         Vector2 cursor;
         int ticks;
-        int previewTicks;
         Vector2[] points = new Vector2[0];
         float[] ts = new float[0];
         Vector2[] ringPoints = new Vector2[0];
@@ -28,38 +27,28 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
 
         public bool Finished { get; private set; }
         public float PathLength { get; private set; }
-        public bool PreviewDone => Finished && previewTicks >= MuramasaTuning.DrawPreviewTicks;
         // The simplified path: the points between the strokes (Count - 1 strokes). Empty until the window has ended.
         public IList<Vector2> Strokes => strokes;
 
         float TimeLeft => MathHelper.Clamp(1f - ticks / (float)Math.Max(1, MuramasaTuning.DrawWindowTicks), 0f, 1f);
 
-        // The cursor, held inside the draw radius around the player.
-        static Vector2 ClampedCursor(Player owner)
+        // The cursor in the world. There is no distance limit.
+        static Vector2 CursorWorld()
         {
-            Vector2 offset = Main.MouseWorld - owner.Center;
-            float max = MuramasaTuning.DrawMaxRadiusTiles * 16f;
-            if (offset.LengthSquared() > max * max)
-                offset = Vector2.Normalize(offset) * max;
-            return owner.Center + offset;
+            return Main.MouseWorld;
         }
 
         public void Begin(Player owner)
         {
-            cursor = ClampedCursor(owner);
+            cursor = CursorWorld();
             path.Add(cursor);
-        }
-
-        public void TickPreview()
-        {
-            previewTicks++;
         }
 
         // One tick of the window. Returns true on the tick it ends.
         public bool Tick(Player owner, bool held)
         {
             ticks++;
-            cursor = ClampedCursor(owner);
+            cursor = CursorWorld();
             if (Vector2.Distance(path[path.Count - 1], cursor) >= Math.Max(1f, MuramasaTuning.DrawSampleSpacing))
             {
                 path.Add(cursor);
@@ -160,9 +149,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         {
             if (Main.dedServ)
                 return;
-            if (Finished)
-                DrawPreview();
-            else
+            if (!Finished)
                 DrawLive();
         }
 
@@ -208,32 +195,5 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             PixelLine.Draw(points, ts, 2, grid, t => grid * 2f, t => MuramasaTuning.CoreColor * blink);
         }
 
-        // Patch 2 only: the simplified strokes stay for a moment so the simplification can be checked by eye.
-        void DrawPreview()
-        {
-            if (strokes.Count < 2)
-                return;
-            float grid = MuramasaTuning.PixelSize;
-            float width = MuramasaTuning.DrawLineWidth;
-            float fade = 1f - previewTicks / (float)Math.Max(1, MuramasaTuning.DrawPreviewTicks);
-            fade = Math.Max(0f, fade) * Math.Max(0f, fade);
-            Fill(strokes, 0, Vector2.Zero);
-            int count = strokes.Count;
-            PixelLine.Draw(points, ts, count, grid, t => width * 1.6f, t => MuramasaTuning.DeepColor * (0.5f * fade));
-            PixelLine.Draw(points, ts, count, grid, t => width * 0.8f, t => MuramasaTuning.BlueColor * fade);
-            PixelLine.Draw(points, ts, count, grid, t => Math.Max(grid, width * 0.3f), t => MuramasaTuning.CoreColor * fade);
-
-            // A bright dot on every stroke end.
-            for (int i = 0; i < strokes.Count; i++)
-            {
-                ringPoints = ringPoints.Length < 2 ? new Vector2[2] : ringPoints;
-                ringTs = ringTs.Length < 2 ? new float[2] : ringTs;
-                ringPoints[0] = strokes[i];
-                ringPoints[1] = strokes[i];
-                ringTs[0] = 0f;
-                ringTs[1] = 1f;
-                PixelLine.Draw(ringPoints, ringTs, 2, grid, t => width * 1.4f, t => MuramasaTuning.CoreColor * fade);
-            }
-        }
     }
 }
