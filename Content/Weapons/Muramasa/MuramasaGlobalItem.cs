@@ -1,5 +1,6 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
@@ -73,6 +74,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             float aim = HeldAim.Capture(player);
             player.ChangeDir(HeldAim.Facing(aim)); // always face the side the cursor is on, from the first tick of every swing
             Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, damage, knockback, player.whoAmI, startArm, startTilt, aim);
+        }
+
+        public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
+        {
+            tooltips.Add(new TooltipLine(Mod, "Muramasa1", "Draw quick slashes when fully sheathed"));
         }
     }
 }
