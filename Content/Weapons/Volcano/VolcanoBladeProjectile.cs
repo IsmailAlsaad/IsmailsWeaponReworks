@@ -16,7 +16,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
     /// draws the handle sprite and feeds the procedural lava blade to the metaball layers (VolcanoBlade). Holding the button swings it:
     /// a chop centered on the cursor (anticipation, a fast strike that decelerates, a recover), repeating while the button stays down; between
     /// swings the sword rests in a ready pose with the flames rising. The strike damages (once per enemy per swing) and every true melee hit
-    /// adds heat (VolcanoPlayer.Heat): the blade grows hotter and more violent, up to fully charged (the right-click throw comes in patch 2).
+    /// adds heat (VolcanoPlayer.Heat): the blade grows hotter and more violent, up to fully charged. At full heat a right click throws the whole sword (patch 2, VolcanoThrownProjectile) and every enemy the blade hits bursts into a small lava explosion (VolcanoBlastProjectile).
     /// MULTIPLAYER: the owner's client decides everything (the click, the aim, the speed, the hits, the heat). What the other machines need
     /// travels in SendExtraAI: the heat (a byte), a swing serial, the swing's aim and speed; they start the same swing when the serial
     /// changes and run the same timers for pose, trail, sound and sparks. Hits and damage are the owner's alone (RemoteHitTracker gives the
@@ -28,6 +28,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public override string Texture => "Terraria/Images/Item_" + ItemID.FieryGreatsword;
 
         static Asset<Texture2D> handleArt;
+        public static Asset<Texture2D> HandleArt => handleArt; // the thrown sword draws the same handle
 
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
@@ -58,6 +59,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         float heatShown;          // the heat that is drawn: eases toward the real one
         bool wasCharged;
         bool strikeStarted;
+        bool rightWasDown;        // owner: the right button on the previous tick (a throw needs a fresh press)
         float flash;
         Vector2 lastOwnerCenter;
         Vector2 prevCenter;       // the hand and angle on the previous tick: the hit test sweeps from them
@@ -230,6 +232,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             heatShown += (heatTarget - heatShown) * MathHelper.Clamp(VolcanoTuning.HeatShowEase, 0.01f, 1f);
             if (Math.Abs(heatTarget - heatShown) < 0.002f)
                 heatShown = heatTarget;
+
+            // Right click at full heat: the whole sword is thrown. A fresh press only, and not while the click is used on a chest, a door or the
+            // inventory. Below full heat it does nothing.
+            if (IsOwner)
+            {
+                bool rightDown = owner.controlUseTile && !owner.mouseInterface && !owner.tileInteractionHappened;
+                bool pressed = rightDown && !rightWasDown;
+                rightWasDown = rightDown;
+                if (pressed && heatTarget >= VolcanoTuning.ChargedAt)
+                {
+                    Throw(owner);
+                    return;
+                }
+            }
 
             // A swing starts: the owner's click (the button is held), or the owner's swing reaching this machine.
             if (!swinging)
@@ -478,8 +494,40 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             target.AddBuff(BuffID.OnFire, VolcanoTuning.OnFireTicks + (int)(VolcanoTuning.OnFireHeatBonusTicks * heatShown));
             VolcanoFx.HitSpark(target.Center, heatShown);
             CameraShake.Punch(target.Center, VolcanoTuning.HitShake * (0.6f + heatShown), 8);
+            if (Owner.GetModPlayer<VolcanoPlayer>().Heat >= VolcanoTuning.ChargedAt)
+                SpawnBlast(target); // already fully charged before this hit
             VolcanoPlayer.AddHeat(Owner, VolcanoTuning.HeatPerHit);
             Projectile.netUpdate = true; // the other machines hear the new heat through SendExtraAI
+        }
+
+        // Owner's client. The whole sword leaves the hand, pointed at the cursor, tip first (VolcanoThrownProjectile), and this held blade ends.
+        // VolcanoPlayer keeps the hand empty while the thrown sword exists and for RegrowTicks after it.
+        void Throw(Player owner)
+        {
+            float aim = HeldAim.Capture(owner);
+            owner.ChangeDir(HeldAim.Facing(aim));
+            Vector2 hand = HeldSwordPose.HandWorld(owner, aim);
+            Vector2 direction = HeldSwordPose.BladeDirectionWorld(owner, aim);
+            Vector2 tip = hand + direction * ((VolcanoTuning.HandleLength + VolcanoTuning.BladeLength) * Projectile.scale);
+            int type = ModContent.ProjectileType<VolcanoThrownProjectile>();
+            int index = Projectile.NewProjectile(owner.GetSource_ItemUse(owner.HeldItem), tip, direction * VolcanoTuning.ThrowSpeed, type,
+                Projectile.damage, Projectile.knockBack, owner.whoAmI, 0f, -1f, direction.ToRotation());
+            if (index >= 0 && index < Main.maxProjectiles)
+            {
+                Projectile thrown = Main.projectile[index];
+                thrown.CritChance = Projectile.CritChance;
+                (thrown.ModProjectile as VolcanoThrownProjectile)?.Setup(Projectile.scale);
+            }
+            Projectile.Kill();
+        }
+
+        // Owner's client. A fully charged swing: the enemy that was hit bursts into a small lava explosion that also hurts what stands next to it.
+        void SpawnBlast(NPC target)
+        {
+            Vector2 direction = Projectile.rotation.ToRotationVector2();
+            Vector2 point = Vector2.Clamp(Projectile.Center + direction * TotalLength * 0.7f, target.TopLeft, target.BottomRight);
+            int damage = (int)(Projectile.damage * VolcanoTuning.BlastDamageMultiplier);
+            Projectile.NewProjectile(Projectile.GetSource_OnHit(target), point, Vector2.Zero, ModContent.ProjectileType<VolcanoBlastProjectile>(), damage, 0f, Projectile.owner);
         }
 
         // The trail outlives the blade and keeps fading on its own (DetachedTrails).
@@ -508,35 +556,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         // file exists, the vanilla sprite cropped to its hilt corner stands in.
         void DrawHandle(Color lightColor)
         {
-            float scale = Projectile.scale;
-            Color body = Color.Lerp(lightColor, Color.White, 0.35f + 0.4f * heatShown);
-
-            if (handleArt?.IsLoaded == true)
-            {
-                Texture2D art = handleArt.Value;
-                HeldSwordPose.Sprite(art, Projectile.spriteDirection, out _, out float offset, out SpriteEffects effects);
-                Vector2 origin = new Vector2(art.Width, art.Height) * 0.5f;
-                Vector2 position = jointPosition - Main.screenPosition;
-                float rotation = Projectile.rotation + offset;
-                Main.EntitySpriteDraw(art, position, null, body, rotation, origin, scale, effects, 0);
-                float glow = heatShown * 0.6f + flash * 0.4f;
-                if (glow > 0.05f)
-                    Main.EntitySpriteDraw(art, position, null, VolcanoTuning.HandleGlowColor * glow, rotation, origin, scale * 1.06f, effects, 0);
-                return;
-            }
-
-            Texture2D texture = TextureAssets.Projectile[Type].Value;
-            int width = Math.Max(1, (int)(texture.Width * VolcanoTuning.HandleCrop));
-            int height = Math.Max(1, (int)(texture.Height * VolcanoTuning.HandleCrop));
-            Rectangle source = new Rectangle(0, texture.Height - height, width, height);
-            HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out _, out float rotationOffset, out SpriteEffects flip);
-            Vector2 hiltOrigin = Projectile.spriteDirection > 0 ? new Vector2(0f, height) : new Vector2(width, height);
-            Vector2 hand = Projectile.Center - Main.screenPosition;
-            float angle = Projectile.rotation + rotationOffset;
-            Main.EntitySpriteDraw(texture, hand, source, body, angle, hiltOrigin, scale, flip, 0);
-            float standInGlow = heatShown * 0.6f + flash * 0.4f;
-            if (standInGlow > 0.05f)
-                Main.EntitySpriteDraw(texture, hand, source, VolcanoTuning.HandleGlowColor * standInGlow, angle, hiltOrigin, scale * 1.06f, flip, 0);
+            VolcanoBlade.DrawHandle(handleArt, TextureAssets.Projectile[Type].Value, Projectile.Center, jointPosition, Projectile.rotation, Projectile.spriteDirection, Projectile.scale, lightColor, heatShown, flash);
         }
 
         // VolcanoTuning.ShowBladeDebug: a magenta square on the tip the hit test uses and a green square on the joint, so HandleLength and

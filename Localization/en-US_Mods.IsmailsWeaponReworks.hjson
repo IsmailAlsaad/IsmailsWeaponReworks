@@ -42,4 +42,6 @@ Projectiles: {
 	MuramasaIaidoProjectile.DisplayName: Muramasa Iaido Projectile
 	MuramasaSlashProjectile.DisplayName: Muramasa Slash Projectile
 	VolcanoBladeProjectile.DisplayName: Volcano Blade Projectile
+	VolcanoBlastProjectile.DisplayName: Volcano Blast Projectile
+	VolcanoThrownProjectile.DisplayName: Volcano Thrown Projectile
 }

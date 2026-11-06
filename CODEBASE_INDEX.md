@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-06 | 156 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-06 | 159 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-DetachedTrails(25) ThrustPalette(24) RemoteHitTracker(23) CameraShake(14) AfterimageTrail(14) ThrustPlayer(12) HeldAim(12) IceFx(11) HeldSwordPose(11) DarkLanceTuning(10) ThrustChain(9) SweepTrail(9) PixelTrail(9) MuramasaTuning(9) BoomerangFlight(8) PixelLine(7) FlamerangTuning(7) DarkLanceFx(7) BloodButchererTuning(7) ThrustTimeline(6)
+DetachedTrails(25) ThrustPalette(24) RemoteHitTracker(23) CameraShake(17) AfterimageTrail(14) ThrustPlayer(12) HeldSwordPose(12) HeldAim(12) IceFx(11) DarkLanceTuning(10) ThrustChain(9) SweepTrail(9) PixelTrail(9) MuramasaTuning(9) BoomerangFlight(8) VolcanoTuning(7) PixelLine(7) FlamerangTuning(7) DarkLanceFx(7) BloodButchererTuning(7)
 
 ## Inheritance
 Project bases -> derived:
@@ -15,7 +15,7 @@ Project bases -> derived:
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - SweepTrailStyle: BloodButchererSpinTrailStyle, IceBladeTrailStyle, MuramasaSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
 tModLoader/other bases -> project types:
-- ModProjectile (39): BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
+- ModProjectile (41): BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
 - GlobalItem (19): BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, MuramasaGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem
 - ModPlayer (9): DarkLancePlayer, DashPlayer, ImmunityPlayer, MuramasaPlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer
 - GlobalNPC (2): BloodButchererGripNPC, CarriedNPC
@@ -57,6 +57,9 @@ tModLoader/other bases -> project types:
 **CarriedNPC.cs**
   class CarriedNPC : GlobalNPC
     +InstancePerEntity:bool[ov] +HoldTick:long +Held:bool +CanCarry(NPC,float)[s] +Hold(NPC,Vector2)[s] +Release(NPC)[s] +ClampToOpenAir(Vector2,Vector2,NPC)[s] +PreAI(NPC)[ov] +CanHitPlayer(NPC,Player,ref int)[ov]
+**Contact.cs**
+  static class Contact
+    +EntryPoint(Vector2,Vector2,Rectangle)[s]
 **DashPlayer.cs** uses: BounceMath, DashSettings, Immunity, Phase
   enum DashPhase
     {None, Dash, HitStop, Bounce}
@@ -505,7 +508,7 @@ tModLoader/other bases -> project types:
 **ThornChakramGlobalItem.cs** uses: ThornChakramProjectile, ThornChakramTuning
   class ThornChakramGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**ThornChakramProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, RemoteHitTracker, ThornChakramFx, ThornChakramStingerProjectile, ThornChakramTuning
+**ThornChakramProjectile.cs** uses: AfterimageTrail, BoomerangFlight, Contact, DetachedTrails, RemoteHitTracker, ThornChakramFx, ThornChakramStingerProjectile, ThornChakramTuning
   class ThornChakramProjectile : ModProjectile
     +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
@@ -554,21 +557,24 @@ tModLoader/other bases -> project types:
     +ThrowSpeed:float[s] +HoldRange:float[s] +MinThrowSpeed:float[s] +StopSnapDistance:float[s] +LeashDistance:float[s] +FlightMaxTicks:int[s] +SteerTurn:float[s] +HoldSteerSpeed:float[s] +HoldSteerSmoothing:float[s] +HoldSteerDeadzone:float[s] +SteerSyncTicks:int[s] +SpinStart:float[s] +SpinCap:float[s] +SpinRampTicks:int[s] +HitCooldownSlow:int[s] +HitCooldownFast:int[s] +HitRadius:float[s] +HoldKnockbackMultiplier:float[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +HitsPerEthereal:int[s] +EtherealDamageMultiplier:float[s] +EtherealMaxAlive:int[s] +EtherealHitsToExplode:int[s] +EtherealLaunchSpeed:float[s] +EtherealLaunchTicks:int[s] +EtherealHomingSpeed:float[s] +EtherealTurn:float[s] +EtherealSearchRange:float[s] +EtherealRetargetTicks:int[s] +EtherealReturnAcceleration:float[s] +EtherealReturnDrag:float[s] +EtherealReturnMaxSpeed:float[s] +EtherealHitCooldownTicks:int[s] +EtherealLifeTicks:int[s] +GoldenAngleDeg:float[s] +MainColor:Color[s] +EtherealColor:Color[s] +EtherealOpacity:float[s]
 
 ### Content/Weapons/Volcano/
-**VolcanoBlade.cs** uses: MetaballLayer, MetaballLayers, VolcanoBlobStyle, VolcanoDripStyle, VolcanoFx, VolcanoTuning
+**VolcanoBlade.cs** uses: HeldSwordPose, MetaballLayer, MetaballLayers, VolcanoBlobStyle, VolcanoDripStyle, VolcanoFx, VolcanoTuning
   static class VolcanoBlade
-    +Feed(Vector2,Vector2,float,float,float,float,float,Vector2)[s]
-**VolcanoBladeProjectile.cs** uses: CameraShake, DetachedTrails, HeldAim, HeldSwordPose, MetaballLayers, RemoteHitTracker, SweepTrail, VolcanoBlade, VolcanoBlobStyle, VolcanoFx, VolcanoPlayer, VolcanoSweepTrailStyle, VolcanoTuning
+    +DrawHandle(Asset<Texture2D>,Texture2D,Vector2,Vector2,float,int,float,Color,float,float)[s] +Feed(Vector2,Vector2,float,float,float,float,float,Vector2,float,float)[s]
+**VolcanoBladeProjectile.cs** uses: CameraShake, DetachedTrails, HeldAim, HeldSwordPose, MetaballLayers, RemoteHitTracker, SweepTrail, VolcanoBlade, VolcanoBlastProjectile, VolcanoBlobStyle, VolcanoFx, VolcanoPlayer, VolcanoSweepTrailStyle, VolcanoThrownProjectile, VolcanoTuning
   class VolcanoBladeProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**VolcanoFx.cs**
+    +Texture:string[ov] +HandleArt:Asset<Texture2D>[s] +Load()[ov] +Unload()[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**VolcanoBlastProjectile.cs** uses: CameraShake, VolcanoFx, VolcanoTuning
+  class VolcanoBlastProjectile : ModProjectile
+    +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**VolcanoFx.cs** uses: CameraShake, MetaballLayer, MetaballLayers, VolcanoDripStyle, VolcanoTuning
   static class VolcanoFx
-    +PlaySwing(Vector2,float)[s] +PlayHit(Vector2,float)[s] +PlayCharged(Vector2)[s] +Ember(Vector2,Vector2)[s] +SwingEmbers(Vector2,Vector2,float)[s] +HitSpark(Vector2,float)[s] +Charged(Vector2,Vector2)[s]
+    +PlaySwing(Vector2,float)[s] +PlayHit(Vector2,float)[s] +PlayCharged(Vector2)[s] +Ember(Vector2,Vector2)[s] +SwingEmbers(Vector2,Vector2,float)[s] +HitSpark(Vector2,float)[s] +PlayThrow(Vector2)[s] +Throw(Vector2,Vector2)[s] +Stick(Vector2,Vector2,bool)[s] +PlaySizzle(Vector2,float)[s] +Pop(Vector2)[s] +Blast(Vector2,float)[s] +Charged(Vector2,Vector2)[s]
 **VolcanoGlobalItem.cs**
   class VolcanoGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**VolcanoPlayer.cs** uses: VolcanoBladeProjectile, VolcanoTuning
+**VolcanoPlayer.cs** uses: VolcanoBladeProjectile, VolcanoThrownProjectile, VolcanoTuning
   class VolcanoPlayer : ModPlayer
-    +Heat:float +Find(int,int)[s] +AddHeat(Player,float)[s] +OnRespawn()[ov] +PostUpdate()[ov]
+    +Heat:float +Find(int,int)[s] +AddHeat(Player,float)[s] +ResetHeat(Player)[s] +OnRespawn()[ov] +PostUpdate()[ov]
 **VolcanoStyles.cs** uses: MetaballParticle, MetaballStyle, SweepFade, SweepTrailStyle, VolcanoTuning
   class VolcanoBlobStyle : MetaballStyle
     +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +DrawInProjectile:bool[ov] +Rise:float[ov] +Drag:float[ov] +Wobble:float[ov] +SizeOverLife(float)[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]
@@ -576,9 +582,14 @@ tModLoader/other bases -> project types:
     +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +Rise:float[ov] +Drag:float[ov] +SizeOverLife(float)[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov] +Step(MetaballParticle)[ov]
   class VolcanoSweepTrailStyle : SweepTrailStyle
     +Heat:float +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
+**VolcanoThrownProjectile.cs** uses: CameraShake, Contact, MetaballLayer, MetaballLayers, VolcanoBlade, VolcanoBladeProjectile, VolcanoBlobStyle, VolcanoDripStyle, VolcanoFx, VolcanoPlayer, VolcanoTuning
+  class VolcanoThrownProjectile : ModProjectile
+    +Texture:string[ov] +Setup(float) +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Flying, Stuck, Spent}
 **VolcanoTuning.cs**
   static class VolcanoTuning
-    +HandleLength:float[s] +BladeLength:float[s] +SwordScale:float[s] +HandleCrop:float[s] +ShowBladeDebug:bool[s] +HeatPerHit:float[s] +HeatHoldTicks:int[s] +HeatDecayPerTick:float[s] +HeatShowEase:float[s] +HeatSyncStep:float[s] +ChargedAt:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +HitWidth:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +MinSpeed:float[s] +MaxSpeed:float[s] +HeavyTimeScale:float[s] +HeavyDamageMultiplier:float[s] +HeavyKnockbackMultiplier:float[s] +TurnNoInheritTicks:int[s] +ChargedReadyArmDeg:float[s] +ChargedReadyTiltDeg:float[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +IdleBobDeg:float[s] +IdleBobTicks:int[s] +IdleEase:float[s] +OnFireTicks:int[s] +OnFireHeatBonusTicks:int[s] +HitShake:float[s] +FlashTicks:int[s] +PixelSize:float[s] +BlobSpacing:float[s] +BlobMerge:float[s] +BlobOutline:float[s] +BlobGlow:float[s] +EdgeRadiusLow:float[s] +EdgeRadiusHigh:float[s] +WobbleLow:float[s] +WobbleHigh:float[s] +WobbleSpeedLow:float[s] +WobbleSpeedHigh:float[s] +HeatLow:float[s] +HeatHigh:float[s] +HeatFlicker:float[s] +CoreFrom:float[s] +CoreHeat:float[s] +FlameHeat:float[s] +BodyStart:float[s] +BodyEnd:float[s] +FlameStart:float[s] +FlameEnd:float[s] +DripStart:float[s] +DripEnd:float[s] +SpitStart:float[s] +SpitEnd:float[s] +FlameRise:float[s] +FlameDrag:float[s] +FlameWobble:float[s] +FlameRateLow:float[s] +FlameRateHigh:float[s] +FlameSize:float[s] +FlameSizeHeat:float[s] +FlameLifeMin:int[s] +FlameLifeMax:int[s] +DripGravity:float[s] +DripHeat:float[s] +DripMerge:float[s] +DripFrom:float[s] +DripRateHigh:float[s] +DripSizeMin:float[s] +DripSizeMax:float[s] +SpitFrom:float[s] +SpitRateHigh:float[s] +SpitSpeedMin:float[s] +SpitSpeedMax:float[s] +EmberDustFrom:float[s] +EmberDustChance:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailSamplesPerTick:int[s] +TrailLagTicks:float[s] +TrailLengthScale:float[s] +TrailOpacityLow:float[s] +TrailOpacityHigh:float[s] +CoreColor:Color[s] +OrangeColor:Color[s] +DeepColor:Color[s] +OutlineColor:Color[s] +GlowColor:Color[s] +HandleGlowColor:Color[s] +LavaFill(float)[s]
+    +HandleLength:float[s] +BladeLength:float[s] +SwordScale:float[s] +HandleCrop:float[s] +ShowBladeDebug:bool[s] +HeatPerHit:float[s] +HeatHoldTicks:int[s] +HeatDecayPerTick:float[s] +HeatShowEase:float[s] +HeatSyncStep:float[s] +ChargedAt:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +HitWidth:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +MinSpeed:float[s] +MaxSpeed:float[s] +HeavyTimeScale:float[s] +HeavyDamageMultiplier:float[s] +HeavyKnockbackMultiplier:float[s] +TurnNoInheritTicks:int[s] +ChargedReadyArmDeg:float[s] +ChargedReadyTiltDeg:float[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +IdleBobDeg:float[s] +IdleBobTicks:int[s] +IdleEase:float[s] +OnFireTicks:int[s] +OnFireHeatBonusTicks:int[s] +HitShake:float[s] +FlashTicks:int[s] +PixelSize:float[s] +BlobSpacing:float[s] +BlobMerge:float[s] +BlobOutline:float[s] +BlobGlow:float[s] +EdgeRadiusLow:float[s] +EdgeRadiusHigh:float[s] +WobbleLow:float[s] +WobbleHigh:float[s] +WobbleSpeedLow:float[s] +WobbleSpeedHigh:float[s] +HeatLow:float[s] +HeatHigh:float[s] +HeatFlicker:float[s] +CoreFrom:float[s] +CoreHeat:float[s] +FlameHeat:float[s] +BodyStart:float[s] +BodyEnd:float[s] +FlameStart:float[s] +FlameEnd:float[s] +DripStart:float[s] +DripEnd:float[s] +SpitStart:float[s] +SpitEnd:float[s] +FlameRise:float[s] +FlameDrag:float[s] +FlameWobble:float[s] +FlameRateLow:float[s] +FlameRateHigh:float[s] +FlameSize:float[s] +FlameSizeHeat:float[s] +FlameLifeMin:int[s] +FlameLifeMax:int[s] +DripGravity:float[s] +DripHeat:float[s] +DripMerge:float[s] +DripFrom:float[s] +DripRateHigh:float[s] +DripSizeMin:float[s] +DripSizeMax:float[s] +SpitFrom:float[s] +SpitRateHigh:float[s] +SpitSpeedMin:float[s] +SpitSpeedMax:float[s] +EmberDustFrom:float[s] +EmberDustChance:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailSamplesPerTick:int[s] +TrailLagTicks:float[s] +TrailLengthScale:float[s] +TrailOpacityLow:float[s] +TrailOpacityHigh:float[s] +ThrowSpeed:float[s] +ThrowMaxTicks:int[s] +ThrowHitWidth:float[s] +ThrowDamageMultiplier:float[s] +ThrowKnockbackMultiplier:float[s] +ThrowShake:float[s] +ThrowArmTicks:int[s] +FlightDripRate:float[s] +FuseTicks:int[s] +MeltPower:float[s] +SinkDepth:float[s] +FuseShake:float[s] +FuseSwell:float[s] +FuseBrighten:float[s] +PoolRadiusStart:float[s] +PoolRadiusEnd:float[s] +FuseDripRate:float[s] +SizzleTicks:int[s] +StickShake:float[s] +SpentLingerTicks:int[s] +PopShake:float[s] +RegrowTicks:int[s] +BlastSize:int[s] +BlastTicks:int[s] +BlastDamageMultiplier:float[s] +BlastOnFireTicks:int[s] +BlastShake:float[s] +CoreColor:Color[s] +OrangeColor:Color[s] +DeepColor:Color[s] +OutlineColor:Color[s] +GlowColor:Color[s] +HandleGlowColor:Color[s] +LavaFill(float)[s]
 
 ### Content/Weapons/WoodenBoomerang/
 **WoodenBoomerangFx.cs** uses: WoodenBoomerangTuning

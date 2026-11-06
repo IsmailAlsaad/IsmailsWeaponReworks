@@ -8,13 +8,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
 {
     /// <summary>
     /// The Volcano's heat (0 to 1) lives here, on the owner's machine, so it survives swapping items for a moment and cools on its own.
-    /// It also keeps the held blade alive: whenever the sword is held and no VolcanoBladeProjectile exists, it spawns one. The other machines
+    /// It also keeps the held blade alive: whenever the sword is held and no VolcanoBladeProjectile exists, it spawns one (not while a thrown sword exists, and not for RegrowTicks after it). The other machines
     /// learn the heat from the blade projectile (SendExtraAI), nothing here is synced.
     /// </summary>
     public class VolcanoPlayer : ModPlayer
     {
         public float Heat;
         int sinceHit;
+        int regrow;   // owner: ticks the hand stays empty after a thrown sword is gone
 
         public static Projectile Find(int owner, int type)
         {
@@ -34,9 +35,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             state.sinceHit = 0;
         }
 
+        // The thrown sword ended: the blade starts cold.
+        public static void ResetHeat(Player player)
+        {
+            VolcanoPlayer state = player.GetModPlayer<VolcanoPlayer>();
+            state.Heat = 0f;
+            state.sinceHit = 0;
+        }
+
         public override void OnRespawn()
         {
             Heat = 0f;
+            regrow = 0;
         }
 
         public override void PostUpdate()
@@ -44,11 +54,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             if (Player.whoAmI != Main.myPlayer)
                 return;
 
+            // While the sword is thrown the hand is empty: the heat holds, and a new blade may form only RegrowTicks after the sword is gone.
+            bool thrown = Find(Player.whoAmI, ModContent.ProjectileType<VolcanoThrownProjectile>()) != null;
+            if (thrown)
+            {
+                regrow = VolcanoTuning.RegrowTicks;
+                sinceHit = 0;
+            }
+            else if (regrow > 0)
+                regrow--;
+
             sinceHit++;
             if (Heat > 0f && sinceHit > VolcanoTuning.HeatHoldTicks)
                 Heat = Math.Max(0f, Heat - VolcanoTuning.HeatDecayPerTick);
 
             if (Player.dead || Player.noItems || Player.CCed || Player.HeldItem.type != ItemID.FieryGreatsword)
+                return;
+            if (regrow > 0)
                 return;
             int type = ModContent.ProjectileType<VolcanoBladeProjectile>();
             if (Find(Player.whoAmI, type) != null)

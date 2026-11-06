@@ -34,7 +34,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Volcano1", "The blade is lava: every hit heats it up"));
+            tooltips.Add(new TooltipLine(Mod, "Volcano1", "Right click to throw the sword when fully heated"));
         }
     }
 }

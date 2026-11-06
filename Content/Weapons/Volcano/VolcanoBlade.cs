@@ -1,5 +1,7 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
 using System;
 using Terraria;
 
@@ -13,6 +15,41 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
     /// </summary>
     public static class VolcanoBlade
     {
+        // The handle: your art (VolcanoHandle.png) when it exists, else the vanilla sprite cropped to its hilt corner. Shared by the held and
+        // the thrown sword. 'hand' is where the hilt is (the stand-in is drawn from it), 'joint' where the lava blade starts (your art is
+        // centred on it), 'rotation' the blade's angle; 'heat' and 'flash' (0..1) make the handle glow.
+        public static void DrawHandle(Asset<Texture2D> art, Texture2D standIn, Vector2 hand, Vector2 joint, float rotation, int spriteDirection, float scale, Color lightColor, float heat, float flash)
+        {
+            if (Main.dedServ)
+                return;
+            Color body = Color.Lerp(lightColor, Color.White, 0.35f + 0.4f * heat);
+            float glow = heat * 0.6f + flash * 0.4f;
+
+            if (art?.IsLoaded == true)
+            {
+                Texture2D texture = art.Value;
+                HeldSwordPose.Sprite(texture, spriteDirection, out _, out float offset, out SpriteEffects effects);
+                Vector2 origin = new Vector2(texture.Width, texture.Height) * 0.5f;
+                Vector2 position = joint - Main.screenPosition;
+                float angle = rotation + offset;
+                Main.EntitySpriteDraw(texture, position, null, body, angle, origin, scale, effects, 0);
+                if (glow > 0.05f)
+                    Main.EntitySpriteDraw(texture, position, null, VolcanoTuning.HandleGlowColor * glow, angle, origin, scale * 1.06f, effects, 0);
+                return;
+            }
+
+            int width = Math.Max(1, (int)(standIn.Width * VolcanoTuning.HandleCrop));
+            int height = Math.Max(1, (int)(standIn.Height * VolcanoTuning.HandleCrop));
+            Rectangle source = new Rectangle(0, standIn.Height - height, width, height);
+            HeldSwordPose.Sprite(standIn, spriteDirection, out _, out float rotationOffset, out SpriteEffects flip);
+            Vector2 hiltOrigin = spriteDirection > 0 ? new Vector2(0f, height) : new Vector2(width, height);
+            Vector2 handPosition = hand - Main.screenPosition;
+            float standInAngle = rotation + rotationOffset;
+            Main.EntitySpriteDraw(standIn, handPosition, source, body, standInAngle, hiltOrigin, scale, flip, 0);
+            if (glow > 0.05f)
+                Main.EntitySpriteDraw(standIn, handPosition, source, VolcanoTuning.HandleGlowColor * glow, standInAngle, hiltOrigin, scale * 1.06f, flip, 0);
+        }
+
         static float Chance(float rate)
         {
             int count = (int)rate;
@@ -23,7 +60,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
 
         // 'length' = joint to tip in px (already scaled), 'heat' 0..1, 'time' in seconds, 'seed' something every machine knows,
         // 'motion' = how far the tip moved this tick (the flames and drips inherit a part of it).
-        public static void Feed(Vector2 joint, Vector2 direction, float length, float scale, float heat, float time, float seed, Vector2 motion)
+        // 'swell' multiplies the blob radius (the thrown sword's lava swelling), 'boost' is added to the color heat (it brightens).
+        public static void Feed(Vector2 joint, Vector2 direction, float length, float scale, float heat, float time, float seed, Vector2 motion, float swell = 1f, float boost = 0f)
         {
             if (Main.dedServ)
                 return;
@@ -33,10 +71,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             float h = MathHelper.Clamp(heat, 0f, 1f);
             Vector2 normal = new Vector2(-direction.Y, direction.X);
 
-            float radius = MathHelper.Lerp(VolcanoTuning.EdgeRadiusLow, VolcanoTuning.EdgeRadiusHigh, h) * scale;
+            float radius = MathHelper.Lerp(VolcanoTuning.EdgeRadiusLow, VolcanoTuning.EdgeRadiusHigh, h) * scale * swell;
             float turbulence = MathHelper.Lerp(VolcanoTuning.WobbleLow, VolcanoTuning.WobbleHigh, h) * scale;
             float speed = MathHelper.Lerp(VolcanoTuning.WobbleSpeedLow, VolcanoTuning.WobbleSpeedHigh, h);
-            float baseHeat = MathHelper.Lerp(VolcanoTuning.HeatLow, VolcanoTuning.HeatHigh, h);
+            float baseHeat = MathHelper.Lerp(VolcanoTuning.HeatLow, VolcanoTuning.HeatHigh, h) + boost;
 
             // ---- the body: round blobs along the blade ----
             int count = Math.Max(5, (int)(length * Math.Max(0.1f, Math.Abs(VolcanoTuning.BodyEnd - VolcanoTuning.BodyStart)) / Math.Max(1f, VolcanoTuning.BlobSpacing * scale)));

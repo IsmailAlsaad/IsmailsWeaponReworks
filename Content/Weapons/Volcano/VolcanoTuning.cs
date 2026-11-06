@@ -128,6 +128,39 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static float TrailOpacityLow => 0.55f;
         public static float TrailOpacityHigh => 1f;
 
+        // ---- patch 2: the right-click throw (only at full heat; the whole sword flies tip first, then sticks and melts into what it touched) ----
+        public static float ThrowSpeed => 24f;               // px per tick, straight toward the cursor
+        public static int ThrowMaxTicks => 40;               // no contact by then: it bursts in the air (about 60 tiles at this speed)
+        public static float ThrowHitWidth => 24f;            // thickness of the tip's path in the contact test (px at scale 1)
+        public static float ThrowDamageMultiplier => 2.5f;   // the impact hit on the enemy it latches onto (the eruption of patch 3 is separate)
+        public static float ThrowKnockbackMultiplier => 0.3f;
+        public static float ThrowShake => 2f;
+        public static int ThrowArmTicks => 8;                // the throwing arm stays pointed along the sword this long
+        public static float FlightDripRate => 1.2f;          // lava drips left behind per tick while it flies
+
+        // ---- the fuse: stuck in a tile or on an enemy ----
+        public static int FuseTicks => 60;                   // how long it sits before the end (patch 3: the eruption)
+        public static float MeltPower => 1.2f;               // the pumping: 1 = even; higher = slow start, quick end
+        public static float SinkDepth => 12f;                // at the end the handle has pushed this far past the contact point (px at scale 1)
+        public static float FuseShake => 2.4f;               // shake of the sword at the end (px at scale 1)
+        public static float FuseSwell => 0.9f;               // the remaining blade grows this much thicker by the end
+        public static float FuseBrighten => 0.35f;           // color heat added to the blade by the end
+        public static float PoolRadiusStart => 5f;           // the pool of lava at the contact point (px at scale 1) ...
+        public static float PoolRadiusEnd => 15f;            // ... swells to this
+        public static float FuseDripRate => 0.7f;            // lava drips off the pool per tick at the end
+        public static int SizzleTicks => 12;
+        public static float StickShake => 3f;                // camera punch when it sticks
+        public static int SpentLingerTicks => 6;             // the pop stays this long so every machine sees it before the sword is removed
+        public static float PopShake => 4f;                  // camera punch of the placeholder pop
+        public static int RegrowTicks => 150;                // the hand stays empty this long after the sword is gone (patch 3: the re-forming)
+
+        // ---- charged swing: every enemy the blade hits bursts into a small lava explosion ----
+        public static int BlastSize => 112;                  // diameter of the explosion
+        public static int BlastTicks => 4;
+        public static float BlastDamageMultiplier => 0.6f;   // of the swing's base damage, on everything inside (the enemy that was hit too)
+        public static int BlastOnFireTicks => 240;
+        public static float BlastShake => 2.5f;
+
         // ---- colors (alpha 0 = additive) ----
         public static Color CoreColor => new Color(255, 240, 170, 0);
         public static Color OrangeColor => new Color(255, 120, 25, 0);
