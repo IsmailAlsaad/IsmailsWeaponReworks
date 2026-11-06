@@ -49,9 +49,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static int TurnNoInheritTicks => 8;           // when the player turns around, flames and drips ignore the blade's movement for this long
 
         // ---- the ready pose: ReadyArmDeg/ReadyTiltDeg when uncharged, ChargedReadyArmDeg/ChargedReadyTiltDeg when fully charged; the arm blends between them with the heat ----
-        public static float ChargedReadyArmDeg => 40f;
-        public static float ChargedReadyTiltDeg => 70f;
-        public static float ReadyArmDeg => 90f;
+        public static float ChargedReadyArmDeg => -110f;
+        public static float ChargedReadyTiltDeg => -30f;
+        public static float ReadyArmDeg => 80f;
         public static float ReadyTiltDeg => 90f;
         public static float IdleBobDeg => 3f;
         public static int IdleBobTicks => 100;
@@ -69,7 +69,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static float BlobMerge => 2.2f;
         public static float BlobOutline => 0f;
         public static float BlobGlow => 0.15f;
-        public static float EdgeRadiusLow => 2.3f;   // blade blob radius at heat 0 (a thin burning edge) ...
+        public static float EdgeRadiusLow => 2.4f;   // blade blob radius at heat 0 (a thin burning edge) ...
         public static float EdgeRadiusHigh => 7f;    // ... and at full heat (a fat slab of lava)
         public static float WobbleLow => 0.6f;       // sideways wobble of the blobs, px
         public static float WobbleHigh => 3.2f;
@@ -83,7 +83,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static float FlameHeat => 0.8f;       // a flame particle starts this hot and cools
 
         // ---- where along the lava blade each thing starts and ends (0 = the joint, 1 = the tip; may go past 1) ----
-        public static float BodyStart => 0f;         // the round blobs of the lava body (and the white-hot core)
+        public static float BodyStart => 0.08f;         // the round blobs of the lava body (and the white-hot core)
         public static float BodyEnd => 1f;
         public static float FlameStart => 0.05f;     // the rising flames
         public static float FlameEnd => 1f;

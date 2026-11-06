@@ -108,7 +108,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             return MathHelper.ToRadians(degrees);
         }
 
-        float TotalLength => (VolcanoTuning.HandleLength + VolcanoTuning.BladeLength) * Projectile.scale;
+        float TotalLength => (VolcanoTuning.HandleLength + VolcanoTuning.BladeLength) * Projectile.scale * 0.8f;
 
         bool IsUp => startArmRel > 0f;
         float Travel => IsUp ? -1f : 1f;
