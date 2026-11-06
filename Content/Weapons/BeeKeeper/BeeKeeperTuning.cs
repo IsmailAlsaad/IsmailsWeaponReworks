@@ -40,6 +40,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float TrailExpandBy => 0.9f;    // the fan has fully expanded this far into the swing (0..1)
         public static float TrailInner => 0.55f;      // fully expanded, the fan reaches down the blade to this fraction of its length
         public static float TrailOuter => 1.3f;         // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
+        public static float TrailLagTicks => 0.8f;    // how many ticks the trail runs BEHIND the sprite (0 = exactly on it; 0.8 is what it was before)
         public static int TrailSamplesPerTick => 8;   // trail points laid per tick (the strike is fast, so many keep the fan smooth)
         public static Color CoreColor => new Color(255, 244, 180, 0);
         public static Color HoneyColor => new Color(255, 176, 40, 0);

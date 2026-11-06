@@ -199,7 +199,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             if (Main.dedServ)
                 return;
 
-            time -= 0.8f;
+            time -= BeeKeeperTuning.TrailLagTicks;
             float arm = SwingArmAt(time);
             float tilt = SwingTiltAt(time);
             Vector2 shift = Vector2.Lerp(lastOwnerCenter, Owner.Center, fraction) - Owner.Center;
