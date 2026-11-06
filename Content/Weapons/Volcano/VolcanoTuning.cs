@@ -196,13 +196,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static float DropColdHeat => 0.25f;           // ... cooling to this while it lingers
 
         // ---- patch 3: the handle is thrown out of the eruption, spins, bounces and flies home ----
-        public static float HandleSpinOffset => 10f;         // the handle spins around the point this far back from the joint (px at scale 1: about the middle of your handle art)
+        public static float HandleSpinOffset => 1f;         // the handle spins around the point this far back from the joint (px at scale 1: about the middle of your handle art)
         public static float BounceKickSpeed => 9f;           // thrown out of the contact point, back the way it came in
         public static float BounceKickUp => 4f;
         public static int BounceArcTicks => 16;              // this long it only flies free (kick, gravity, drag): the bounce
         public static float BounceGravity => 0.35f;
         public static float BounceDrag => 0.98f;
-        public static float BounceSpinDeg => 40f;            // spin per tick at the start (it eases off while it homes)
+        public static float BounceSpinDeg => 20f;            // spin per tick at the start (it eases off while it homes)
         public static float ReturnAccel => 0.9f;             // then it homes in on the player and speeds up by this per tick ...
         public static float ReturnSpeedMax => 26f;           // ... up to this (px per tick)
         public static float ReturnTurn => 0.18f;             // how sharply it steers toward the player (0..1)
