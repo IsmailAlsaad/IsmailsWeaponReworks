@@ -44,8 +44,11 @@ namespace IsmailsWeaponReworks.Common
 
             foreach (MetaballLayer layer in layers.Values)
             {
+                // A DrawInProjectile layer is drawn by a projectile during the frame. When no projectile asked for it last frame (the weapon is
+                // gone), it is drawn here like any other layer, so its lava never just vanishes.
+                bool drawnByProjectile = layer.DrawnThisFrame;
                 layer.DrawnThisFrame = false;   // a DrawInProjectile layer may draw once again this frame
-                if (!layer.Style.DrawInProjectile)
+                if (!layer.Style.DrawInProjectile || !drawnByProjectile)
                     layer.Draw();
             }
         }

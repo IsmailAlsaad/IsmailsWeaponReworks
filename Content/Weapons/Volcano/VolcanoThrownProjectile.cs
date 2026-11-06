@@ -13,22 +13,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
     /// The thrown Volcano (patch 2): the WHOLE sword (handle and lava blade) flies tip first toward the cursor, straight, and ends where it
     /// first touches something. A tile: it sticks. An enemy: it latches onto the contact point and follows the enemy (the Thorn Chakram's
     /// method). Then a fuse (FuseTicks): the lava is pumped into what it touched, so the handle slowly pushes in and the visible blade gets
-    /// shorter, while a pool of lava swells at the contact point; the sword shakes and brightens. The fuse ends with a placeholder pop
-    /// (the eruption is patch 3) that also resets the heat. If the enemy dies during the fuse it ends at once.
+    /// shorter, while a pool of lava swells at the contact point; the sword shakes and brightens. The fuse ends with the ERUPTION (patch 3):
+    /// a shockwave, a fan of lava drops (VolcanoLavaDropProjectile) and the handle, thrown out of the contact point, spinning and bouncing
+    /// home to the player (phase Returning). The heat is reset by the eruption, so the caught handle becomes a cold held sword again.
+    /// If the enemy dies during the fuse it ends at once; a sword that finds nothing in reach erupts in the air.
     /// Geometry: Center is the TIP while flying and the CONTACT POINT once stuck; the sword extends back from it along the flight angle.
-    /// ai[0] = phase (0 flying, 1 stuck, 2 spent), ai[1] = index of the enemy it sits on (-1 = a tile or in the air),
+    /// ai[0] = phase (0 flying, 1 stuck, 2 returning), ai[1] = index of the enemy it sits on (-1 = a tile, -2 = it burst in the air),
     /// ai[2] = the sword's angle (the flight direction, radians). SendExtraAI: where on the enemy it sits (offset from the enemy's center),
     /// how long the visible blade was when it stuck, and the sword's scale.
-    /// MULTIPLAYER: the owner's client decides everything (the contact, the target, the end of the fuse, the pop). The phase, the enemy and the
+    /// MULTIPLAYER: the owner's client decides everything (the contact, the target, the end of the fuse, the eruption and its drops). The phase, the enemy and the
     /// contact travel in ai / SendExtraAI through netUpdate; every machine follows the enemy and draws the melt itself (visual only, each
-    /// machine feeds its own metaball layers). The impact hit is the owner's alone. No custom packets.
+    /// machine feeds its own metaball layers). The impact hit is the owner's alone. The handle's way home is flown by every machine from the
+    /// same rules (kick, arc, homing on the owner), and every machine removes its own copy when it reaches the player. No custom packets.
     /// </summary>
     public class VolcanoThrownProjectile : ModProjectile
     {
         // The vanilla item sprite is the stand-in handle until VolcanoHandle.png exists (the held blade loads the art).
         public override string Texture => "Terraria/Images/Item_" + ItemID.FieryGreatsword;
 
-        enum Phase { Flying = 0, Stuck = 1, Spent = 2 }
+        enum Phase { Flying = 0, Stuck = 1, Returning = 2 }
 
         Phase CurrentPhase => (Phase)(int)Projectile.ai[0];
         float SwordAngle => Projectile.ai[2];
@@ -46,11 +49,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         int ticks;
         int flightTicks;            // owner: how long it has flown
         int stuckTicks;             // ticks since this machine saw the sword stuck (the owner's copy decides the end of the fuse)
-        int spentTicks;
+        int returnTicks;
         bool impactPending;         // owner: the impact hit on the enemy is still to be dealt
         int impactTicks;
         bool stuckFxPlayed;
-        bool popFxPlayed;
+        bool returnStarted;         // the eruption was played and the handle is on its way home (this machine)
+        float handleAngle;          // the handle's angle while it spins home
+        float spinSpeed;            // radians per tick
         Vector2 shake;              // the sword shakes harder as the pressure builds (drawing only)
 
         public override void SetDefaults()
@@ -95,6 +100,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         float HandleLen => VolcanoTuning.HandleLength * swordScale;
         float BladeLen => VolcanoTuning.BladeLength * swordScale;
         float SwordLen => HandleLen + BladeLen;
+        float HandleMid => VolcanoTuning.HandleSpinOffset * swordScale;   // the handle spins around the point this far back from the joint
 
         float FuseProgress => CurrentPhase == Phase.Stuck ? MathHelper.Clamp(stuckTicks / (float)Math.Max(1, VolcanoTuning.FuseTicks), 0f, 1f) : 0f;
         float Melt => (float)Math.Pow(FuseProgress, Math.Max(0.1f, VolcanoTuning.MeltPower));
@@ -151,7 +157,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                     AiStuck();
                     break;
                 default:
-                    AiSpent();
+                    AiReturn();
                     break;
             }
 
@@ -187,7 +193,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                     return;
                 if (++flightTicks > VolcanoTuning.ThrowMaxTicks)
                 {
-                    Pop(); // nothing in reach: it bursts in the air
+                    Erupt(); // nothing in reach: it erupts in the air
                     return;
                 }
             }
@@ -308,7 +314,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                     Projectile.Center = npc.Center + contactOffset;
                 else if (IsOwner)
                 {
-                    Pop(); // the enemy died: the fuse ends at once
+                    Erupt(); // the enemy died: the fuse ends at once
                     return;
                 }
             }
@@ -326,7 +332,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                 MeltVisuals(point, direction);
 
             if (IsOwner && stuckTicks >= VolcanoTuning.FuseTicks)
-                Pop();
+                Erupt();
         }
 
         // The pumping: the blade (shorter every tick, thicker and brighter) feeds the lava layer, a pool swells at the contact point and
@@ -390,30 +396,108 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             }
         }
 
-        // Owner's client: the end of the sword (patch 3 turns this into the eruption). The sword is flagged Spent (synced) instead of being
-        // killed on the spot, so every machine plays the pop before it removes its own copy. The heat is reset here.
-        void Pop()
+        // Owner's client: the end of the fuse, or the air burst when nothing was in reach. The stored lava erupts: a shockwave that hurts
+        // everything around (VolcanoBlastProjectile, silent: every machine plays the eruption itself from the phase), a fan of lava drops
+        // that rain down and linger (VolcanoLavaDropProjectile) and the handle is thrown out of the contact point and bounces home. The heat
+        // is reset here, so the sword comes back cold. The phase is synced; every machine then plays the eruption and flies the handle.
+        void Erupt()
         {
-            if (CurrentPhase == Phase.Spent)
+            if (CurrentPhase == Phase.Returning)
                 return;
-            Projectile.ai[0] = (float)Phase.Spent;
+            bool inAir = CurrentPhase == Phase.Flying;
+            Vector2 point = StuckPoint();
+            Vector2 axis = (new Vector2(0f, -1f) - Direction * 0.5f).SafeNormalize(-Vector2.UnitY); // up, leaning away from the way the sword came in
+
+            int blastDamage = (int)(Projectile.damage * VolcanoTuning.EruptionDamageMultiplier);
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), point, Vector2.Zero, ModContent.ProjectileType<VolcanoBlastProjectile>(), blastDamage, Projectile.knockBack,
+                Projectile.owner, VolcanoTuning.EruptionSize / (float)VolcanoTuning.BlastSize, 1f);
+            VolcanoLavaDropProjectile.Rain(Projectile, point, axis);
+
+            if (inAir)
+                Projectile.ai[1] = -2f;
+            Projectile.ai[0] = (float)Phase.Returning;
             Projectile.velocity = Vector2.Zero;
             impactPending = false;
             VolcanoPlayer.ResetHeat(Owner);
             Projectile.netUpdate = true;
         }
 
-        void AiSpent()
+        // Every machine. The handle is thrown out of the contact point, spins, arcs freely for a moment (the bounce) and then homes in on the
+        // player, faster and faster. Each machine flies it from the same rules and removes its own copy when it reaches the player.
+        void AiReturn()
         {
-            Projectile.velocity = Vector2.Zero;
-            if (!popFxPlayed)
+            if (!returnStarted)
+                StartReturn();
+
+            returnTicks++;
+            handleAngle += spinSpeed;
+
+            if (returnTicks <= VolcanoTuning.BounceArcTicks)
             {
-                popFxPlayed = true;
-                if (!Main.dedServ)
-                    VolcanoFx.Pop(Projectile.Center);
+                Projectile.velocity.Y += VolcanoTuning.BounceGravity;
+                Projectile.velocity *= VolcanoTuning.BounceDrag;
             }
-            if (++spentTicks > VolcanoTuning.SpentLingerTicks)
-                Projectile.Kill(); // every machine removes its own copy
+            else
+            {
+                spinSpeed *= 0.96f;
+                Vector2 toHand = Owner.MountedCenter - Projectile.Center;
+                Vector2 home = toHand.SafeNormalize(Vector2.UnitY);
+                float speed = Math.Min(VolcanoTuning.ReturnSpeedMax, Projectile.velocity.Length() + VolcanoTuning.ReturnAccel);
+                Projectile.velocity = Vector2.Lerp(Projectile.velocity, home * speed, VolcanoTuning.ReturnTurn).SafeNormalize(home) * speed;
+                if (toHand.Length() < VolcanoTuning.CatchDistance)
+                {
+                    Catch();
+                    return;
+                }
+            }
+
+            if (returnTicks > VolcanoTuning.ReturnMaxTicks)
+            {
+                Catch();
+                return;
+            }
+
+            if (!Main.dedServ)
+                ReturnVisuals();
+        }
+
+        // Every machine, once: plays the eruption at the contact point and puts the handle where it was when the lava ran out (its joint has
+        // sunk SinkDepth past the contact point; in the air it is just the held sword's handle), then kicks it back out the way it came in.
+        void StartReturn()
+        {
+            returnStarted = true;
+            Vector2 direction = Direction;
+            Vector2 point = StuckPoint();
+            Vector2 joint = StuckNpc == -2 ? point - direction * BladeLen : point + direction * (VolcanoTuning.SinkDepth * swordScale);
+            handleAngle = SwordAngle;
+            Projectile.Center = joint - direction * HandleMid;
+            Projectile.velocity = -direction * VolcanoTuning.BounceKickSpeed + new Vector2(0f, -VolcanoTuning.BounceKickUp);
+            spinSpeed = MathHelper.ToRadians(VolcanoTuning.BounceSpinDeg) * (direction.X >= 0f ? -1f : 1f);
+            if (!Main.dedServ)
+                VolcanoFx.Eruption(point);
+        }
+
+        // The handle reached the player (or ran out of time): sparks and a clank, and every machine removes its own copy. The owner's
+        // VolcanoPlayer then forms the held blade again (cold: the heat was reset by the eruption).
+        void Catch()
+        {
+            if (!Main.dedServ)
+                VolcanoFx.Catch(Owner.MountedCenter);
+            Projectile.Kill();
+        }
+
+        // The handle is white-hot after the eruption and drips lava and throws embers while it cools down.
+        void ReturnVisuals()
+        {
+            float hot = 1f - MathHelper.Clamp(returnTicks / (float)Math.Max(1, VolcanoTuning.ReturnCoolTicks), 0f, 1f);
+            if (hot <= 0f)
+                return;
+            if (Main.rand.NextFloat() < 0.7f * hot + 0.05f)
+                MetaballLayers.Of<VolcanoDripStyle>().Spawn(Projectile.Center + Main.rand.NextVector2Circular(8f, 8f), Main.rand.NextVector2Circular(0.7f, 0.7f),
+                    Main.rand.Next(24, 46), Main.rand.NextFloat(VolcanoTuning.DripSizeMin, VolcanoTuning.DripSizeMax) * swordScale);
+            if (Main.rand.NextFloat() < 0.35f * hot)
+                VolcanoFx.Ember(Projectile.Center, Projectile.velocity);
+            Lighting.AddLight(Projectile.Center, 1f * hot, 0.45f * hot, 0.1f * hot);
         }
 
         // ---- hits: only the impact on an enemy ----
@@ -443,11 +527,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
 
         public override bool PreDraw(ref Color lightColor)
         {
-            if (CurrentPhase == Phase.Spent)
-                return false;
+            // The lava (blade, pool, flames, drips, droplets) in front of enemies: the layers ask to be drawn from here, once per frame.
+            VolcanoFx.DrawLayers();
 
-            // The lava blade (and the pool and flames) in front of enemies: the layer asks to be drawn from here, once per frame.
-            MetaballLayers.Of<VolcanoBlobStyle>().DrawInBatch();
+            if (CurrentPhase == Phase.Returning)
+            {
+                // The handle on its way home: it spins around its middle (Center); the original throw direction fixes which side the sprite faces.
+                if (returnStarted)
+                {
+                    Vector2 spin = handleAngle.ToRotationVector2();
+                    Vector2 spinJoint = Projectile.Center + spin * HandleMid;
+                    float cool = 1f - MathHelper.Clamp(returnTicks / (float)Math.Max(1, VolcanoTuning.ReturnCoolTicks), 0f, 1f);
+                    VolcanoBlade.DrawHandle(VolcanoBladeProjectile.HandleArt, TextureAssets.Projectile[Type].Value, spinJoint - spin * HandleLen, spinJoint, handleAngle,
+                        Direction.X >= 0f ? 1 : -1, swordScale, lightColor, cool, cool);
+                }
+                return false;
+            }
 
             Vector2 direction = Direction;
             Pose(out Vector2 joint, out _, out _);

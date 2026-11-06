@@ -54,7 +54,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             if (Player.whoAmI != Main.myPlayer)
                 return;
 
-            // While the sword is thrown the hand is empty: the heat holds, and a new blade may form only RegrowTicks after the sword is gone.
+            // While the sword is thrown (flying, stuck, or the handle bouncing home) the hand is empty: the heat holds, and a new blade forms
+            // RegrowTicks after the handle is caught (0 = at once, cold: the eruption reset the heat).
             bool thrown = Find(Player.whoAmI, ModContent.ProjectileType<VolcanoThrownProjectile>()) != null;
             if (thrown)
             {

@@ -150,9 +150,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static float FuseDripRate => 0.7f;            // lava drips off the pool per tick at the end
         public static int SizzleTicks => 12;
         public static float StickShake => 3f;                // camera punch when it sticks
-        public static int SpentLingerTicks => 6;             // the pop stays this long so every machine sees it before the sword is removed
-        public static float PopShake => 4f;                  // camera punch of the placeholder pop
-        public static int RegrowTicks => 150;                // the hand stays empty this long after the sword is gone (patch 3: the re-forming)
+        public static int RegrowTicks => 0;                  // after the handle is caught the hand stays empty this long before the blade forms (0 = at once)
 
         // ---- charged swing: every enemy the blade hits bursts into a small lava explosion ----
         public static int BlastSize => 112;                  // diameter of the explosion
@@ -160,6 +158,57 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static float BlastDamageMultiplier => 0.6f;   // of the swing's base damage, on everything inside (the enemy that was hit too)
         public static int BlastOnFireTicks => 240;
         public static float BlastShake => 2.5f;
+        public static int BlastCores => 6;                   // big slow blobs in the middle: they merge into one glob that shrinks away
+        public static float BlastCoreSizeMin => 6f;
+        public static float BlastCoreSizeMax => 10f;
+        public static float BlastCoreSpeed => 1.6f;
+        public static int BlastDroplets => 26;               // droplets thrown out and braked by BurstDrag
+        public static float BlastSpeedMin => 2.5f;
+        public static float BlastSpeedMax => 8f;
+        public static float BlastDropMin => 2.4f;            // radius of a droplet
+        public static float BlastDropMax => 5f;
+        public static float BurstMerge => 2.6f;              // how far the droplets' fields reach (bigger = they bridge and merge more)
+        public static float BurstGravity => 0.1f;
+        public static float BurstDrag => 0.9f;               // velocity kept per tick: low = thrown out and stopped quickly
+        public static float BurstHeat => 0.95f;              // color heat at birth, cools to about a quarter of it
+
+        // ---- patch 3: the eruption (the end of the fuse; it also fires when the thrown sword bursts in the air) ----
+        public static int EruptionSize => 260;               // diameter of the shockwave (px), a bit over twice the charged blast
+        public static float EruptionDamageMultiplier => 2f;  // of the thrown sword's base damage, on everything inside (once)
+        public static int EruptionOnFireTicks => 300;        // Hellfire
+        public static float EruptionShake => 6f;
+        public static int EruptionCores => 12;               // the same metaball burst as the charged blast, scaled up by the size
+        public static int EruptionDroplets => 48;
+        public static int EruptionDrops => 18;               // real lava drops that rain down in a fan (VolcanoLavaDropProjectile)
+        public static float EruptionFanDeg => 55f;           // half the width of the fan; its middle is 'up', leaning away from the way the sword came in
+        public static float DropSpeedMin => 6f;
+        public static float DropSpeedMax => 12f;
+        public static float DropGravity => 0.28f;
+        public static float DropRadius => 4.5f;              // the blob of a drop (px; each drop is 0.8 to 1.4 times this)
+        public static float DropDamageMultiplier => 0.3f;    // of the thrown sword's base damage, per hit
+        public static int DropHitCooldown => 30;             // a drop (or a puddle) hurts the same enemy at most this often
+        public static int DropOnFireTicks => 240;            // Hellfire on touch
+        public static int DropFlightMaxTicks => 240;         // a drop that never lands is removed after this
+        public static int DropLingerTicks => 360;            // how long a landed puddle stays (6 s)
+        public static int DropFadeTicks => 50;               // it shrinks away over the last of it
+        public static int DropMax => 40;                     // at most this many alive per player (the oldest hiss out first)
+        public static float DropHeat => 0.85f;               // color heat of a fresh drop ...
+        public static float DropColdHeat => 0.25f;           // ... cooling to this while it lingers
+
+        // ---- patch 3: the handle is thrown out of the eruption, spins, bounces and flies home ----
+        public static float HandleSpinOffset => 10f;         // the handle spins around the point this far back from the joint (px at scale 1: about the middle of your handle art)
+        public static float BounceKickSpeed => 9f;           // thrown out of the contact point, back the way it came in
+        public static float BounceKickUp => 4f;
+        public static int BounceArcTicks => 16;              // this long it only flies free (kick, gravity, drag): the bounce
+        public static float BounceGravity => 0.35f;
+        public static float BounceDrag => 0.98f;
+        public static float BounceSpinDeg => 40f;            // spin per tick at the start (it eases off while it homes)
+        public static float ReturnAccel => 0.9f;             // then it homes in on the player and speeds up by this per tick ...
+        public static float ReturnSpeedMax => 26f;           // ... up to this (px per tick)
+        public static float ReturnTurn => 0.18f;             // how sharply it steers toward the player (0..1)
+        public static float CatchDistance => 30f;            // closer than this to the player: caught
+        public static int ReturnMaxTicks => 150;             // it never flies home longer than this
+        public static int ReturnCoolTicks => 45;             // the handle glows and drips lava for this long after the eruption
 
         // ---- colors (alpha 0 = additive) ----
         public static Color CoreColor => new Color(255, 240, 170, 0);

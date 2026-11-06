@@ -38,6 +38,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public override int Bands => 5;
         public override float GlowStrength => VolcanoTuning.BlobGlow;
         public override int MaxParticles => 300;
+        public override bool DrawInProjectile => true;   // drawn by VolcanoFx.DrawLayers, after the swing trail, so the trail is always behind it
         public override float Rise => -VolcanoTuning.DripGravity;
         public override float Drag => 0.985f;
 
@@ -55,6 +56,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             if (Collision.SolidCollision(corner, 2, 2) || Collision.WetCollision(corner, 2, 2))
                 particle.Age = particle.Life; // lands: gone next tick
         }
+    }
+
+    /// <summary>
+    /// The droplets of a lava explosion (the charged swing's blast, the eruption's shockwave): thrown out hard and braked quickly by drag, so
+    /// they stop a short way out, with a little gravity; the big slow ones in the middle merge into one glob that shrinks away. Same look and
+    /// same landing rule as the drips; only the movement and the merging differ.
+    /// </summary>
+    public class VolcanoBurstStyle : VolcanoDripStyle
+    {
+        public override float Merge => VolcanoTuning.BurstMerge;
+        public override int MaxParticles => 400;
+        public override float Rise => -VolcanoTuning.BurstGravity;
+        public override float Drag => VolcanoTuning.BurstDrag;
+
+        public override float SizeOverLife(float life) => 1f - life * life;
+        public override float HeatOverLife(float life) => VolcanoTuning.BurstHeat * (1f - 0.75f * life);
     }
 
     /// <summary>

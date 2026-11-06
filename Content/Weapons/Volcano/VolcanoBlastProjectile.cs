@@ -18,6 +18,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
 
         int ticks;
 
+        // ai[0] = size relative to the charged swing's blast (0 = 1); ai[1] = 1 for the eruption's shockwave: bigger, Hellfire, and silent
+        // (every machine plays the eruption itself from the thrown sword's phase, this projectile is only the hit area).
+        float Scale => Projectile.ai[0] > 0.01f ? Projectile.ai[0] : 1f;
+        bool IsEruption => Projectile.ai[1] > 0.5f;
+        float Radius => VolcanoTuning.BlastSize * Scale * 0.5f;
+
         public override void SetDefaults()
         {
             Projectile.width = VolcanoTuning.BlastSize;
@@ -37,8 +43,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         {
             if (ticks == 0)
             {
-                VolcanoFx.Blast(Projectile.Center, VolcanoTuning.BlastSize * 0.5f);
-                CameraShake.Punch(Projectile.Center, VolcanoTuning.BlastShake, 12, "VolcanoBlast");
+                Vector2 center = Projectile.Center;
+                Projectile.width = Projectile.height = (int)(VolcanoTuning.BlastSize * Scale);
+                Projectile.Center = center;
+                if (!IsEruption)
+                {
+                    VolcanoFx.Blast(Projectile.Center, Radius);
+                    CameraShake.Punch(Projectile.Center, VolcanoTuning.BlastShake, 12, "VolcanoBlast");
+                }
             }
             float fade = Projectile.timeLeft / (float)System.Math.Max(1, VolcanoTuning.BlastTicks);
             Lighting.AddLight(Projectile.Center, 1.6f * fade, 0.7f * fade, 0.15f * fade);
@@ -49,7 +61,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
         {
             Vector2 closest = Vector2.Clamp(Projectile.Center, targetHitbox.TopLeft(), targetHitbox.BottomRight());
-            float radius = VolcanoTuning.BlastSize * 0.5f;
+            float radius = Radius;
             return Vector2.DistanceSquared(Projectile.Center, closest) <= radius * radius;
         }
 
@@ -61,7 +73,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         // Owner's client only.
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            target.AddBuff(BuffID.OnFire, VolcanoTuning.BlastOnFireTicks);
+            if (IsEruption)
+                target.AddBuff(BuffID.OnFire3, VolcanoTuning.EruptionOnFireTicks);
+            else
+                target.AddBuff(BuffID.OnFire, VolcanoTuning.BlastOnFireTicks);
         }
 
         public override bool PreDraw(ref Color lightColor)

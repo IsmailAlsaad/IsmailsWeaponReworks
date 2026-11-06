@@ -44,4 +44,5 @@ Projectiles: {
 	VolcanoBladeProjectile.DisplayName: Volcano Blade Projectile
 	VolcanoBlastProjectile.DisplayName: Volcano Blast Projectile
 	VolcanoThrownProjectile.DisplayName: Volcano Thrown Projectile
+	VolcanoLavaDropProjectile.DisplayName: Volcano Lava Drop Projectile
 }

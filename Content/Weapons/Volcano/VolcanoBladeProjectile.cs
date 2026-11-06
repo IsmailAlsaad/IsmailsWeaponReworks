@@ -543,8 +543,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         {
             trail?.Draw();
 
-            // The lava blade (and its flames) in front of enemies: the layer asks to be drawn from here, once per frame.
-            MetaballLayers.Of<VolcanoBlobStyle>().DrawInBatch();
+            // The lava (blade, flames, drips, droplets) in front of enemies, AFTER the trail so the trail is always behind it: the layers ask
+            // to be drawn from here, once per frame.
+            VolcanoFx.DrawLayers();
 
             DrawHandle(lightColor);
             DrawBladeDebug();
