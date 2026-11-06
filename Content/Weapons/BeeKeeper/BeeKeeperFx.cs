@@ -114,8 +114,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
                 Vector2 velocity = angle.ToRotationVector2() * Main.rand.NextFloat(1.5f, 3.5f) * scale;
                 layer.Spawn(center + velocity * 2f, velocity, Main.rand.Next(40, 65), Main.rand.NextFloat(3f, 12f) * scale);
             }
-            for (int i = 0; i < 6; i++)
-                Smoke(center + Main.rand.NextVector2Circular(radius * 0.4f, radius * 0.4f), Main.rand.NextVector2Circular(2f, 2f));
+            for (int i = 0; i < 2; i++)
+                Smoke(center + Main.rand.NextVector2Circular(radius * 0.8f, radius * 0.8f), Main.rand.NextVector2Circular(10f, 10f));
         }
 
         // Every tick of a living cloud: new puffs inside it so it keeps rolling.
@@ -136,7 +136,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
 
         static void Smoke(Vector2 position, Vector2 velocity)
         {
-            Dust dust = Dust.NewDustPerfect(position, DustID.Smoke, velocity, 120, new Color(120, 190, 60), Main.rand.NextFloat(1f, 1.5f));
+            Dust dust = Dust.NewDustPerfect(position, DustID.Poisoned, velocity, 120, Color.White, Main.rand.NextFloat(1f, 1.5f));
             dust.noGravity = true;
         }
     }
