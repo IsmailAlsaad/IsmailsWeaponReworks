@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Common;
+using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -34,6 +35,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         {
             Projectile blade = Find(owner, ModContent.ProjectileType<KatanaBladeProjectile>());
             return blade != null && blade.ai[2] < 0f;
+        }
+
+        // While the dash heads downward the player falls through platforms (vanilla lets a player drop through them when Down is held).
+        // SetControls runs on the owner's client, before the movement and its tile collision.
+        public override void SetControls()
+        {
+            DashPlayer dash = Player.GetModPlayer<DashPlayer>();
+            if (dash.Phase == DashPhase.Dash && dash.Direction.Y > 0.05f && Player.HeldItem.type == ItemID.Katana)
+                Player.controlDown = true;
         }
 
         public override void PostUpdate()

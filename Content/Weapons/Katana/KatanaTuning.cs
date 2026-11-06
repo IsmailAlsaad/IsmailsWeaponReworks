@@ -48,6 +48,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         public static float SlashDamageMultiplier => 2.5f; // times the item's own damage
         public static float SlashWidth => 36f;        // how wide the cut is (pixels), for hits
         public static int SlashHitTicks => 2;         // the line keeps hurting for this many ticks after the dash ends
+        public static int TrailFollowTicks => 12;     // the line's head keeps following the player this long after the dash ends (its tail catches up meanwhile)
         public static int SlashLingerTicks => 16;     // the drawn line fades out for this long after that
         public static float SlashLineWidth => 12f;    // how thick the drawn slash line is (pixels)
         public static float SlashShake => 2.5f;       // camera punch when the player arrives

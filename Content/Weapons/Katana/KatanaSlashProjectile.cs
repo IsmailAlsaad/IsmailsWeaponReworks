@@ -24,6 +24,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         Vector2 Offset => new Vector2(Projectile.ai[0], Projectile.ai[1]);
         int DashTicks => Math.Max(1, (int)Projectile.ai[2]);
         int HitEnd => DashTicks + KatanaTuning.SlashHitTicks;
+        int LifeEnd => Math.Max(HitEnd, DashTicks + Math.Max(KatanaTuning.TrailFollowTicks, Math.Max(1, KatanaTuning.SlashLingerTicks)));
         Vector2 End => tracked ? endPoint : Start + Offset;
         bool Damaging => ticks < HitEnd;
         bool IsOwner => Projectile.owner == Main.myPlayer;
@@ -60,12 +61,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                 CameraShake.Punch(Start, KatanaTuning.SlashShake, 8);
             }
 
-            // The line follows the player for as long as the dash lasts; afterwards it stays where he stopped.
-            if (ticks <= DashTicks)
+            // The head of the line follows the player during the dash and for TrailFollowTicks after it (the tail catches up meanwhile).
+            if (ticks <= DashTicks + Math.Max(0, KatanaTuning.TrailFollowTicks))
             {
                 endPoint = owner.Center;
                 tracked = true;
-                KatanaFx.DashTrail(endPoint, Offset);
+                if (ticks <= DashTicks)
+                    KatanaFx.DashTrail(endPoint, Offset);
             }
             if (ticks < DashTicks + KatanaTuning.DashShadowTicks)
                 owner.armorEffectDrawShadow = true; // the vanilla afterimages of the player trail behind him
@@ -77,7 +79,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                     CameraShake.Punch(npc.Center, KatanaTuning.SlashHitShake, 8);
                 });
 
-            if (ticks >= HitEnd + Math.Max(1, KatanaTuning.SlashLingerTicks))
+            if (ticks >= LifeEnd)
             {
                 Projectile.Kill();
                 return;
@@ -123,11 +125,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             // The slash line: thick and white at the landing end, thinner toward where he stood; after the hit ticks the whole line thins and fades.
             float grid = KatanaTuning.PixelSize;
             float linger = Math.Max(1, KatanaTuning.SlashLingerTicks);
-            float fade = Damaging ? 1f : MathHelper.Clamp(1f - (ticks - HitEnd + 1) / linger, 0f, 1f);
-            fade *= fade;
+            // After the dash the tail of the line slides toward the head (the player) while the line thins and dims; when it arrives the line is gone.
+            float catchUp = MathHelper.Clamp((ticks - DashTicks) / linger, 0f, 1f);
+            float fade = 1f - catchUp * catchUp;
             float width = KatanaTuning.SlashLineWidth * (0.3f + 0.7f * fade);
-            Vector2 start = Start;
             Vector2 end = End;
+            Vector2 start = Vector2.Lerp(Start, end, catchUp);
             int count = linePoints.Length;
             for (int i = 0; i < count; i++)
             {
