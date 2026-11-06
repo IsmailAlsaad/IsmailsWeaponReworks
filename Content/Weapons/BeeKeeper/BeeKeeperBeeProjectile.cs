@@ -28,8 +28,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
     /// has arrived, holds it at a spot of the enemy computed from the seed and the enemy's own position (Latched), so no position is sent
     /// while latched. The owner's client does the stings (NPC.SimpleStrikeNPC and NPC.AddBuff both sync themselves); every machine plays the
     /// same sting timing as a visual from its own clock. When the enemy dies or goes away, or MaxLatchTicks pass, the owner lets the bee go.
-    /// HONEY: a latched bee gathers honey from its own latch clock (visual, computed on every machine; BeeKeeperHoneyNPC draws the enemy's outline
-    /// from it). A released bee that gathered enough flies home (Return) carrying a blob of it; the owner's client hands it over (BeeKeeperPlayer.Deliver).
+    /// HONEY: a latched bee gathers honey from its own latch clock (visual, computed on every machine; the bee's own orange outline grows with it
+    /// and the enemy drips). A released bee that gathered enough flies home (Return) carrying a blob of it; the owner's client hands it over (BeeKeeperPlayer.Deliver).
     /// </summary>
     public abstract class BeeKeeperBeeProjectile : ModProjectile
     {
@@ -47,6 +47,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         float Seed => Projectile.ai[2];
         float Carried => Projectile.ai[1];   // Return only: the honey this bee carries (0..1, 1 = a full load)
         public bool IsIdle => State == BeeState.Idle;
+        public bool IsSentAt(int npcIndex) => (State == BeeState.Travel || State == BeeState.Latched) && TargetIndex == npcIndex; // flying to or sitting on that enemy
         bool IsOwner => Projectile.owner == Main.myPlayer;
 
         // Per-machine state: counters and visuals, never synced.
@@ -62,6 +63,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         float honey;         // how full of honey this bee is while latched (0..1; every machine counts it from its own latch clock)
         float carry;         // the load of a Returning bee as this machine last saw it (kept for the delivery effect, ai[1] is reset on arrival)
         int returnTicks;
+        float outlineShown;  // the honey outline's strength on screen (0..1): follows the honey the bee holds, fades once it is handed over
         float jab;           // 1 right after a sting, fades to 0
         BeeState lastState;  // the state this machine saw on the previous tick (to notice a change)
 
@@ -169,6 +171,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
                 ReturnHome(owner);
             else
                 Steer(owner);
+
+            // The honey outline grows with the honey the bee holds (gathering it on an enemy, or carrying it home) and fades out after the handover.
+            float outlineTarget = State == BeeState.Latched ? honey : State == BeeState.Return ? carry : 0f;
+            outlineShown += (outlineTarget - outlineShown) * MathHelper.Clamp(BeeKeeperTuning.HoneyOutlineEase, 0.01f, 1f);
+            if (outlineTarget <= 0f && outlineShown < 0.01f)
+                outlineShown = 0f;
+
             if (Math.Abs(Projectile.velocity.X) > 0.3f)
                 facingRight = Projectile.velocity.X > 0f;
 
@@ -311,10 +320,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
 
             latchTicks++;
 
-            // Honey: the bee fills evenly while it sits on the enemy. The enemy shows the sum of its bees' honey as an outline (BeeKeeperHoneyNPC)
-            // and drips from its underside; all of it is worked out locally on every machine, nothing is synced.
+            // Honey: the bee fills evenly while it sits on the enemy. The BEE shows it as an orange outline (see PreDraw) and honey drips off
+            // the enemy's underside; all of it is worked out locally on every machine, nothing is synced.
             honey = MathHelper.Clamp(latchTicks / (float)Math.Max(1, BeeKeeperTuning.HoneyFillTicks), 0f, 1f);
-            BeeKeeperHoneyNPC.Add(npc, honey);
             if (honey > 0.05f && Main.rand.NextFloat() < BeeKeeperTuning.HoneyDripChance * honey)
                 BeeKeeperFx.HoneyDrip(new Vector2(Projectile.Center.X, npc.position.Y + npc.height - Main.rand.NextFloat(2f, 8f)));
             jab = Math.Max(0f, jab - 1f / Math.Max(1, BeeKeeperTuning.StingJabTicks));
@@ -415,6 +423,29 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
 
             Color color = Color.Lerp(lightColor, Color.White, 0.3f);
             color *= leave;
+            // The honey outline: the bee's own sprite repeated around itself in orange (a soft glow copy, eight outline copies and a thinner
+            // brighter ring), behind the bee. Its strength is how much honey the bee holds. Colors with alpha 0 are additive.
+            if (outlineShown > 0.02f)
+            {
+                float wave = 0.5f + 0.5f * (float)Math.Sin(MathHelper.TwoPi * ticks / Math.Max(1, BeeKeeperTuning.HoneyOutlinePulseTicks));
+                float strength = outlineShown * MathHelper.Lerp(BeeKeeperTuning.HoneyOutlineMin, BeeKeeperTuning.HoneyOutlineMax, wave) * leave;
+                float width = BeeKeeperTuning.HoneyOutlineWidth * (0.5f + 0.5f * outlineShown);
+                Vector2 drawPosition = Projectile.Center - Main.screenPosition;
+                Main.EntitySpriteDraw(texture, drawPosition, source, BeeKeeperTuning.HoneyOutlineColor * (BeeKeeperTuning.HoneyGlowAlpha * strength), rotation, origin, scale * BeeKeeperTuning.HoneyGlowScale, effects, 0);
+                for (int i = 0; i < 8; i++)
+                {
+                    float angle = MathHelper.PiOver4 * i;
+                    Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+                    Main.EntitySpriteDraw(texture, drawPosition + direction * width, source, BeeKeeperTuning.HoneyOutlineColor * (0.9f * strength), rotation, origin, scale, effects, 0);
+                }
+                for (int i = 0; i < 4; i++)
+                {
+                    float angle = MathHelper.PiOver2 * i;
+                    Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+                    Main.EntitySpriteDraw(texture, drawPosition + direction * (width * BeeKeeperTuning.HoneyOutlineCoreFraction), source, BeeKeeperTuning.HoneyOutlineCoreColor * (0.5f * strength), rotation, origin, scale, effects, 0);
+                }
+            }
+
             Main.EntitySpriteDraw(texture, Projectile.Center - Main.screenPosition, source, color, rotation, origin, scale, effects, 0);
             return false;
         }

@@ -244,7 +244,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         {
             if (!Damaging)
                 return false;
-            return BladeTouches(targetHitbox, 18f * Projectile.scale);
+            return BladeTouches(targetHitbox, BeeKeeperTuning.HitWidth * Projectile.scale);
         }
 
         // The strike is fast, so the test sweeps: it checks the line at a few poses between the previous tick and this one, and a thin
@@ -252,7 +252,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         bool BladeTouches(Rectangle box, float width)
         {
             int steps = Math.Max(1, BeeKeeperTuning.SweepHitSteps);
-            float length = BeeKeeperTuning.BladeLength * Projectile.scale;
+            float length = BeeKeeperTuning.BladeLength * BeeKeeperTuning.HitLengthScale * Projectile.scale;
             float deltaAngle = MathHelper.WrapAngle(Projectile.rotation - prevRotation);
             for (int i = 1; i <= steps; i++)
             {

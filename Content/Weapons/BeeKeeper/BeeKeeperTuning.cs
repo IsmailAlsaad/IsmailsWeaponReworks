@@ -29,6 +29,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float TiltHighDeg => -12f;      // blade tilt relative to the arm at the top (wrist) ...
         public static float TiltLowDeg => 12f;        // ... and at the bottom
         public static int ComboTicks => 30;           // a swing started within this long after the last one continues the alternation
+        public static float HitLengthScale => 1f;     // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
+        public static float HitWidth => 18f;          // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
         public static float HitShake => 1f;           // camera punch on a hit (pixels)
 
         // ---- swing trail (a SweepTrail fan, drawn by the shared pixel line renderer) ----
@@ -74,6 +76,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float SnapDistance => 900f;     // a bee further away than this jumps back to the swarm
 
         // ---- the swarm attack (a true melee hit sends bees: they fly out, latch on, sting) ----
+        public static int MaxBeesPerEnemy => 3;        // at most this many of a player's bees fly to or sit on one enemy at a time
         public static int BeesPerHit => 2;             // bees sent by the FIRST hit on an enemy ...
         public static int HitsForFullSwarm => 5;       // ... growing evenly until this hit, which sends every idle bee
         public static int HitMemoryTicks => 240;       // an enemy's hit count is forgotten after this long without a new hit on it
@@ -100,17 +103,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static int HoneyFillTicks => 300;          // a bee that has sat on an enemy this long carries a full load (it fills evenly)
         public static float HoneyMinCarry => 0.05f;       // a bee that gathered less than this goes straight back to the swarm instead of flying home
 
-        // the enemy: an orange outline (its own sprite repeated around itself) and drips
-        public static float HoneyOutlineFullAmount => 6f; // the outline is at full strength when the honey of all bees on the enemy adds up to this many full loads
+        // the bees' orange outline (the bee's own sprite repeated around itself; its strength is the honey the bee holds) and the drips off the enemy
+        public static float HoneyGlowAlpha => 0.3f;       // opacity of the soft glow copy behind the outline
         public static float HoneyOutlineEase => 0.08f;    // how fast the outline fades in and out (0..1 per tick)
-        public static float HoneyOutlineWidth => 2f;      // thickness at full strength (pixels)
-        public static float HoneyOutlineOffsetY => 0f;    // moves the outline down (+) or up (-): use it if the outline sits off an enemy's sprite
+        public static float HoneyOutlineWidth => 1.5f;    // thickness at full strength (pixels; a bee is tiny)
+        public static float HoneyOutlineCoreFraction => 0.5f; // the brighter inner ring sits at this fraction of the outline width
         public static int HoneyOutlinePulseTicks => 50;
         public static float HoneyOutlineMin => 0.65f;     // the pulse swings between these fractions of the strength
         public static float HoneyOutlineMax => 1f;
         public static float HoneyGlowScale => 1.08f;      // the soft glow copy behind the outline
-        public static Color HoneyNpcOutlineColor => new Color(255, 150, 20, 0);   // alpha 0 = additive
-        public static Color HoneyNpcCoreColor => new Color(255, 215, 90, 0);
+        public static Color HoneyOutlineColor => new Color(255, 150, 20, 0);   // alpha 0 = additive
+        public static Color HoneyOutlineCoreColor => new Color(255, 215, 90, 0);
         public static float HoneyDripChance => 0.05f;       // per latched bee per tick, times its fill
         public static float HoneyReturnDripChance => 0.04f; // per returning bee per tick, times its load
         public static float HoneyDripGravity => 0.12f;

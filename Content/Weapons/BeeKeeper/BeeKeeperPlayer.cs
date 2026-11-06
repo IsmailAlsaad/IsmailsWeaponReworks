@@ -92,19 +92,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             hits[target.whoAmI] = record;
 
             List<BeeKeeperBeeProjectile> pool = new List<BeeKeeperBeeProjectile>();
+            int onEnemy = 0; // bees of this player already flying to or sitting on this enemy
             for (int i = 0; i < Main.maxProjectiles; i++)
             {
                 Projectile projectile = Main.projectile[i];
-                if (projectile.active && projectile.owner == Player.whoAmI && projectile.ModProjectile is BeeKeeperBeeProjectile bee && bee.IsIdle)
-                    pool.Add(bee);
+                if (projectile.active && projectile.owner == Player.whoAmI && projectile.ModProjectile is BeeKeeperBeeProjectile bee)
+                {
+                    if (bee.IsIdle)
+                        pool.Add(bee);
+                    else if (bee.IsSentAt(target.whoAmI))
+                        onEnemy++;
+                }
             }
-            if (pool.Count == 0)
-                return;
+            int room = BeeKeeperTuning.MaxBeesPerEnemy - onEnemy;
+            if (pool.Count == 0 || room <= 0)
+                return; // nobody idle, or this enemy already has its full share of bees
 
             int full = Math.Max(1, BeeKeeperTuning.HitsForFullSwarm);
             float progress = full <= 1 ? 1f : (Math.Min(record.Count, full) - 1) / (float)(full - 1);
             int wanted = (int)Math.Ceiling(MathHelper.Lerp(BeeKeeperTuning.BeesPerHit, BeeKeeperTuning.MaxBig + BeeKeeperTuning.MaxSmall, progress));
-            wanted = Math.Min(wanted, pool.Count);
+            wanted = Math.Min(Math.Min(wanted, pool.Count), room);
             for (int i = 0; i < wanted; i++)
             {
                 int pick = Main.rand.Next(i, pool.Count); // a random bee of the ones not chosen yet

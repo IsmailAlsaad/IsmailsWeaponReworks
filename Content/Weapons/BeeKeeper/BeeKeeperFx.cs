@@ -90,19 +90,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             Spark(position - velocity * 0.5f, -velocity * 0.1f, Main.rand.NextFloat(0.6f, 0.9f), DustID.GoldFlame);
         }
 
-        // A latched bee stings: a green fleck, an amber one and now and then a small sound.
+        // A latched bee stings: an amber fleck and now and then a small sound.
         public static void Sting(Vector2 position, bool big)
         {
             if (Main.dedServ)
                 return;
-            Dust poison = Dust.NewDustPerfect(position, DustID.Poisoned, Main.rand.NextVector2Circular(1.5f, 1.5f), 120, Color.White, Main.rand.NextFloat(0.8f, 1.2f));
-            poison.noGravity = true;
             Spark(position, Main.rand.NextVector2Circular(2f, 2f), Main.rand.NextFloat(0.7f, 1f), DustID.GoldFlame);
             if (Main.rand.NextFloat() < BeeKeeperTuning.StingSoundChance)
                 SoundEngine.PlaySound(SoundID.Item17 with { Volume = big ? 0.3f : 0.2f, Pitch = big ? 0.2f : 0.6f, PitchVariance = 0.2f }, position);
         }
 
-        // A bee lets go of its enemy after the final sting: a small burst of green and amber.
+        // A bee lets go of its enemy after the final sting: a small burst of amber.
         public static void FinalSting(Vector2 position, bool big)
         {
             if (Main.dedServ)
@@ -110,15 +108,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             int count = big ? 8 : 5;
             for (int i = 0; i < count; i++)
             {
-                if (i % 2 == 0)
-                {
-                    Dust poison = Dust.NewDustPerfect(position, DustID.Poisoned, Main.rand.NextVector2Circular(3f, 3f), 120, Color.White, Main.rand.NextFloat(0.9f, 1.4f));
-                    poison.noGravity = true;
-                }
-                else
-                {
-                    Spark(position, Main.rand.NextVector2Circular(3f, 3f), Main.rand.NextFloat(0.9f, 1.3f), DustID.GoldFlame);
-                }
+                Spark(position, Main.rand.NextVector2Circular(3f, 3f), Main.rand.NextFloat(0.9f, 1.3f), DustID.GoldFlame);
             }
             SoundEngine.PlaySound(SoundID.Item17 with { Volume = big ? 0.45f : 0.3f, Pitch = big ? 0f : 0.4f, PitchVariance = 0.2f }, position);
         }
