@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-06 | 168 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-06 | 169 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-DetachedTrails(26) ThrustPalette(24) RemoteHitTracker(23) CameraShake(18) AfterimageTrail(14) HeldSwordPose(13) ThrustPlayer(12) HeldAim(12) IceFx(11) SweepTrail(10) DarkLanceTuning(10) ThrustChain(9) PixelTrail(9) MuramasaTuning(9) VolcanoTuning(8) BoomerangFlight(8) SweepTrailStyle(7) PixelLine(7) FlamerangTuning(7) DarkLanceFx(7)
+DetachedTrails(26) ThrustPalette(24) RemoteHitTracker(23) CameraShake(18) AfterimageTrail(14) HeldSwordPose(13) ThrustPlayer(12) HeldAim(12) IceFx(11) SweepTrail(10) DarkLanceTuning(10) ThrustChain(9) PixelTrail(9) MuramasaTuning(9) VolcanoTuning(8) BoomerangFlight(8) BeeKeeperTuning(8) SweepTrailStyle(7) PixelLine(7) FlamerangTuning(7)
 
 ## Inheritance
 Project bases -> derived:
@@ -12,7 +12,7 @@ Project bases -> derived:
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
-- MetaballStyle: DarkLanceBlobStyle, VolcanoBlobStyle, VolcanoDripStyle
+- MetaballStyle: BeeKeeperHoneyStyle, DarkLanceBlobStyle, VolcanoBlobStyle, VolcanoDripStyle
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, IceBladeTrailStyle, MuramasaSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
 - VolcanoDripStyle: VolcanoBurstStyle
@@ -20,7 +20,7 @@ tModLoader/other bases -> project types:
 - ModProjectile (45): BeeKeeperBeeProjectile, BeeKeeperPoisonCloudProjectile, BeeKeeperSwingProjectile, BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
 - GlobalItem (20): BeeKeeperGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, MuramasaGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem
 - ModPlayer (10): BeeKeeperPlayer, DarkLancePlayer, DashPlayer, ImmunityPlayer, MuramasaPlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer
-- GlobalNPC (2): BloodButchererGripNPC, CarriedNPC
+- GlobalNPC (3): BeeKeeperHoneyNPC, BloodButchererGripNPC, CarriedNPC
 - ModSystem (2): DetachedTrails, MetaballLayers
 - Mod (1): IsmailsWeaponReworks
 
@@ -166,32 +166,37 @@ tModLoader/other bases -> project types:
     +PlayHit(int,int)[s]
 
 ### Content/Weapons/BeeKeeper/
-**BeeKeeperBeeProjectile.cs** uses: BeeKeeperFx, BeeKeeperPlayer, BeeKeeperTuning
+**BeeKeeperBeeProjectile.cs** uses: BeeKeeperFx, BeeKeeperHoneyNPC, BeeKeeperPlayer, BeeKeeperTuning
   enum BeeState
-    {Idle, Leaving, Travel, Latched}
+    {Idle, Leaving, Travel, Latched, Return}
   abstract class BeeKeeperBeeProjectile : ModProjectile
     #IsBig:bool[ab] #VanillaProjectile:int[ab] #ArtPath:string[ab] +Texture:string[ov] +IsIdle:bool +Load()[ov] +Unload()[ov] +AI()[ov] +Recruit(NPC,int) +PreDraw(ref Color)[ov]
   class BeeKeeperBigBeeProjectile : BeeKeeperBeeProjectile
     #IsBig:bool[ov] #VanillaProjectile:int[ov] #ArtPath:string[ov]
   class BeeKeeperSmallBeeProjectile : BeeKeeperBeeProjectile
     #IsBig:bool[ov] #VanillaProjectile:int[ov] #ArtPath:string[ov]
-**BeeKeeperFx.cs** uses: BeeKeeperTuning
+**BeeKeeperFx.cs** uses: BeeKeeperHoneyStyle, BeeKeeperTuning, MetaballLayers
   static class BeeKeeperFx
-    +PlaySwing(Vector2,bool)[s] +PlayHit(Vector2)[s] +PlayBeePop(Vector2)[s] +SlashDust(Vector2,Vector2)[s] +HitSpark(Vector2)[s] +BeeSpawn(Vector2)[s] +Launch(Vector2)[s] +TravelTrail(Vector2,Vector2)[s] +Sting(Vector2,bool)[s] +FinalSting(Vector2,bool)[s]
+    +PlaySwing(Vector2,bool)[s] +PlayHit(Vector2)[s] +PlayBeePop(Vector2)[s] +SlashDust(Vector2,Vector2)[s] +HitSpark(Vector2)[s] +BeeSpawn(Vector2)[s] +Launch(Vector2)[s] +TravelTrail(Vector2,Vector2)[s] +Sting(Vector2,bool)[s] +FinalSting(Vector2,bool)[s] +HoneyDrip(Vector2)[s] +HoneyBlob(Vector2,float,bool)[s] +Deliver(Vector2,float,bool)[s] +HoneyHeal(Vector2,float)[s]
 **BeeKeeperGlobalItem.cs** uses: BeeKeeperPlayer, BeeKeeperSwingProjectile, BeeKeeperTuning, Phase
   class BeeKeeperGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**BeeKeeperPlayer.cs** uses: BeeKeeperBeeProjectile, BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile, BeeKeeperTuning
+**BeeKeeperHoneyNPC.cs** uses: BeeKeeperTuning
+  class BeeKeeperHoneyNPC : GlobalNPC
+    +InstancePerEntity:bool[ov] +Add(NPC,float)[s] +PostAI(NPC)[ov] +PreDraw(NPC,SpriteBatch,Vector2,Color)[ov]
+**BeeKeeperPlayer.cs** uses: BeeKeeperBeeProjectile, BeeKeeperBigBeeProjectile, BeeKeeperFx, BeeKeeperSmallBeeProjectile, BeeKeeperTuning
   class BeeKeeperPlayer : ModPlayer
-    +LastPhase:int +LastEndArm:float +LastEndTick:uint +Linger:int +OnRespawn()[ov] +PostUpdate()[ov] +RecruitBees(NPC,int)
+    +LastPhase:int +LastEndArm:float +LastEndTick:uint +Linger:int +OnRespawn()[ov] +PostUpdate()[ov] +RecruitBees(NPC,int) +Deliver(float)
     struct HitRecord
       +Type:int +LastTick:uint +Count:int
 **BeeKeeperPoisonCloudProjectile.cs** uses: AreaEffect, BeeKeeperFx, BeeKeeperTuning
   class BeeKeeperPoisonCloudProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +PreDraw(ref Color)[ov]
-**BeeKeeperStyles.cs** uses: BeeKeeperTuning, SweepFade, SweepTrailStyle
+**BeeKeeperStyles.cs** uses: BeeKeeperTuning, MetaballParticle, MetaballStyle, SweepFade, SweepTrailStyle
   class BeeKeeperSweepTrailStyle : SweepTrailStyle
     +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
+  class BeeKeeperHoneyStyle : MetaballStyle
+    +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +Rise:float[ov] +Drag:float[ov] +SizeOverLife(float)[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov] +Step(MetaballParticle)[ov]
 **BeeKeeperSwingProjectile.cs** uses: BeeKeeperFx, BeeKeeperPlayer, BeeKeeperSweepTrailStyle, BeeKeeperTuning, CameraShake, DetachedTrails, HeldSwordPose, SweepTrail
   class BeeKeeperSwingProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
@@ -199,7 +204,7 @@ tModLoader/other bases -> project types:
       {SwingDown, SwingUp}
 **BeeKeeperTuning.cs**
   static class BeeKeeperTuning
-    +BladeLength:float[s] +SwordScale:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboTicks:int[s] +HitShake:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailOpacity:float[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +HoneyColor:Color[s] +DeepColor:Color[s] +MaxBig:int[s] +MaxSmall:int[s] +SpawnIntervalTicks:int[s] +LingerTicks:int[s] +LeaveTicks:int[s] +BigSize:int[s] +SmallSize:int[s] +BigScale:float[s] +SmallScale:float[s] +PopTicks:int[s] +FlapTicks:int[s] +ArtFrames:int[s] +VanillaBeeFacesRight:bool[s] +HoverHeight:float[s] +BigRadiusX:float[s] +SmallRadiusX:float[s] +HoverRadiusY:float[s] +FlutterSpeed:float[s] +Spring:float[s] +Damping:float[s] +MaxSpeed:float[s] +BuzzJitter:float[s] +SnapDistance:float[s] +BeesPerHit:int[s] +HitsForFullSwarm:int[s] +HitMemoryTicks:int[s] +RecruitKick:float[s] +RecruitKickSpread:float[s] +TravelSpeed:float[s] +TravelTurn:float[s] +TravelWeave:float[s] +TravelArriveDistance:float[s] +TravelTimeoutTicks:int[s] +LatchSpread:float[s] +LatchMaxSpread:float[s] +LatchWobble:float[s] +LatchWobbleSpeed:float[s] +StingIntervalTicks:int[s] +StingDamageFraction:float[s] +StingPoisonTicks:int[s] +MaxLatchTicks:int[s] +StingJab:float[s] +StingJabTicks:int[s] +StingSoundChance:float[s]
+    +BladeLength:float[s] +SwordScale:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboTicks:int[s] +HitShake:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailOpacity:float[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +HoneyColor:Color[s] +DeepColor:Color[s] +MaxBig:int[s] +MaxSmall:int[s] +SpawnIntervalTicks:int[s] +LingerTicks:int[s] +LeaveTicks:int[s] +BigSize:int[s] +SmallSize:int[s] +BigScale:float[s] +SmallScale:float[s] +PopTicks:int[s] +FlapTicks:int[s] +ArtFrames:int[s] +VanillaBeeFacesRight:bool[s] +HoverHeight:float[s] +BigRadiusX:float[s] +SmallRadiusX:float[s] +HoverRadiusY:float[s] +FlutterSpeed:float[s] +Spring:float[s] +Damping:float[s] +MaxSpeed:float[s] +BuzzJitter:float[s] +SnapDistance:float[s] +BeesPerHit:int[s] +HitsForFullSwarm:int[s] +HitMemoryTicks:int[s] +RecruitKick:float[s] +RecruitKickSpread:float[s] +TravelSpeed:float[s] +TravelTurn:float[s] +TravelWeave:float[s] +TravelArriveDistance:float[s] +TravelTimeoutTicks:int[s] +LatchSpread:float[s] +LatchMaxSpread:float[s] +LatchWobble:float[s] +LatchWobbleSpeed:float[s] +StingIntervalTicks:int[s] +StingDamageFraction:float[s] +StingPoisonTicks:int[s] +MaxLatchTicks:int[s] +StingJab:float[s] +StingJabTicks:int[s] +StingSoundChance:float[s] +HoneyFillTicks:int[s] +HoneyMinCarry:float[s] +HoneyOutlineFullAmount:float[s] +HoneyOutlineEase:float[s] +HoneyOutlineWidth:float[s] +HoneyOutlineOffsetY:float[s] +HoneyOutlinePulseTicks:int[s] +HoneyOutlineMin:float[s] +HoneyOutlineMax:float[s] +HoneyGlowScale:float[s] +HoneyNpcOutlineColor:Color[s] +HoneyNpcCoreColor:Color[s] +HoneyDripChance:float[s] +HoneyReturnDripChance:float[s] +HoneyDripGravity:float[s] +HoneyDripLifeMin:int[s] +HoneyDripLifeMax:int[s] +HoneyDripSizeMin:float[s] +HoneyDripSizeMax:float[s] +HoneyPixelSize:float[s] +HoneyMerge:float[s] +HoneyBlobOutline:float[s] +HoneyGlow:float[s] +HoneyDripHeat:float[s] +HoneyFillDark:Color[s] +HoneyFillLight:Color[s] +HoneyFillShine:Color[s] +HoneyDripOutlineColor:Color[s] +HoneyGlowColor:Color[s] +HoneyFill(float)[s] +HoneyBlobRadius:float[s] +HoneyBlobMinScale:float[s] +HoneyBlobSmallScale:float[s] +HoneyBlobOffset:float[s] +HoneyBlobHeat:float[s] +ReturnSpeed:float[s] +ReturnTurn:float[s] +ReturnWeave:float[s] +ReturnArriveDistance:float[s] +ReturnTimeoutTicks:int[s] +HealPerHoneyBee:float[s] +HealMaxPerBatch:int[s] +HoneyBuffTicksPerBee:int[s] +HoneyBuffMaxTicks:int[s] +DeliveryBatchTicks:int[s] +DeliverSoundChance:float[s]
 
 ### Content/Weapons/BloodButcherer/
 **BloodButchererFx.cs** uses: BloodButchererTuning, IceFx

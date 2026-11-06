@@ -13,6 +13,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
     /// passive swarm: while the sword is held, and for LingerTicks after it is put away, it adds one bee every SpawnIntervalTicks until
     /// there are MaxBig big and MaxSmall small ones. When the linger time runs out, the bees see it (Linger is 0) and leave by themselves.
     /// It also counts the true melee hits on each enemy and, on every hit, sends bees from the idle pool at it (RecruitBees, owner's client).
+    /// Bees that come home with honey hand it over through Deliver: the honey of bees arriving within DeliveryBatchTicks of each other is
+    /// collected, then given as ONE heal and ONE Honey buff top-up.
     /// </summary>
     public class BeeKeeperPlayer : ModPlayer
     {
@@ -22,6 +24,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
 
         public int Linger;               // ticks the swarm stays after the sword was last held (owner only)
         int spawnTimer;
+
+        // Honey handed over by returning bees, waiting to be given (owner only).
+        float pendingHealth;
+        float pendingHoney;
+        int deliveryTimer;
 
         // How often each enemy was hit by the sword's swing (owner only; the key is the NPC's slot, the type tells a reused slot apart).
         struct HitRecord
@@ -36,12 +43,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         {
             Linger = 0;
             hits?.Clear();
+            pendingHealth = 0f;
+            pendingHoney = 0f;
+            deliveryTimer = 0;
         }
 
         public override void PostUpdate()
         {
             if (Player.whoAmI != Main.myPlayer)
                 return;
+
+            TickDelivery();
 
             if (Player.dead)
                 Linger = 0;
@@ -101,6 +113,53 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
                 pool[i] = chosen;
                 chosen.Recruit(target, swordDamage);
             }
+        }
+
+        // Owner's client only: a returning bee has reached the player carrying 'honey' (0..1, 1 = a full load). The honey is collected for
+        // DeliveryBatchTicks (the bees of one swarm arrive within a moment of each other) and then given at once: HealPerHoneyBee health and
+        // HoneyBuffTicksPerBee ticks of the Honey buff per full load, scaled by what each bee carried.
+        public void Deliver(float honey)
+        {
+            if (Player.whoAmI != Main.myPlayer || Player.dead)
+                return;
+            pendingHealth += BeeKeeperTuning.HealPerHoneyBee * honey;
+            pendingHoney += honey;
+            deliveryTimer = Math.Max(1, BeeKeeperTuning.DeliveryBatchTicks);
+        }
+
+        // Owner only, every tick: when the batch has been quiet for DeliveryBatchTicks, give it. Player.Heal syncs the new health itself and
+        // AddBuff is the owner's own buff; the buff is only ever raised (never shortened below what the player already has).
+        void TickDelivery()
+        {
+            if (Player.dead)
+            {
+                pendingHealth = 0f;
+                pendingHoney = 0f;
+                deliveryTimer = 0;
+                return;
+            }
+            if (deliveryTimer <= 0)
+                return;
+            deliveryTimer--;
+            if (deliveryTimer > 0)
+                return;
+
+            int heal = Math.Min(BeeKeeperTuning.HealMaxPerBatch, (int)Math.Round(pendingHealth));
+            heal = Math.Min(heal, Player.statLifeMax2 - Player.statLife);
+            if (heal > 0)
+                Player.Heal(heal);
+
+            int add = (int)(pendingHoney * BeeKeeperTuning.HoneyBuffTicksPerBee);
+            if (add > 0)
+            {
+                int index = Player.FindBuffIndex(BuffID.Honey);
+                int current = index >= 0 ? Player.buffTime[index] : 0;
+                Player.AddBuff(BuffID.Honey, Math.Min(BeeKeeperTuning.HoneyBuffMaxTicks, current + add));
+            }
+
+            BeeKeeperFx.HoneyHeal(Player.Center, pendingHoney);
+            pendingHealth = 0f;
+            pendingHoney = 0f;
         }
 
         // Owner only: one more bee of whichever kind has room, picked at random in proportion to how many of each are missing.

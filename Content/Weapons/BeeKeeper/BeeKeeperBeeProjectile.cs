@@ -12,22 +12,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
 {
     /// <summary>
     /// What a bee is doing. Idle = hovering over the owner, Leaving = the swarm is being dismissed,
-    /// Travel = flying to an enemy it was sent at, Latched = sitting on that enemy and stinging it. No bee can be hurt in any state. The state is packed into the low 3 bits of ai[0], so there is room for 8.
+    /// Travel = flying to an enemy it was sent at, Latched = sitting on that enemy and stinging it (and gathering honey), Return = flying home carrying that honey to the owner. No bee can be hurt in any state. The state is packed into the low 3 bits of ai[0], so there is room for 8.
     /// </summary>
-    public enum BeeState { Idle = 0, Leaving = 1, Travel = 2, Latched = 3 }
+    public enum BeeState { Idle = 0, Leaving = 1, Travel = 2, Latched = 3, Return = 4 }
 
     /// <summary>
     /// One bee of the Bee Keeper's swarm (the base of the big and the small bee). It hovers around the owner's head on a wander pattern of its
     /// own. Nothing can hurt or kill it (no hit points, no clouds). It deals no damage itself: it is a normal projectile only so tModLoader syncs it.
     /// MULTIPLAYER: the owner's client decides the state. Synced through ai (netUpdate only on a change):
-    /// ai[0] = the state (BeeState, low 3 bits) + 8 x (the target NPC's index + 1) (one number carries both), ai[1] = unused (it was the hurt
-    /// counter), ai[2] = the bee's seed (its wander pattern, and the spot it takes on an enemy).
+    /// ai[0] = the state (BeeState, low 3 bits) + 8 x (the target NPC's index + 1) (one number carries both), ai[1] = the honey a Returning bee
+    /// carries (0..1, set by the owner when it lets go so every machine draws the same blob), ai[2] = the bee's seed (its wander pattern, and the spot it takes on an enemy).
     /// Every machine runs the same wander from the seed and the owner's position, so the swarm is not sent every tick; the owner's position
     /// updates (netUpdate) pull the others back into line.
     /// THE ATTACK: the owner's client sends it (Recruit) at an enemy; every machine then flies it there (Travel) and, once the owner says it
     /// has arrived, holds it at a spot of the enemy computed from the seed and the enemy's own position (Latched), so no position is sent
     /// while latched. The owner's client does the stings (NPC.SimpleStrikeNPC and NPC.AddBuff both sync themselves); every machine plays the
     /// same sting timing as a visual from its own clock. When the enemy dies or goes away, or MaxLatchTicks pass, the owner lets the bee go.
+    /// HONEY: a latched bee gathers honey from its own latch clock (visual, computed on every machine; BeeKeeperHoneyNPC draws the enemy's outline
+    /// from it). A released bee that gathered enough flies home (Return) carrying a blob of it; the owner's client hands it over (BeeKeeperPlayer.Deliver).
     /// </summary>
     public abstract class BeeKeeperBeeProjectile : ModProjectile
     {
@@ -43,6 +45,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         BeeState State => (BeeState)((int)Projectile.ai[0] & 7);
         int TargetIndex => ((int)Projectile.ai[0] >> 3) - 1; // -1 = none
         float Seed => Projectile.ai[2];
+        float Carried => Projectile.ai[1];   // Return only: the honey this bee carries (0..1, 1 = a full load)
         public bool IsIdle => State == BeeState.Idle;
         bool IsOwner => Projectile.owner == Main.myPlayer;
 
@@ -56,6 +59,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         float stingDamage;   // owner only: the sword's damage when the bee was sent
         int travelTicks;
         int latchTicks;
+        float honey;         // how full of honey this bee is while latched (0..1; every machine counts it from its own latch clock)
+        float carry;         // the load of a Returning bee as this machine last saw it (kept for the delivery effect, ai[1] is reset on arrival)
+        int returnTicks;
         float jab;           // 1 right after a sting, fades to 0
         BeeState lastState;  // the state this machine saw on the previous tick (to notice a change)
 
@@ -131,9 +137,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
                 {
                     latchTicks = 0;
                     jab = 0f;
+                    honey = 0f;
+                }
+                else if (now == BeeState.Return)
+                {
+                    returnTicks = 0;
+                    carry = Carried;
                 }
                 if (lastState == BeeState.Latched && now != BeeState.Latched)
                     BeeKeeperFx.FinalSting(Projectile.Center, IsBig);
+                if (lastState == BeeState.Return && now == BeeState.Idle)
+                    BeeKeeperFx.Deliver(Projectile.Center, carry, IsBig);
                 lastState = now;
             }
 
@@ -151,6 +165,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
                 Travel();
             else if (State == BeeState.Latched)
                 Latch();
+            else if (State == BeeState.Return)
+                ReturnHome(owner);
             else
                 Steer(owner);
             if (Math.Abs(Projectile.velocity.X) > 0.3f)
@@ -201,9 +217,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
 
         // ---- the attack ----
 
-        void SetState(BeeState state, int target)
+        void SetState(BeeState state, int target, float carried = 0f)
         {
             Projectile.ai[0] = (float)((int)state + ((target + 1) << 3));
+            Projectile.ai[1] = carried; // the honey a Returning bee carries; 0 in every other state
             Projectile.netUpdate = true;
         }
 
@@ -218,11 +235,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             SetState(BeeState.Travel, target.whoAmI);
         }
 
-        // Owner only: back to the swarm, thrown off the enemy with a little push.
-        void Release()
+        // Owner only: let go of the enemy, thrown off it with a little push. A bee that gathered honey flies it home (Return, carrying what
+        // it gathered); one with (almost) none, or one that never latched on, goes straight back to the swarm.
+        void Release(bool withHoney)
         {
             Projectile.velocity = Main.rand.NextVector2Circular(5f, 5f);
-            SetState(BeeState.Idle, -1);
+            if (withHoney && honey >= BeeKeeperTuning.HoneyMinCarry)
+                SetState(BeeState.Return, -1, honey);
+            else
+                SetState(BeeState.Idle, -1);
         }
 
         // The enemy this bee was sent at, or null when it is gone (dead, despawned, or the slot now holds another enemy).
@@ -257,7 +278,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             if (npc == null)
             {
                 if (IsOwner)
-                    Release(); // the target died or went away on the way: back to the swarm
+                    Release(false); // the target died or went away on the way: back to the swarm
                 return;        // the other machines wait for the owner's state change
             }
 
@@ -284,11 +305,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             {
                 Projectile.velocity = Vector2.Zero;
                 if (IsOwner)
-                    Release(); // the enemy died or went away: the swarm ends (the final sting is only shown, there is nothing left to hurt)
+                    Release(true); // the enemy died or went away: the swarm ends and flies its honey home (the final sting is only shown, there is nothing left to hurt)
                 return;
             }
 
             latchTicks++;
+
+            // Honey: the bee fills evenly while it sits on the enemy. The enemy shows the sum of its bees' honey as an outline (BeeKeeperHoneyNPC)
+            // and drips from its underside; all of it is worked out locally on every machine, nothing is synced.
+            honey = MathHelper.Clamp(latchTicks / (float)Math.Max(1, BeeKeeperTuning.HoneyFillTicks), 0f, 1f);
+            BeeKeeperHoneyNPC.Add(npc, honey);
+            if (honey > 0.05f && Main.rand.NextFloat() < BeeKeeperTuning.HoneyDripChance * honey)
+                BeeKeeperFx.HoneyDrip(new Vector2(Projectile.Center.X, npc.position.Y + npc.height - Main.rand.NextFloat(2f, 8f)));
             jab = Math.Max(0f, jab - 1f / Math.Max(1, BeeKeeperTuning.StingJabTicks));
             int interval = Math.Max(1, BeeKeeperTuning.StingIntervalTicks);
             int phase = (int)(Frac(Seed * 0.713f) * interval); // every bee stings at its own moment of the interval
@@ -311,7 +339,42 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             if (IsOwner && latchTicks >= BeeKeeperTuning.MaxLatchTicks)
             {
                 Sting(npc, true); // the final sting
-                Release();
+                Release(true);
+            }
+        }
+
+        // Every machine flies the bee to the owner with its blob of honey; the owner's client decides it has arrived and hands the honey over
+        // (BeeKeeperPlayer.Deliver, which batches the bees that arrive together). Nothing can hurt it on the way.
+        void ReturnHome(Player owner)
+        {
+            carry = Carried;
+            Vector2 delta = owner.Center - Projectile.Center;
+            float distance = delta.Length();
+            if (distance > BeeKeeperTuning.SnapDistance)
+            {
+                Projectile.Center = owner.Center; // left far behind (a teleport, a mount): it arrives at once
+                Projectile.velocity = Vector2.Zero;
+                delta = Vector2.Zero;
+                distance = 0f;
+            }
+
+            Vector2 wanted = distance > 0.01f ? delta / distance * Math.Min(BeeKeeperTuning.ReturnSpeed, 3f + distance * 0.25f) : Vector2.Zero;
+            // A little sideways swoop while far away, like the flight out.
+            float weave = (float)Math.Sin(ticks * 0.3f + Seed * 1.7f) * BeeKeeperTuning.ReturnWeave * Math.Min(1f, distance / 120f);
+            Vector2 side = new Vector2(-wanted.Y, wanted.X).SafeNormalize(Vector2.Zero) * weave;
+            Projectile.velocity = Vector2.Lerp(Projectile.velocity, wanted + side, BeeKeeperTuning.ReturnTurn);
+
+            BeeKeeperFx.HoneyBlob(Projectile.Center, carry, IsBig);
+            if (ticks % 3 == 0)
+                BeeKeeperFx.TravelTrail(Projectile.Center, Projectile.velocity);
+            if (Main.rand.NextFloat() < BeeKeeperTuning.HoneyReturnDripChance * carry)
+                BeeKeeperFx.HoneyDrip(Projectile.Center);
+
+            returnTicks++;
+            if (IsOwner && (distance <= BeeKeeperTuning.ReturnArriveDistance || returnTicks >= BeeKeeperTuning.ReturnTimeoutTicks))
+            {
+                owner.GetModPlayer<BeeKeeperPlayer>().Deliver(Carried);
+                SetState(BeeState.Idle, -1); // empty-handed again (ai[1] goes back to 0) and back in the swarm's idle pool
             }
         }
 

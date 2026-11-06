@@ -95,5 +95,68 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float StingJab => 5f;            // a sting pushes the bee this far into the enemy and back
         public static int StingJabTicks => 6;
         public static float StingSoundChance => 0.3f;  // not every sting makes a sound (15 bees would be a wall of noise)
+
+        // ---- honey (patch 3): latched bees gather it, the released bees fly it home and hand it over ----
+        public static int HoneyFillTicks => 300;          // a bee that has sat on an enemy this long carries a full load (it fills evenly)
+        public static float HoneyMinCarry => 0.05f;       // a bee that gathered less than this goes straight back to the swarm instead of flying home
+
+        // the enemy: an orange outline (its own sprite repeated around itself) and drips
+        public static float HoneyOutlineFullAmount => 6f; // the outline is at full strength when the honey of all bees on the enemy adds up to this many full loads
+        public static float HoneyOutlineEase => 0.08f;    // how fast the outline fades in and out (0..1 per tick)
+        public static float HoneyOutlineWidth => 2f;      // thickness at full strength (pixels)
+        public static float HoneyOutlineOffsetY => 0f;    // moves the outline down (+) or up (-): use it if the outline sits off an enemy's sprite
+        public static int HoneyOutlinePulseTicks => 50;
+        public static float HoneyOutlineMin => 0.65f;     // the pulse swings between these fractions of the strength
+        public static float HoneyOutlineMax => 1f;
+        public static float HoneyGlowScale => 1.08f;      // the soft glow copy behind the outline
+        public static Color HoneyNpcOutlineColor => new Color(255, 150, 20, 0);   // alpha 0 = additive
+        public static Color HoneyNpcCoreColor => new Color(255, 215, 90, 0);
+        public static float HoneyDripChance => 0.05f;       // per latched bee per tick, times its fill
+        public static float HoneyReturnDripChance => 0.04f; // per returning bee per tick, times its load
+        public static float HoneyDripGravity => 0.12f;
+        public static int HoneyDripLifeMin => 40;
+        public static int HoneyDripLifeMax => 80;
+        public static float HoneyDripSizeMin => 2f;
+        public static float HoneyDripSizeMax => 3.4f;
+
+        // the metaball look of the drips and of the blob a bee carries
+        public static float HoneyPixelSize => 2f;
+        public static float HoneyMerge => 2.2f;
+        public static float HoneyBlobOutline => 0.22f;
+        public static float HoneyGlow => 0.25f;
+        public static float HoneyDripHeat => 0.55f;
+        public static Color HoneyFillDark => new Color(190, 85, 15);
+        public static Color HoneyFillLight => new Color(255, 200, 60);
+        public static Color HoneyFillShine => new Color(255, 238, 160);
+        public static Color HoneyDripOutlineColor => new Color(115, 45, 8);
+        public static Color HoneyGlowColor => new Color(255, 160, 30);
+
+        public static Color HoneyFill(float heat)
+        {
+            heat = MathHelper.Clamp(heat, 0f, 1f);
+            return heat < 0.5f ? Color.Lerp(HoneyFillDark, HoneyFillLight, heat * 2f) : Color.Lerp(HoneyFillLight, HoneyFillShine, (heat - 0.5f) * 2f);
+        }
+
+        // the blob a returning bee carries: it hangs under the bee and is bigger with a fuller load
+        public static float HoneyBlobRadius => 4f;        // at a full load, on a big bee
+        public static float HoneyBlobMinScale => 0.35f;   // an almost empty load is this fraction of that
+        public static float HoneyBlobSmallScale => 0.8f;  // a small bee carries (and hangs) this fraction
+        public static float HoneyBlobOffset => 6f;        // how far under the bee's middle
+        public static float HoneyBlobHeat => 0.55f;
+
+        // ---- the flight home (every machine flies it, the owner's client decides it has arrived) ----
+        public static float ReturnSpeed => 14f;
+        public static float ReturnTurn => 0.14f;          // how fast its velocity follows the wanted one (0..1 per tick)
+        public static float ReturnWeave => 2.5f;          // sideways swoop (speed) while still far away
+        public static float ReturnArriveDistance => 22f;  // close enough to the player's middle to hand the honey over
+        public static int ReturnTimeoutTicks => 300;      // not there after this long: it hands the honey over anyway
+
+        // ---- delivery (owner's client): the honey of the bees that arrive within DeliveryBatchTicks of each other is given at once ----
+        public static float HealPerHoneyBee => 3f;        // health per FULL load (a half-full bee gives half)
+        public static int HealMaxPerBatch => 60;
+        public static int HoneyBuffTicksPerBee => 240;    // ticks of the vanilla Honey buff per full load ...
+        public static int HoneyBuffMaxTicks => 1800;      // ... never topped up beyond this
+        public static int DeliveryBatchTicks => 10;
+        public static float DeliverSoundChance => 0.4f;   // not every arriving bee makes a sound
     }
 }

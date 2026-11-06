@@ -122,5 +122,61 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             }
             SoundEngine.PlaySound(SoundID.Item17 with { Volume = big ? 0.45f : 0.3f, Pitch = big ? 0f : 0.4f, PitchVariance = 0.2f }, position);
         }
+
+        // ---- honey (every machine calls these from its own copy of the bee; visual only) ----
+
+        // A drop of honey leaves the enemy (or a bee carrying a load): a metaball particle that falls, merges with its neighbours and is gone
+        // when it lands.
+        public static void HoneyDrip(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            MetaballLayers.Of<BeeKeeperHoneyStyle>().Spawn(
+                position + new Vector2(Main.rand.NextFloat(-5f, 5f), 0f),
+                new Vector2(Main.rand.NextFloat(-0.3f, 0.3f), Main.rand.NextFloat(0f, 0.6f)),
+                Main.rand.Next(BeeKeeperTuning.HoneyDripLifeMin, BeeKeeperTuning.HoneyDripLifeMax + 1),
+                Main.rand.NextFloat(BeeKeeperTuning.HoneyDripSizeMin, BeeKeeperTuning.HoneyDripSizeMax));
+        }
+
+        // The honey a returning bee carries: a metaball body for THIS tick, hanging under the bee (call it every tick).
+        public static void HoneyBlob(Vector2 position, float carry, bool big)
+        {
+            if (Main.dedServ)
+                return;
+            carry = MathHelper.Clamp(carry, 0f, 1f);
+            float kind = big ? 1f : BeeKeeperTuning.HoneyBlobSmallScale;
+            float scale = MathHelper.Lerp(BeeKeeperTuning.HoneyBlobMinScale, 1f, carry) * kind;
+            MetaballLayers.Of<BeeKeeperHoneyStyle>().AddBlob(position + new Vector2(0f, BeeKeeperTuning.HoneyBlobOffset * kind), BeeKeeperTuning.HoneyBlobRadius * scale, MathHelper.Clamp(BeeKeeperTuning.HoneyBlobHeat + 0.3f * carry, 0f, 1f));
+        }
+
+        // A returning bee reaches the owner and hands its honey over: honey flecks and now and then a soft pop.
+        public static void Deliver(Vector2 position, float carry, bool big)
+        {
+            if (Main.dedServ)
+                return;
+            int count = 2 + (int)(MathHelper.Clamp(carry, 0f, 1f) * (big ? 5f : 3f));
+            for (int i = 0; i < count; i++)
+            {
+                Dust dust = Dust.NewDustPerfect(position, DustID.Honey, Main.rand.NextVector2Circular(2.5f, 2.5f), 100, default, Main.rand.NextFloat(0.8f, 1.2f));
+                dust.noGravity = true;
+            }
+            if (Main.rand.NextFloat() < BeeKeeperTuning.DeliverSoundChance)
+                SoundEngine.PlaySound(SoundID.Item9 with { Volume = 0.25f, Pitch = 0.9f, PitchVariance = 0.15f }, position);
+        }
+
+        // The owner gets the honey of the bees that just arrived (one heal and one buff top-up): a ring of honey flecks and a soft sound.
+        public static void HoneyHeal(Vector2 center, float honey)
+        {
+            if (Main.dedServ)
+                return;
+            int count = 6 + (int)System.Math.Min(14f, honey * 3f);
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 direction = Main.rand.NextVector2Unit();
+                Dust dust = Dust.NewDustPerfect(center + direction * 14f, DustID.Honey, direction * Main.rand.NextFloat(0.5f, 2f), 100, default, Main.rand.NextFloat(0.9f, 1.4f));
+                dust.noGravity = true;
+            }
+            SoundEngine.PlaySound(SoundID.Item3 with { Volume = 0.5f, Pitch = 0.4f, PitchVariance = 0.15f }, center);
+        }
     }
 }
