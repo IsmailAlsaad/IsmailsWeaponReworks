@@ -20,7 +20,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float AnticipateTiltDeg => 10f; // and the wrist (the blade tilt) the same way
         public static int SwingTicks => 7;            // the strike (the only part that damages)
         public static float SwingEasePower => 2.5f;   // 1 = even speed; higher = faster start and a longer deceleration
-        public static float OvershootDeg => 6f;       // the strike carries this far past the end of the arc ...
+        public static float OvershootDeg => 3f;       // the strike carries this far past the end of the arc ...
         public static int RecoverTicks => 5;          // ... and settles back to the end of the arc over this long
         public static int SweepHitSteps => 4;         // the blade's hit test is checked at this many poses between two ticks
         public static float RestArmDeg => 10f;        // where a fresh combo starts (just before the high end of the arc)
@@ -31,7 +31,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static int ComboTicks => 30;           // a swing started within this long after the last one continues the alternation
         public static float HitLengthScale => 1.3f;     // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
         public static float HitWidth => 18f;          // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
-        public static float HitShake => 1f;           // camera punch on a hit (pixels)
+        public static float HitShake => 0.5f;           // camera punch on a hit (pixels)
 
         // ---- swing trail (a SweepTrail fan, drawn by the shared pixel line renderer) ----
         public static float PixelSize => 2f;
@@ -42,7 +42,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float TrailExpandBy => 0.9f;    // the fan has fully expanded this far into the swing (0..1)
         public static float TrailInner => 0.55f;      // fully expanded, the fan reaches down the blade to this fraction of its length
         public static float TrailOuter => 1.3f;         // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
-        public static float TrailLagTicks => 0.8f;    // how many ticks the trail runs BEHIND the sprite (0 = exactly on it; 0.8 is what it was before)
+        public static float TrailLagTicks => 0.4f;    // how many ticks the trail runs BEHIND the sprite (0 = exactly on it; 0.8 is what it was before)
         public static int TrailSamplesPerTick => 8;   // trail points laid per tick (the strike is fast, so many keep the fan smooth)
         public static Color CoreColor => new Color(255, 244, 180, 0);
         public static Color HoneyColor => new Color(255, 176, 40, 0);
@@ -91,7 +91,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float LatchMaxSpread => 70f;     // ... but never further than this (pixels), so a boss does not scatter them
         public static float LatchWobble => 5f;         // a latched bee jitters this far around its spot
         public static float LatchWobbleSpeed => 0.35f;
-        public static int StingIntervalTicks => 80;    // every latched bee stings this often (each has its own phase)
+        public static int StingIntervalTicks => 45;    // every latched bee stings this often (each has its own phase)
         public static float StingDamageFraction => 0.1f; // of the sword's damage (the swing's damage when the bee was sent)
         public static int StingPoisonTicks => 120;     // Poisoned is topped up to this whenever it runs below half
         public static int MaxLatchTicks => 360;        // a bee lets go after this long, with one final sting

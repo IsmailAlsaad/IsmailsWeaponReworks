@@ -150,8 +150,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
                 Dust dust = Dust.NewDustPerfect(position, DustID.Honey, Main.rand.NextVector2Circular(2.5f, 2.5f), 100, default, Main.rand.NextFloat(0.8f, 1.2f));
                 dust.noGravity = true;
             }
-            if (Main.rand.NextFloat() < BeeKeeperTuning.DeliverSoundChance)
-                SoundEngine.PlaySound(SoundID.Item9 with { Volume = 0.25f, Pitch = 0.9f, PitchVariance = 0.15f }, position);
+            //if (Main.rand.NextFloat() < BeeKeeperTuning.DeliverSoundChance)
+                //SoundEngine.PlaySound(SoundID.Item9 with { Volume = 0.25f, Pitch = 0.9f, PitchVariance = 0.15f }, position);
+            SoundEngine.PlaySound(SoundID.Item9 with { Volume = 0.25f, Pitch = 0.9f, PitchVariance = 0.15f }, position);
         }
 
         // The owner gets the honey of the bees that just arrived (one heal and one buff top-up): a ring of honey flecks and a soft sound.

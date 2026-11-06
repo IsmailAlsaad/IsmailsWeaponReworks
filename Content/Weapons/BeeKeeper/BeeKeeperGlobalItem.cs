@@ -62,7 +62,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            //    tooltips.Add(new TooltipLine(Mod, "BeeKeeper1", "Bees gather above you while it is held"));
+
+            tooltips.RemoveAll(line => line.Mod == "Terraria" && line.Name.StartsWith("Tooltip"));
+                tooltips.Add(new TooltipLine(Mod, "BeeKeeper1", "Your bees will feed you honey after hitting an enemy"));
             //    tooltips.Add(new TooltipLine(Mod, "BeeKeeper3", "Hits send bees that latch on, sting and poison: the more hits, the more bees"));
             //    tooltips.Add(new TooltipLine(Mod, "BeeKeeper4", "Bees that gathered honey bring it back: a little health and the Honey buff"));
         }

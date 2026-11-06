@@ -15,6 +15,8 @@ and a variable like this one
         public static float HitWidth => 18f;          // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
 
 
++Always draw halo after images as expanded from the center of the sprite instead of from the pivot
+
 Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projectiles, Tuning, Fx, art). Namespace always equals the folder path. Shared code goes into `Common/` only when a second weapon needs it.
 
 ## Progress
