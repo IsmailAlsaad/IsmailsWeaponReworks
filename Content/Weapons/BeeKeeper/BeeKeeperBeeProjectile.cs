@@ -420,7 +420,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         }
     }
 
-    /// <summary>A big bee: sturdier, a bigger poison cloud. Art: Content/Weapons/BeeKeeper/BeeKeeperBigBee.png (about 22x18, facing right).</summary>
+    /// <summary>A big bee. Art: Content/Weapons/BeeKeeper/BeeKeeperBigBee.png (about 22x18, facing right).</summary>
     public class BeeKeeperBigBeeProjectile : BeeKeeperBeeProjectile
     {
         protected override bool IsBig => true;
@@ -428,7 +428,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         protected override string ArtPath => "IsmailsWeaponReworks/Content/Weapons/BeeKeeper/BeeKeeperBigBee";
     }
 
-    /// <summary>A small bee: fragile, a smaller poison cloud. Art: Content/Weapons/BeeKeeper/BeeKeeperSmallBee.png (about 12x10, facing right).</summary>
+    /// <summary>A small bee. Art: Content/Weapons/BeeKeeper/BeeKeeperSmallBee.png (about 12x10, facing right).</summary>
     public class BeeKeeperSmallBeeProjectile : BeeKeeperBeeProjectile
     {
         protected override bool IsBig => false;
