@@ -73,15 +73,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float BuzzJitter => 0.25f;      // random shake added to the velocity
         public static float SnapDistance => 900f;     // a bee further away than this jumps back to the swarm
 
-        // ---- bees can be hurt (the owner's client decides) ----
-        public static float BigHp => 30f;
-        public static float SmallHp => 10f;
-        public static float EnemyTouchDamage => 10f;  // an enemy body or hostile projectile that touches a bee costs it this much ...
-        public static int HurtCooldownTicks => 30;    // ... and the bee cannot be hurt again for this long
-        public static bool HostileProjectilesHurtBees => true;
-        public static float HurtKnock => 4f;          // the bee is pushed away from what hit it
-        public static int HurtFlashTicks => 10;
-
         // ---- the swarm attack (a true melee hit sends bees: they fly out, latch on, sting) ----
         public static int BeesPerHit => 2;             // bees sent by the FIRST hit on an enemy ...
         public static int HitsForFullSwarm => 5;       // ... growing evenly until this hit, which sends every idle bee
@@ -104,31 +95,5 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float StingJab => 5f;            // a sting pushes the bee this far into the enemy and back
         public static int StingJabTicks => 6;
         public static float StingSoundChance => 0.3f;  // not every sting makes a sound (15 bees would be a wall of noise)
-        public static int ReturnGraceTicks => 45;      // a bee that lets go cannot be hurt for this long (it is still inside the enemy)
-
-        // ---- poison cloud (a dying bee) ----
-        public static float CloudRadius => 40f;       // a big bee's cloud (pixels); a small bee's is CloudSmallScale of it
-        public static float CloudSmallScale => 0.65f;
-        public static int CloudTicks => 150;
-        public static int CloudPulseTicks => 20;      // enemies and players inside get the buff refreshed this often
-        public static int PoisonTicks => 80;         // the Poisoned buff duration each pulse
-        public static int CloudPuffsPerTick => 2;
-        public static int CloudBurstPuffs => 14;
-        public static float CloudMerge => 2.2f;
-        public static float CloudOutline => 0f;
-        public static float CloudGlow => 0.2f;
-        public static float CloudRise => 0.02f;
-        public static float CloudDrag => 0.96f;
-        public static float CloudWobble => 0.04f;
-        public static float CloudHeat => 0.9f;
-        public static Color CloudFill(float heat)
-        {
-            Color dark = new Color(64, 96, 30);
-            Color mid = new Color(120, 175, 45);
-            Color bright = new Color(205, 235, 110);
-            return heat < 0.5f ? Color.Lerp(dark, mid, heat * 2f) : Color.Lerp(mid, bright, (heat - 0.5f) * 2f);
-        }
-        public static Color CloudGlowColor => new Color(140, 210, 60, 0);
-        public static Color CloudOutlineColor => CloudGlowColor;
     }
 }

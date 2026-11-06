@@ -11,21 +11,19 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
 {
     /// <summary>
-    /// What a bee is doing. Idle = hovering over the owner (the only state that can be hurt), Leaving = the swarm is being dismissed,
-    /// Travel = flying to an enemy it was sent at, Latched = sitting on that enemy and stinging it (invulnerable while it travels and
-    /// while it is latched). The state is packed into the low 3 bits of ai[0], so there is room for 8.
+    /// What a bee is doing. Idle = hovering over the owner, Leaving = the swarm is being dismissed,
+    /// Travel = flying to an enemy it was sent at, Latched = sitting on that enemy and stinging it. No bee can be hurt in any state. The state is packed into the low 3 bits of ai[0], so there is room for 8.
     /// </summary>
     public enum BeeState { Idle = 0, Leaving = 1, Travel = 2, Latched = 3 }
 
     /// <summary>
     /// One bee of the Bee Keeper's swarm (the base of the big and the small bee). It hovers around the owner's head on a wander pattern of its
-    /// own, can be hurt by enemy bodies and hostile projectiles (the owner's client decides), and when its health runs out it leaves a poison
-    /// cloud (BeeKeeperPoisonCloudProjectile). It deals no damage itself: it is a normal projectile only so tModLoader syncs it.
-    /// MULTIPLAYER: the owner's client decides the state, the damage and the death. Synced through ai (netUpdate only on a change):
-    /// ai[0] = the state (BeeState, low 3 bits) + 8 x (the target NPC's index + 1) (one number carries both), ai[1] = hurt counter (every
-    /// machine notices a change and plays the hurt flash), ai[2] = the bee's seed (its wander pattern, and the spot it takes on an enemy).
+    /// own. Nothing can hurt or kill it (no hit points, no clouds). It deals no damage itself: it is a normal projectile only so tModLoader syncs it.
+    /// MULTIPLAYER: the owner's client decides the state. Synced through ai (netUpdate only on a change):
+    /// ai[0] = the state (BeeState, low 3 bits) + 8 x (the target NPC's index + 1) (one number carries both), ai[1] = unused (it was the hurt
+    /// counter), ai[2] = the bee's seed (its wander pattern, and the spot it takes on an enemy).
     /// Every machine runs the same wander from the seed and the owner's position, so the swarm is not sent every tick; the owner's position
-    /// updates (netUpdate) pull the others back into line. A bee's health is the owner's alone.
+    /// updates (netUpdate) pull the others back into line.
     /// THE ATTACK: the owner's client sends it (Recruit) at an enemy; every machine then flies it there (Travel) and, once the owner says it
     /// has arrived, holds it at a spot of the enemy computed from the seed and the enemy's own position (Latched), so no position is sent
     /// while latched. The owner's client does the stings (NPC.SimpleStrikeNPC and NPC.AddBuff both sync themselves); every machine plays the
@@ -50,10 +48,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
 
         // Per-machine state: counters and visuals, never synced.
         int ticks;
-        float hp;            // owner only
-        int hurtCooldown;    // owner only
-        int seenHurt;        // the hurt counter this machine has already reacted to
-        float flash;         // 1 right after a hit, fades to 0
         int leaveTicks;
         bool facingRight = true;
 
@@ -106,8 +100,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
 
             if (ticks == 0)
             {
-                hp = IsBig ? BeeKeeperTuning.BigHp : BeeKeeperTuning.SmallHp;
-                seenHurt = (int)Projectile.ai[1];
                 lastState = State;
                 BeeKeeperFx.BeeSpawn(Projectile.Center);
             }
@@ -124,19 +116,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
                     Projectile.ai[0] = (float)BeeState.Leaving;
                     Projectile.netUpdate = true;
                 }
-                if (State == BeeState.Idle)
-                    CheckDamage(); // may kill the bee
-                if (!Projectile.active)
-                    return;
-            }
-
-            // Every machine (the owner too) reacts to a change of the hurt counter.
-            int hurtNow = (int)Projectile.ai[1];
-            if (hurtNow != seenHurt)
-            {
-                seenHurt = hurtNow;
-                flash = 1f;
-                BeeKeeperFx.BeeHurt(Projectile.Center);
             }
 
             // Every machine notices a change of the synced state (the owner's own change too, one tick later).
@@ -177,7 +156,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             if (Math.Abs(Projectile.velocity.X) > 0.3f)
                 facingRight = Projectile.velocity.X > 0f;
 
-            flash = Math.Max(0f, flash - 1f / Math.Max(1, BeeKeeperTuning.HurtFlashTicks));
             Lighting.AddLight(Projectile.Center, 0.25f, 0.18f, 0.04f);
             ticks++;
         }
@@ -240,10 +218,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             SetState(BeeState.Travel, target.whoAmI);
         }
 
-        // Owner only: back to the swarm. For a moment the bee cannot be hurt (it is still inside the enemy it let go of).
+        // Owner only: back to the swarm, thrown off the enemy with a little push.
         void Release()
         {
-            hurtCooldown = BeeKeeperTuning.ReturnGraceTicks;
             Projectile.velocity = Main.rand.NextVector2Circular(5f, 5f);
             SetState(BeeState.Idle, -1);
         }
@@ -354,57 +331,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
                 npc.AddBuff(BuffID.Poisoned, BeeKeeperTuning.StingPoisonTicks);
         }
 
-        // ---- being hurt (owner's client only) ----
-
-        void CheckDamage()
-        {
-            if (hurtCooldown > 0)
-            {
-                hurtCooldown--;
-                return;
-            }
-
-            Rectangle box = Projectile.Hitbox;
-            for (int i = 0; i < Main.maxNPCs; i++)
-            {
-                NPC npc = Main.npc[i];
-                if (!npc.active || npc.friendly || npc.damage <= 0 || !npc.Hitbox.Intersects(box))
-                    continue;
-                Hurt(npc.Center);
-                return;
-            }
-
-            if (!BeeKeeperTuning.HostileProjectilesHurtBees)
-                return;
-            for (int i = 0; i < Main.maxProjectiles; i++)
-            {
-                Projectile other = Main.projectile[i];
-                if (!other.active || !other.hostile || other.damage <= 0 || !other.Hitbox.Intersects(box))
-                    continue;
-                Hurt(other.Center);
-                return;
-            }
-        }
-
-        void Hurt(Vector2 from)
-        {
-            hp -= BeeKeeperTuning.EnemyTouchDamage;
-            hurtCooldown = BeeKeeperTuning.HurtCooldownTicks;
-            Projectile.velocity += (Projectile.Center - from).SafeNormalize(Vector2.UnitY) * BeeKeeperTuning.HurtKnock;
-            Projectile.ai[1] += 1f;
-            Projectile.netUpdate = true;
-            if (hp <= 0f)
-                Die();
-        }
-
-        // The poison cloud is its own projectile (synced), then the bee is gone.
-        void Die()
-        {
-            int type = ModContent.ProjectileType<BeeKeeperPoisonCloudProjectile>();
-            Projectile.NewProjectile(Projectile.GetSource_Death(), Projectile.Center, Vector2.Zero, type, 0, 0f, Projectile.owner, IsBig ? 1f : 0f);
-            Projectile.Kill();
-        }
-
         // ---- drawing ----
 
         public override bool PreDraw(ref Color lightColor)
@@ -425,7 +351,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             float scale = (IsBig ? BeeKeeperTuning.BigScale : BeeKeeperTuning.SmallScale) * pop * (0.4f + 0.6f * leave);
 
             Color color = Color.Lerp(lightColor, Color.White, 0.3f);
-            color = Color.Lerp(color, new Color(255, 70, 50), 0.7f * flash) * leave;
+            color *= leave;
             Main.EntitySpriteDraw(texture, Projectile.Center - Main.screenPosition, source, color, rotation, origin, scale, effects, 0);
             return false;
         }
