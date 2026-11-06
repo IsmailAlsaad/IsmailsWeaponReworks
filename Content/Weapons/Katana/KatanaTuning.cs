@@ -18,7 +18,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         public static float ReadyTiltDeg => -25f;
         public static float SheathArmDeg => 70f;      // the sheathed pose: the hand at the hip ...
         public static float SheathTiltDeg => 110f;    // ... and the blade pointing straight back (arm + tilt = 180)
-        public static int SheathEaseTicks => 14;      // how long the sword takes to settle into the sheathed pose (taken out, or back from a throw)
+        public static int SheathEaseTicks => 45;      // how long the sword takes to settle into the sheathed pose (taken out, or back from a throw)
         public static float ClickKickDeg => 8f;       // the hand kicks this much when the sword clicks shut
         public static int ClickFlashTicks => 12;
         public static int ClickDustCount => 8;
