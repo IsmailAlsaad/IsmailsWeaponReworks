@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using Terraria;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Volcano
 {
@@ -189,7 +190,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static int DropHitCooldown => 30;             // a drop (or a puddle) hurts the same enemy at most this often
         public static int DropOnFireTicks => 240;            // Hellfire on touch
         public static int DropFlightMaxTicks => 240;         // a drop that never lands is removed after this
-        public static int DropLingerTicks => 360;            // how long a landed puddle stays (6 s)
+        public static int DropLingerTicks => 300;            // how long a landed puddle stays (6 s)
         public static int DropFadeTicks => 50;               // it shrinks away over the last of it
         public static int DropMax => 40;                     // at most this many alive per player (the oldest hiss out first)
         public static float DropHeat => 0.85f;               // color heat of a fresh drop ...
