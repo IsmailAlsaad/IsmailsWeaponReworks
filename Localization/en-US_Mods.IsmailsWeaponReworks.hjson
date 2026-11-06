@@ -45,6 +45,9 @@ Projectiles: {
 	MuramasaSwingProjectile.DisplayName: Muramasa Swing Projectile
 	MuramasaIaidoProjectile.DisplayName: Muramasa Iaido Projectile
 	MuramasaSlashProjectile.DisplayName: Muramasa Slash Projectile
+	KatanaStanceProjectile.DisplayName: Katana Stance Projectile
+	KatanaBladeProjectile.DisplayName: Katana Blade Projectile
+	KatanaSlashProjectile.DisplayName: Katana Slash Projectile
 	VolcanoBladeProjectile.DisplayName: Volcano Blade Projectile
 	VolcanoBlastProjectile.DisplayName: Volcano Blast Projectile
 	VolcanoThrownProjectile.DisplayName: Volcano Thrown Projectile
