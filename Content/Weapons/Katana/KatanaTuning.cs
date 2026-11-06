@@ -36,18 +36,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         public static float EmbedCameraShake => 1.5f;
         public static int VanishTicks => 10;          // after the release the guide line fades for this long
 
-        // ---- the dash (a real teleport, but it looks and sounds like an extremely fast dash) ----
-        public static int CooldownTicks => 60;        // after the teleport the sword cannot be thrown for this long
-        public static int ImmuneTicks => 10;          // nothing can hurt the player for this long after the release
-        public static float PushSpeed => 5f;          // added to the player's velocity, toward where he teleported
-        public static float LandingStep => 4f;        // the landing search grows its circle by this many pixels at a time, up to the throw distance
-        public static int LandingAngles => 24;        // spots tried on each circle (fanning out from the surface normal to both sides)
-        public static int DashShadowTicks => 10;      // the player's vanilla afterimages trail behind him for this long after the dash
+        // ---- the dash: the player flies to the blade at DashSpeed, invincible while he travels ----
+        public static int CooldownTicks => 60;        // the sword cannot be thrown again for this long after the dash starts
+        public static float DashSpeed => 40f;         // pixels per tick (30 tiles take 12 ticks)
+        public static float MinDashPixels => 8f;      // a blade closer than this does nothing (no dash, no cooldown)
+        public static float DashGraze => 0.3f;        // a wall hit at a shallower angle than this (cosine) slides the dash along it; a head-on hit stops it
+        public static int ImmuneTailTicks => 10;      // nothing can hurt the player for this long after the dash ends, however it ends
+        public static int DashShadowTicks => 8;       // the player's vanilla afterimages trail behind him for this long after the dash
 
-        // ---- the slash along the line (after the teleport) ----
+        // ---- the slash along the dash (the line from where he started to where he is) ----
         public static float SlashDamageMultiplier => 2.5f; // times the item's own damage
         public static float SlashWidth => 36f;        // how wide the cut is (pixels), for hits
-        public static int SlashHitTicks => 2;         // the line hurts for this many ticks
+        public static int SlashHitTicks => 2;         // the line keeps hurting for this many ticks after the dash ends
         public static int SlashLingerTicks => 16;     // the drawn line fades out for this long after that
         public static float SlashLineWidth => 12f;    // how thick the drawn slash line is (pixels)
         public static float SlashShake => 2.5f;       // camera punch when the player arrives

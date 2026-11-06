@@ -8,13 +8,13 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.Katana
 {
     /// <summary>
-    /// The cut of the Katana: a straight line from where the player stood when he let go to where he landed. It is spawned right after
-    /// the teleport, so everything on the line is hit after he arrived: every enemy once, through blocks, for SlashHitTicks ticks; then
-    /// the drawn line fades out. The projectile sits at the line's start for its whole life; the end is start + offset.
-    /// MULTIPLAYER: the owner's client spawns it (KatanaBladeProjectile.Release): Center = the line's start, ai[0..1] = the offset to the
-    /// end, so ordinary projectile sync carries it. Damage is dealt by the owner's client only; every other machine shows the line and
-    /// spawns the hit sparks itself (RemoteHitTracker). No custom packets.
-    /// </summary>
+    /// The cut of the Katana: a straight line from where the player stood when the dash began to where he is, growing as he flies. It is
+    /// spawned together with the dash and hits everything on the line, every enemy once, through blocks, for as long as the dash lasts
+    /// and SlashHitTicks more; then the drawn line fades out. The projectile sits at the line's start for its whole life.
+    /// MULTIPLAYER: the owner's client spawns it (KatanaBladeProjectile.Release): Center = the line's start, ai[0..1] = the offset to
+    /// where the dash was aimed, ai[2] = how many ticks the dash lasts. The line's end is the owner's synced position on every machine,
+    /// so ordinary projectile sync plus vanilla player sync carry it. Damage is dealt by the owner's client only; every other machine
+    /// shows the line and spawns the hit sparks itself (RemoteHitTracker). No custom packets.
     public class KatanaSlashProjectile : ModProjectile
     {
         // The vanilla item sprite is the projectile sprite (never drawn, but a projectile needs a texture).
@@ -22,12 +22,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
 
         Vector2 Start => Projectile.Center;
         Vector2 Offset => new Vector2(Projectile.ai[0], Projectile.ai[1]);
-        Vector2 End => Projectile.Center + Offset;
-        bool Damaging => ticks < KatanaTuning.SlashHitTicks;
+        int DashTicks => Math.Max(1, (int)Projectile.ai[2]);
+        int HitEnd => DashTicks + KatanaTuning.SlashHitTicks;
+        Vector2 End => tracked ? endPoint : Start + Offset;
+        bool Damaging => ticks < HitEnd;
         bool IsOwner => Projectile.owner == Main.myPlayer;
 
         // Per-machine state: counters and visuals, never synced.
         int ticks;
+        Vector2 endPoint;
+        bool tracked;
         readonly RemoteHitTracker remote = new RemoteHitTracker();
         readonly Vector2[] linePoints = new Vector2[14];
         readonly float[] lineTs = new float[14];
@@ -49,13 +53,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
 
         public override void AI()
         {
+            Player owner = Main.player[Projectile.owner];
             if (ticks == 0)
             {
-                KatanaFx.Dash(Start, End);
-                CameraShake.Punch(End, KatanaTuning.SlashShake, 8);
+                KatanaFx.DashStart(Start, Offset);
+                CameraShake.Punch(Start, KatanaTuning.SlashShake, 8);
             }
-            if (ticks < KatanaTuning.DashShadowTicks)
-                Main.player[Projectile.owner].armorEffectDrawShadow = true; // the vanilla afterimages of the player trail behind him
+
+            // The line follows the player for as long as the dash lasts; afterwards it stays where he stopped.
+            if (ticks <= DashTicks)
+            {
+                endPoint = owner.Center;
+                tracked = true;
+                KatanaFx.DashTrail(endPoint, Offset);
+            }
+            if (ticks < DashTicks + KatanaTuning.DashShadowTicks)
+                owner.armorEffectDrawShadow = true; // the vanilla afterimages of the player trail behind him
 
             if (!IsOwner && Damaging)
                 remote.Update(Projectile, 0, npc =>
@@ -64,7 +77,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                     CameraShake.Punch(npc.Center, KatanaTuning.SlashHitShake, 8);
                 });
 
-            if (ticks >= KatanaTuning.SlashHitTicks + Math.Max(1, KatanaTuning.SlashLingerTicks))
+            if (ticks >= HitEnd + Math.Max(1, KatanaTuning.SlashLingerTicks))
             {
                 Projectile.Kill();
                 return;
@@ -110,7 +123,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             // The slash line: thick and white at the landing end, thinner toward where he stood; after the hit ticks the whole line thins and fades.
             float grid = KatanaTuning.PixelSize;
             float linger = Math.Max(1, KatanaTuning.SlashLingerTicks);
-            float fade = Damaging ? 1f : MathHelper.Clamp(1f - (ticks - KatanaTuning.SlashHitTicks + 1) / linger, 0f, 1f);
+            float fade = Damaging ? 1f : MathHelper.Clamp(1f - (ticks - HitEnd + 1) / linger, 0f, 1f);
             fade *= fade;
             float width = KatanaTuning.SlashLineWidth * (0.3f + 0.7f * fade);
             Vector2 start = Start;

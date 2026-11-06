@@ -63,17 +63,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                 Spark(head, (-direction).RotatedByRandom(1.3f) * Main.rand.NextFloat(0.5f, 2f), 1.4f, false);
         }
 
-        // The player crosses the line in a blink: a hard whoosh and a streak of speed dust left along it (no burst at either end).
-        public static void Dash(Vector2 start, Vector2 end)
+        // The dash starts: a hard whoosh and a burst of speed dust behind the player.
+        public static void DashStart(Vector2 start, Vector2 offset)
         {
             if (Main.dedServ)
                 return;
             SoundEngine.PlaySound(SoundID.Item1 with { Volume = 1f, Pitch = -0.1f }, start);
-            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.8f, Pitch = 0.4f }, end);
-            Vector2 direction = (end - start).SafeNormalize(Vector2.UnitX);
-            int count = 3 + (int)(Vector2.Distance(start, end) / 10f);
-            for (int i = 0; i < count; i++)
-                Spark(Vector2.Lerp(start, end, i / (float)count) + Main.rand.NextVector2Circular(8f, 8f), -direction * Main.rand.NextFloat(1f, 3f), 1f, i % 3 == 0);
+            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.8f, Pitch = 0.4f }, start);
+            Vector2 direction = offset.SafeNormalize(Vector2.UnitX);
+            for (int i = 0; i < 6; i++)
+                Spark(start, -direction.RotatedByRandom(0.5f) * Main.rand.NextFloat(2f, 5f), 1.1f, i % 2 == 0);
+        }
+
+        // Every tick of the dash: speed dust thrown backward from the player (everyone sees it, from the synced position).
+        public static void DashTrail(Vector2 center, Vector2 offset)
+        {
+            if (Main.dedServ)
+                return;
+            Vector2 direction = offset.SafeNormalize(Vector2.UnitX);
+            for (int i = 0; i < 3; i++)
+                Spark(center + Main.rand.NextVector2Circular(10f, 14f), -direction * Main.rand.NextFloat(1f, 3f), 1f, i == 0);
         }
 
         public static void HitSpark(Vector2 position)
