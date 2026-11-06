@@ -155,7 +155,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static int ReturnTimeoutTicks => 300;      // not there after this long: it hands the honey over anyway
 
         // ---- delivery (owner's client): the honey of the bees that arrive within DeliveryBatchTicks of each other is given at once ----
-        public static float HealPerHoneyBee => 3f;        // health per FULL load (a half-full bee gives half)
+        public static float HealPerHoneyBee => 2f;        // health per FULL load (a half-full bee gives half)
         public static int HealMaxPerBatch => 60;
         public static int HoneyBuffTicksPerBee => 240;    // ticks of the vanilla Honey buff per full load ...
         public static int HoneyBuffMaxTicks => 1800;      // ... never topped up beyond this
