@@ -13,16 +13,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
     /// <summary>
     /// The thrown Katana blade. The owner presses the button and the blade flies out along the aim line (captured at the press: no
     /// steering) while the button stays down; the longer it is held the farther it goes, up to MaxRangeTiles after MaxChargeTicks.
-    /// A tile on the line stops it there and it sticks edge-first; it then stays put for as long as the button is held, wherever the
-    /// player walks. RELEASING the button teleports the player to the blade (backed off along the line until the hitbox fits), gives
-    /// him i-frames and a push, starts the cooldown, spawns the KatanaSlashProjectile that cuts the line from where he stood to where
-    /// he landed, and starts a new stance.
+    /// The dash happens when the button comes up, when the blade reaches the max range, or the moment it hits a tile (it sticks
+    /// edge-first for a moment): the player is moved to the blade (the landing is searched in growing circles around it, first toward
+    /// the surface normal, until his hitbox fits; if nothing fits within the throw distance he stays where he is), keeps his velocity
+    /// plus a push, gets i-frames, the cooldown starts, a KatanaSlashProjectile cuts the line from where he stood to where he landed,
+    /// and a new stance starts.
     /// MULTIPLAYER: the owner's client decides everything and spawns it with ai[0] = the aim (player's own frame), ai[1] = how far the
     /// blade can fly at most (the tile raycast, capped at the max range), ai[2] = -1 while flying in open air, -2 while its reach ends
     /// in a tile, and the distance it stopped at once released (that number is the one thing that changes, with netUpdate). Every
-    /// machine places the blade as a pure function of the ticks it has run it, so no position is synced. The teleport is the owner's
-    /// Player.Teleport plus a vanilla teleport message (see Release). Damage comes from the slash projectile, never from this one.
-    /// </summary>
+    /// machine places the blade as a pure function of the ticks it has run it, so no position is synced. The move itself is the owner
+    /// setting his position (no vanilla teleport effects) plus a PlayerControls message. Damage comes from the slash projectile.
     public class KatanaBladeProjectile : ModProjectile
     {
         // The vanilla item sprite is the projectile sprite (no art needed).
@@ -96,23 +96,50 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             return max;
         }
 
-        // The center the player lands on: the blade's position, backed off along the line toward where he stands until his hitbox fits
-        // (so he never lands inside tiles). Falls back to where he stands.
-        static Vector2 SafeLanding(Player owner, Vector2 start, Vector2 head)
+        // The direction pointing away from the surface the blade is stuck in: the average direction of the free spots on a small ring
+        // around the contact point. Falls back to straight back along the throw.
+        static Vector2 SurfaceNormal(Vector2 head, Vector2 direction)
         {
-            Vector2 delta = head - start;
-            float length = delta.Length();
-            if (length < 1f)
-                return start;
-            Vector2 unit = delta / length;
-            float step = Math.Max(1f, KatanaTuning.LandingStep);
-            for (float back = 0f; back < length; back += step)
+            Vector2 probe = head + direction * 4f;
+            Vector2 half = new Vector2(1f, 1f);
+            Vector2 sum = Vector2.Zero;
+            int samples = 16;
+            for (int i = 0; i < samples; i++)
             {
-                Vector2 center = head - unit * back;
-                if (!Collision.SolidCollision(center - owner.Size * 0.5f, owner.width, owner.height))
-                    return center;
+                Vector2 around = (MathHelper.TwoPi * i / samples).ToRotationVector2();
+                if (!Collision.SolidCollision(probe + around * 10f - half, 2, 2))
+                    sum += around;
             }
-            return start;
+            return sum.LengthSquared() > 0.01f ? Vector2.Normalize(sum) : -direction;
+        }
+
+        // Where the player can land: the first spot where his hitbox fits, searched in circles around the contact point. Every circle
+        // is tried starting toward 'preferred' (the surface normal) and fanning out to both sides; the circle grows until the throw
+        // distance. Returns false when nothing fits (the player then stays where he is).
+        static bool FindLanding(Player owner, Vector2 head, Vector2 preferred, out Vector2 landing)
+        {
+            float maxRadius = KatanaTuning.MaxRangeTiles * 16f;
+            float step = Math.Max(1f, KatanaTuning.LandingStep);
+            int angles = Math.Max(4, KatanaTuning.LandingAngles);
+            float baseAngle = preferred.ToRotation();
+            for (float radius = 0f; radius <= maxRadius; radius += step)
+            {
+                for (int a = 0; a < (radius <= 0f ? 1 : angles); a++)
+                {
+                    int k = (a + 1) / 2;
+                    float turn = (a % 2 == 1 ? k : -k) * (MathHelper.TwoPi / angles);
+                    Vector2 center = head + (baseAngle + turn).ToRotationVector2() * radius;
+                    if (!WorldGen.InWorld((int)(center.X / 16f), (int)(center.Y / 16f), 10))
+                        continue;
+                    if (!Collision.SolidCollision(center - owner.Size * 0.5f, owner.width, owner.height))
+                    {
+                        landing = center;
+                        return true;
+                    }
+                }
+            }
+            landing = head;
+            return false;
         }
 
         public override void SetDefaults()
@@ -164,7 +191,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                 if (IsOwner)
                 {
                     owner.ChangeDir(Facing);
-                    if (ticks >= 1 && !owner.controlUseItem) // the button came up: teleport
+                    // The button came up, or the blade reached the end of its reach (the max range or a tile): dash.
+                    if ((ticks >= 1 && !owner.controlUseItem) || distance >= Reach - 0.01f)
                     {
                         Release(owner, distance);
                         released = true;
@@ -193,14 +221,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                         afterimages.Add(hilt, Direction.ToRotation(), scale, KatanaTuning.GlowColor);
                     }
                 }
-                else if (endsInTile && !embedded && distance >= Reach - 0.01f)
-                {
-                    embedded = true;
-                    embedShake = KatanaTuning.EmbedShake;
-                    KatanaFx.Embed(head, Direction);
-                    CameraShake.Punch(head, KatanaTuning.EmbedCameraShake, 8);
-                }
-                embedShake *= KatanaTuning.EmbedShakeDecay;
                 Lighting.AddLight(head, 0.5f, 0.55f, 0.7f);
             }
             else
@@ -208,7 +228,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                 if (!releaseSeen)
                 {
                     releaseSeen = true;
-                    KatanaFx.Release(head);
+                    if (endsInTile) // the blade bit into a tile: it stays there, trembling, while it fades
+                    {
+                        embedded = true;
+                        embedShake = KatanaTuning.EmbedShake;
+                        KatanaFx.Embed(head, Direction);
+                        CameraShake.Punch(head, KatanaTuning.EmbedCameraShake, 8);
+                    }
                 }
                 releaseTicks++;
                 if (IsOwner && releaseTicks >= Math.Max(1, KatanaTuning.VanishTicks))
@@ -217,6 +243,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                     return;
                 }
             }
+            embedShake *= KatanaTuning.EmbedShakeDecay;
 
             lastDistance = distance;
             ticks++;
@@ -234,13 +261,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             });
         }
 
-        // Owner's client: the button came up. Everything that decides the teleport happens here, in this order: the blade's state is
-        // synced, the player is moved, then the slash that cuts the line is spawned (so the damage happens after he arrived).
+        // Owner's client: the dash. Everything that decides it happens here, in this order: the blade's state is synced, the landing is
+        // found, the player is moved, then the slash that cuts the line is spawned (so the damage happens after he arrived).
         void Release(Player owner, float distance)
         {
             Vector2 start = owner.Center;
             Vector2 head = origin + Direction * distance;
-            Vector2 landing = SafeLanding(owner, start, head);
+            Vector2 preferred = endsInTile ? SurfaceNormal(head, Direction) : -Direction;
+            bool found = FindLanding(owner, head, preferred, out Vector2 landing);
 
             Projectile.ai[2] = distance; // released: the one synced change of this projectile
             Projectile.netUpdate = true;
@@ -248,28 +276,29 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             Item item = owner.HeldItem;
             IEntitySource source = owner.GetSource_ItemUse(item);
 
-            // The teleport: Player.Teleport moves the player on this machine (it takes the top-left corner of the hitbox), and message 65
-            // (the vanilla teleport message; the number is the same however a tModLoader version names it) tells the server, which
-            // forwards it to everyone else. Style 0 = number5 0.
-            Vector2 topLeft = landing - owner.Size * 0.5f;
-            owner.Teleport(topLeft, 0);
-            if (Main.netMode == NetmodeID.MultiplayerClient)
-                NetMessage.SendData(65, -1, -1, null, 0, owner.whoAmI, topLeft.X, topLeft.Y, 0);
-
-            // He keeps his speed and gets a push toward where he went; no fall damage from the old height; i-frames; the cooldown starts.
-            Vector2 travel = landing - start;
-            if (travel.LengthSquared() > 1f)
-                owner.velocity += travel.SafeNormalize(Vector2.Zero) * KatanaTuning.PushSpeed;
-            owner.fallStart = (int)(owner.position.Y / 16f);
-            Immunity.Grant(owner, KatanaTuning.ImmuneTicks);
-            owner.GetModPlayer<KatanaPlayer>().CooldownTicks = KatanaTuning.CooldownTicks;
-
-            // The cut: from where he stood to where he landed.
-            if (travel.LengthSquared() >= 4f)
+            if (found)
             {
-                int damage = (int)(owner.GetWeaponDamage(item) * KatanaTuning.SlashDamageMultiplier);
-                Projectile.NewProjectile(source, start, Vector2.Zero, ModContent.ProjectileType<KatanaSlashProjectile>(), damage,
-                    owner.GetWeaponKnockback(item, item.knockBack), owner.whoAmI, travel.X, travel.Y);
+                // The move: the position is set directly (Player.Teleport would add vanilla teleport dust and sound), and the other
+                // machines get the new position with a PlayerControls message right away.
+                owner.position = landing - owner.Size * 0.5f;
+                if (Main.netMode == NetmodeID.MultiplayerClient)
+                    NetMessage.SendData(MessageID.PlayerControls, -1, -1, null, owner.whoAmI);
+
+                // He keeps his speed and gets a push toward where he went; no fall damage from the old height; i-frames; the cooldown starts.
+                Vector2 travel = landing - start;
+                if (travel.LengthSquared() > 1f)
+                    owner.velocity += travel.SafeNormalize(Vector2.Zero) * KatanaTuning.PushSpeed;
+                owner.fallStart = (int)(owner.position.Y / 16f);
+                Immunity.Grant(owner, KatanaTuning.ImmuneTicks);
+                owner.GetModPlayer<KatanaPlayer>().CooldownTicks = KatanaTuning.CooldownTicks;
+
+                // The cut: from where he stood to where he landed.
+                if (travel.LengthSquared() >= 4f)
+                {
+                    int damage = (int)(owner.GetWeaponDamage(item) * KatanaTuning.SlashDamageMultiplier);
+                    Projectile.NewProjectile(source, start, Vector2.Zero, ModContent.ProjectileType<KatanaSlashProjectile>(), damage,
+                        owner.GetWeaponKnockback(item, item.knockBack), owner.whoAmI, travel.X, travel.Y);
+                }
             }
 
             // The sword is back in the hand: the stance starts from the throw pose and settles into the sheathed one.
@@ -307,7 +336,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             PixelLine.Draw(guidePoints, guideTs, 2, grid, t => grid * 5f, t => KatanaTuning.EdgeColor * (0.25f * fade));
             PixelLine.Draw(guidePoints, guideTs, 2, grid, t => grid, t => KatanaTuning.CoreColor * (0.7f * fade * (0.4f + 0.6f * t)));
 
-            if (released)
+            if (released && !embedded)
                 return false;
 
             // The blade, tip first: the tip sits on the head (sunk a little deeper once it is stuck in a tile) and trembles after it bit.
@@ -319,8 +348,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             Vector2 hilt = tip - direction * KatanaTuning.BladeLength * scale - Main.screenPosition;
             float rotation = direction.ToRotation() + rotationOffset;
 
-            Main.EntitySpriteDraw(texture, hilt, null, KatanaTuning.EdgeColor * 0.6f, rotation, spriteOrigin, scale * 1.12f, effects, 0);
-            Main.EntitySpriteDraw(texture, hilt, null, Color.Lerp(lightColor, Color.White, 0.7f), rotation, spriteOrigin, scale, effects, 0);
+            float swordFade = 1f - vanish;
+            Main.EntitySpriteDraw(texture, hilt, null, KatanaTuning.EdgeColor * (0.6f * swordFade), rotation, spriteOrigin, scale * 1.12f, effects, 0);
+            Main.EntitySpriteDraw(texture, hilt, null, Color.Lerp(lightColor, Color.White, 0.7f) * swordFade, rotation, spriteOrigin, scale, effects, 0);
             return false;
         }
     }

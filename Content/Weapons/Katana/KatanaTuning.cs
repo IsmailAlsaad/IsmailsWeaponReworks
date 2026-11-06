@@ -18,7 +18,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         public static float ReadyTiltDeg => -25f;
         public static float SheathArmDeg => 70f;      // the sheathed pose: the hand at the hip ...
         public static float SheathTiltDeg => 110f;    // ... and the blade pointing straight back (arm + tilt = 180)
-        public static int SheathEaseTicks => 80;      // how long the sword takes to settle into the sheathed pose (taken out, or back from a throw)
+        public static int SheathEaseTicks => 120;      // how long the sword takes to settle into the sheathed pose (taken out, or back from a throw)
         public static float ClickKickDeg => 8f;       // the hand kicks this much when the sword clicks shut
         public static int ClickFlashTicks => 12;
         public static int ClickDustCount => 8;
@@ -36,11 +36,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         public static float EmbedCameraShake => 1.5f;
         public static int VanishTicks => 10;          // after the release the guide line fades for this long
 
-        // ---- the teleport ----
+        // ---- the dash (a real teleport, but it looks and sounds like an extremely fast dash) ----
         public static int CooldownTicks => 60;        // after the teleport the sword cannot be thrown for this long
         public static int ImmuneTicks => 10;          // nothing can hurt the player for this long after the release
         public static float PushSpeed => 5f;          // added to the player's velocity, toward where he teleported
-        public static float LandingStep => 4f;        // the landing spot is backed off along the line in steps of this many pixels
+        public static float LandingStep => 4f;        // the landing search grows its circle by this many pixels at a time, up to the throw distance
+        public static int LandingAngles => 24;        // spots tried on each circle (fanning out from the surface normal to both sides)
+        public static int DashShadowTicks => 10;      // the player's vanilla afterimages trail behind him for this long after the dash
 
         // ---- the slash along the line (after the teleport) ----
         public static float SlashDamageMultiplier => 2.5f; // times the item's own damage

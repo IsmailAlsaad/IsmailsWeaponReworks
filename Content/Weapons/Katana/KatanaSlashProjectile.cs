@@ -51,10 +51,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         {
             if (ticks == 0)
             {
-                KatanaFx.Teleport(Start, End);
-                KatanaFx.SlashLine(Start, End);
+                KatanaFx.Dash(Start, End);
                 CameraShake.Punch(End, KatanaTuning.SlashShake, 8);
             }
+            if (ticks < KatanaTuning.DashShadowTicks)
+                Main.player[Projectile.owner].armorEffectDrawShadow = true; // the vanilla afterimages of the player trail behind him
 
             if (!IsOwner && Damaging)
                 remote.Update(Projectile, 0, npc =>
