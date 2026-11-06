@@ -70,6 +70,46 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             }
         }
 
+        // Owner's client. The nearest spot to 'point' where a drop's box fits in free air: first back along 'back' (the way the sword came in), then
+        // in rings around the point. A drop that starts inside a tile would "land" on its first step and be stuck in it.
+        public static Vector2 FreeSpot(Vector2 point, Vector2 back)
+        {
+            int box = 14; // the drop is 10 px: a little clearance on top
+            Vector2 half = new Vector2(box * 0.5f);
+            if (!Collision.SolidCollision(point - half, box, box))
+                return point;
+            for (float r = 2f; r <= 80f; r += 2f)
+            {
+                Vector2 along = point + back * r;
+                if (!Collision.SolidCollision(along - half, box, box))
+                    return along;
+                for (int i = 0; i < 16; i++)
+                {
+                    Vector2 ring = point + (MathHelper.TwoPi * i / 16f).ToRotationVector2() * r;
+                    if (!Collision.SolidCollision(ring - half, box, box))
+                        return ring;
+                }
+            }
+            return point;
+        }
+
+        // Owner's client. Which way is open: the sum of the free directions around 'point' is the surface's normal. The fan's middle is that
+        // normal tilted a bit toward up. In open air (or boxed in) the 'fallback' axis stays.
+        public static Vector2 FanAxis(Vector2 point, Vector2 fallback)
+        {
+            Vector2 sum = Vector2.Zero;
+            for (int i = 0; i < 16; i++)
+            {
+                Vector2 direction = (MathHelper.TwoPi * i / 16f).ToRotationVector2();
+                if (!Collision.SolidCollision(point + direction * 16f - new Vector2(3f), 6, 6))
+                    sum += direction;
+            }
+            if (sum.Length() < 1.5f)
+                return fallback;
+            Vector2 normal = sum.SafeNormalize(fallback);
+            return (normal + new Vector2(0f, -0.6f)).SafeNormalize(normal);
+        }
+
         // The drops with the least time left are the oldest (a landed drop counts down, a falling one has not started). They are told to hiss out.
         static void MakeRoom(int owner, int incoming)
         {

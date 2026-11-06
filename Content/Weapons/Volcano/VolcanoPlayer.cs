@@ -71,8 +71,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
 
             if (Player.dead || Player.noItems || Player.CCed || Player.HeldItem.type != ItemID.FieryGreatsword)
                 return;
-            if (regrow > 0)
-                return;
+            if (thrown || regrow > 0)
+                return; // no held blade while the sword is thrown (RegrowTicks 0 used to let one form during the fuse: it threw again at once)
             int type = ModContent.ProjectileType<VolcanoBladeProjectile>();
             if (Find(Player.whoAmI, type) != null)
                 return;

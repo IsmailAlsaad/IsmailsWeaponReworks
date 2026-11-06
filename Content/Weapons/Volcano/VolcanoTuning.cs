@@ -19,7 +19,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static bool ShowBladeDebug => false;  // true: magenta square on the tip the hit test uses, green square on the joint
 
         // ---- heat (0 = the weak baseline flame, 1 = fully charged) ----
-        public static float HeatPerHit => 0.1f;      // every true melee hit of the swing adds this (10 hits = fully charged)
+        public static float HeatPerHit => 0.1f;      // the FIRST true melee hit of each swing adds this (10 swings = fully charged)
         public static int HeatHoldTicks => 300;      // the heat does not cool for this long after the last hit
         public static float HeatDecayPerTick => 0.0015f; // then it cools by this much per tick (full to cold in about 11 s)
         public static float HeatShowEase => 0.12f;   // how fast the DRAWN heat follows the real one (per tick, 0..1)
@@ -85,7 +85,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
 
         // ---- where along the lava blade each thing starts and ends (0 = the joint, 1 = the tip; may go past 1) ----
         public static float BodyStart => 0.08f;         // the round blobs of the lava body (and the white-hot core)
-        public static float BodyEnd => 1f;
+        public static float BodyEndLow => 0.95f;        // where the lava body is cut off at heat 0 (1 = the tip); lower it until the lone pixels at the tip are gone ...
+        public static float BodyEndHigh => 0.97f;       // ... and the same at full heat; in between it is interpolated by the heat
+        public static float BodyScatter => 0.35f;       // how far from the middle line the body blobs sit (fraction of the blob radius)
+        public static float CoreScatter => 0.6f;        // the same for the white-hot spots
         public static float FlameStart => 0.05f;     // the rising flames
         public static float FlameEnd => 1f;
         public static float DripStart => 0.15f;      // the falling drips
@@ -150,6 +153,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static float PoolRadiusEnd => 15f;            // ... swells to this
         public static float FuseDripRate => 0.7f;            // lava drips off the pool per tick at the end
         public static int SizzleTicks => 12;
+        public static float StickSizzleVolume => 0.9f;       // the sizzle when the sword attaches to an enemy or a tile and starts to melt
         public static float StickShake => 3f;                // camera punch when it sticks
         public static int RegrowTicks => 0;                  // after the handle is caught the hand stays empty this long before the blade forms (0 = at once)
 

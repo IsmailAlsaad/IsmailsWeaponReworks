@@ -50,6 +50,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                 Main.EntitySpriteDraw(standIn, handPosition, source, VolcanoTuning.HandleGlowColor * glow, standInAngle, hiltOrigin, scale * 1.06f, flip, 0);
         }
 
+        // A stable pseudo-random number 0..1 from x: the same input gives the same answer on every machine and every tick.
+        static float Hash(float x)
+        {
+            double v = Math.Sin(x * 12.9898) * 43758.5453;
+            return (float)(v - Math.Floor(v));
+        }
+
         static float Chance(float rate)
         {
             int count = (int)rate;
@@ -76,31 +83,41 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             float speed = MathHelper.Lerp(VolcanoTuning.WobbleSpeedLow, VolcanoTuning.WobbleSpeedHigh, h);
             float baseHeat = MathHelper.Lerp(VolcanoTuning.HeatLow, VolcanoTuning.HeatHigh, h) + boost;
 
-            // ---- the body: round blobs along the blade ----
-            int count = Math.Max(5, (int)(length * Math.Max(0.1f, Math.Abs(VolcanoTuning.BodyEnd - VolcanoTuning.BodyStart)) / Math.Max(1f, VolcanoTuning.BlobSpacing * scale)));
+            // ---- the body: round blobs scattered inside the blade ----
+            // BodyEndLow/BodyEndHigh (by heat) cut the thin end of the blade off: that is where the blobs are too small and too far apart to merge and
+            // leave lone pixels. Every blob sits at a stable random place inside its slot of the blade and a random distance from the middle line (no
+            // straight rows); the 'seed' keeps them from changing every tick.
+            float bodyEnd = MathHelper.Lerp(VolcanoTuning.BodyEndLow, VolcanoTuning.BodyEndHigh, h);
+            float bodySpan = Math.Max(0.05f, Math.Abs(bodyEnd - VolcanoTuning.BodyStart));
+            int count = Math.Max(5, (int)(length * bodySpan / Math.Max(1f, VolcanoTuning.BlobSpacing * scale)));
             for (int i = 0; i < count; i++)
             {
-                float s = (i + 0.5f) / count; // 0 at the joint, 1 at the tip
+                float s = (i + 0.2f + 0.6f * Hash(i * 1.37f + seed * 7.1f)) / count; // 0 at the joint, 1 at the cut
                 float profile = (0.6f + 0.4f * (float)Math.Sin(Math.PI * s)) * (1f - 0.55f * s * s * s); // fat in the middle, a point at the tip
                 float phase = time * speed + i * 1.9f + seed * 3.1f;
                 float sideways = (float)Math.Sin(phase) * turbulence * (0.3f + 0.7f * s);
+                float scatter = (Hash(i * 2.91f + seed * 3.3f + 17f) * 2f - 1f) * radius * profile * VolcanoTuning.BodyScatter;
                 float along = 0.5f * (float)Math.Sin(time * speed * 0.7f + i * 2.7f + seed * 2f) * turbulence;
-                Vector2 position = joint + direction * (length * (VolcanoTuning.BodyStart + (VolcanoTuning.BodyEnd - VolcanoTuning.BodyStart) * s) + along) + normal * sideways;
+                Vector2 position = joint + direction * (length * (VolcanoTuning.BodyStart + (bodyEnd - VolcanoTuning.BodyStart) * s) + along) + normal * (sideways + scatter);
                 float r = radius * profile * (1f + 0.18f * h * (float)Math.Sin(time * speed * 1.3f + i * 1.1f));
                 float blobHeat = baseHeat + VolcanoTuning.HeatFlicker * h * (float)Math.Sin(phase * 0.8f) + 0.12f * s * h;
                 body.AddBlob(position, r, MathHelper.Clamp(blobHeat, 0f, 1f));
             }
 
-            // a white-hot core down the middle of the lava (the color bands show it as a bright line)
+            // white-hot spots inside the lava (the color bands show them as bright patches): random places inside the blade, never a line
             if (h > VolcanoTuning.CoreFrom)
             {
                 float core = (h - VolcanoTuning.CoreFrom) / (1f - VolcanoTuning.CoreFrom);
-                for (int i = 0; i < count; i += 2)
+                int coreCount = Math.Max(3, count / 2);
+                for (int i = 0; i < coreCount; i++)
                 {
-                    float s = (i + 0.5f) / count;
+                    float s = (i + Hash(i * 5.17f + seed * 1.9f + 40f)) / coreCount;
                     float profile = (0.6f + 0.4f * (float)Math.Sin(Math.PI * s)) * (1f - 0.55f * s * s * s);
-                    Vector2 position = joint + direction * (length * (VolcanoTuning.BodyStart + (VolcanoTuning.BodyEnd - VolcanoTuning.BodyStart) * s));
-                    body.AddBlob(position, radius * 0.5f * core * profile, VolcanoTuning.CoreHeat);
+                    float across = (Hash(i * 3.71f + seed * 4.3f + 90f) * 2f - 1f) * radius * profile * VolcanoTuning.CoreScatter
+                        + (float)Math.Sin(time * speed * 0.6f + i * 2.3f + seed) * radius * 0.15f * profile;
+                    Vector2 position = joint + direction * (length * (VolcanoTuning.BodyStart + (bodyEnd - VolcanoTuning.BodyStart) * s)) + normal * across;
+                    float size = radius * 0.5f * core * profile * (0.6f + 0.8f * Hash(i * 7.7f + seed * 2.2f + 3f));
+                    body.AddBlob(position, size, VolcanoTuning.CoreHeat);
                 }
             }
 

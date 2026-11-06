@@ -69,6 +69,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         int noInherit;            // ticks left in which the movement is ignored
         int lastFacing = 1;
         float swingHeat;          // the heat at the click (owner only): decides this swing's damage
+        bool swingGaveHeat;       // owner: this swing already added its heat (a swing counts at most one hit toward the charge)
         Vector2 jointPosition;
         Vector2 tipPosition;
         SweepTrail trail;
@@ -212,6 +213,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                     heatTarget = owner.GetModPlayer<VolcanoPlayer>().Heat;
                 heatShown = heatTarget;
                 wasCharged = heatShown >= VolcanoTuning.ChargedAt;
+                if (IsOwner)
+                    rightWasDown = owner.controlUseTile; // a button already held when the blade forms is not a fresh press (no second throw)
             }
 
             if (IsOwner)
@@ -360,6 +363,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             {
                 swingSerial = (swingSerial + 1) & 255;
                 swingHeat = heatTarget;
+                swingGaveHeat = false;
                 swingAim = aim;
                 swingSpeed = speed;
                 Array.Clear(Projectile.localNPCImmunity, 0, Projectile.localNPCImmunity.Length); // every enemy can be hit again by this swing
@@ -496,8 +500,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             CameraShake.Punch(target.Center, VolcanoTuning.HitShake * (0.6f + heatShown), 8);
             if (Owner.GetModPlayer<VolcanoPlayer>().Heat >= VolcanoTuning.ChargedAt)
                 SpawnBlast(target); // already fully charged before this hit
-            VolcanoPlayer.AddHeat(Owner, VolcanoTuning.HeatPerHit);
-            Projectile.netUpdate = true; // the other machines hear the new heat through SendExtraAI
+            if (!swingGaveHeat)
+            {
+                swingGaveHeat = true; // only the first hit of a swing charges the blade
+                VolcanoPlayer.AddHeat(Owner, VolcanoTuning.HeatPerHit);
+                Projectile.netUpdate = true; // the other machines hear the new heat through SendExtraAI
+            }
         }
 
         // Owner's client. The whole sword leaves the hand, pointed at the cursor, tip first (VolcanoThrownProjectile), and this held blade ends.

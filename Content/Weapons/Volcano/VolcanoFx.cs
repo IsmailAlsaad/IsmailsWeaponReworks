@@ -109,6 +109,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             //SoundEngine.PlaySound(onEnemy ? SoundID.NPCHit1 : SoundID.Tink, point);
             //SoundEngine.PlaySound(SoundID.NPCHit1, point);
             SoundEngine.PlaySound(SoundID.Item20 with { Volume = 0.8f, Pitch = -0.4f }, point);
+            SoundEngine.PlaySound(SoundID.LiquidsWaterLava with { Volume = VolcanoTuning.StickSizzleVolume, Pitch = onEnemy ? 0.1f : -0.1f, PitchVariance = 0.1f }, point); // the sizzle of the melt beginning
             Vector2 back = -direction;
             for (int i = 0; i < 14; i++)
             {

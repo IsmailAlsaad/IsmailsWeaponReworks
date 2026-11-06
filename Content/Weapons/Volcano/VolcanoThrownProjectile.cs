@@ -407,11 +407,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             bool inAir = CurrentPhase == Phase.Flying;
             Vector2 point = StuckPoint();
             Vector2 axis = (new Vector2(0f, -1f) - Direction * 0.5f).SafeNormalize(-Vector2.UnitY); // up, leaning away from the way the sword came in
+            // The contact point of a tile sits right at its surface: the drops (10 px boxes) must start in free air, and the fan opens away from the surface.
+            Vector2 spawn = VolcanoLavaDropProjectile.FreeSpot(point, -Direction);
+            axis = VolcanoLavaDropProjectile.FanAxis(spawn, axis);
 
             int blastDamage = (int)(Projectile.damage * VolcanoTuning.EruptionDamageMultiplier);
             Projectile.NewProjectile(Projectile.GetSource_FromThis(), point, Vector2.Zero, ModContent.ProjectileType<VolcanoBlastProjectile>(), blastDamage, Projectile.knockBack,
                 Projectile.owner, VolcanoTuning.EruptionSize / (float)VolcanoTuning.BlastSize, 1f);
-            VolcanoLavaDropProjectile.Rain(Projectile, point, axis);
+            VolcanoLavaDropProjectile.Rain(Projectile, spawn, axis);
 
             if (inAir)
                 Projectile.ai[1] = -2f;
