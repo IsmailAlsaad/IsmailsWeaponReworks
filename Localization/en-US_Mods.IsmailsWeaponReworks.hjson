@@ -1,4 +1,8 @@
 Projectiles: {
+	BeeKeeperSwingProjectile.DisplayName: Bee Keeper Swing Projectile
+	BeeKeeperBigBeeProjectile.DisplayName: Bee Keeper Big Bee Projectile
+	BeeKeeperSmallBeeProjectile.DisplayName: Bee Keeper Small Bee Projectile
+	BeeKeeperPoisonCloudProjectile.DisplayName: Bee Keeper Poison Cloud Projectile
 	StarfurySwingProjectile.DisplayName: Starfury Swing Projectile
 	StarfuryStarProjectile.DisplayName: Starfury Star Projectile
 	SunfuryFlailProjectile.DisplayName: Sunfury Flail Projectile

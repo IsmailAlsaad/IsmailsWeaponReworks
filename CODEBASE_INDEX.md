@@ -1,24 +1,25 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-06 | 160 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-06 | 168 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-DetachedTrails(25) ThrustPalette(24) RemoteHitTracker(23) CameraShake(17) AfterimageTrail(14) ThrustPlayer(12) HeldSwordPose(12) HeldAim(12) IceFx(11) DarkLanceTuning(10) ThrustChain(9) SweepTrail(9) PixelTrail(9) MuramasaTuning(9) VolcanoTuning(8) BoomerangFlight(8) PixelLine(7) FlamerangTuning(7) DarkLanceFx(7) BloodButchererTuning(7)
+DetachedTrails(26) ThrustPalette(24) RemoteHitTracker(23) CameraShake(18) AfterimageTrail(14) HeldSwordPose(13) ThrustPlayer(12) HeldAim(12) IceFx(11) SweepTrail(10) DarkLanceTuning(10) ThrustChain(9) PixelTrail(9) MuramasaTuning(9) VolcanoTuning(8) BoomerangFlight(8) SweepTrailStyle(7) PixelLine(7) MetaballLayer(7) FlamerangTuning(7)
 
 ## Inheritance
 Project bases -> derived:
+- BeeKeeperBeeProjectile: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
-- MetaballStyle: DarkLanceBlobStyle, VolcanoBlobStyle, VolcanoDripStyle
+- MetaballStyle: BeeKeeperCloudStyle, DarkLanceBlobStyle, VolcanoBlobStyle, VolcanoDripStyle
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
-- SweepTrailStyle: BloodButchererSpinTrailStyle, IceBladeTrailStyle, MuramasaSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
+- SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, IceBladeTrailStyle, MuramasaSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
 - VolcanoDripStyle: VolcanoBurstStyle
 tModLoader/other bases -> project types:
-- ModProjectile (42): BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
-- GlobalItem (19): BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, MuramasaGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem
-- ModPlayer (9): DarkLancePlayer, DashPlayer, ImmunityPlayer, MuramasaPlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer
+- ModProjectile (45): BeeKeeperBeeProjectile, BeeKeeperPoisonCloudProjectile, BeeKeeperSwingProjectile, BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
+- GlobalItem (20): BeeKeeperGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, MuramasaGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem
+- ModPlayer (10): BeeKeeperPlayer, DarkLancePlayer, DashPlayer, ImmunityPlayer, MuramasaPlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer
 - GlobalNPC (2): BloodButchererGripNPC, CarriedNPC
 - ModSystem (2): DetachedTrails, MetaballLayers
 - Mod (1): IsmailsWeaponReworks
@@ -163,6 +164,42 @@ tModLoader/other bases -> project types:
 **TileSound.cs**
   static class TileSound
     +PlayHit(int,int)[s]
+
+### Content/Weapons/BeeKeeper/
+**BeeKeeperBeeProjectile.cs** uses: BeeKeeperFx, BeeKeeperPlayer, BeeKeeperPoisonCloudProjectile, BeeKeeperTuning
+  enum BeeState
+    {Idle, Leaving}
+  abstract class BeeKeeperBeeProjectile : ModProjectile
+    #IsBig:bool[ab] #VanillaProjectile:int[ab] #ArtPath:string[ab] +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +PreDraw(ref Color)[ov]
+  class BeeKeeperBigBeeProjectile : BeeKeeperBeeProjectile
+    #IsBig:bool[ov] #VanillaProjectile:int[ov] #ArtPath:string[ov]
+  class BeeKeeperSmallBeeProjectile : BeeKeeperBeeProjectile
+    #IsBig:bool[ov] #VanillaProjectile:int[ov] #ArtPath:string[ov]
+**BeeKeeperFx.cs** uses: BeeKeeperCloudStyle, BeeKeeperTuning, MetaballLayer, MetaballLayers
+  static class BeeKeeperFx
+    +PlaySwing(Vector2,bool)[s] +PlayHit(Vector2)[s] +PlayBeePop(Vector2)[s] +PlayBeeHurt(Vector2)[s] +PlayCloud(Vector2,bool)[s] +SlashDust(Vector2,Vector2)[s] +HitSpark(Vector2)[s] +BeeSpawn(Vector2)[s] +BeeHurt(Vector2)[s] +CloudBurst(Vector2,float)[s] +CloudPuffs(Vector2,float,int)[s]
+**BeeKeeperGlobalItem.cs** uses: BeeKeeperPlayer, BeeKeeperSwingProjectile, BeeKeeperTuning, Phase
+  class BeeKeeperGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**BeeKeeperPlayer.cs** uses: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile, BeeKeeperTuning
+  class BeeKeeperPlayer : ModPlayer
+    +LastPhase:int +LastEndArm:float +LastEndTick:uint +Linger:int +OnRespawn()[ov] +PostUpdate()[ov]
+**BeeKeeperPoisonCloudProjectile.cs** uses: AreaEffect, BeeKeeperFx, BeeKeeperTuning
+  class BeeKeeperPoisonCloudProjectile : ModProjectile
+    +Texture:string[ov] +AI()[ov]
+**BeeKeeperStyles.cs** uses: BeeKeeperTuning, MetaballStyle, SweepFade, SweepTrailStyle
+  class BeeKeeperCloudStyle : MetaballStyle
+    +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +Rise:float[ov] +Drag:float[ov] +Wobble:float[ov] +SizeOverLife(float)[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]
+  class BeeKeeperSweepTrailStyle : SweepTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
+**BeeKeeperSwingProjectile.cs** uses: BeeKeeperFx, BeeKeeperPlayer, BeeKeeperSweepTrailStyle, BeeKeeperTuning, CameraShake, DetachedTrails, HeldSwordPose, SweepTrail
+  class BeeKeeperSwingProjectile : ModProjectile
+    +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {SwingDown, SwingUp}
+**BeeKeeperTuning.cs**
+  static class BeeKeeperTuning
+    +BladeLength:float[s] +SwordScale:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboTicks:int[s] +HitShake:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailOpacity:float[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOuter:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +HoneyColor:Color[s] +DeepColor:Color[s] +MaxBig:int[s] +MaxSmall:int[s] +SpawnIntervalTicks:int[s] +LingerTicks:int[s] +LeaveTicks:int[s] +BigSize:int[s] +SmallSize:int[s] +BigScale:float[s] +SmallScale:float[s] +PopTicks:int[s] +FlapTicks:int[s] +ArtFrames:int[s] +VanillaBeeFacesRight:bool[s] +HoverHeight:float[s] +BigRadiusX:float[s] +SmallRadiusX:float[s] +HoverRadiusY:float[s] +FlutterSpeed:float[s] +Spring:float[s] +Damping:float[s] +MaxSpeed:float[s] +BuzzJitter:float[s] +SnapDistance:float[s] +BigHp:float[s] +SmallHp:float[s] +EnemyTouchDamage:float[s] +HurtCooldownTicks:int[s] +HostileProjectilesHurtBees:bool[s] +HurtKnock:float[s] +HurtFlashTicks:int[s] +CloudRadius:float[s] +CloudSmallScale:float[s] +CloudTicks:int[s] +CloudPulseTicks:int[s] +PoisonTicks:int[s] +CloudPuffsPerTick:int[s] +CloudBurstPuffs:int[s] +CloudMerge:float[s] +CloudOutline:float[s] +CloudGlow:float[s] +CloudRise:float[s] +CloudDrag:float[s] +CloudWobble:float[s] +CloudHeat:float[s] +CloudFill(float)[s] +CloudOutlineColor:Color[s] +CloudGlowColor:Color[s]
 
 ### Content/Weapons/BloodButcherer/
 **BloodButchererFx.cs** uses: BloodButchererTuning, IceFx
