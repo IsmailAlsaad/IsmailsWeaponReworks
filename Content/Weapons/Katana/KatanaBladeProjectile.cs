@@ -17,6 +17,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
     /// edge-first for a moment): the player flies toward the blade at DashSpeed through the shared PlayerDash (invincible while he
     /// travels, stopped or slid along by a tile in his way), the cooldown starts, a KatanaSlashProjectile cuts the line he travels, and a
     /// new stance starts.
+    /// A blade that bit into a tile stays in it for EmbedStayTicks. If the tile is mined away (every machine checks the tile it sees)
+    /// the blade pops loose, tumbles, falls and bounces on whatever it lands on, then fades: a purely visual drop, computed on every
+    /// machine by itself, nothing synced. The owner's client ends the projectile when the show is over. Throwing again ends it too.
     /// MULTIPLAYER: the owner's client decides everything and spawns it with ai[0] = the aim (player's own frame), ai[1] = how far the
     /// blade can fly at most (the tile raycast, capped at the max range), ai[2] = -1 while flying in open air, -2 while its reach ends
     /// in a tile, and the distance it stopped at once released (that number is the one thing that changes, with netUpdate). Every
@@ -34,16 +37,28 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         float Reach => Math.Max(0f, Projectile.ai[1]);
         bool Released => Projectile.ai[2] >= 0f;
         int Facing => HeldAim.Facing(Aim);
-        Vector2 Direction => HeldAim.ToWorldDirection(Owner, Aim);
+        Vector2 Direction => haveDirection ? cachedDirection : HeldAim.ToWorldDirection(Owner, Aim); // cached on the first tick, so a flipped gravity cannot turn a stuck blade
 
         // Per-machine state: counters and visuals, never synced.
         bool initialized;
+        bool haveDirection;
+        Vector2 cachedDirection;
         int ticks;
         Vector2 origin;            // where the throw started (the player's center at the press)
         bool endsInTile;
         bool embedded;
         float embedShake;
         float lastDistance;
+        bool scaleSet;
+        int stayTicks;             // ticks the blade has sat in its tile
+        bool dropped;              // the tile is gone: the blade falls (a visual simulation, per machine)
+        Vector2 dropCenter;
+        Vector2 dropVelocity;
+        float dropAngle;
+        float dropSpin;
+        int dropTicks;
+        int dropBounces;
+        int landFade = -1;         // -1 = still falling, otherwise ticks since it lay still
         bool releaseSeen;
         int releaseTicks;
         AfterimageTrail afterimages;
@@ -58,6 +73,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             Vector2 origin = player.MountedCenter;
             float reach = MeasureReach(origin, HeldAim.ToWorldDirection(player, aim), out bool hitsTile);
 
+            KatanaPlayer.KillReleasedBlades(player.whoAmI);
             Projectile stance = KatanaPlayer.Find(player.whoAmI, ModContent.ProjectileType<KatanaStanceProjectile>());
             stance?.Kill();
             Projectile.NewProjectile(source, origin, Vector2.Zero, ModContent.ProjectileType<KatanaBladeProjectile>(), 0, 0f, player.whoAmI, aim, reach, hitsTile ? -2f : -1f);
@@ -122,7 +138,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         public override void AI()
         {
             Player owner = Owner;
-            if (!owner.active || owner.dead || owner.noItems || owner.CCed || owner.HeldItem.type != ItemID.Katana)
+            if (!owner.active || owner.dead || ((owner.noItems || owner.CCed || owner.HeldItem.type != ItemID.Katana) && !Released))
             {
                 Projectile.Kill(); // nothing happens: no teleport, no cooldown
                 return;
@@ -131,11 +147,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             if (!initialized)
             {
                 initialized = true;
+                cachedDirection = HeldAim.ToWorldDirection(Owner, Aim);
+                haveDirection = true;
                 origin = Projectile.Center;
                 endsInTile = Projectile.ai[2] <= -1.5f;
                 KatanaFx.Throw(origin, Direction);
             }
-            Projectile.scale = KatanaTuning.SwordScale * owner.GetAdjustedItemScale(owner.HeldItem);
+            if (!scaleSet || !Released) // a released blade keeps its size even when another item is held
+            {
+                Projectile.scale = KatanaTuning.SwordScale * owner.GetAdjustedItemScale(owner.HeldItem);
+                scaleSet = true;
+            }
             afterimages?.Tick();
 
             bool released = Released;
@@ -192,7 +214,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                     }
                 }
                 releaseTicks++;
-                if (IsOwner && releaseTicks >= Math.Max(1, KatanaTuning.VanishTicks))
+                if (embedded)
+                {
+                    if (UpdateStuck(head))
+                        return;
+                }
+                else if (IsOwner && releaseTicks >= Math.Max(1, KatanaTuning.VanishTicks))
                 {
                     Projectile.Kill();
                     return;
@@ -202,6 +229,104 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
 
             lastDistance = distance;
             ticks++;
+        }
+
+        // A blade stuck in a tile. Every machine looks at the tile it can see: once it is gone the blade drops. The owner's client ends the
+        // projectile after the stay (or after the fall). Returns true when the projectile was killed.
+        bool UpdateStuck(Vector2 head)
+        {
+            float scale = Projectile.scale;
+            if (!dropped)
+            {
+                stayTicks++;
+                // The probe sits just inside the tile the blade bit into (the contact test of the raycast was the same 2x2 box).
+                if (releaseTicks > 1 && !Collision.SolidCollision(head + Direction * 2f - Vector2.One, 2, 2))
+                {
+                    BeginDrop(head, scale);
+                    return false;
+                }
+                if (IsOwner && stayTicks >= Math.Max(1, KatanaTuning.EmbedStayTicks))
+                {
+                    Projectile.Kill();
+                    return true;
+                }
+                return false;
+            }
+
+            // Falling: gravity, a tumble, and bounces on whatever solid it meets (tested at its lowest point and at its center).
+            dropTicks++;
+            Vector2 half = new Vector2(2f, 2f);
+            if (landFade < 0)
+            {
+                dropVelocity.Y = Math.Min(dropVelocity.Y + KatanaTuning.DropGravity, KatanaTuning.DropMaxFallSpeed);
+                dropAngle += dropSpin;
+
+                Vector2 nextY = dropCenter + new Vector2(0f, dropVelocity.Y);
+                if (Collision.SolidCollision(LowPoint(nextY, scale) - Vector2.One, 2, 2))
+                {
+                    float impact = Math.Abs(dropVelocity.Y);
+                    dropBounces++;
+                    dropVelocity.Y = -dropVelocity.Y * KatanaTuning.DropBounceKeep;
+                    dropVelocity.X *= 0.6f;
+                    dropSpin *= -0.5f;
+                    KatanaFx.DropLand(LowPoint(dropCenter, scale), impact);
+                    if (dropBounces >= KatanaTuning.DropMaxBounces || Math.Abs(dropVelocity.Y) < 1.5f)
+                        landFade = 0;
+                }
+                else
+                    dropCenter = nextY;
+
+                Vector2 nextX = dropCenter + new Vector2(dropVelocity.X, 0f);
+                if (Collision.SolidCollision(nextX - half, 4, 4))
+                    dropVelocity.X = -dropVelocity.X * KatanaTuning.DropBounceKeep;
+                else
+                    dropCenter = nextX;
+
+                if (dropTicks >= KatanaTuning.DropMaxTicks)
+                    landFade = 0;
+            }
+            else
+            {
+                dropVelocity = Vector2.Zero;
+                landFade++;
+                if (IsOwner && landFade >= Math.Max(1, KatanaTuning.DropFadeTicks))
+                {
+                    Projectile.Kill();
+                    return true;
+                }
+            }
+            Projectile.Center = dropCenter;
+            return false;
+        }
+
+        // Where the blade lets go: from the middle of the sprite as drawn, popping out of the wall backward, spinning away.
+        void BeginDrop(Vector2 head, float scale)
+        {
+            dropped = true;
+            Vector2 direction = Direction;
+            Vector2 tip = head + direction * (KatanaTuning.SinkDepth * scale);
+            dropCenter = tip - direction * (KatanaTuning.BladeLength * scale * 0.5f);
+            dropVelocity = -direction * KatanaTuning.DropKick;
+            dropAngle = direction.ToRotation();
+            dropSpin = KatanaTuning.DropSpin * (Facing >= 0 ? 1f : -1f) * Main.rand.NextFloat(0.8f, 1.2f);
+            embedShake = 0f;
+            KatanaFx.Drop(tip, direction);
+        }
+
+        // The lowest end of the blade (the one that touches the ground first).
+        Vector2 LowPoint(Vector2 center, float scale)
+        {
+            Vector2 offset = dropAngle.ToRotationVector2() * (KatanaTuning.BladeLength * scale * 0.5f);
+            return center.Y + offset.Y > center.Y - offset.Y ? center + offset : center - offset;
+        }
+
+        // 1 while the stuck blade is solid, fading out at the end of its stay, or after it has landed.
+        float StuckFade()
+        {
+            if (dropped)
+                return landFade >= 0 ? 1f - MathHelper.Clamp(landFade / (float)Math.Max(1, KatanaTuning.DropFadeTicks), 0f, 1f) : 1f;
+            int fadeTicks = Math.Max(1, KatanaTuning.EmbedFadeTicks);
+            return MathHelper.Clamp((KatanaTuning.EmbedStayTicks - stayTicks) / (float)fadeTicks, 0f, 1f);
         }
 
         void EnsureAfterimages()
@@ -245,7 +370,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             }
 
             // The sword is back in the hand: the stance starts from the throw pose and settles into the sheathed one.
-            KatanaStanceProjectile.Spawn(source, owner, HeldSwordPose.ToWorld(Facing, Aim), 0f);
+            KatanaStanceProjectile.Spawn(source, owner, HeldSwordPose.ToWorld(Facing, Aim), 0f, owner.GetModPlayer<KatanaPlayer>().CooldownTicks);
         }
 
         public override bool? CanDamage()
@@ -286,12 +411,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             Texture2D texture = TextureAssets.Projectile[Type].Value;
             HeldSwordPose.Sprite(texture, 1, out Vector2 spriteOrigin, out float rotationOffset, out SpriteEffects effects);
             float scale = Projectile.scale;
-            Vector2 direction = Direction;
-            Vector2 tip = head + (embedded ? direction * (KatanaTuning.SinkDepth * scale) : Vector2.Zero) + Main.rand.NextVector2Circular(1f, 1f) * embedShake;
-            Vector2 hilt = tip - direction * KatanaTuning.BladeLength * scale - Main.screenPosition;
+            Vector2 direction = dropped ? dropAngle.ToRotationVector2() : Direction;
+            float length = KatanaTuning.BladeLength * scale;
+            Vector2 hilt;
+            if (dropped) // tumbling: the angle turns around the middle of the sword
+                hilt = dropCenter - direction * (length * 0.5f) - Main.screenPosition;
+            else
+            {
+                Vector2 tip = head + (embedded ? direction * (KatanaTuning.SinkDepth * scale) : Vector2.Zero) + Main.rand.NextVector2Circular(1f, 1f) * embedShake;
+                hilt = tip - direction * length - Main.screenPosition;
+            }
             float rotation = direction.ToRotation() + rotationOffset;
 
-            float swordFade = 1f - vanish;
+            float swordFade = embedded ? StuckFade() : 1f - vanish;
             Main.EntitySpriteDraw(texture, hilt, null, KatanaTuning.EdgeColor * (0.6f * swordFade), rotation, spriteOrigin, scale * 1.12f, effects, 0);
             Main.EntitySpriteDraw(texture, hilt, null, Color.Lerp(lightColor, Color.White, 0.7f) * swordFade, rotation, spriteOrigin, scale, effects, 0);
             return false;

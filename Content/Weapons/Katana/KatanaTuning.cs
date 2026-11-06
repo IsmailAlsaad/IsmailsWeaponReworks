@@ -42,7 +42,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         public static float MinDashPixels => 8f;      // a blade closer than this does nothing (no dash, no cooldown)
         public static float DashGraze => 0.3f;        // a wall hit at a shallower angle than this (cosine) slides the dash along it; a head-on hit stops it
         public static int ImmuneTailTicks => 10;      // nothing can hurt the player for this long after the dash ends, however it ends
-        public static int DashShadowTicks => 8;       // the player's vanilla afterimages trail behind him for this long after the dash
+        public static bool VanillaShadow => false;    // the three vanilla shadow copies of the player (off: the afterimages below replace them)
+        public static int DashShadowTicks => 8;       // vanilla shadow only: how long they trail behind him after the dash
 
         // ---- the slash along the dash (the line from where he started to where he is) ----
         public static float SlashDamageMultiplier => 2.5f; // times the item's own damage
@@ -53,6 +54,45 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         public static float SlashLineWidth => 12f;    // how thick the drawn slash line is (pixels)
         public static float SlashShake => 2.5f;       // camera punch when the player arrives
         public static float SlashHitShake => 2f;      // camera punch when the slash hits something
+
+        // ---- the ready glow: a white pulsing outline on the sword once the cooldown is over ----
+        public static float ReadyOutlineWidth => 2f;  // screen pixels
+        public static int ReadyPulseTicks => 40;      // one full pulse
+        public static float ReadyOutlineMin => 0.45f; // the pulse runs between these two strengths
+        public static float ReadyOutlineMax => 1f;
+        public static float ReadyFade => 0.3f;        // how fast the glow fades in (per tick, 0..1)
+        public static float ReadyGlowScale => 1.18f;  // the soft glow copy behind the outline
+        public static int ReadyFlashTicks => 14;      // the white flash of the moment the sword is ready again
+        public static float ReadySparkleChance => 0.12f; // per tick, a mote drifts off the ready sword
+        public static Color ReadyOutlineColor => new Color(225, 235, 255, 0);
+        public static Color ReadyCoreColor => new Color(255, 255, 255, 0);
+
+        // ---- afterimages: copies of the player left along the dash ----
+        public static float AfterimageSpacing => 22f; // pixels along the path between two copies
+        public static int PlayerAfterimageTicks => 14; // how long one copy lasts
+        public static float AfterimageShadow => 0.5f; // how see-through the freshest copy is (0 = solid, 1 = invisible); it fades to 1
+
+        // ---- hit-stop and hit marks on the enemies the cut hits ----
+        public static int HitStopTicks => 8;          // a hit enemy freezes this long (its knockback is kept and released afterwards)
+        public static float HitStopFlash => 0.7f;     // how white the frozen enemy is at the start (fades while frozen)
+        public static int HitMarkTicks => 16;         // life of one hit mark
+        public static int HitMarkCount => 2;          // marks laid across each enemy
+        public static float HitMarkLength => 72f;     // pixels, the main mark (the others are shorter)
+        public static float HitMarkWidth => 8f;       // pixels at its thickest
+        public static float HitMarkAngleDeg => 25f;   // each mark is 90 degrees to the cut, give or take up to this
+        public static int MaxHitMarks => 24;
+
+        // ---- the stuck blade: stays in its tile, drops and falls when the tile is mined ----
+        public static int EmbedStayTicks => 600;      // a blade stuck in a tile stays this long (10 s), then fades
+        public static int EmbedFadeTicks => 30;       // the fade at the end of that
+        public static float DropGravity => 0.45f;     // pixels per tick per tick
+        public static float DropMaxFallSpeed => 12f;
+        public static float DropKick => 1.5f;         // the blade pops loose backward at this speed
+        public static float DropSpin => 0.22f;        // radians per tick, it tumbles
+        public static float DropBounceKeep => 0.35f;  // the fraction of its speed a bounce keeps
+        public static int DropMaxBounces => 2;        // after this many bounces it lies still
+        public static int DropMaxTicks => 150;        // a blade still falling after this long just fades (a pit, lava)
+        public static int DropFadeTicks => 24;        // the fade once it lies still
 
         // ---- looks ----
         public static float PixelSize => 2f;

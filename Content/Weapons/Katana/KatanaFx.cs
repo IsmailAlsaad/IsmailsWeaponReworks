@@ -85,6 +85,58 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                 Spark(center + Main.rand.NextVector2Circular(10f, 14f), -direction * Main.rand.NextFloat(1f, 3f), 1f, i == 0);
         }
 
+        // The cooldown is over: a soft chime and white motes along the blade.
+        public static void Ready(Vector2 hand, Vector2 tip)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.MaxMana with { Volume = 0.5f, Pitch = 0.3f }, hand);
+            for (int i = 0; i < 7; i++)
+                Spark(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Circular(1.2f, 1.2f), 1f, true);
+        }
+
+        // A mote drifting off the glowing sword while it is ready.
+        public static void ReadySparkle(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            Spark(position, new Vector2(0f, -0.3f) + Main.rand.NextVector2Circular(0.3f, 0.3f), 0.8f, true);
+        }
+
+        // The tile around the stuck blade is gone: it pops loose.
+        public static void Drop(Vector2 position, Vector2 direction)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.6f, Pitch = 0.5f }, position);
+            for (int i = 0; i < 6; i++)
+                Spark(position, (-direction).RotatedByRandom(1.2f) * Main.rand.NextFloat(0.5f, 2.5f), 1.2f, i % 2 == 0);
+        }
+
+        // The dropped blade hits something solid.
+        public static void DropLand(Vector2 position, float strength)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Tink with { Volume = MathHelper.Clamp(0.25f + 0.08f * strength, 0.25f, 0.8f), Pitch = 0.1f }, position);
+            for (int i = 0; i < 4; i++)
+                Spark(position, new Vector2(Main.rand.NextFloat(-1.5f, 1.5f), -Main.rand.NextFloat(0.5f, 2f)), 1f, i % 2 == 0);
+        }
+
+        // A hit mark crosses the enemy: a metallic ring and sparks flying out along both ends of the main mark.
+        public static void HitMark(Vector2 center, float angle)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.NPCHit52 with { Volume = 0.5f, Pitch = 0.8f }, center);
+            Vector2 axis = angle.ToRotationVector2();
+            for (int i = 0; i < 10; i++)
+            {
+                float side = i % 2 == 0 ? 1f : -1f;
+                Spark(center, (axis * side).RotatedByRandom(0.15f) * Main.rand.NextFloat(3f, 8f), 1.1f, i % 3 != 0);
+            }
+        }
+
         public static void HitSpark(Vector2 position)
         {
             if (Main.dedServ)

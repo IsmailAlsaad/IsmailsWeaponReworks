@@ -14,7 +14,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
     /// The held Katana while it is not thrown. It draws the sword and poses the owner's arm: the arm and blade ease from where they
     /// started (the throw pose, or the ready pose when the sword is first taken out) to the sheathed pose at the hip, then the sword
     /// CLICKS shut (flash, kick, sparks, sound). There is no sheath sprite: the player simply holds the sword in the sheathed pose.
-    /// MULTIPLAYER: the owner's client spawns it; ai[0] = the arm's start angle (facing-local), ai[1] = the blade tilt's start angle.
+    /// MULTIPLAYER: the owner's client spawns it; ai[0] = the arm's start angle (facing-local), ai[1] = the blade tilt's start angle,
+    /// ai[2] = how many ticks of the throw cooldown are left (the cooldown itself lives on the owner only). While that runs the sword is
+    /// plain; when it is over the sword wears a white pulsing outline (the "ready" glow). Every machine counts the ticks itself.
     /// The pose is a pure function of the ticks this machine has run it, so every machine runs the same animation and click without
     /// any packet. Each machine ends it on its own when the owner dies, swaps items or throws the blade.
     /// </summary>
@@ -27,11 +29,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         int Facing => Owner.direction >= 0 ? 1 : -1;
         float StartArm => MathHelper.WrapAngle(Projectile.ai[0]);
         float StartTilt => Projectile.ai[1];
+        int CooldownLeft => Math.Max(0, (int)Projectile.ai[2]);
 
         // Per-machine state: counters and visuals, never synced.
         int ticks;
         bool clicked;
         float clickFlash;      // 1 right after the click, fades to 0
+        bool readyAnnounced;   // the cooldown ran out (or there was none)
+        float readyShown;      // 0..1, how visible the white ready glow is
+        float readyFlash;      // 1 right after the sword is ready again, fades to 0
         float armLocal;        // facing-local arm angle (positive = down)
         float tiltRad;         // blade tilt relative to the arm
         Vector2 tipPosition;
@@ -39,9 +45,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         float Progress => MathHelper.Clamp(ticks / (float)Math.Max(1, KatanaTuning.SheathEaseTicks), 0f, 1f);
         bool Settled => ticks >= KatanaTuning.SheathEaseTicks;
 
-        public static void Spawn(IEntitySource source, Player owner, float startArmLocal, float startTilt)
+        public static void Spawn(IEntitySource source, Player owner, float startArmLocal, float startTilt, int cooldownTicks)
         {
-            Projectile.NewProjectile(source, owner.MountedCenter, Vector2.Zero, ModContent.ProjectileType<KatanaStanceProjectile>(), 0, 0f, owner.whoAmI, startArmLocal, startTilt);
+            Projectile.NewProjectile(source, owner.MountedCenter, Vector2.Zero, ModContent.ProjectileType<KatanaStanceProjectile>(), 0, 0f, owner.whoAmI, startArmLocal, startTilt, Math.Max(0, cooldownTicks));
         }
 
         public override void SetDefaults()
@@ -94,6 +100,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                 CameraShake.Punch(Projectile.Center, KatanaTuning.ClickShake, 8);
             }
             clickFlash = Math.Max(0f, clickFlash - 1f / Math.Max(1, KatanaTuning.ClickFlashTicks));
+
+            // The cooldown counted on this machine from the spawn: when it is over the sword glows white (a chime only if it had to wait).
+            bool ready = ticks >= CooldownLeft;
+            if (ready && !readyAnnounced)
+            {
+                readyAnnounced = true;
+                if (CooldownLeft > 0)
+                {
+                    readyFlash = 1f;
+                    KatanaFx.Ready(Projectile.Center, tipPosition);
+                }
+            }
+            readyShown += ((ready ? 1f : 0f) - readyShown) * MathHelper.Clamp(KatanaTuning.ReadyFade, 0.01f, 1f);
+            if (readyShown > 0.05f)
+            {
+                if (Main.rand.NextFloat() < KatanaTuning.ReadySparkleChance * readyShown)
+                    KatanaFx.ReadySparkle(Vector2.Lerp(Projectile.Center, tipPosition, Main.rand.NextFloat()));
+                Lighting.AddLight(tipPosition, 0.35f * readyShown, 0.4f * readyShown, 0.5f * readyShown);
+            }
+            readyFlash = Math.Max(0f, readyFlash - 1f / Math.Max(1, KatanaTuning.ReadyFlashTicks));
             ticks++;
         }
 
@@ -118,6 +144,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             return false;
         }
 
+        readonly Vector2[] OutlineDirections =
+        {
+            new Vector2(1f, 0f), new Vector2(-1f, 0f), new Vector2(0f, 1f), new Vector2(0f, -1f),
+            new Vector2(1f, 1f), new Vector2(-1f, 1f), new Vector2(1f, -1f), new Vector2(-1f, -1f)
+        };
+
         public override bool PreDraw(ref Color lightColor)
         {
             if (Main.dedServ)
@@ -128,10 +160,31 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             float rotation = Projectile.rotation + rotationOffset;
             float scale = Projectile.scale;
 
-            // The sword itself, brightened a little (the click flares it white).
-            Main.EntitySpriteDraw(texture, position, null, Color.Lerp(lightColor, Color.White, 0.2f + 0.6f * clickFlash), rotation, origin, scale, effects, 0);
+            // The ready glow: a soft white copy behind the sword (drawn around the CENTER of the blade sprite, so it swells outward evenly)
+            // and the sprite repeated in the eight directions around it, a pixel-style outline. Both pulse; the colors have alpha 0 = additive.
+            if (readyShown > 0.01f)
+            {
+                float wave = 0.5f + 0.5f * (float)Math.Sin(MathHelper.TwoPi * ticks / Math.Max(1, KatanaTuning.ReadyPulseTicks));
+                float strength = readyShown * MathHelper.Lerp(KatanaTuning.ReadyOutlineMin, KatanaTuning.ReadyOutlineMax, wave);
+
+                Vector2 hiltToCenter = new Vector2(Projectile.spriteDirection > 0 ? texture.Width * 0.5f : -texture.Width * 0.5f, -texture.Height * 0.5f);
+                Vector2 centerPosition = position + (hiltToCenter * scale).RotatedBy(rotation);
+                Vector2 centerOrigin = texture.Size() * 0.5f;
+                Main.EntitySpriteDraw(texture, centerPosition, null, KatanaTuning.ReadyOutlineColor * (0.4f * strength), rotation, centerOrigin, scale * KatanaTuning.ReadyGlowScale, effects, 0);
+
+                float width = KatanaTuning.ReadyOutlineWidth;
+                for (int i = 0; i < OutlineDirections.Length; i++)
+                    Main.EntitySpriteDraw(texture, position + OutlineDirections[i] * width, null, KatanaTuning.ReadyOutlineColor * (0.9f * strength), rotation, origin, scale, effects, 0);
+                for (int i = 0; i < 4; i++)
+                    Main.EntitySpriteDraw(texture, position + OutlineDirections[i] * (width * 0.5f), null, KatanaTuning.ReadyCoreColor * (0.5f * strength), rotation, origin, scale, effects, 0);
+            }
+
+            // The sword itself, brightened a little (the click flares it white, and so does the moment it is ready again).
+            Main.EntitySpriteDraw(texture, position, null, Color.Lerp(lightColor, Color.White, 0.2f + 0.6f * Math.Max(clickFlash, readyFlash)), rotation, origin, scale, effects, 0);
             if (clickFlash > 0.01f)
                 Main.EntitySpriteDraw(texture, position, null, KatanaTuning.CoreColor * (0.8f * clickFlash), rotation, origin, scale, effects, 0);
+            if (readyFlash > 0.01f)
+                Main.EntitySpriteDraw(texture, position, null, KatanaTuning.ReadyCoreColor * (0.8f * readyFlash), rotation, origin, scale, effects, 0);
             return false;
         }
     }

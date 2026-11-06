@@ -37,7 +37,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         {
             if (!player.GetModPlayer<KatanaPlayer>().Ready)
                 return false;
-            return KatanaPlayer.Find(player.whoAmI, ModContent.ProjectileType<KatanaBladeProjectile>()) == null;
+            return !KatanaPlayer.BladeFlying(player.whoAmI); // a blade stuck in a tile or falling does not block the next throw
         }
 
         public override bool Shoot(Item item, Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)

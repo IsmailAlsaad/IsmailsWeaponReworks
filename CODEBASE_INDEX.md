@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-06 | 174 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-06 | 175 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-DetachedTrails(27) ThrustPalette(24) RemoteHitTracker(24) CameraShake(21) HeldSwordPose(15) AfterimageTrail(15) HeldAim(13) ThrustPlayer(12) IceFx(11) SweepTrail(10) DarkLanceTuning(10) ThrustChain(9) PixelTrail(9) PixelLine(9) MuramasaTuning(9) VolcanoTuning(8) BoomerangFlight(8) SweepTrailStyle(7) FlamerangTuning(7) DarkLanceFx(7)
+DetachedTrails(27) ThrustPalette(24) RemoteHitTracker(23) CameraShake(21) AfterimageTrail(16) HeldSwordPose(15) HeldAim(13) ThrustPlayer(12) IceFx(11) SweepTrail(10) DarkLanceTuning(10) ThrustChain(9) PixelTrail(9) PixelLine(9) MuramasaTuning(9) VolcanoTuning(8) BoomerangFlight(8) SweepTrailStyle(7) FlamerangTuning(7) DarkLanceFx(7)
 
 ## Inheritance
 Project bases -> derived:
@@ -20,7 +20,7 @@ tModLoader/other bases -> project types:
 - ModProjectile (47): BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile
 - GlobalItem (21): BeeKeeperGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, MuramasaGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem
 - ModPlayer (11): BeeKeeperPlayer, DarkLancePlayer, DashPlayer, ImmunityPlayer, KatanaPlayer, MuramasaPlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer
-- GlobalNPC (2): BloodButchererGripNPC, CarriedNPC
+- GlobalNPC (3): BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC
 - ModSystem (2): DetachedTrails, MetaballLayers
 - Mod (1): IsmailsWeaponReworks
 
@@ -375,24 +375,29 @@ tModLoader/other bases -> project types:
 **KatanaBladeProjectile.cs** uses: AfterimageTrail, CameraShake, DashSettings, DetachedTrails, HeldAim, HeldSwordPose, KatanaFx, KatanaPlayer, KatanaSlashProjectile, KatanaStanceProjectile, KatanaTuning, PixelLine, PlayerDash
   class KatanaBladeProjectile : ModProjectile
     +Texture:string[ov] +Throw(Player,IEntitySource)[s] +AI()[ov] +CanDamage()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**KatanaFx.cs** uses: KatanaTuning
+**KatanaFx.cs** uses: HitMark, KatanaTuning
   static class KatanaFx
-    +Click(Vector2,Vector2)[s] +Throw(Vector2,Vector2)[s] +FlightDust(Vector2,Vector2)[s] +Embed(Vector2,Vector2)[s] +DashStart(Vector2,Vector2)[s] +DashTrail(Vector2,Vector2)[s] +HitSpark(Vector2)[s]
+    +Click(Vector2,Vector2)[s] +Throw(Vector2,Vector2)[s] +FlightDust(Vector2,Vector2)[s] +Embed(Vector2,Vector2)[s] +DashStart(Vector2,Vector2)[s] +DashTrail(Vector2,Vector2)[s] +Ready(Vector2,Vector2)[s] +ReadySparkle(Vector2)[s] +Drop(Vector2,Vector2)[s] +DropLand(Vector2,float)[s] +HitMark(Vector2,float)[s] +HitSpark(Vector2)[s]
 **KatanaGlobalItem.cs** uses: KatanaBladeProjectile, KatanaPlayer
   class KatanaGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**KatanaHitStopNPC.cs** uses: KatanaTuning
+  class KatanaHitStopNPC : GlobalNPC
+    +InstancePerEntity:bool[ov] +Apply(NPC,int)[s] +PreAI(NPC)[ov] +DrawEffects(NPC,ref Color)[ov]
 **KatanaPlayer.cs** uses: DashPhase, DashPlayer, KatanaBladeProjectile, KatanaStanceProjectile, KatanaTuning, Phase
   class KatanaPlayer : ModPlayer
-    +CooldownTicks:int +Ready:bool +Find(int,int)[s] +BladeFlying(int)[s] +SetControls()[ov] +PostUpdate()[ov]
-**KatanaSlashProjectile.cs** uses: CameraShake, KatanaFx, KatanaTuning, PixelLine, RemoteHitTracker
+    +CooldownTicks:int +Ready:bool +Find(int,int)[s] +BladeFlying(int)[s] +KillReleasedBlades(int)[s] +SetControls()[ov] +PostUpdate()[ov]
+**KatanaSlashProjectile.cs** uses: AfterimageTrail, CameraShake, KatanaFx, KatanaHitStopNPC, KatanaTuning, PixelLine
   class KatanaSlashProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+    struct HitMark
+      +Center:Vector2 +Angle:float +Length:float +Width:float +Age:int
 **KatanaStanceProjectile.cs** uses: CameraShake, HeldSwordPose, KatanaFx, KatanaPlayer, KatanaTuning
   class KatanaStanceProjectile : ModProjectile
-    +Texture:string[ov] +Spawn(IEntitySource,Player,float,float)[s] +AI()[ov] +CanDamage()[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +Spawn(IEntitySource,Player,float,float,int)[s] +AI()[ov] +CanDamage()[ov] +PreDraw(ref Color)[ov]
 **KatanaTuning.cs**
   static class KatanaTuning
-    +BladeLength:float[s] +SwordScale:float[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +SheathArmDeg:float[s] +SheathTiltDeg:float[s] +SheathEaseTicks:int[s] +ClickKickDeg:float[s] +ClickFlashTicks:int[s] +ClickDustCount:int[s] +ClickShake:float[s] +MaxRangeTiles:float[s] +MaxChargeTicks:int[s] +MinRangePixels:float[s] +ReachEasePower:float[s] +StepPixels:float[s] +SinkDepth:float[s] +EmbedShake:float[s] +EmbedShakeDecay:float[s] +EmbedCameraShake:float[s] +VanishTicks:int[s] +CooldownTicks:int[s] +DashSpeed:float[s] +MinDashPixels:float[s] +DashGraze:float[s] +ImmuneTailTicks:int[s] +DashShadowTicks:int[s] +SlashDamageMultiplier:float[s] +SlashWidth:float[s] +SlashHitTicks:int[s] +TrailFollowTicks:int[s] +SlashLingerTicks:int[s] +SlashLineWidth:float[s] +SlashShake:float[s] +SlashHitShake:float[s] +PixelSize:float[s] +AfterimageTicks:int[s] +CoreColor:Color[s] +GlowColor:Color[s] +EdgeColor:Color[s]
+    +BladeLength:float[s] +SwordScale:float[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +SheathArmDeg:float[s] +SheathTiltDeg:float[s] +SheathEaseTicks:int[s] +ClickKickDeg:float[s] +ClickFlashTicks:int[s] +ClickDustCount:int[s] +ClickShake:float[s] +MaxRangeTiles:float[s] +MaxChargeTicks:int[s] +MinRangePixels:float[s] +ReachEasePower:float[s] +StepPixels:float[s] +SinkDepth:float[s] +EmbedShake:float[s] +EmbedShakeDecay:float[s] +EmbedCameraShake:float[s] +VanishTicks:int[s] +CooldownTicks:int[s] +DashSpeed:float[s] +MinDashPixels:float[s] +DashGraze:float[s] +ImmuneTailTicks:int[s] +VanillaShadow:bool[s] +DashShadowTicks:int[s] +SlashDamageMultiplier:float[s] +SlashWidth:float[s] +SlashHitTicks:int[s] +TrailFollowTicks:int[s] +SlashLingerTicks:int[s] +SlashLineWidth:float[s] +SlashShake:float[s] +SlashHitShake:float[s] +ReadyOutlineWidth:float[s] +ReadyPulseTicks:int[s] +ReadyOutlineMin:float[s] +ReadyOutlineMax:float[s] +ReadyFade:float[s] +ReadyGlowScale:float[s] +ReadyFlashTicks:int[s] +ReadySparkleChance:float[s] +ReadyOutlineColor:Color[s] +ReadyCoreColor:Color[s] +AfterimageSpacing:float[s] +PlayerAfterimageTicks:int[s] +AfterimageShadow:float[s] +HitStopTicks:int[s] +HitStopFlash:float[s] +HitMarkTicks:int[s] +HitMarkCount:int[s] +HitMarkLength:float[s] +HitMarkWidth:float[s] +HitMarkAngleDeg:float[s] +MaxHitMarks:int[s] +EmbedStayTicks:int[s] +EmbedFadeTicks:int[s] +DropGravity:float[s] +DropMaxFallSpeed:float[s] +DropKick:float[s] +DropSpin:float[s] +DropBounceKeep:float[s] +DropMaxBounces:int[s] +DropMaxTicks:int[s] +DropFadeTicks:int[s] +PixelSize:float[s] +AfterimageTicks:int[s] +CoreColor:Color[s] +GlowColor:Color[s] +EdgeColor:Color[s]
 
 ### Content/Weapons/Muramasa/
 **MuramasaDrawState.cs** uses: MuramasaFx, MuramasaTuning, PixelLine

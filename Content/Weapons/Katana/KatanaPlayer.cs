@@ -33,8 +33,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         // A thrown blade that has not been released yet (ai[2] stays negative until the release).
         public static bool BladeFlying(int owner)
         {
-            Projectile blade = Find(owner, ModContent.ProjectileType<KatanaBladeProjectile>());
-            return blade != null && blade.ai[2] < 0f;
+            int type = ModContent.ProjectileType<KatanaBladeProjectile>();
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile projectile = Main.projectile[i];
+                if (projectile.active && projectile.owner == owner && projectile.type == type && projectile.ai[2] < 0f)
+                    return true;
+            }
+            return false;
+        }
+
+        // A new throw ends the blades of the last one that are still stuck in a tile or falling (the owner's client calls this).
+        public static void KillReleasedBlades(int owner)
+        {
+            int type = ModContent.ProjectileType<KatanaBladeProjectile>();
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile projectile = Main.projectile[i];
+                if (projectile.active && projectile.owner == owner && projectile.type == type && projectile.ai[2] >= 0f)
+                    projectile.Kill();
+            }
         }
 
         // While the dash heads downward the player falls through platforms (vanilla lets a player drop through them when Down is held).
@@ -62,7 +80,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             if (BladeFlying(Player.whoAmI))
                 return;
             KatanaStanceProjectile.Spawn(Player.GetSource_ItemUse(Player.HeldItem), Player,
-                MathHelper.ToRadians(KatanaTuning.ReadyArmDeg), MathHelper.ToRadians(KatanaTuning.ReadyTiltDeg));
+                MathHelper.ToRadians(KatanaTuning.ReadyArmDeg), MathHelper.ToRadians(KatanaTuning.ReadyTiltDeg), CooldownTicks);
         }
     }
 }
