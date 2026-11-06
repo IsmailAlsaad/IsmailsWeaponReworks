@@ -23,49 +23,71 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static float HandOffsetY => -4f;
         public static float TremblePerOrb => 0.3f;       // pixels the lance shakes per orb
 
-        // ---- left click: a sweep, then a thrust, then a sweep ... (hold the button to keep cycling) ----
-        public static int SweepWindupTicks => 5;         // the lance is pulled back
-        public static int SweepTicks => 20;              // one fast 360 degree turn (smooth start and end)
-        public static int SweepRecoverTicks => 6;        // it stays at the start aim before the next click may begin
-        public static float SweepPullBack => 0.6f;       // radians the windup pulls back against the turn
-        public static int SweepCooldownTicks => 4;
+        // ---- left click: ONE flowing strike: wind back, an accelerating 360 sweep that overshoots, a coil, a heavy thrust, a recovery ----
+        public static int AnticipationTicks => 9;        // the lance is wound back against the spin and drawn toward the player (slow, heavy)
+        public static float AnticipationAngle => 1.0f;   // radians it is wound back
+        public static float AnticipationDraw => 0.35f;   // how far it is drawn back toward the player, as a fraction of ThrustReach
+        public static int SweepTicks => 14;              // the accelerating part of the turn: the speed keeps rising to its end
+        public static float SweepAccelPower => 1.7f;     // 1 = even speed; higher = slower start and a harder acceleration at the end
+        public static int DecelTicks => 6;               // the turn carries on past the full circle and slows down over this long
+        public static float SweepOvershoot => 0.55f;     // radians past the full circle the decel ends at
+        public static int CoilTicks => 5;                // it swings from the overshoot to the cursor, drawn back, and grows into the thrust
+        public static float CoilDraw => 0.5f;            // how far the lance is drawn back for the thrust, as a fraction of ThrustReach
+        public static bool ThrustRetarget => true;       // the thrust goes where the cursor is when the coil starts (false = where the click was)
+        public static int StrikeCooldownTicks => 3;
         public static float SweepDamageMultiplier => 0.8f;   // times the item's damage; every enemy once per sweep
         public static float SweepScale => 1.15f;
-        public static float SweepGrip => 0.25f;          // how much of the shaft sticks out behind the hand
+        public static float SweepGrip => 0.25f;          // how much of the shaft sticks out behind the hand during the sweep
         public static float SweepHitWidth => 34f;
         public static float SweepMinHitSpeed => 0.25f;   // 0 to 1 of the fastest tick: slower than this neither hits nor collects
+        public static float SweepSpeedRef => 0.6f;       // radians per tick that count as full speed
+        public static float SweepPunch => 0.5f;          // camera punch when the sweep lets go
         public static float SweepSpriteRotation => SpriteRotationDegrees();   // read through a method that is never inlined, so changing the number below with hot reload takes effect
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-        static float SpriteRotationDegrees() => 90f;   // degrees: turns the sweep's sprite if it looks off (try 90, -90 or 180); mirrored automatically when facing left
-        public static float CollectMinSpeed => 0.2f;
+        static float SpriteRotationDegrees() => 90f;   // degrees: turns the strike's sprite if it looks off (try 90, -90 or 180); mirrored automatically when facing left
         public static int CollectTicks => 10;            // a gathered orb flies into the lance tip over this long
-        public static int SweepTrailLifeTicks => 14;
-        public static int SweepTrailRails => 5;
-        public static float SweepTrailOpacity => 0.8f;
-        public static float SweepTrailInner => 0.6f;     // how far down the lance the fan reaches
         public static float SweepEmberChance => 0.7f;    // chance per tick (times the speed) that the tip sheds an ember
 
+        // ---- the line trails (Common PixelTrail / PixelLine): the sweep's and, thinner, the thrust's ----
+        public static float StrikeTrailGrid => 2f;       // world px per line cell
+        public static int StrikeTrailLifeTicks => 16;    // the line fades out over this long
+        public static float StrikeTrailWidth => 20f;     // px at the newest end (the wide halo layer); it shrinks to a point as it ages
+        public static float StrikeTrailThrustScale => 0.6f;   // the thrust's line is this much as wide
+        public static float StrikeTrailMinSpeed => 0.1f; // the sweep lays no line while slower than this
+        public static int StrikeTrailSubSteps => 6;      // points laid per tick along the exact path: more = a rounder circle
+
         // ---- the thrust (every orb the sweep gathered makes it bigger and stronger) ----
-        public static int ThrustWindupTicks => 7;
         public static int ThrustTicks => 4;
-        public static int ThrustHoldTicks => 3;
-        public static int ThrustRecoverTicks => 14;
-        public static float ThrustPullBack => 0.3f;
-        public static float ThrustEasePower => 2f;
-        public static int ThrustCooldownTicks => 0;
+        public static float ThrustEasePower => 2.2f;     // 1 = even speed; higher = faster start and a longer deceleration
+        public static float ThrustOvershoot => 0.18f;    // it shoots this far past full reach (fraction of ThrustReach), then settles back
+        public static int ThrustHoldTicks => 4;          // the settle after the overshoot (still hurts)
+        public static int RecoverTicks => 15;
+        public static float ThrustSpeedRef => 60f;       // px per tick of the tip that count as full speed
         public static float ThrustReach => 60f;
         public static float ThrustScale => 1.15f;
         public static float ThrustGrip => 0.35f;
         public static float ThrustHitWidth => 26f;
         public static float ThrustDamageMultiplier => 1.7f;  // times the item's damage, before the orbs
-        public static float SizePerOrb => 0.025f;         // +5% size (scale, reach and hit width) per gathered orb
+        public static float SizePerOrb => 0.025f;         // +2.5% size (scale, reach and hit width) per gathered orb
         public static float DamagePerOrb => 0.15f;       // +15% damage per gathered orb
-        public static int ThrustTrailLifeTicks => 0;
-        public static int ThrustTrailRails => 0;
-        public static float ThrustTrailOpacity => 0f;
-        public static ThrustChain ThrustBurst => new ThrustChain(
-            new ThrustTimeline(ThrustWindupTicks, ThrustTicks, ThrustHoldTicks, ThrustRecoverTicks, ThrustPullBack, ThrustEasePower),
-            1, 0, 0f, ThrustCooldownTicks);
+
+        // ---- the falling flame embers (a thrust that gathered at least EmberBurstMinOrbs orbs, on its first hit) ----
+        public static int EmberBurstMinOrbs => MaxOrbs;   // all 8 by default
+        public static int FlameEmberMin => 3;
+        public static int FlameEmberMax => 4;
+        public static float FlameEmberFanDegrees => 55f;  // the launch fan reaches this far to each side of straight up
+        public static float FlameEmberSpeedMin => 4.5f;   // px per tick at launch
+        public static float FlameEmberSpeedMax => 8f;
+        public static float FlameEmberGravity => 0.32f;   // px per tick squared
+        public static float FlameEmberMaxFall => 14f;
+        public static float FlameEmberDrag => 0.99f;      // horizontal speed kept per tick
+        public static int FlameEmberLifeTicks => 110;     // explodes by itself after this long in the air
+        public static int FlameEmberArmTicks => 14;       // an enemy cannot set it off before this
+        public static float FlameEmberTriggerSize => 30f; // px: the box around the ember that an enemy has to touch
+        public static float FlameEmberBlastScale => 0.32f;// the secondary blast's size as a fraction of the full blast
+        public static float FlameEmberDamageMultiplier => 0.6f;   // times the main blast's damage
+        public static float FlameEmberBallScale => 0.6f;  // the ember's flame blob, as a fraction of an orb
+        public static float FlameEmberTrailScale => 0.6f; // its trail, as a fraction of an orb's
 
         // ---- the explosion (a thrust with any gathered orbs, on the first enemy it hits; fewer orbs = a smaller one) ----
         public static float BlastRadius => 150f;          // with all MaxOrbs gathered

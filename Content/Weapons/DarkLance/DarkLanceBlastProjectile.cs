@@ -20,7 +20,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.CrystalShard;
 
         float Age => Projectile.localAI[0];
-        float Scale => DarkLanceTuning.BlastScale((int)Projectile.ai[0]);   // ai[0] = gathered orbs, set in the spawn (every machine agrees)
+        float Scale => Projectile.ai[1] > 0f ? Projectile.ai[1] : DarkLanceTuning.BlastScale((int)Projectile.ai[0]);   // ai[0] = gathered orbs, or ai[1] = an explicit size (fraction of the full blast, the flame embers use it); set in the spawn (every machine agrees)
         float Radius => DarkLanceTuning.BlastRadius * Scale;
 
         public override void SetDefaults()

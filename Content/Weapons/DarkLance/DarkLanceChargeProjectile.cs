@@ -128,7 +128,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             if (IsOwner)
             {
                 Owner.GetModPlayer<ThrustPlayer>().StartCooldown(ItemID.DarkLance, DarkLanceTuning.ChargeCooldownTicks);
-                Owner.GetModPlayer<DarkLancePlayer>().NextIsThrust = false;   // after every charge the next left click is the gathering sweep
             }
         }
 

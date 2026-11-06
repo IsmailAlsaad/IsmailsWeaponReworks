@@ -35,8 +35,8 @@ Projectiles: {
 	DarkLanceChargeProjectile.DisplayName: Dark Lance Charge Projectile
 	DarkLanceOrbProjectile.DisplayName: Dark Lance Orb Projectile
 	DarkLanceBlastProjectile.DisplayName: Dark Lance Blast Projectile
-	DarkLanceSweepProjectile.DisplayName: Dark Lance Sweep Projectile
-	DarkLanceThrustProjectile.DisplayName: Dark Lance Thrust Projectile
+	DarkLanceStrikeProjectile.DisplayName: Dark Lance Strike Projectile
+	DarkLanceFlameEmberProjectile.DisplayName: Dark Lance Flame Ember Projectile
 	MuramasaStanceProjectile.DisplayName: Muramasa Stance Projectile
 	MuramasaSwingProjectile.DisplayName: Muramasa Swing Projectile
 	MuramasaIaidoProjectile.DisplayName: Muramasa Iaido Projectile
