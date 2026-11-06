@@ -8,6 +8,7 @@ also
 whenever you are doing a pixelated trail dont just include this
         public static float TrailInner => 0.3f;      // fully expanded, the fan reaches down the blade to this fraction of its length
 but also include TrailOuter variable
+AND TrailLagTicks
 
 Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projectiles, Tuning, Fx, art). Namespace always equals the folder path. Shared code goes into `Common/` only when a second weapon needs it.
 

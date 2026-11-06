@@ -112,7 +112,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             {
                 float angle = MathHelper.TwoPi * i / count + Main.rand.NextFloat(-0.25f, 0.25f);
                 Vector2 velocity = angle.ToRotationVector2() * Main.rand.NextFloat(1.5f, 3.5f) * scale;
-                layer.Spawn(center + velocity * 2f, velocity, Main.rand.Next(40, 65), Main.rand.NextFloat(7f, 12f) * scale);
+                layer.Spawn(center + velocity * 2f, velocity, Main.rand.Next(40, 65), Main.rand.NextFloat(3f, 12f) * scale);
             }
             for (int i = 0; i < 6; i++)
                 Smoke(center + Main.rand.NextVector2Circular(radius * 0.4f, radius * 0.4f), Main.rand.NextVector2Circular(2f, 2f));

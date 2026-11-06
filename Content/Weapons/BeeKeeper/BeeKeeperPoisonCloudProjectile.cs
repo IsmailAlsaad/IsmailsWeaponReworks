@@ -69,5 +69,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             }
             ticks++;
         }
+
+        // The gas is the metaball layer; the placeholder texture must never be drawn.
+        public override bool PreDraw(ref Color lightColor)
+        {
+            return false;
+        }
     }
 }

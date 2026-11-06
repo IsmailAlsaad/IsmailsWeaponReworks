@@ -44,7 +44,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             }
 
             spawnTimer++;
-            if (spawnTimer < BeeKeeperTuning.SpawnIntervalTicks)
+            if (spawnTimer < BeeKeeperTuning.SpawnIntervalTicks || Player.HeldItem.type != ItemID.BeeKeeper)
                 return;
             spawnTimer = 0;
             SpawnBee();

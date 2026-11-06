@@ -29,17 +29,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float TiltHighDeg => -12f;      // blade tilt relative to the arm at the top (wrist) ...
         public static float TiltLowDeg => 12f;        // ... and at the bottom
         public static int ComboTicks => 30;           // a swing started within this long after the last one continues the alternation
-        public static float HitShake => 3f;           // camera punch on a hit (pixels)
+        public static float HitShake => 1f;           // camera punch on a hit (pixels)
 
         // ---- swing trail (a SweepTrail fan, drawn by the shared pixel line renderer) ----
         public static float PixelSize => 2f;
         public static int TrailLifeTicks => 22;
-        public static float TrailOpacity => 0.8f;
+        public static float TrailOpacity => 0.5f;
         public static float TailLifeScale => 0.45f;   // the first point of a swing's trail lives this fraction as long as the last one
         public static int TrailRails => 7;            // parallel pixel lines that fill the fan
         public static float TrailExpandBy => 0.9f;    // the fan has fully expanded this far into the swing (0..1)
-        public static float TrailInner => 0.35f;      // fully expanded, the fan reaches down the blade to this fraction of its length
-        public static float TrailOuter => 1f;         // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
+        public static float TrailInner => 0.55f;      // fully expanded, the fan reaches down the blade to this fraction of its length
+        public static float TrailOuter => 1.3f;         // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
         public static int TrailSamplesPerTick => 8;   // trail points laid per tick (the strike is fast, so many keep the fan smooth)
         public static Color CoreColor => new Color(255, 244, 180, 0);
         public static Color HoneyColor => new Color(255, 176, 40, 0);
@@ -49,7 +49,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static int MaxBig => 5;
         public static int MaxSmall => 10;
         public static int SpawnIntervalTicks => 50;   // one new bee this often while the swarm is not full
-        public static int LingerTicks => 600;         // the swarm stays this long after the sword is put away, then leaves
+        public static int LingerTicks => 280;         // the swarm stays this long after the sword is put away, then leaves
         public static int LeaveTicks => 24;           // a leaving bee shrinks and rises for this long, then is gone
         public static int BigSize => 22;              // hitbox of a big bee (square, pixels)
         public static int SmallSize => 14;
@@ -58,7 +58,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static int PopTicks => 10;             // a new bee grows to full size over this long
         public static int FlapTicks => 3;             // ticks per wing frame
         public static int ArtFrames => 1;             // frames of YOUR bee art (the vanilla stand-in reads its own frame count)
-        public static bool VanillaBeeFacesRight => false; // the stand-in vanilla bee sprite: flip this if it flies backwards
+        public static bool VanillaBeeFacesRight => true; // the stand-in vanilla bee sprite: flip this if it flies backwards
 
         // ---- hover: the bees circle above the player's head ----
         public static float HoverHeight => 38f;       // the middle of the swarm, above the player's top
@@ -82,15 +82,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static int HurtFlashTicks => 10;
 
         // ---- poison cloud (a dying bee) ----
-        public static float CloudRadius => 70f;       // a big bee's cloud (pixels); a small bee's is CloudSmallScale of it
+        public static float CloudRadius => 40f;       // a big bee's cloud (pixels); a small bee's is CloudSmallScale of it
         public static float CloudSmallScale => 0.65f;
         public static int CloudTicks => 150;
         public static int CloudPulseTicks => 20;      // enemies and players inside get the buff refreshed this often
-        public static int PoisonTicks => 240;         // the Poisoned buff duration each pulse
+        public static int PoisonTicks => 80;         // the Poisoned buff duration each pulse
         public static int CloudPuffsPerTick => 2;
         public static int CloudBurstPuffs => 14;
         public static float CloudMerge => 2.2f;
-        public static float CloudOutline => 0.18f;
+        public static float CloudOutline => 0f;
         public static float CloudGlow => 0.2f;
         public static float CloudRise => 0.02f;
         public static float CloudDrag => 0.96f;
@@ -103,7 +103,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             Color bright = new Color(205, 235, 110);
             return heat < 0.5f ? Color.Lerp(dark, mid, heat * 2f) : Color.Lerp(mid, bright, (heat - 0.5f) * 2f);
         }
-        public static Color CloudOutlineColor => new Color(40, 66, 20);
         public static Color CloudGlowColor => new Color(140, 210, 60, 0);
+        public static Color CloudOutlineColor => CloudGlowColor;
     }
 }
