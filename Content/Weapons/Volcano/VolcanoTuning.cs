@@ -66,10 +66,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
 
         // ---- the lava blade ----
         public static float PixelSize => 2f;
-        public static float BlobSpacing => 4f;       // px between the round blobs along the blade
-        public static float BlobMerge => 2.2f;
+        public static float BlobSpacing => 3f;       // px between the round blobs along the blade
+        public static float BlobMerge => 2.7f;
         public static float BlobOutline => 0f;
-        public static float BlobGlow => 0.15f;
+        public static float BlobGlow => 0.1f;
         public static float EdgeRadiusLow => 2.4f;   // blade blob radius at heat 0 (a thin burning edge) ...
         public static float EdgeRadiusHigh => 7f;    // ... and at full heat (a fat slab of lava)
         public static float WobbleLow => 0.6f;       // sideways wobble of the blobs, px
@@ -85,8 +85,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
 
         // ---- where along the lava blade each thing starts and ends (0 = the joint, 1 = the tip; may go past 1) ----
         public static float BodyStart => 0.08f;         // the round blobs of the lava body (and the white-hot core)
-        public static float BodyEndLow => 0.95f;        // where the lava body is cut off at heat 0 (1 = the tip); lower it until the lone pixels at the tip are gone ...
-        public static float BodyEndHigh => 0.97f;       // ... and the same at full heat; in between it is interpolated by the heat
+        public static float BodyEndLow => 1f;        // where the lava body is cut off at heat 0 (1 = the tip); lower it until the lone pixels at the tip are gone ...
+        public static float BodyEndHigh => 1f;       // ... and the same at full heat; in between it is interpolated by the heat
         public static float BodyScatter => 0.35f;       // how far from the middle line the body blobs sit (fraction of the blob radius)
         public static float CoreScatter => 0.6f;        // the same for the white-hot spots
         public static float FlameStart => 0.05f;     // the rising flames
