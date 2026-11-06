@@ -16,6 +16,8 @@ namespace IsmailsWeaponReworks.Common
     /// 't' is a value you give for every point (an age from 0 to 1, a position along the line, anything); it is interpolated between
     /// points and handed to the width and color callbacks. Width is in world pixels (rounded to whole cells, at least one when above
     /// zero); a color of alpha 0 draws additively (glow); a fully transparent color or a width of 0 or less skips that part.
+    /// smooth = true bends a curve through the points (Catmull-Rom) instead of joining them with straight pieces: use it for a line sampled
+    /// coarsely or moving fast. Off by default, so every existing line looks as before.
     /// Client only. Call it where a spriteBatch is already running in world space (a projectile's PreDraw, or DetachedTrails).
     /// </summary>
     public static class PixelLine
@@ -39,12 +41,54 @@ namespace IsmailsWeaponReworks.Common
             return a.Order.CompareTo(b.Order);
         };
 
-        public static void Draw(Vector2[] points, float[] t, int count, float grid, Func<float, float> width, Func<float, Color> color)
+        static Vector2[] smoothPoints = new Vector2[256];
+        static float[] smoothT = new float[256];
+
+        // Smoothing: a Catmull-Rom curve through the sample points. Every segment is cut into pieces about 4 cells long (at most 16), so
+        // the line bends round the points instead of breaking at them. Your arrays are not touched. 't' is interpolated like the position.
+        static int Subdivide(ref Vector2[] points, ref float[] t, int count, float grid)
+        {
+            int needed = 1;
+            for (int i = 0; i < count - 1; i++)
+                needed += Math.Max(1, Math.Min(16, (int)Math.Ceiling(Vector2.Distance(points[i], points[i + 1]) / (grid * 4f))));
+            if (smoothPoints.Length < needed)
+            {
+                smoothPoints = new Vector2[needed + 64];
+                smoothT = new float[needed + 64];
+            }
+
+            int n = 0;
+            for (int i = 0; i < count - 1; i++)
+            {
+                Vector2 p0 = points[Math.Max(i - 1, 0)];
+                Vector2 p1 = points[i];
+                Vector2 p2 = points[i + 1];
+                Vector2 p3 = points[Math.Min(i + 2, count - 1)];
+                int pieces = Math.Max(1, Math.Min(16, (int)Math.Ceiling(Vector2.Distance(p1, p2) / (grid * 4f))));
+                for (int s = 0; s < pieces; s++)
+                {
+                    float u = s / (float)pieces;
+                    smoothPoints[n] = Vector2.CatmullRom(p0, p1, p2, p3, u);
+                    smoothT[n] = MathHelper.Lerp(t[i], t[i + 1], u);
+                    n++;
+                }
+            }
+            smoothPoints[n] = points[count - 1];
+            smoothT[n] = t[count - 1];
+            n++;
+            points = smoothPoints;
+            t = smoothT;
+            return n;
+        }
+
+        public static void Draw(Vector2[] points, float[] t, int count, float grid, Func<float, float> width, Func<float, Color> color, bool smooth = false)
         {
             if (Main.dedServ || count < 2 || width == null || color == null)
                 return;
 
             grid = Math.Max(1f, grid);
+            if (smooth && count >= 3)
+                count = Subdivide(ref points, ref t, count, grid);
             scratch.Clear();
             int order = 0;
 

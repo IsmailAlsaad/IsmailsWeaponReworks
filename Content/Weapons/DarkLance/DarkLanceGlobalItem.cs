@@ -40,6 +40,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         // One charge at a time, and not right after it. The right click plays no use sound (the charge plays its own).
         public override bool CanUseItem(Item item, Player player)
         {
+            // A charged lance (all 8 flames gathered and waiting): right click does nothing, and the left click releases the thrust once the auto sweep is done.
+            Projectile primed = DarkLanceStrikeProjectile.FindPrimed(player);
+            if (primed != null)
+            {
+                if (player.altFunctionUse == 2 || !((DarkLanceStrikeProjectile)primed.ModProjectile).Ready)
+                    return false;
+                item.UseSound = null;
+                return true;
+            }
+
             // One thing at a time: no charge, sweep or thrust may be out, and the cooldown after the last one must be over (both clicks).
             if (AnyOut(player) || player.GetModPlayer<ThrustPlayer>().OnCooldown(ItemID.DarkLance))
                 return false;
@@ -56,6 +66,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public override bool Shoot(Item item, Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)
         {
             // Shoot only runs on the attacking player's own client; the projectile is then synced to everyone else.
+            // The click on a charged lance does not spawn anything: the waiting strike runs on into its thrust.
+            Projectile primed = DarkLanceStrikeProjectile.FindPrimed(player);
+            if (primed != null && player.altFunctionUse != 2)
+            {
+                ((DarkLanceStrikeProjectile)primed.ModProjectile).Release();
+                return false;
+            }
+
             // Right click: ai[0] = 0, ai[1] = 0 (the owner writes the end age + 1 here when the button is released). Left click: vanilla.
             if (player.altFunctionUse == 2)
             {

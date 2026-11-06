@@ -20,6 +20,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public override float Grid => DarkLanceTuning.StrikeTrailGrid;
         public override int LifeTicks => DarkLanceTuning.StrikeTrailLifeTicks;
         public override int Layers => 3;
+        public override bool Smoothing => DarkLanceTuning.StrikeTrailSmoothing;
 
         public override float GetWidth(int layer, float age)
         {

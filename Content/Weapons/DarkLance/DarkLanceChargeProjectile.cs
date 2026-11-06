@@ -18,7 +18,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
     /// MULTIPLAYER: the owner's client decides everything (the click, the release, every orb spawn). The pose, tremble, dust and glow are
     /// pure functions of the projectile's age and the synced end age, so every machine shows the same charge with no per-tick packets;
     /// only the release travels (ai[1] + netUpdate). Each orb is a normal spawned projectile (synced by tModLoader). The charge itself
-    /// deals no damage.
+    /// deals no damage. With all MaxOrbs there it spawns a DarkLanceStrikeProjectile in mode 1 (the auto sweep that gathers them and charges the lance)
+    /// and ends. The pump animation (down while a flame gathers, a kick up when it leaves) is a pure function of the age like the rest.
     /// </summary>
     public class DarkLanceChargeProjectile : ModProjectile
     {
@@ -32,6 +33,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         // Per-machine state: counters and visuals, never synced.
         int age;
         float charge;      // 0 to 1: how charged the lance looks
+        float kick;        // 0 to 1: the lance just let a flame go (it jerks up and the tip flares)
+        int fullAge = -1;  // the age all the flames were there (owner only)
         Vector2 butt;
         Vector2 tip;
 
@@ -78,8 +81,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             float aim = -MathHelper.PiOver2 + DarkLanceTuning.LanceTilt * owner.direction; // in the player's own frame
             Vector2 direction = HeldAim.ToWorldDirection(owner, aim);
             Vector2 hand = owner.RotatedRelativePoint(owner.MountedCenter, false, true);
+            // The pump: the lance is drawn down toward the player while the next flame gathers, then kicks up when it leaves (a pure function of the age).
+            float cycleNow = orbs >= DarkLanceTuning.MaxOrbs ? 0f : (age % interval) / (float)interval;
+            kick = orbs >= DarkLanceTuning.MaxOrbs || age == 0 ? 0f : (float)Math.Pow(DarkLanceTuning.ChargeKickDecay, age % interval);
+            float pump = (DarkLanceTuning.ChargePumpDown * cycleNow * cycleNow - DarkLanceTuning.ChargePumpUp * kick) * wind;
             Vector2 tremble = Main.dedServ ? Vector2.Zero : Main.rand.NextVector2Circular(1f, 1f) * (DarkLanceTuning.TremblePerOrb * orbs * wind);
-            butt = hand + new Vector2(owner.direction * DarkLanceTuning.HandOffsetX, DarkLanceTuning.HandOffsetY * owner.gravDir) + tremble;
+            butt = hand + new Vector2(owner.direction * DarkLanceTuning.HandOffsetX, DarkLanceTuning.HandOffsetY * owner.gravDir + pump * owner.gravDir) + tremble;
             tip = butt + direction * shaft;
             Projectile.Center = owner.MountedCenter;
             Projectile.rotation = direction.ToRotation();
@@ -100,6 +107,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
                     // ai[1] = the spawn serial: it gives the orb its stable place in the ring on every machine.
                     DarkLancePlayer plr = owner.GetModPlayer<DarkLancePlayer>();
                     Projectile.NewProjectile(Projectile.GetSource_FromThis(), tip, Vector2.Zero, ModContent.ProjectileType<DarkLanceOrbProjectile>(), 0, 0f, owner.whoAmI, 0f, plr.Serial++);
+                }
+            }
+
+            // All the flames are there: after a short pause the lance sweeps by itself to gather them and ends up charged (DarkLanceStrikeProjectile, mode 1).
+            if (IsOwner && EndAge < 0 && orbs >= DarkLanceTuning.MaxOrbs)
+            {
+                if (fullAge < 0)
+                    fullAge = age;
+                if (age - fullAge >= DarkLanceTuning.ChargeAutoSweepDelayTicks)
+                {
+                    float strikeAim = HeldAim.Capture(owner);
+                    int strikeDamage = Math.Max(1, (int)(owner.GetWeaponDamage(owner.HeldItem) * DarkLanceTuning.SweepDamageMultiplier));
+                    float strikeKnockback = owner.GetWeaponKnockback(owner.HeldItem, owner.HeldItem.knockBack);
+                    Projectile.NewProjectile(Projectile.GetSource_FromThis(), owner.MountedCenter, Vector2.Zero, ModContent.ProjectileType<DarkLanceStrikeProjectile>(), strikeDamage, strikeKnockback, owner.whoAmI, HeldAim.Facing(strikeAim) * 101f, strikeAim, strikeAim);   // ai[0] = direction * (1 + 0 gathered + 100 * mode 1)
+                    Projectile.Kill();
+                    return;
                 }
             }
 
@@ -144,7 +167,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
 
             // A dark glow gathering at the tip: it swells with the charge and pulses, with a smooth falloff (no hard squares).
             float pulse = 1f + 0.15f * (float)Math.Sin(age * 0.4f);
-            float radius = MathHelper.Lerp(DarkLanceTuning.TipGlowMinRadius, DarkLanceTuning.TipGlowMaxRadius, charge) * pulse;
+            float radius = MathHelper.Lerp(DarkLanceTuning.TipGlowMinRadius, DarkLanceTuning.TipGlowMaxRadius, charge) * pulse * (1f + DarkLanceTuning.ChargeTipFlare * kick);
             DarkLanceFx.DrawGlow(tip, radius, DarkLanceTuning.TipGlowStrength * (0.6f + 0.4f * charge));
             return false;
         }

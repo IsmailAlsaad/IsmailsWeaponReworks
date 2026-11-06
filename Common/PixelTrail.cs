@@ -16,6 +16,7 @@ namespace IsmailsWeaponReworks.Common
         public virtual int LifeTicks => 40;
         public virtual int Layers => 1;
         public virtual float Jitter => 0f;   // pixels of fixed random offset per point, for a ragged edge
+        public virtual bool Smoothing => false;   // true = a curve through the points (PixelLine smoothing) instead of straight pieces
 
         public abstract float GetWidth(int layer, float age);
         public abstract Color GetColor(int layer, float age);
@@ -115,7 +116,7 @@ namespace IsmailsWeaponReworks.Common
             for (int layer = 0; layer < Style.Layers; layer++)
             {
                 int l = layer;
-                PixelLine.Draw(drawPoints, drawAges, count, grid, age => Style.GetWidth(l, age), age => Style.GetColor(l, age));
+                PixelLine.Draw(drawPoints, drawAges, count, grid, age => Style.GetWidth(l, age), age => Style.GetColor(l, age), Style.Smoothing);
             }
         }
     }

@@ -124,6 +124,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             DarkLanceEmbers.Burst(center, radius, scale);
         }
 
+        // The lance becomes charged (all 8 flames gathered): a deep click, a chime and a ring of dark flame dust around the tip.
+        public static void Primed(Vector2 tip)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item45 with { Volume = 0.7f, Pitch = -0.3f }, tip);
+            SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.6f, Pitch = -0.2f }, tip);
+            Ring(tip, 16, 12f, 4f);
+        }
+
         // The lance goes up and the charge begins.
         public static void ChargeStart(Vector2 position)
         {

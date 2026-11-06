@@ -48,12 +48,35 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         public static int CollectTicks => 10;            // a gathered orb flies into the lance tip over this long
         public static float SweepEmberChance => 0.7f;    // chance per tick (times the speed) that the tip sheds an ember
 
+        public static int SweepHitCooldownTicks => 12;   // how soon the SWEEP may hit the same enemy again: -1 = once per sweep, 6 = every 6 ticks while it stays in reach (the thrust always hits once)
+
+        // ---- the charge animation (right click): the lance pumps once for every flame ----
+        public static float ChargePumpDown => 7f;        // px the lance is drawn down toward the player while the next flame gathers
+        public static float ChargePumpUp => 10f;         // px it kicks up when the flame leaves
+        public static float ChargeKickDecay => 0.8f;     // the kick keeps this much per tick
+        public static float ChargeTipFlare => 0.6f;      // how much the tip glow swells with the kick
+        public static int ChargeAutoSweepDelayTicks => 16;   // after the 8th flame appears the lance waits this long, then sweeps by itself
+
+        // ---- the charged lance (all 8 flames gathered): it waits in the hand, pointing at the cursor, with a pulsing purple outline ----
+        public static float PrimedOutlineWidth => 2f;    // screen pixels
+        public static int PrimedPulseTicks => 48;        // one full pulse
+        public static float PrimedOutlineMin => 0.45f;   // the pulse runs between these two strengths
+        public static float PrimedOutlineMax => 1f;
+        public static float PrimedOutlineFade => 0.3f;   // how fast the outline fades in and out (per tick, 0..1)
+        public static float PrimedGlowScale => 1.18f;    // the soft glow copy behind the outline
+        public static Color PrimedOutlineColor => new Color(170, 70, 255, 0);
+        public static Color PrimedOutlineCoreColor => new Color(235, 200, 255, 0);
+        public static float PrimedPunch => 0.8f;         // camera punch when the lance becomes charged
+        public static float PrimedAimFollow => 0.4f;     // other players' machines glide this fraction of the way to the owner's aim per tick
+        public static float PrimedAimSyncDelta => 0.04f; // radians the cursor must move before the owner sends the aim again
+
         // ---- the line trails (Common PixelTrail / PixelLine): the sweep's and, thinner, the thrust's ----
         public static float StrikeTrailGrid => 2f;       // world px per line cell
         public static int StrikeTrailLifeTicks => 16;    // the line fades out over this long
         public static float StrikeTrailWidth => 20f;     // px at the newest end (the wide halo layer); it shrinks to a point as it ages
         public static float StrikeTrailThrustScale => 0.6f;   // the thrust's line is this much as wide
         public static float StrikeTrailMinSpeed => 0.1f; // the sweep lays no line while slower than this
+        public static bool StrikeTrailSmoothing => true; // PixelLine smoothing: a curve through the sample points instead of straight pieces
         public static int StrikeTrailSubSteps => 6;      // points laid per tick along the exact path: more = a rounder circle
 
         // ---- the thrust (every orb the sweep gathered makes it bigger and stronger) ----
