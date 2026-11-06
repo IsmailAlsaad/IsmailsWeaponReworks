@@ -10,6 +10,11 @@ whenever you are doing a pixelated trail dont just include this
 but also include TrailOuter variable
 AND TrailLagTicks
 
+and a variable like this one
+        public static float HitLengthScale => 1.3f;     // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
+        public static float HitWidth => 18f;          // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
+
+
 Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projectiles, Tuning, Fx, art). Namespace always equals the folder path. Shared code goes into `Common/` only when a second weapon needs it.
 
 ## Progress

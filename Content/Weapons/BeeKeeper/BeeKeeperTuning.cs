@@ -29,7 +29,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float TiltHighDeg => -12f;      // blade tilt relative to the arm at the top (wrist) ...
         public static float TiltLowDeg => 12f;        // ... and at the bottom
         public static int ComboTicks => 30;           // a swing started within this long after the last one continues the alternation
-        public static float HitLengthScale => 1f;     // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
+        public static float HitLengthScale => 1.3f;     // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
         public static float HitWidth => 18f;          // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
         public static float HitShake => 1f;           // camera punch on a hit (pixels)
 
