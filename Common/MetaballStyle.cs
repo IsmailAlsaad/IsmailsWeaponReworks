@@ -29,6 +29,7 @@ namespace IsmailsWeaponReworks.Common
         public virtual int Bands => 5;              // hard color bands of the fill
         public virtual float GlowStrength => 0.3f;  // faint additive glow around the blobs (0 = none)
         public virtual int MaxParticles => 400;     // the oldest are dropped first
+        public virtual bool DrawInProjectile => false; // true: MetaballLayers does not draw this layer after the tiles; a held weapon draws it from its projectile's PreDraw (MetaballLayer.DrawInBatch), so it is in FRONT of enemies
 
         // movement of particles (px per tick)
         public virtual float Rise => 0f;            // upward push per tick (negative = sinks)

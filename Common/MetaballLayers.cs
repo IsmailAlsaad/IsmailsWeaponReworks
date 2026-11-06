@@ -43,7 +43,11 @@ namespace IsmailsWeaponReworks.Common
                 return;
 
             foreach (MetaballLayer layer in layers.Values)
-                layer.Draw();
+            {
+                layer.DrawnThisFrame = false;   // a DrawInProjectile layer may draw once again this frame
+                if (!layer.Style.DrawInProjectile)
+                    layer.Draw();
+            }
         }
 
         public override void OnWorldUnload()

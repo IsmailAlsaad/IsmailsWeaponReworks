@@ -99,7 +99,27 @@ namespace IsmailsWeaponReworks.Common
             cellIndex.Clear();
         }
 
+        // Set by MetaballLayers every frame; DrawInBatch draws at most once per frame (several projectiles may ask).
+        public bool DrawnThisFrame;
+
         public void Draw()
+        {
+            DrawCells(true);
+        }
+
+        /// <summary>
+        /// For a style with DrawInProjectile: call from a projectile's PreDraw (a spritebatch is already running there, so this does not
+        /// begin its own). Draws the whole layer once per frame, in the projectile's draw order, i.e. in front of enemies.
+        /// </summary>
+        public void DrawInBatch()
+        {
+            if (DrawnThisFrame)
+                return;
+            DrawnThisFrame = true;
+            DrawCells(false);
+        }
+
+        void DrawCells(bool beginBatch)
         {
             if (Main.dedServ || IsEmpty)
                 return;
@@ -145,7 +165,8 @@ namespace IsmailsWeaponReworks.Common
             int originY = (int)Math.Floor(screen.Y);
             int size = (int)Math.Round(grid);
 
-            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
+            if (beginBatch)
+                Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
             for (int i = 0; i < cellCount; i++)
             {
                 float f = fieldSum[i];
@@ -170,7 +191,8 @@ namespace IsmailsWeaponReworks.Common
                 }
                 Main.spriteBatch.Draw(pixel, new Rectangle(cellX[i] * size - originX, cellY[i] * size - originY, size, size), color);
             }
-            Main.spriteBatch.End();
+            if (beginBatch)
+                Main.spriteBatch.End();
         }
 
         static bool OnScreen(Vector2 position, float margin, Vector2 screen)
