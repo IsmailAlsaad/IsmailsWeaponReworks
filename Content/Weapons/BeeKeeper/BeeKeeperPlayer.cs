@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -10,6 +12,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
     /// other machines need). It remembers how the last swing ended (so the next one continues from there and alternates) and it runs the
     /// passive swarm: while the sword is held, and for LingerTicks after it is put away, it adds one bee every SpawnIntervalTicks until
     /// there are MaxBig big and MaxSmall small ones. When the linger time runs out, the bees see it (Linger is 0) and leave by themselves.
+    /// It also counts the true melee hits on each enemy and, on every hit, sends bees from the idle pool at it (RecruitBees, owner's client).
     /// </summary>
     public class BeeKeeperPlayer : ModPlayer
     {
@@ -20,9 +23,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public int Linger;               // ticks the swarm stays after the sword was last held (owner only)
         int spawnTimer;
 
+        // How often each enemy was hit by the sword's swing (owner only; the key is the NPC's slot, the type tells a reused slot apart).
+        struct HitRecord
+        {
+            public int Type;
+            public uint LastTick;
+            public int Count;
+        }
+        Dictionary<int, HitRecord> hits;
+
         public override void OnRespawn()
         {
             Linger = 0;
+            hits?.Clear();
         }
 
         public override void PostUpdate()
@@ -48,6 +61,46 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
                 return;
             spawnTimer = 0;
             SpawnBee();
+        }
+
+        // Owner's client only: a true melee hit of the swing landed on 'target'. Counts the hit and sends bees at the enemy: BeesPerHit on
+        // the first hit, growing evenly to every idle bee on the HitsForFullSwarm-th, picked at random from the idle pool only (big or small;
+        // a bee that is travelling, latched on another enemy or leaving is never taken). 'swordDamage' is the swing's damage.
+        public void RecruitBees(NPC target, int swordDamage)
+        {
+            if (Player.whoAmI != Main.myPlayer || Player.dead || !target.active)
+                return;
+
+            hits ??= new Dictionary<int, HitRecord>();
+            uint now = Main.GameUpdateCount;
+            if (!hits.TryGetValue(target.whoAmI, out HitRecord record) || record.Type != target.type || now - record.LastTick > (uint)BeeKeeperTuning.HitMemoryTicks)
+                record = new HitRecord { Type = target.type };
+            record.Count++;
+            record.LastTick = now;
+            hits[target.whoAmI] = record;
+
+            List<BeeKeeperBeeProjectile> pool = new List<BeeKeeperBeeProjectile>();
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile projectile = Main.projectile[i];
+                if (projectile.active && projectile.owner == Player.whoAmI && projectile.ModProjectile is BeeKeeperBeeProjectile bee && bee.IsIdle)
+                    pool.Add(bee);
+            }
+            if (pool.Count == 0)
+                return;
+
+            int full = Math.Max(1, BeeKeeperTuning.HitsForFullSwarm);
+            float progress = full <= 1 ? 1f : (Math.Min(record.Count, full) - 1) / (float)(full - 1);
+            int wanted = (int)Math.Ceiling(MathHelper.Lerp(BeeKeeperTuning.BeesPerHit, BeeKeeperTuning.MaxBig + BeeKeeperTuning.MaxSmall, progress));
+            wanted = Math.Min(wanted, pool.Count);
+            for (int i = 0; i < wanted; i++)
+            {
+                int pick = Main.rand.Next(i, pool.Count); // a random bee of the ones not chosen yet
+                BeeKeeperBeeProjectile chosen = pool[pick];
+                pool[pick] = pool[i];
+                pool[i] = chosen;
+                chosen.Recruit(target, swordDamage);
+            }
         }
 
         // Owner only: one more bee of whichever kind has room, picked at random in proportion to how many of each are missing.

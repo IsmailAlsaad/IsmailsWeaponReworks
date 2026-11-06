@@ -271,12 +271,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             modifiers.HitDirectionOverride = target.Center.X > Owner.Center.X ? 1 : -1;
         }
 
-        // Owner's client only. A true melee hit of the swing: sparks, a sound and a small camera punch.
+        // Owner's client only. A true melee hit of the swing: sparks, a sound, a small camera punch, and bees sent at the enemy (the more
+        // hits on it, the more bees). Stings and clouds never count as a hit, only this. The bees' stings are a fraction of this swing's damage.
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             BeeKeeperFx.HitSpark(target.Center);
             BeeKeeperFx.PlayHit(target.Center);
             CameraShake.Punch(target.Center, BeeKeeperTuning.HitShake, 8);
+            Owner.GetModPlayer<BeeKeeperPlayer>().RecruitBees(target, Projectile.damage);
         }
 
         // The trail outlives the swing and keeps fading on its own (DetachedTrails). The owner remembers how this swing ended, so the

@@ -64,6 +64,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         {
             tooltips.Add(new TooltipLine(Mod, "BeeKeeper1", "Bees gather above you while it is held"));
             tooltips.Add(new TooltipLine(Mod, "BeeKeeper2", "A bee that dies leaves a poison cloud that poisons everything inside, you too"));
+            tooltips.Add(new TooltipLine(Mod, "BeeKeeper3", "Hits send bees that latch on and sting: the more hits, the more bees"));
         }
     }
 }

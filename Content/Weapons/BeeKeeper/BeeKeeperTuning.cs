@@ -82,6 +82,30 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         public static float HurtKnock => 4f;          // the bee is pushed away from what hit it
         public static int HurtFlashTicks => 10;
 
+        // ---- the swarm attack (a true melee hit sends bees: they fly out, latch on, sting) ----
+        public static int BeesPerHit => 2;             // bees sent by the FIRST hit on an enemy ...
+        public static int HitsForFullSwarm => 5;       // ... growing evenly until this hit, which sends every idle bee
+        public static int HitMemoryTicks => 240;       // an enemy's hit count is forgotten after this long without a new hit on it
+        public static float RecruitKick => 5f;         // a recruited bee is thrown off toward the enemy at this speed ...
+        public static float RecruitKickSpread => 0.9f; // ... turned by a random angle up to this (radians)
+        public static float TravelSpeed => 15f;        // top speed of a bee flying to its enemy
+        public static float TravelTurn => 0.18f;       // how fast its velocity follows the wanted one (0..1 per tick)
+        public static float TravelWeave => 3.5f;       // sideways swoop (speed) while it is still far away
+        public static float TravelArriveDistance => 12f;
+        public static int TravelTimeoutTicks => 120;   // not there after this long: it latches anyway (snaps onto the enemy)
+        public static float LatchSpread => 0.42f;      // latched bees sit within this fraction of the enemy's size around its centre ...
+        public static float LatchMaxSpread => 70f;     // ... but never further than this (pixels), so a boss does not scatter them
+        public static float LatchWobble => 5f;         // a latched bee jitters this far around its spot
+        public static float LatchWobbleSpeed => 0.35f;
+        public static int StingIntervalTicks => 80;    // every latched bee stings this often (each has its own phase)
+        public static float StingDamageFraction => 0.1f; // of the sword's damage (the swing's damage when the bee was sent)
+        public static int StingPoisonTicks => 120;     // Poisoned is topped up to this whenever it runs below half
+        public static int MaxLatchTicks => 360;        // a bee lets go after this long, with one final sting
+        public static float StingJab => 5f;            // a sting pushes the bee this far into the enemy and back
+        public static int StingJabTicks => 6;
+        public static float StingSoundChance => 0.3f;  // not every sting makes a sound (15 bees would be a wall of noise)
+        public static int ReturnGraceTicks => 45;      // a bee that lets go cannot be hurt for this long (it is still inside the enemy)
+
         // ---- poison cloud (a dying bee) ----
         public static float CloudRadius => 40f;       // a big bee's cloud (pixels); a small bee's is CloudSmallScale of it
         public static float CloudSmallScale => 0.65f;

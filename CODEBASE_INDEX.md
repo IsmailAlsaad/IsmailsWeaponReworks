@@ -168,25 +168,27 @@ tModLoader/other bases -> project types:
 ### Content/Weapons/BeeKeeper/
 **BeeKeeperBeeProjectile.cs** uses: BeeKeeperFx, BeeKeeperPlayer, BeeKeeperPoisonCloudProjectile, BeeKeeperTuning
   enum BeeState
-    {Idle, Leaving}
+    {Idle, Leaving, Travel, Latched}
   abstract class BeeKeeperBeeProjectile : ModProjectile
-    #IsBig:bool[ab] #VanillaProjectile:int[ab] #ArtPath:string[ab] +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +PreDraw(ref Color)[ov]
+    #IsBig:bool[ab] #VanillaProjectile:int[ab] #ArtPath:string[ab] +Texture:string[ov] +IsIdle:bool +Load()[ov] +Unload()[ov] +AI()[ov] +Recruit(NPC,int) +PreDraw(ref Color)[ov]
   class BeeKeeperBigBeeProjectile : BeeKeeperBeeProjectile
     #IsBig:bool[ov] #VanillaProjectile:int[ov] #ArtPath:string[ov]
   class BeeKeeperSmallBeeProjectile : BeeKeeperBeeProjectile
     #IsBig:bool[ov] #VanillaProjectile:int[ov] #ArtPath:string[ov]
 **BeeKeeperFx.cs** uses: BeeKeeperCloudStyle, BeeKeeperTuning, MetaballLayer, MetaballLayers
   static class BeeKeeperFx
-    +PlaySwing(Vector2,bool)[s] +PlayHit(Vector2)[s] +PlayBeePop(Vector2)[s] +PlayBeeHurt(Vector2)[s] +PlayCloud(Vector2,bool)[s] +SlashDust(Vector2,Vector2)[s] +HitSpark(Vector2)[s] +BeeSpawn(Vector2)[s] +BeeHurt(Vector2)[s] +CloudBurst(Vector2,float)[s] +CloudPuffs(Vector2,float,int)[s]
+    +PlaySwing(Vector2,bool)[s] +PlayHit(Vector2)[s] +PlayBeePop(Vector2)[s] +PlayBeeHurt(Vector2)[s] +PlayCloud(Vector2,bool)[s] +SlashDust(Vector2,Vector2)[s] +HitSpark(Vector2)[s] +BeeSpawn(Vector2)[s] +BeeHurt(Vector2)[s] +Launch(Vector2)[s] +TravelTrail(Vector2,Vector2)[s] +Sting(Vector2,bool)[s] +FinalSting(Vector2,bool)[s] +CloudBurst(Vector2,float)[s] +CloudPuffs(Vector2,float,int)[s]
 **BeeKeeperGlobalItem.cs** uses: BeeKeeperPlayer, BeeKeeperSwingProjectile, BeeKeeperTuning, Phase
   class BeeKeeperGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**BeeKeeperPlayer.cs** uses: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile, BeeKeeperTuning
+**BeeKeeperPlayer.cs** uses: BeeKeeperBeeProjectile, BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile, BeeKeeperTuning
   class BeeKeeperPlayer : ModPlayer
-    +LastPhase:int +LastEndArm:float +LastEndTick:uint +Linger:int +OnRespawn()[ov] +PostUpdate()[ov]
+    +LastPhase:int +LastEndArm:float +LastEndTick:uint +Linger:int +OnRespawn()[ov] +PostUpdate()[ov] +RecruitBees(NPC,int)
+    struct HitRecord
+      +Type:int +LastTick:uint +Count:int
 **BeeKeeperPoisonCloudProjectile.cs** uses: AreaEffect, BeeKeeperFx, BeeKeeperTuning
   class BeeKeeperPoisonCloudProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov]
+    +Texture:string[ov] +AI()[ov] +PreDraw(ref Color)[ov]
 **BeeKeeperStyles.cs** uses: BeeKeeperTuning, MetaballStyle, SweepFade, SweepTrailStyle
   class BeeKeeperCloudStyle : MetaballStyle
     +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +Rise:float[ov] +Drag:float[ov] +Wobble:float[ov] +SizeOverLife(float)[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]
@@ -199,7 +201,7 @@ tModLoader/other bases -> project types:
       {SwingDown, SwingUp}
 **BeeKeeperTuning.cs**
   static class BeeKeeperTuning
-    +BladeLength:float[s] +SwordScale:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboTicks:int[s] +HitShake:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailOpacity:float[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOuter:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +HoneyColor:Color[s] +DeepColor:Color[s] +MaxBig:int[s] +MaxSmall:int[s] +SpawnIntervalTicks:int[s] +LingerTicks:int[s] +LeaveTicks:int[s] +BigSize:int[s] +SmallSize:int[s] +BigScale:float[s] +SmallScale:float[s] +PopTicks:int[s] +FlapTicks:int[s] +ArtFrames:int[s] +VanillaBeeFacesRight:bool[s] +HoverHeight:float[s] +BigRadiusX:float[s] +SmallRadiusX:float[s] +HoverRadiusY:float[s] +FlutterSpeed:float[s] +Spring:float[s] +Damping:float[s] +MaxSpeed:float[s] +BuzzJitter:float[s] +SnapDistance:float[s] +BigHp:float[s] +SmallHp:float[s] +EnemyTouchDamage:float[s] +HurtCooldownTicks:int[s] +HostileProjectilesHurtBees:bool[s] +HurtKnock:float[s] +HurtFlashTicks:int[s] +CloudRadius:float[s] +CloudSmallScale:float[s] +CloudTicks:int[s] +CloudPulseTicks:int[s] +PoisonTicks:int[s] +CloudPuffsPerTick:int[s] +CloudBurstPuffs:int[s] +CloudMerge:float[s] +CloudOutline:float[s] +CloudGlow:float[s] +CloudRise:float[s] +CloudDrag:float[s] +CloudWobble:float[s] +CloudHeat:float[s] +CloudFill(float)[s] +CloudOutlineColor:Color[s] +CloudGlowColor:Color[s]
+    +BladeLength:float[s] +SwordScale:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboTicks:int[s] +HitShake:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailOpacity:float[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +HoneyColor:Color[s] +DeepColor:Color[s] +MaxBig:int[s] +MaxSmall:int[s] +SpawnIntervalTicks:int[s] +LingerTicks:int[s] +LeaveTicks:int[s] +BigSize:int[s] +SmallSize:int[s] +BigScale:float[s] +SmallScale:float[s] +PopTicks:int[s] +FlapTicks:int[s] +ArtFrames:int[s] +VanillaBeeFacesRight:bool[s] +HoverHeight:float[s] +BigRadiusX:float[s] +SmallRadiusX:float[s] +HoverRadiusY:float[s] +FlutterSpeed:float[s] +Spring:float[s] +Damping:float[s] +MaxSpeed:float[s] +BuzzJitter:float[s] +SnapDistance:float[s] +BigHp:float[s] +SmallHp:float[s] +EnemyTouchDamage:float[s] +HurtCooldownTicks:int[s] +HostileProjectilesHurtBees:bool[s] +HurtKnock:float[s] +HurtFlashTicks:int[s] +BeesPerHit:int[s] +HitsForFullSwarm:int[s] +HitMemoryTicks:int[s] +RecruitKick:float[s] +RecruitKickSpread:float[s] +TravelSpeed:float[s] +TravelTurn:float[s] +TravelWeave:float[s] +TravelArriveDistance:float[s] +TravelTimeoutTicks:int[s] +LatchSpread:float[s] +LatchMaxSpread:float[s] +LatchWobble:float[s] +LatchWobbleSpeed:float[s] +StingIntervalTicks:int[s] +StingDamageFraction:float[s] +StingPoisonTicks:int[s] +MaxLatchTicks:int[s] +StingJab:float[s] +StingJabTicks:int[s] +StingSoundChance:float[s] +ReturnGraceTicks:int[s] +CloudRadius:float[s] +CloudSmallScale:float[s] +CloudTicks:int[s] +CloudPulseTicks:int[s] +PoisonTicks:int[s] +CloudPuffsPerTick:int[s] +CloudBurstPuffs:int[s] +CloudMerge:float[s] +CloudOutline:float[s] +CloudGlow:float[s] +CloudRise:float[s] +CloudDrag:float[s] +CloudWobble:float[s] +CloudHeat:float[s] +CloudFill(float)[s] +CloudGlowColor:Color[s] +CloudOutlineColor:Color[s]
 
 ### Content/Weapons/BloodButcherer/
 **BloodButchererFx.cs** uses: BloodButchererTuning, IceFx
