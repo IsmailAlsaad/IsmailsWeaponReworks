@@ -26,23 +26,31 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static float ChargedAt => 0.995f;     // from this heat on the sword counts as fully charged (the burst plays when it gets there)
 
         // ---- the swing (a chop centered on the cursor; fixed ticks, scaled by melee speed) ----
-        public static int AnticipateTicks => 7;
+        public static int AnticipateTicks => 4;
         public static float AnticipateDeg => 16f;    // how far past the start of the arc the arm pulls back
         public static float AnticipateTiltDeg => 8f;
-        public static int SwingTicks => 9;           // the strike (the only part that damages)
+        public static int SwingTicks => 6;           // the strike (the only part that damages)
         public static float SwingEasePower => 2f;    // 1 = even speed; higher = faster start and a longer deceleration
         public static float OvershootDeg => 6f;
-        public static int RecoverTicks => 9;
+        public static int RecoverTicks => 6;
         public static int SweepHitSteps => 4;        // the hit test is checked at this many poses between two ticks
         public static float HitWidth => 20f;         // thickness of the blade line the hit test uses (px at scale 1)
         public static float SwingHighDeg => -70f;    // relative to the aim: negative = above, positive = below
         public static float SwingLowDeg => 70f;
         public static float TiltHighDeg => -14f;
         public static float TiltLowDeg => 14f;
-        public static float MinSpeed => 0.5f;        // melee speed is clamped to this range
+        public static float MinSpeed => 0.3f;        // melee speed is clamped to this range
         public static float MaxSpeed => 3f;
 
-        // ---- the ready pose (sword held up, flames rising) ----
+        // ---- heavy: the more lava on the blade, the slower and harder the swing (the heat at the click decides; 0 = cold, 1 = full) ----
+        public static float HeavyTimeScale => 2f;            // the swing takes this many times as long at full heat
+        public static float HeavyDamageMultiplier => 2f;     // damage at full heat (1 when cold)
+        public static float HeavyKnockbackMultiplier => 1.5f;
+        public static int TurnNoInheritTicks => 8;           // when the player turns around, flames and drips ignore the blade's movement for this long
+
+        // ---- the ready pose: ReadyArmDeg/ReadyTiltDeg when uncharged, ChargedReadyArmDeg/ChargedReadyTiltDeg when fully charged; the arm blends between them with the heat ----
+        public static float ChargedReadyArmDeg => 40f;
+        public static float ChargedReadyTiltDeg => 70f;
         public static float ReadyArmDeg => 90f;
         public static float ReadyTiltDeg => 90f;
         public static float IdleBobDeg => 3f;
@@ -73,6 +81,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static float CoreFrom => 0.3f;        // from this heat on a white-hot core runs down the blade
         public static float CoreHeat => 0.98f;
         public static float FlameHeat => 0.8f;       // a flame particle starts this hot and cools
+
+        // ---- where along the lava blade each thing starts and ends (0 = the joint, 1 = the tip; may go past 1) ----
+        public static float BodyStart => 0f;         // the round blobs of the lava body (and the white-hot core)
+        public static float BodyEnd => 1f;
+        public static float FlameStart => 0.05f;     // the rising flames
+        public static float FlameEnd => 1f;
+        public static float DripStart => 0.15f;      // the falling drips
+        public static float DripEnd => 1f;
+        public static float SpitStart => 0.3f;       // the flung spits
+        public static float SpitEnd => 1f;
 
         // ---- flames (rise off the blade), lava drips (fall) and spits (flung out, then fall) ----
         public static float FlameRise => 0.05f;

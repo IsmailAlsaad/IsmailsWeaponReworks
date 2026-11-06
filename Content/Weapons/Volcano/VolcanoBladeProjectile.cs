@@ -63,6 +63,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         Vector2 prevCenter;       // the hand and angle on the previous tick: the hit test sweeps from them
         float prevRotation;
         Vector2 prevTip;
+        Vector2 tipMotion;        // how far the tip moved this tick, as handed to the flames and drips (zero for a moment after the player turns)
+        int noInherit;            // ticks left in which the movement is ignored
+        int lastFacing = 1;
+        float swingHeat;          // the heat at the click (owner only): decides this swing's damage
         Vector2 jointPosition;
         Vector2 tipPosition;
         SweepTrail trail;
@@ -231,7 +235,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             if (!swinging)
             {
                 if (IsOwner && owner.controlUseItem && !owner.mouseInterface)
-                    BeginSwing(HeldAim.Capture(owner), MathHelper.Clamp(owner.GetTotalAttackSpeed(DamageClass.Melee), VolcanoTuning.MinSpeed, VolcanoTuning.MaxSpeed));
+                    BeginSwing(HeldAim.Capture(owner), MathHelper.Clamp(owner.GetTotalAttackSpeed(DamageClass.Melee) / MathHelper.Lerp(1f, VolcanoTuning.HeavyTimeScale, heatTarget), VolcanoTuning.MinSpeed, VolcanoTuning.MaxSpeed)); // the speed that is synced already includes the heaviness
                 else if (pendingSwing)
                 {
                     pendingSwing = false;
@@ -262,8 +266,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                 facing = owner.direction >= 0 ? 1 : -1;
                 float bob = (float)Math.Sin(MathHelper.TwoPi * ticks / Math.Max(1, VolcanoTuning.IdleBobTicks)) * Rad(VolcanoTuning.IdleBobDeg);
                 float ease = MathHelper.Clamp(VolcanoTuning.IdleEase, 0.01f, 1f);
-                armLocal += MathHelper.WrapAngle(Rad(VolcanoTuning.ReadyArmDeg) + bob - armLocal) * ease;
-                tiltRad += (Rad(VolcanoTuning.ReadyTiltDeg) - tiltRad) * ease;
+                float readyArm = Rad(MathHelper.Lerp(VolcanoTuning.ReadyArmDeg, VolcanoTuning.ChargedReadyArmDeg, heatShown));
+                float readyTilt = Rad(MathHelper.Lerp(VolcanoTuning.ReadyTiltDeg, VolcanoTuning.ChargedReadyTiltDeg, heatShown));
+                armLocal += MathHelper.WrapAngle(readyArm + bob - armLocal) * ease;
+                tiltRad += (readyTilt - tiltRad) * ease;
                 worldArm = HeldSwordPose.ToWorld(facing, armLocal);
                 worldBlade = HeldSwordPose.ToWorld(facing, armLocal + tiltRad);
             }
@@ -276,10 +282,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                 prevTip = tipPosition;
             }
 
+            // The sword jumps from one side of the player to the other when they turn: that is no real movement, so for a moment the flames and
+            // drips do not inherit the tip's velocity (they flew far to the sides).
+            if (ticks > 0 && facing != lastFacing)
+                noInherit = VolcanoTuning.TurnNoInheritTicks;
+            lastFacing = facing;
+            tipMotion = noInherit > 0 ? Vector2.Zero : tipPosition - prevTip;
+            if (noInherit > 0)
+                noInherit--;
+
             if (!Main.dedServ)
             {
                 Vector2 direction = Projectile.rotation.ToRotationVector2();
-                VolcanoBlade.Feed(jointPosition, direction, VolcanoTuning.BladeLength * Projectile.scale, Projectile.scale, heatShown, ticks / 60f, Projectile.owner, tipPosition - prevTip);
+                VolcanoBlade.Feed(jointPosition, direction, VolcanoTuning.BladeLength * Projectile.scale, Projectile.scale, heatShown, ticks / 60f, Projectile.owner, tipMotion);
 
                 bool charged = heatShown >= VolcanoTuning.ChargedAt;
                 if (charged && !wasCharged)
@@ -328,6 +343,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             if (IsOwner)
             {
                 swingSerial = (swingSerial + 1) & 255;
+                swingHeat = heatTarget;
                 swingAim = aim;
                 swingSpeed = speed;
                 Array.Clear(Projectile.localNPCImmunity, 0, Projectile.localNPCImmunity.Length); // every enemy can be hit again by this swing
@@ -369,7 +385,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                 }
                 if (trailStyle != null)
                     trailStyle.Heat = heatShown;
-                VolcanoFx.SwingEmbers(tipPosition, tipPosition - prevTip, heatShown);
+                VolcanoFx.SwingEmbers(tipPosition, tipMotion, heatShown);
                 Lighting.AddLight(tipPosition, 1f, 0.5f, 0.12f);
             }
         }
@@ -452,6 +468,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
         {
             modifiers.HitDirectionOverride = target.Center.X > Owner.Center.X ? 1 : -1;
+            modifiers.SourceDamage *= MathHelper.Lerp(1f, VolcanoTuning.HeavyDamageMultiplier, swingHeat);
+            modifiers.Knockback *= MathHelper.Lerp(1f, VolcanoTuning.HeavyKnockbackMultiplier, swingHeat);
         }
 
         // Owner's client only. A true melee hit of the swing: the vanilla burn, sparks, a camera punch, and heat for the blade.

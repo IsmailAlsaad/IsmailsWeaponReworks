@@ -39,7 +39,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             float baseHeat = MathHelper.Lerp(VolcanoTuning.HeatLow, VolcanoTuning.HeatHigh, h);
 
             // ---- the body: round blobs along the blade ----
-            int count = Math.Max(5, (int)(length / Math.Max(1f, VolcanoTuning.BlobSpacing * scale)));
+            int count = Math.Max(5, (int)(length * Math.Max(0.1f, Math.Abs(VolcanoTuning.BodyEnd - VolcanoTuning.BodyStart)) / Math.Max(1f, VolcanoTuning.BlobSpacing * scale)));
             for (int i = 0; i < count; i++)
             {
                 float s = (i + 0.5f) / count; // 0 at the joint, 1 at the tip
@@ -47,7 +47,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                 float phase = time * speed + i * 1.9f + seed * 3.1f;
                 float sideways = (float)Math.Sin(phase) * turbulence * (0.3f + 0.7f * s);
                 float along = 0.5f * (float)Math.Sin(time * speed * 0.7f + i * 2.7f + seed * 2f) * turbulence;
-                Vector2 position = joint + direction * (length * s + along) + normal * sideways;
+                Vector2 position = joint + direction * (length * (VolcanoTuning.BodyStart + (VolcanoTuning.BodyEnd - VolcanoTuning.BodyStart) * s) + along) + normal * sideways;
                 float r = radius * profile * (1f + 0.18f * h * (float)Math.Sin(time * speed * 1.3f + i * 1.1f));
                 float blobHeat = baseHeat + VolcanoTuning.HeatFlicker * h * (float)Math.Sin(phase * 0.8f) + 0.12f * s * h;
                 body.AddBlob(position, r, MathHelper.Clamp(blobHeat, 0f, 1f));
@@ -61,7 +61,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                 {
                     float s = (i + 0.5f) / count;
                     float profile = (0.6f + 0.4f * (float)Math.Sin(Math.PI * s)) * (1f - 0.55f * s * s * s);
-                    Vector2 position = joint + direction * (length * s);
+                    Vector2 position = joint + direction * (length * (VolcanoTuning.BodyStart + (VolcanoTuning.BodyEnd - VolcanoTuning.BodyStart) * s));
                     body.AddBlob(position, radius * 0.5f * core * profile, VolcanoTuning.CoreHeat);
                 }
             }
@@ -70,7 +70,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             float flames = Chance(MathHelper.Lerp(VolcanoTuning.FlameRateLow, VolcanoTuning.FlameRateHigh, h));
             for (int i = 0; i < flames; i++)
             {
-                float s = Main.rand.NextFloat(0.05f, 1f);
+                float s = Main.rand.NextFloat(VolcanoTuning.FlameStart, VolcanoTuning.FlameEnd);
                 Vector2 position = joint + direction * (length * s) + normal * Main.rand.NextFloat(-radius, radius);
                 Vector2 velocity = new Vector2(Main.rand.NextFloat(-0.3f, 0.3f), -Main.rand.NextFloat(0.5f, 1.3f) * (0.7f + h)) + motion * 0.25f;
                 int life = (int)(Main.rand.Next(VolcanoTuning.FlameLifeMin, VolcanoTuning.FlameLifeMax + 1) * (0.8f + 0.6f * h));
@@ -85,7 +85,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                 float count2 = Chance(VolcanoTuning.DripRateHigh * hot);
                 for (int i = 0; i < count2; i++)
                 {
-                    float s = Main.rand.NextFloat(0.15f, 1f);
+                    float s = Main.rand.NextFloat(VolcanoTuning.DripStart, VolcanoTuning.DripEnd);
                     Vector2 position = joint + direction * (length * s) + normal * Main.rand.NextFloat(-radius, radius) * 0.6f;
                     Vector2 velocity = new Vector2(Main.rand.NextFloat(-0.4f, 0.4f), Main.rand.NextFloat(0f, 0.6f)) + motion * 0.2f;
                     drips.Spawn(position, velocity, Main.rand.Next(40, 71), Main.rand.NextFloat(VolcanoTuning.DripSizeMin, VolcanoTuning.DripSizeMax) * scale);
@@ -99,7 +99,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
                 float count3 = Chance(VolcanoTuning.SpitRateHigh * hot);
                 for (int i = 0; i < count3; i++)
                 {
-                    float s = Main.rand.NextFloat(0.3f, 1f);
+                    float s = Main.rand.NextFloat(VolcanoTuning.SpitStart, VolcanoTuning.SpitEnd);
                     Vector2 position = joint + direction * (length * s);
                     Vector2 outward = normal * (Main.rand.NextBool() ? 1f : -1f);
                     Vector2 velocity = (outward + direction * Main.rand.NextFloat(-0.4f, 0.4f) + new Vector2(0f, -0.4f)).SafeNormalize(Vector2.UnitY)
