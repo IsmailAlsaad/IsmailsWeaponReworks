@@ -59,8 +59,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "BladeOfGrass1", "Hold to grow vines toward the cursor, the longer you hold the farther they reach"));
-            tooltips.Add(new TooltipLine(Mod, "BladeOfGrass2", "Vines loop around enemies near the cursor and break off as thorny coils that keep hurting them"));
+            tooltips.RemoveAll(line => line.Mod == "Terraria" && line.Name.StartsWith("Tooltip"));
+            tooltips.Add(new TooltipLine(Mod, "BladeOfGrass1", "Hold to grow vines toward the cursor"));
+            //tooltips.Add(new TooltipLine(Mod, "BladeOfGrass2", "Vines loop around enemies near the cursor and break off as thorny coils that keep hurting them"));
         }
     }
 }

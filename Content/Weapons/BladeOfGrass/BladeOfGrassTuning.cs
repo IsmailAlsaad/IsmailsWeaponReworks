@@ -32,7 +32,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public static float MaxLength => 460f;         // the longest a vine gets (about 29 tiles)
         public static float GrowSpeed => 1.5f;           // how fast a vine gets longer, pixels per tick (also how fast it regrows after a cut)
         public static float SpreadDeg => 9f;           // the three vines fan out by this much around the cursor direction
-        public static float FreeSlackPx => 16f;        // a free vine shows this much more than the straight distance to its goal (room for the wave); it only shows what it needs to put its tip on the cursor
+        public static float FreeSlackPx => 16f;        // the straight part of a vine that circles the cursor is this much shorter than the vine (room for the wave)
+        public static float VineVariation => 0.25f;    // how different the three vines are (wave, stiffness, speed, growth, length, orbit); 0 = identical copies
+        public static float OrbitRadius => 34f;        // circle radius of a vine around the cursor (pixels, times the vine's own factor)
+        public static float OrbitSpeed => 0.1f;        // radians per tick the tip circles the cursor (times the vine's own factor)
+        public static float OrbitMaxTurns => 2f;       // the excess winds around the cursor at most this many turns; a longer excess widens the circle
+        public static float OrbitMinArcPx => 30f;      // a vine starts circling the cursor when it has this much length to spare (it stops at 40% of it)
 
         // ---- the rope: how lively the vines are ----
         public static float Damping => 0.93f;          // velocity kept per tick
