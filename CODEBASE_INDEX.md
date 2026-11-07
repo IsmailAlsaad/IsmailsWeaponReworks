@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-07 | 182 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-07 | 183 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -23,6 +23,7 @@ tModLoader/other bases -> project types:
 - GlobalNPC (3): BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC
 - ModSystem (2): DetachedTrails, MetaballLayers
 - Mod (1): IsmailsWeaponReworks
+- PlayerDrawLayer (1): BladeOfGrassSwordLayer
 
 ## Files
 
@@ -216,15 +217,18 @@ tModLoader/other bases -> project types:
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **BladeOfGrassHoldProjectile.cs** uses: BladeOfGrassFx, BladeOfGrassSpineProjectile, BladeOfGrassTuning, BladeOfGrassVineDraw, HeldAim, HeldSwordPose
   class BladeOfGrassHoldProjectile : ModProjectile
-    +Texture:string[ov] +Retracting:bool +KeepsHolding:bool +CanDamage()[ov] +OnSpawn(IEntitySource)[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +Retracting:bool +KeepsHolding:bool +CanDamage()[ov] +OnSpawn(IEntitySource)[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov] +DrawsSword:bool +AddSwordDrawData(ref PlayerDrawSet)
     class Vine
-      +P:Vector2 +Old:Vector2 +Init:bool +Length:float +SyncLength:float +Target:int +LastTarget:int +WrapTicks:int +Cooldown:int +LoopAngle:float +LoopDir:float +Seed:float +Shown:float +LoopClock:int +WaveAmp:float +OrbitPhase:float SpreadJitterDeg, +OrbitDir:float +StartJitter:int +Orbiting:bool
+      +P:Vector2 +Old:Vector2 +Init:bool +Length:float +SyncLength:float +Target:int +LastTarget:int +WrapTicks:int +Cooldown:int +LoopAngle:float +LoopDir:float +Seed:float +Shown:float +LoopClock:int +WaveAmp:float +SpreadJitterDeg:float +StartJitter:int
 **BladeOfGrassSpineProjectile.cs** uses: BladeOfGrassFx, BladeOfGrassTuning, BladeOfGrassVineDraw
   class BladeOfGrassSpineProjectile : ModProjectile
     +Texture:string[ov] +CanHitNPC(NPC)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**BladeOfGrassSwordLayer.cs** uses: BladeOfGrassHoldProjectile
+  class BladeOfGrassSwordLayer : PlayerDrawLayer
+    +GetDefaultPosition()[ov] +GetDefaultVisibility(PlayerDrawSet)[ov] #Draw(ref PlayerDrawSet)[ov]
 **BladeOfGrassTuning.cs**
   static class BladeOfGrassTuning
-    +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +ChargeTicks:int[s] +ShakeCurve:float[s] +ShakeArmDeg:float[s] +ShakeHandPx:float[s] +ChargeDustInterval:int[s] +VineCount:int[s] +PointsPerVine:int[s] +RootStart:float[s] +RootEnd:float[s] +StartTicks:int[s] +StaggerTicks:int[s] +GrowTicks:int[s] +MinLength:float[s] +MaxLength:float[s] +GrowSpeed:float[s] +SpreadDeg:float[s] +FreeSlackPx:float[s] +VineVariation:float[s] +OrbitRadius:float[s] +OrbitSpeed:float[s] +OrbitMaxTurns:float[s] +OrbitMinArcPx:float[s] +Damping:float[s] +Stiffness:float[s] +Gravity:float[s] +WrigglePx:float[s] +WriggleSpeed:float[s] +WriggleWaves:float[s] +WriggleTargetFactor:float[s] +WriggleChargeBoost:float[s] +MaxPointSpeed:float[s] +ConstraintPasses:int[s] +RootInfluenceFloor:float[s] +TipInfluencePower:float[s] +TargetStiffnessBoost:float[s] +TargetRadius:float[s] +ReachSlack:float[s] +LoseTargetFactor:float[s] +RetargetInterval:int[s] +SamePenalty:float[s] +LoopTicks:int[s] +LoopSpeed:float[s] +WrapRadiusScale:float[s] +WrapRadiusPad:float[s] +WrapTighten:float[s] +WrapTurns:float[s] +WrapSpanTicks:int[s] +WrapSpiral:float[s] +WrapSlackPx:float[s] +ShownEase:float[s] +CoilStiffness:float[s] +WrapCooldownTicks:int[s] +MaxWrapFraction:float[s] +MinWrapFraction:float[s] +MinWrapPixels:float[s] +MinRemainPixels:float[s] +SegmentLifeTicks:int[s] +SegmentFadeTicks:int[s] +HitIntervalTicks:int[s] +SegmentDamageScale:float[s] +SegmentMinLengthFactor:float[s] +SegmentMaxLengthFactor:float[s] +MaxSegments:int[s] +EnemyCapFraction:float[s] +MinEnemyRoomPx:float[s] +CoilGrowTicks:int[s] +SpineGrowTicks:int[s] +CoilRadiusScale:float[s] +CoilRadiusPad:float[s] +CoilDrift:float[s] +MaxLoops:float[s] +CoilSamples:int[s] +VineChainName:string[s] +SpineChainName:string[s] +HeadForwardPx:float[s] +VineScale:float[s] +VineTipScale:float[s] +SpineScale:float[s] +HeadScale:float[s] +ChainSpacing:float[s] +ChainEndTrimPx:float[s] +RetractSpeed:float[s] +SyncIntervalTicks:int[s] +GlowColor:Color[s]
+    +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +ChargeTicks:int[s] +ShakeCurve:float[s] +ShakeArmDeg:float[s] +ShakeHandPx:float[s] +ChargeDustInterval:int[s] +VineCount:int[s] +PointsPerVine:int[s] +RootStart:float[s] +RootEnd:float[s] +StartTicks:int[s] +StaggerTicks:int[s] +GrowTicks:int[s] +MinLength:float[s] +MaxLength:float[s] +GrowSpeed:float[s] +SpreadDeg:float[s] +FreeSlackPx:float[s] +VineVariation:float[s] +Damping:float[s] +Stiffness:float[s] +Gravity:float[s] +WrigglePx:float[s] +WriggleSpeed:float[s] +WriggleWaves:float[s] +WriggleTargetFactor:float[s] +WriggleChargeBoost:float[s] +MaxPointSpeed:float[s] +ConstraintPasses:int[s] +RootInfluenceFloor:float[s] +TipInfluencePower:float[s] +TargetStiffnessBoost:float[s] +TargetRadius:float[s] +ReachSlack:float[s] +LoseTargetFactor:float[s] +RetargetInterval:int[s] +SamePenalty:float[s] +LoopTicks:int[s] +LoopSpeed:float[s] +WrapRadiusScale:float[s] +WrapRadiusPad:float[s] +WrapTighten:float[s] +WrapTurns:float[s] +WrapSpanTicks:int[s] +WrapSpiral:float[s] +WrapSlackPx:float[s] +ShownEase:float[s] +CoilStiffness:float[s] +WrapCooldownTicks:int[s] +MaxWrapFraction:float[s] +MinWrapFraction:float[s] +MinWrapPixels:float[s] +MinRemainPixels:float[s] +SegmentLifeTicks:int[s] +SegmentFadeTicks:int[s] +HitIntervalTicks:int[s] +PoisonTicks:int[s] +SegmentDamageScale:float[s] +SegmentMinLengthFactor:float[s] +SegmentMaxLengthFactor:float[s] +MaxSegments:int[s] +EnemyCapFraction:float[s] +MinEnemyRoomPx:float[s] +CoilGrowTicks:int[s] +SpineGrowTicks:int[s] +CoilRadiusScale:float[s] +CoilRadiusPad:float[s] +CoilDrift:float[s] +MaxLoops:float[s] +CoilSamples:int[s] +VineChainName:string[s] +SpineChainName:string[s] +HeadForwardPx:float[s] +VineScale:float[s] +VineTipScale:float[s] +SpineScale:float[s] +HeadScale:float[s] +ChainSpacing:float[s] +ChainEndTrimPx:float[s] +RetractSpeed:float[s] +SyncIntervalTicks:int[s] +GlowColor:Color[s]
 **BladeOfGrassVineDraw.cs** uses: BladeOfGrassTuning
   static class BladeOfGrassVineDraw
     +BeginMesh()[s] +EndMesh()[s] +DrawStrip(Texture2D,Vector2,int,float,float,float,float,float)[s] +DrawHead(Texture2D,Vector2,float,float,Color)[s] +Resample(Vector2,int,float,List<Vector2>,List<float>)[s]

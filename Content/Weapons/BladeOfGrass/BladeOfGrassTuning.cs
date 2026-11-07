@@ -32,12 +32,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public static float MaxLength => 460f;         // the longest a vine gets (about 29 tiles)
         public static float GrowSpeed => 1.5f;           // how fast a vine gets longer, pixels per tick (also how fast it regrows after a cut)
         public static float SpreadDeg => 9f;           // the three vines fan out by this much around the cursor direction
-        public static float FreeSlackPx => 16f;        // the straight part of a vine that circles the cursor is this much shorter than the vine (room for the wave)
-        public static float VineVariation => 0.25f;    // how different the three vines are (wave, stiffness, speed, growth, length, orbit); 0 = identical copies
-        public static float OrbitRadius => 34f;        // circle radius of a vine around the cursor (pixels, times the vine's own factor)
-        public static float OrbitSpeed => 0.1f;        // radians per tick the tip circles the cursor (times the vine's own factor)
-        public static float OrbitMaxTurns => 2f;       // the excess winds around the cursor at most this many turns; a longer excess widens the circle
-        public static float OrbitMinArcPx => 30f;      // a vine starts circling the cursor when it has this much length to spare (it stops at 40% of it)
+        public static float FreeSlackPx => 16f;        // a free vine shows this much more than the straight distance to its goal (room for the wave); it only shows what it needs to put its tip on the cursor
+        public static float VineVariation => 0.25f;    // how different the three vines are (wave, stiffness, speed, growth, length); 0 = identical copies
 
         // ---- the rope: how lively the vines are ----
         public static float Damping => 0.93f;          // velocity kept per tick
@@ -83,6 +79,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public static int SegmentLifeTicks => 360;
         public static int SegmentFadeTicks => 24;      // the coil unwinds over the last ticks
         public static int HitIntervalTicks => 12;      // damage tick of one section
+        public static int PoisonTicks => 30;           // Poisoned is topped up to this on the damage ticks of a latched coil, so it lasts as long as a coil is on the enemy and about this long after the last one
         public static float SegmentDamageScale => 0.2f; // damage of one tick, as a fraction of the weapon's damage
         public static float SegmentMinLengthFactor => 0.7f; // a short section deals this times the scale ...
         public static float SegmentMaxLengthFactor => 1.5f; // ... and a section as long as MaxLength this times

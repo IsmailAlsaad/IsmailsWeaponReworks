@@ -82,6 +82,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             BladeOfGrassFx.SpineHit(Projectile.Center + Main.rand.NextVector2Circular(target.width * 0.4f, target.height * 0.4f));
+
+            // Poisoned for as long as a coil is latched on: this runs on the owner's client on every damage tick and tops the buff up whenever it
+            // would run out before the next tick (so several coils on one enemy do not each send a buff packet; vanilla AddBuff syncs itself).
+            int poison = target.FindBuffIndex(BuffID.Poisoned);
+            if (poison < 0 || target.buffTime[poison] <= BladeOfGrassTuning.HitIntervalTicks + 2)
+                target.AddBuff(BuffID.Poisoned, BladeOfGrassTuning.PoisonTicks);
         }
 
         public override void OnKill(int timeLeft)

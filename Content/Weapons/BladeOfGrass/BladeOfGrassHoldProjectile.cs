@@ -46,11 +46,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             public int LoopClock;     // ticks since this machine saw the vine lock on (visual only, so every machine has it)
             // Per-vine character, rolled once per held blade from its synced identity (so every machine gives the same vine the same traits;
             // visual, never synced). 1 = the tuning value.
-            public float WaveAmp = 1f, WaveSpeed = 1f, WaveLen = 1f, StiffnessFactor = 1f, SpeedFactor = 1f, RadiusFactor = 1f, LengthFactor = 1f, GrowFactor = 1f;
-            public float SpreadJitterDeg, OrbitPhase;
-            public float OrbitDir = 1f;
+            public float WaveAmp = 1f, WaveSpeed = 1f, WaveLen = 1f, StiffnessFactor = 1f, SpeedFactor = 1f, LengthFactor = 1f, GrowFactor = 1f;
+            public float SpreadJitterDeg;
             public int StartJitter;
-            public bool Orbiting;     // the free vine currently winds its excess around the cursor
         }
 
         Player Owner => Main.player[Projectile.owner];
@@ -76,6 +74,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         int[] targetCounts;
         float[] coilTotals;     // owner: per enemy, the length of this player's coils on it (the enemy cap counts against it)
         bool traitsRolled;
+        bool releaseSeen;       // owner: the button was let go since the retreat began (pressing it again then lets the vines grow again)
         Asset<Texture2D> chainAsset;
         Asset<Texture2D> headAsset;
         readonly List<Vector2> samplePositions = new List<Vector2>();
@@ -154,8 +153,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                     vines[i].SyncLength = length;
                 }
             }
-            if (reader.ReadBoolean())
-                retracting = true;
+            retracting = reader.ReadBoolean(); // false again when the owner pressed the button during the retreat
         }
 
         // ---------------------------------------------------------------- AI
@@ -176,6 +174,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             {
                 EnsureVines();
                 retracting = true;
+                releaseSeen = !owner.controlUseItem;
                 syncAim = aimShown;
                 for (int i = 0; i < vines.Length; i++)
                 {
@@ -187,6 +186,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
 
             EnsureVines();
             Projectile.timeLeft = 2;
+            // Pressing the button again while the vines shrink away (and the blade is still in the hand) lets them grow again from where they are.
+            // The owner decides; the flag travels through SendExtraAI like the start of the retreat.
+            if (isOwner && retracting)
+            {
+                if (!owner.controlUseItem)
+                    releaseSeen = true;
+                else if (releaseSeen && keepHeld && owner.HeldItem.type == ItemID.BladeofGrass && !owner.noItems && !owner.CCed)
+                {
+                    retracting = false;
+                    releaseSeen = false;
+                    owner.channel = true; // a normal hold ends the blade as soon as channel is false
+                    Projectile.netUpdate = true;
+                }
+            }
             // While the vines retract the player keeps holding the blade (and cannot switch items) until the last vine is gone.
             // Swapping away anyway ends that for good: the blade is then no longer drawn and the roots stay where the hand was.
             if (retracting && keepHeld && owner.HeldItem.type != ItemID.BladeofGrass)
@@ -205,8 +218,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             holdTicks++;
             if (retracting)
                 charge = Math.Max(0f, charge - 0.03f);
-            else
-                charge = MathHelper.Clamp(holdTicks / (float)Math.Max(1, BladeOfGrassTuning.ChargeTicks), 0f, 1f);
+            else // rises at most as fast as it falls, so a hold that continues after a retreat does not snap back to the old shake
+                charge = Math.Min(MathHelper.Clamp(holdTicks / (float)Math.Max(1, BladeOfGrassTuning.ChargeTicks), 0f, 1f), charge + 0.03f);
 
             Vector2 cursorWorld;
             if (isOwner && heldPose)
@@ -377,14 +390,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             }
         }
 
-        // Slightly different wave, stiffness, speed, growth, length and orbit for each vine so the three do not look like copies. The projectile's identity
+        // Slightly different wave, stiffness, speed, growth and length for each vine so the three do not look like copies. The projectile's identity
         // is the same on every machine, so everyone rolls the same traits. BladeOfGrassTuning.VineVariation scales how different they are (0 = identical).
         void RollTraits()
         {
             traitsRolled = true;
             var random = new Random(Projectile.identity * 7919 + Projectile.owner * 104729 + 17);
             float Spread(float scale) => 1f + ((float)random.NextDouble() * 2f - 1f) * BladeOfGrassTuning.VineVariation * scale;
-            float side = random.Next(2) == 0 ? 1f : -1f;
+
             for (int i = 0; i < vines.Length; i++)
             {
                 Vine vine = vines[i];
@@ -394,12 +407,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 vine.WaveLen = Spread(1f);
                 vine.StiffnessFactor = Spread(0.6f);
                 vine.SpeedFactor = Spread(1.2f);
-                vine.RadiusFactor = Spread(1.2f);
+
                 vine.GrowFactor = Spread(0.8f);
                 vine.LengthFactor = 1f - (float)random.NextDouble() * BladeOfGrassTuning.VineVariation * 0.5f; // never longer than MaxLength
                 vine.SpreadJitterDeg = ((float)random.NextDouble() * 2f - 1f) * BladeOfGrassTuning.VineVariation * 8f;
-                vine.OrbitPhase = ((float)random.NextDouble() * 2f - 1f) * 1.5f;
-                vine.OrbitDir = (i % 2 == 0 ? 1f : -1f) * side; // neighbours circle the cursor in opposite directions
+
                 vine.StartJitter = random.Next(0, 7);
             }
         }
@@ -441,7 +453,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 vine.Init = false;
                 vine.Target = isOwner ? -1 : vine.Target;
                 vine.Shown = 0f;
-                vine.Orbiting = false;
                 return;
             }
 
@@ -489,60 +500,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 vine.LoopClock = 0;
             vine.LastTarget = hasTarget ? vine.Target : -1;
 
-            // A free vine whose length reaches past the cursor winds the excess around the cursor and keeps circling it (visual only: every machine
-            // does it from the synced aim, cursor distance and length). A cursor out of the vine's reach just gets a straight vine, as before.
-            bool orbiting = false;
-            Vector2 coilCenter = hasTarget ? targetNpc.Center : cursorWorld;
-            float orbitReach = 0f;
-            if (!hasTarget)
-            {
-                float baseRadius = BladeOfGrassTuning.OrbitRadius * vine.RadiusFactor;
-                float cursorDistance = Vector2.Distance(root, cursorWorld);
-                float spare = vine.Length - Math.Max(0f, cursorDistance - baseRadius) - BladeOfGrassTuning.FreeSlackPx;
-                orbiting = spare >= (vine.Orbiting ? BladeOfGrassTuning.OrbitMinArcPx * 0.4f : BladeOfGrassTuning.OrbitMinArcPx);
-                if (orbiting)
-                {
-                    // A very long excess widens the circle instead of adding more than OrbitMaxTurns turns.
-                    radius = Math.Max(baseRadius, spare / (MathHelper.TwoPi * Math.Max(0.5f, BladeOfGrassTuning.OrbitMaxTurns)));
-                    orbitReach = Math.Max(0f, cursorDistance - radius);
-                    if (!vine.Orbiting)
-                    {
-                        vine.LoopAngle = (root - cursorWorld).ToRotation() + vine.OrbitPhase; // start on the side facing the player
-                        vine.LoopDir = vine.OrbitDir;
-                    }
-                    vine.LoopAngle += BladeOfGrassTuning.OrbitSpeed * vine.SpeedFactor * vine.LoopDir;
-                }
-            }
-            vine.Orbiting = orbiting;
-            bool coiling = hasTarget || orbiting;
-
             // How much of the vine is on show: all of it when free; while reaching for an enemy only what it needs to get there and wrap it
             // (the rest is "coiled up"), so the spare rope does not flap around.
             float shownGoal = vine.Length;
             if (hasTarget)
                 shownGoal = Math.Min(vine.Length, Math.Max(0f, Vector2.Distance(root, targetNpc.Center) - radius) + arc + BladeOfGrassTuning.WrapSlackPx);
-            // A free vine shows its whole length: what it does not need to reach the cursor is wound around the cursor (see orbiting above).
+            else
+            {
+                // A free vine reaches for the cursor itself: it shows only what it needs to put its tip on the cursor (plus a little slack to
+                // wave in), the rest stays coiled up, so it never shoots past a cursor that is nearer than the vine is long.
+                Vector2 cursorGoal = center + freeDirection * Vector2.Distance(center, cursorWorld);
+                shownGoal = Math.Min(vine.Length, Vector2.Distance(root, cursorGoal) + BladeOfGrassTuning.FreeSlackPx);
+            }
             if (vine.Shown <= 0f)
                 vine.Shown = shownGoal;
             else
                 vine.Shown += (shownGoal - vine.Shown) * BladeOfGrassTuning.ShownEase;
             vine.Shown = Math.Min(vine.Shown, vine.Length);
             float segment = Math.Max(1f, vine.Shown) / (n - 1);
-
-            if (orbiting)
-            {
-                // The excess (what is left of the shown length after the way to the circle) is the coil. Two passes, because where the coil starts
-                // on the circle, and so how long the straight part is, depends on how long the coil is.
-                float startRadius = radius * (1f + BladeOfGrassTuning.WrapSpiral);
-                float orbitArc = Math.Max(0f, vine.Shown - orbitReach - BladeOfGrassTuning.FreeSlackPx);
-                for (int iteration = 0; iteration < 2; iteration++)
-                {
-                    Vector2 startPoint = coilCenter + (vine.LoopAngle - vine.LoopDir * orbitArc / radius).ToRotationVector2() * startRadius;
-                    orbitArc = Math.Max(0f, vine.Shown - Vector2.Distance(root, startPoint) - BladeOfGrassTuning.FreeSlackPx);
-                }
-                arc = orbitArc;
-                wrapSpan = arc / radius;
-            }
 
             if (!vine.Init)
             {
@@ -555,7 +530,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             }
 
             // Points 0..bodyCount-1 are the free body; the points from bodyCount to the tip are the coil (only while looping).
-            int tail = coiling ? Math.Clamp((int)Math.Round(arc / segment), 2, n - 2) : 0;
+            int tail = hasTarget ? Math.Clamp((int)Math.Round(arc / segment), 2, n - 2) : 0;
             int bodyCount = n - 1 - tail;
             // The tip heads for the cursor itself (at the vine's own fan angle), but never farther than the vine reaches.
             Vector2 tipGoal = center + freeDirection * Math.Min(Vector2.Distance(center, cursorWorld), vine.Shown + Vector2.Distance(center, root));
@@ -565,10 +540,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 float t = (k - bodyCount) / (float)tail;
                 float angle = vine.LoopAngle - vine.LoopDir * (1f - t) * wrapSpan;
                 float ringRadius = radius * (1f + BladeOfGrassTuning.WrapSpiral * (1f - t));
-                return coilCenter + angle.ToRotationVector2() * ringRadius;
+                return targetNpc.Center + angle.ToRotationVector2() * ringRadius;
             }
 
-            Vector2 bodyEnd = coiling ? CoilWish(bodyCount) : tipGoal;
+            Vector2 bodyEnd = hasTarget ? CoilWish(bodyCount) : tipGoal;
             Vector2 toEnd = bodyEnd - root;
             Vector2 direction = toEnd.SafeNormalize(freeDirection);
             Vector2 perpendicular = direction.RotatedBy(MathHelper.PiOver2);
@@ -585,7 +560,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
 
                 Vector2 wish;
                 float weight;
-                if (coiling && k >= bodyCount)
+                if (hasTarget && k >= bodyCount)
                 {
                     wish = CoilWish(k);
                     weight = BladeOfGrassTuning.CoilStiffness;
@@ -739,24 +714,30 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             BladeOfGrassVineDraw.EndMesh();
             for (int i = 0; i < vines.Length; i++)
                 DrawVineHead(vines[i], head);
-            if (retracting && !keepHeld)
-                return false; // the blade is no longer held
+            return false; // the sword itself is drawn by BladeOfGrassSwordLayer, so the player's front arm is drawn over its handle
+        }
 
+        public bool DrawsSword => !retracting || keepHeld; // false once the weapon was swapped away
+
+        // Called by BladeOfGrassSwordLayer (a player draw layer just before the front arm): adds the blade and its charge glow to the player's
+        // draw data, so the hand covers the handle instead of the sword floating in front of the arm.
+        public void AddSwordDrawData(ref Terraria.DataStructures.PlayerDrawSet drawInfo)
+        {
             Texture2D texture = TextureAssets.Projectile[Type].Value;
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
             Vector2 position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, BladeOfGrassTuning.GripOffset, Projectile.scale) - Main.screenPosition;
             float rotation = Projectile.rotation + rotationOffset;
             float scale = Projectile.scale;
+            Color lightColor = Lighting.GetColor(Projectile.Center.ToTileCoordinates());
 
             // A green glow behind the blade that grows with the charge (drawn around the CENTER of the sprite so it swells outward evenly).
             if (charge > 0.05f)
             {
                 Vector2 hiltToCenter = new Vector2(Projectile.spriteDirection > 0 ? texture.Width * 0.5f : -texture.Width * 0.5f, -texture.Height * 0.5f);
                 Vector2 centerPosition = position + (hiltToCenter * scale).RotatedBy(rotation);
-                Main.EntitySpriteDraw(texture, centerPosition, null, BladeOfGrassTuning.GlowColor * (0.5f * charge), rotation, texture.Size() * 0.5f, scale * (1f + 0.15f * charge), effects, 0);
+                drawInfo.DrawDataCache.Add(new Terraria.DataStructures.DrawData(texture, centerPosition, null, BladeOfGrassTuning.GlowColor * (0.5f * charge), rotation, texture.Size() * 0.5f, scale * (1f + 0.15f * charge), effects, 0));
             }
-            Main.EntitySpriteDraw(texture, position, null, lightColor, rotation, origin, scale, effects, 0);
-            return false;
+            drawInfo.DrawDataCache.Add(new Terraria.DataStructures.DrawData(texture, position, null, lightColor, rotation, origin, scale, effects, 0));
         }
 
         void DrawVineBody(Vine vine, Texture2D chain)
