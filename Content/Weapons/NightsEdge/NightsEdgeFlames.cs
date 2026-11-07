@@ -1,7 +1,10 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
 using System;
 using Terraria;
+using Terraria.GameContent;
 
 namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
 {
@@ -103,6 +106,61 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
                 int life = Math.Max(6, (int)(NightsEdgeTuning.FlameLifeTicks * Main.rand.NextFloat(0.7f, 1.3f)));
                 float size = NightsEdgeTuning.FlameSize * now.Scale * Main.rand.NextFloat(0.6f, 1.3f) * (0.5f + 0.5f * strength);
                 free.Spawn(point, velocity, life, size);
+            }
+        }
+    }
+
+    /// <summary>
+    /// The flames of ONE held sword (the swing's or the stance's): remembers where its sprite is and was, keeps this player's private edge
+    /// layer clipped to the mask and feeds NightsEdgeFlames.Update every tick. The owning projectile creates it on first use (a field
+    /// initializer would be shared by every copy of the projectile) and draws the edge layer in its PreDraw. Client only.
+    /// </summary>
+    public class NightsEdgeFlameRig
+    {
+        SpriteTransform sprite;
+        SpriteTransform before;
+        bool has;
+
+        // Where the sword sprite is drawn right now, the way the projectiles draw it (no glow scale).
+        public static SpriteTransform Transform(Projectile projectile, Texture2D texture, bool mirrored)
+        {
+            HeldSwordPose.Sprite(texture, projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects, mirrored);
+            return new SpriteTransform
+            {
+                Position = projectile.Center + HeldSwordPose.GripShift(projectile.rotation, NightsEdgeTuning.GripOffset, projectile.scale),
+                Rotation = projectile.rotation + rotationOffset,
+                Origin = origin,
+                Scale = projectile.scale,
+                Effects = effects,
+                Size = texture.Size()
+            };
+        }
+
+        // strength 0..1 (NightsEdgeFlames.Strength for a swing). Does nothing until the sprite is loaded.
+        public void Tick(Projectile projectile, bool mirrored, float strength, Vector2 tip)
+        {
+            if (Main.dedServ)
+                return;
+            Asset<Texture2D> art = TextureAssets.Projectile[projectile.type];
+            if (!art.IsLoaded)
+                return;
+
+            Texture2D texture = art.Value;
+            SpriteTransform now = Transform(projectile, texture, mirrored);
+            before = has ? sprite : now;
+            sprite = now;
+            has = true;
+
+            MaskSampler mask = MaskSampler.Load(NightsEdgeFlames.MaskPath, texture);
+            MetaballLayer edge = MetaballLayers.Of<NightsEdgeEdgeFlameStyle>(projectile.owner);
+            SpriteTransform clip = sprite;
+            edge.CellFilter = cell => mask.Contains(clip, cell);
+            NightsEdgeFlames.Update(edge, mask, sprite, before, strength);
+
+            if (strength > 0.02f && NightsEdgeTuning.FlameLight > 0f)
+            {
+                float light = NightsEdgeTuning.FlameLight * strength;
+                Lighting.AddLight(Vector2.Lerp(projectile.Center, tip, 0.6f), 0.55f * light, 0.2f * light, 0.95f * light);
             }
         }
     }

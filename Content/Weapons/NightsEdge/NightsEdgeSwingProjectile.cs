@@ -24,7 +24,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
     /// MULTIPLAYER: the owner's client decides everything (which swing it is, the combo level, where the arm starts, the aim, the speed) and
     /// passes what the other machines need in the spawn packet: ai[0] = phase (0 down, 1 up) + 10 * combo level, ai[1] = start arm angle
     /// (relative to the aim), ai[2] = the aim angle captured at the click (radians, the player's own frame), velocity X = the timeline
-    /// speed (read on the first tick, then cleared). Every machine then runs the same timers for the pose, sounds, dust, glow and trail.
+    /// speed, velocity Y = the blade tilt the swing starts from (both read on the first tick, then cleared). Every machine then runs the same
+    /// timers for the pose, sounds, dust, glow and trail.
     /// The owner's client is the only one that sees the hit, so it tells the others ONCE through SendExtraAI (hitLanded): every machine then
     /// steps its glow and plays the charge-up from it. The flames are visual only and nothing about them is synced.
     /// Hits are detected by the owner's client like any projectile. No custom packets.
@@ -63,9 +64,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         float outlineShown;    // 0..1, the outline's fade in and out
         bool chargeUpDone;     // the swing that completes the charge has played its charge-up
         bool hitLanded;        // this swing has hit an enemy (the owner sets it, SendExtraAI tells the others): it adds one step of charge
-        SpriteTransform sprite;        // where the sword sprite is drawn this tick (the flames and their clip follow it) ...
-        SpriteTransform spriteBefore;  // ... and where it was drawn on the previous tick (free flames take part of the motion)
-        bool hasSprite;
+        NightsEdgeFlameRig flames;     // the edge flames of this sword (created on first use: projectile instances are copies of one prototype)
+        float startTilt;               // the blade tilt the swing starts from (read from the spawn velocity's Y on the first tick)
 
         public override void SetDefaults()
         {
@@ -138,7 +138,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         {
             float back = FromTilt - Travel * Rad(NightsEdgeTuning.AnticipateTiltDeg);
             if (time < StrikeStart)
-                return MathHelper.Lerp(FromTilt, back, MathHelper.SmoothStep(0f, 1f, time / Math.Max(1, StrikeStart)));
+                return MathHelper.Lerp(startTilt, back, MathHelper.SmoothStep(0f, 1f, time / Math.Max(1, StrikeStart)));
             return MathHelper.Lerp(back, ToTilt, SwingProgress(time));
         }
 
@@ -161,6 +161,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             {
                 // The spawn packet carries the timeline speed in the velocity's X (every machine reads the same value).
                 speedScale = Projectile.velocity.X > 0.01f ? MathHelper.Clamp(Projectile.velocity.X, NightsEdgeTuning.SpeedScaleMin, NightsEdgeTuning.SpeedScaleMax) : 1f;
+                startTilt = Projectile.velocity.Y;
                 Projectile.velocity = Vector2.Zero;
             }
 
@@ -301,49 +302,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
 
         // ---- the edge flames (visual only, every machine) ----
 
-        // Where the sword sprite is drawn right now, the same way DrawSword draws it (no glow scale): the mask and the flames use it.
-        SpriteTransform SpriteNow(Texture2D texture)
-        {
-            HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects, IsUp);
-            return new SpriteTransform
-            {
-                Position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, NightsEdgeTuning.GripOffset, Projectile.scale),
-                Rotation = Projectile.rotation + rotationOffset,
-                Origin = origin,
-                Scale = Projectile.scale,
-                Effects = effects,
-                Size = texture.Size()
-            };
-        }
-
         // The flames grow in over the last combo steps (they follow the glow, so they grow smoothly). The edge layer is private to this
         // player and clipped to the mask; the swing's PreDraw draws it in front of the sword.
         void FlameEffects()
         {
             if (Main.dedServ)
                 return;
-            Asset<Texture2D> art = TextureAssets.Projectile[Type];
-            if (!art.IsLoaded)
-                return;
-
-            Texture2D texture = art.Value;
-            SpriteTransform now = SpriteNow(texture);
-            spriteBefore = hasSprite ? sprite : now;
-            sprite = now;
-            hasSprite = true;
-
-            float strength = NightsEdgeFlames.Strength(chargeShown, MaxLevel);
-            MaskSampler mask = MaskSampler.Load(NightsEdgeFlames.MaskPath, texture);
-            MetaballLayer edge = MetaballLayers.Of<NightsEdgeEdgeFlameStyle>(Projectile.owner);
-            SpriteTransform clip = sprite;
-            edge.CellFilter = cell => mask.Contains(clip, cell);
-            NightsEdgeFlames.Update(edge, mask, sprite, spriteBefore, strength);
-
-            if (strength > 0.02f && NightsEdgeTuning.FlameLight > 0f)
-            {
-                float light = NightsEdgeTuning.FlameLight * strength;
-                Lighting.AddLight(Vector2.Lerp(Projectile.Center, tipPosition, 0.6f), 0.55f * light, 0.2f * light, 0.95f * light);
-            }
+            flames ??= new NightsEdgeFlameRig();
+            flames.Tick(Projectile, IsUp, NightsEdgeFlames.Strength(chargeShown, MaxLevel), tipPosition);
         }
 
         // ---- sync ----
@@ -424,6 +390,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
                 NightsEdgePlayer state = Owner.GetModPlayer<NightsEdgePlayer>();
                 state.LastPhase = IsUp ? (int)Phase.SwingUp : (int)Phase.SwingDown;
                 state.LastEndArm = armLocal;
+                state.LastEndWorldArm = WorldArm(armLocal);
+                state.LastEndWorldBlade = WorldBlade(armLocal, tiltRad);
                 state.LastEndTick = Main.GameUpdateCount;
             }
             DetachedTrails.Hand(trail);
