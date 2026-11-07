@@ -44,6 +44,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public static float WriggleChargeBoost => 1.5f;  // extra wave at full charge (the vines get wilder)
         public static float MaxPointSpeed => 40f;      // a point never moves faster than this per tick (keeps a quick player move from flinging the rope)
         public static int ConstraintPasses => 2;
+        public static float RootInfluenceFloor => 0.1f; // how strongly the point next to the root follows the vine's world goal (the rest follows the root through the rope)
+        public static float TipInfluencePower => 1.5f; // the pull toward the goal grows with this power toward the tip (higher = the tip is freer)
+        public static float TargetStiffnessBoost => 2f; // the whole vine is pulled harder toward its goal while it reaches for an enemy
 
         // ---- targeting ----
         public static float TargetRadius => 200f;      // an enemy this close to the cursor (pixels) can be targeted
@@ -54,10 +57,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
 
         // ---- looping and breaking off ----
         public static int LoopTicks => 36;             // how long a vine circles an enemy before the section breaks off
-        public static float LoopSpeed => 0.28f;        // radians per tick the tip circles
+        public static float LoopSpeed => 0.22f;        // radians per tick the tip circles
         public static float WrapRadiusScale => 0.55f;  // circle radius = the enemy's larger side times this ...
         public static float WrapRadiusPad => 10f;      // ... plus this
         public static float WrapTighten => 0.35f;      // the circle shrinks by this fraction over the loop
+        public static float WrapTurns => 1.25f;        // how many turns of the circle the end of the vine lays around the enemy
+        public static int WrapSpanTicks => 14;         // the coil winds on over this many ticks after the vine arrives
+        public static float WrapSpiral => 0.15f;       // the first turn is this much wider than the tip's turn (the coil tapers)
+        public static float WrapSlackPx => 14f;        // extra vine on show beyond the exact distance plus coil length
+        public static float ShownEase => 0.25f;        // how fast the vine on show shortens/lengthens while it reaches for an enemy
+        public static float CoilStiffness => 0.45f;    // how hard the coiled end is pulled onto the circle
         public static int WrapCooldownTicks => 25;     // a vine waits this long after breaking off before it targets again
         public static float MaxWrapFraction => 0.85f;  // enemy at the player: this fraction of the vine breaks off
         public static float MinWrapFraction => 0.3f;   // enemy at MaxLength: this fraction
@@ -72,6 +81,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public static float SegmentMinLengthFactor => 0.7f; // a short section deals this times the scale ...
         public static float SegmentMaxLengthFactor => 1.5f; // ... and a section as long as MaxLength this times
         public static int MaxSegments => 12;           // per player; the oldest is removed first
+        public static float EnemyCapFraction => 0.5f;  // all sections on ONE enemy together are at most this fraction of MaxLength (the oldest on that enemy go first)
         public static int CoilGrowTicks => 14;         // the coil winds around the enemy over this time
         public static int SpineGrowTicks => 18;        // the smooth vine turns into the spiny one over this time
         public static float CoilRadiusScale => 0.55f;  // coil half-size relative to the enemy's half-size
@@ -82,12 +92,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
 
         // ---- vanilla textures ----
         public static string VineChainName => "Chain5";    // Terraria/Images/<this>: the Vine Hook (Ivy Whip) chain. If the look is wrong try another Chain1..Chain43
-        public static int SpineProjectileId => 841;        // Terraria/Images/Projectile_<this>: the Snapthorn whip sheet
-        public static int SpineSheetFrames => 5;           // the whip sheet is split into this many equal frames (top to bottom: handle, segments ..., tip)
+        public static string SpineChainName => "Chains_1";   // Terraria/Images/<this>: the Thorn Hook chain, used for the spiny coil
+        public static int VineHeadId => 32;                // Terraria/Images/Projectile_<this>: the Ivy Whip head, the tip of the smooth vine
+        public static int SpineHeadId => 375;              // the Thorn Hook head, the end of the spiny coil. If the look is wrong try 372..375 (the four mimic/plantera hooks)
+        public static float HeadForwardPx => 2f;           // the head sticks out this far beyond the end of the vine (its back overlaps the chain, so there is no gap)
         public static float VineScale => 1f;
         public static float VineTipScale => 0.7f;          // the vine gets this thick at its tip (fraction of VineScale)
         public static float SpineScale => 1f;
-        public static float StingerScale => 1.1f;
+        public static float HeadScale => 1f;
         public static float ChainSpacing => 0.8f;          // distance between sprites along a vine, as a fraction of the sprite's height
 
         // ---- netcode ----

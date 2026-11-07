@@ -42,6 +42,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             public float LoopAngle;
             public float LoopDir = 1f;
             public float Seed;
+            public float Shown;       // length of the vine actually on show (shorter than Length while it reaches for an enemy)
+            public int LoopClock;     // ticks since this machine saw the vine lock on (visual only, so every machine has it)
         }
 
         Player Owner => Main.player[Projectile.owner];
@@ -59,7 +61,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         Vector2 bladeDir;
         int[] targetCounts;
         Asset<Texture2D> chainAsset;
-        Asset<Texture2D> whipAsset;
+        Asset<Texture2D> headAsset;
         readonly List<Vector2> samplePositions = new List<Vector2>();
         readonly List<float> sampleAngles = new List<float>();
 
@@ -333,13 +335,65 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             {
                 vine.Init = false;
                 vine.Target = isOwner ? -1 : vine.Target;
+                vine.Shown = 0f;
                 return;
             }
 
-            float segment = vine.Length / (n - 1);
-            Vector2 cursorDirection = (cursorWorld - root).SafeNormalize(bladeDir);
+            // The vine lives in the WORLD: its direction comes from the cursor as seen from the player, never from the blade. Turning the
+            // blade only moves the root; the rest follows through the rope constraints (so that pull fades toward the tip), and the tip
+            // heads for its own goal near the cursor.
+            Vector2 center = Owner.MountedCenter;
+            Vector2 cursorDirection = (cursorWorld - center).SafeNormalize(bladeDir);
             float spread = (index - (vines.Length - 1) * 0.5f) * MathHelper.ToRadians(BladeOfGrassTuning.SpreadDeg);
             Vector2 freeDirection = cursorDirection.RotatedBy(spread);
+
+            bool hasTarget = vine.Target >= 0 && vine.Target < Main.maxNPCs && Valid(Main.npc[vine.Target]);
+            if (!hasTarget && vine.Target >= 0)
+            {
+                vine.Target = -1;
+                vine.WrapTicks = 0;
+                if (isOwner)
+                    Projectile.netUpdate = true;
+            }
+            NPC targetNpc = hasTarget ? Main.npc[vine.Target] : null;
+
+            // The loop around the enemy: the tip circles and the end of the rope trails behind it on the same circle, a real coil.
+            float radius = 0f;
+            float wrapSpan = 0f;
+            float arc = 0f;
+            if (hasTarget)
+            {
+                if (vine.LastTarget != vine.Target)
+                {
+                    vine.LoopClock = 0;
+                    vine.LoopAngle = (root - targetNpc.Center).ToRotation(); // start on the side facing the player: the rope arrives, then circles
+                    if (!isOwner)
+                        vine.LoopDir = Main.rand.NextBool() ? 1f : -1f;
+                    if (Vector2.Distance(root, targetNpc.Center) < 4000f)
+                        BladeOfGrassFx.Lock(targetNpc.Center);
+                }
+                vine.LoopClock++;
+                float progress = MathHelper.Clamp(vine.LoopClock / (float)Math.Max(1, BladeOfGrassTuning.LoopTicks), 0f, 1f);
+                radius = (Math.Max(targetNpc.width, targetNpc.height) * BladeOfGrassTuning.WrapRadiusScale + BladeOfGrassTuning.WrapRadiusPad) * (1f - BladeOfGrassTuning.WrapTighten * progress);
+                wrapSpan = MathHelper.TwoPi * BladeOfGrassTuning.WrapTurns * MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(vine.LoopClock / (float)Math.Max(1, BladeOfGrassTuning.WrapSpanTicks), 0f, 1f));
+                arc = radius * wrapSpan;
+                vine.LoopAngle += BladeOfGrassTuning.LoopSpeed * vine.LoopDir;
+            }
+            else
+                vine.LoopClock = 0;
+            vine.LastTarget = hasTarget ? vine.Target : -1;
+
+            // How much of the vine is on show: all of it when free; while reaching for an enemy only what it needs to get there and wrap it
+            // (the rest is "coiled up"), so the spare rope does not flap around.
+            float shownGoal = vine.Length;
+            if (hasTarget)
+                shownGoal = Math.Min(vine.Length, Math.Max(0f, Vector2.Distance(root, targetNpc.Center) - radius) + arc + BladeOfGrassTuning.WrapSlackPx);
+            if (vine.Shown <= 0f)
+                vine.Shown = shownGoal;
+            else
+                vine.Shown += (shownGoal - vine.Shown) * BladeOfGrassTuning.ShownEase;
+            vine.Shown = Math.Min(vine.Shown, vine.Length);
+            float segment = Math.Max(1f, vine.Shown) / (n - 1);
 
             if (!vine.Init)
             {
@@ -351,47 +405,27 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 vine.Init = true;
             }
 
-            // Where the tip wants to be: a point on the circle around the target, or straight out toward the cursor.
-            bool hasTarget = vine.Target >= 0 && vine.Target < Main.maxNPCs && Valid(Main.npc[vine.Target]);
-            if (!hasTarget && vine.Target >= 0)
-            {
-                vine.Target = -1;
-                vine.WrapTicks = 0;
-                if (isOwner)
-                    Projectile.netUpdate = true;
-            }
-            Vector2 goal;
-            NPC targetNpc = null;
-            if (hasTarget)
-            {
-                targetNpc = Main.npc[vine.Target];
-                if (vine.LastTarget != vine.Target)
-                {
-                    vine.LoopAngle = (vine.P[n - 1] - targetNpc.Center).ToRotation(); // start circling from where the tip is
-                    if (!isOwner)
-                        vine.LoopDir = Main.rand.NextBool() ? 1f : -1f;
-                    if (Vector2.Distance(vine.P[n - 1], targetNpc.Center) < 4000f)
-                        BladeOfGrassFx.Lock(targetNpc.Center);
-                }
-                float progress = MathHelper.Clamp(vine.WrapTicks / (float)Math.Max(1, BladeOfGrassTuning.LoopTicks), 0f, 1f);
-                float radius = (Math.Max(targetNpc.width, targetNpc.height) * BladeOfGrassTuning.WrapRadiusScale + BladeOfGrassTuning.WrapRadiusPad) * (1f - BladeOfGrassTuning.WrapTighten * progress);
-                vine.LoopAngle += BladeOfGrassTuning.LoopSpeed * vine.LoopDir;
-                goal = targetNpc.Center + vine.LoopAngle.ToRotationVector2() * radius;
-            }
-            else
-                goal = root + freeDirection * vine.Length;
-            vine.LastTarget = hasTarget ? vine.Target : -1;
+            // Points 0..bodyCount-1 are the free body; the points from bodyCount to the tip are the coil (only while looping).
+            int tail = hasTarget ? Math.Clamp((int)Math.Round(arc / segment), 2, n - 2) : 0;
+            int bodyCount = n - 1 - tail;
+            Vector2 tipGoal = center + freeDirection * (vine.Shown + Vector2.Distance(center, root));
 
-            Vector2 toGoal = goal - root;
-            float goalDistance = toGoal.Length();
-            Vector2 direction = goalDistance > 0.01f ? toGoal / goalDistance : freeDirection;
+            Vector2 CoilWish(int k)
+            {
+                float t = (k - bodyCount) / (float)tail;
+                float angle = vine.LoopAngle - vine.LoopDir * (1f - t) * wrapSpan;
+                float ringRadius = radius * (1f + BladeOfGrassTuning.WrapSpiral * (1f - t));
+                return targetNpc.Center + angle.ToRotationVector2() * ringRadius;
+            }
+
+            Vector2 bodyEnd = hasTarget ? CoilWish(bodyCount) : tipGoal;
+            Vector2 toEnd = bodyEnd - root;
+            Vector2 direction = toEnd.SafeNormalize(freeDirection);
             Vector2 perpendicular = direction.RotatedBy(MathHelper.PiOver2);
-            float reach = Math.Min(vine.Length, goalDistance);
             float wiggle = BladeOfGrassTuning.WrigglePx * (hasTarget ? BladeOfGrassTuning.WriggleTargetFactor : 1f) * (1f + BladeOfGrassTuning.WriggleChargeBoost * charge);
 
             for (int k = 1; k < n; k++)
             {
-                float along = k / (float)(n - 1);
                 Vector2 velocity = (vine.P[k] - vine.Old[k]) * BladeOfGrassTuning.Damping;
                 if (velocity.Length() > BladeOfGrassTuning.MaxPointSpeed)
                     velocity = velocity.SafeNormalize(Vector2.Zero) * BladeOfGrassTuning.MaxPointSpeed;
@@ -399,10 +433,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 vine.Old[k] = vine.P[k];
                 Vector2 point = vine.P[k] + velocity;
 
-                float envelope = 4f * along * (1f - along) + 0.25f * along; // the wave is biggest in the middle, a little lash at the tip
-                float wave = (float)Math.Sin(holdTicks * BladeOfGrassTuning.WriggleSpeed + along * BladeOfGrassTuning.WriggleWaves + vine.Seed);
-                Vector2 wish = root + direction * (reach * along) + perpendicular * (wave * wiggle * envelope);
-                point += (wish - point) * (BladeOfGrassTuning.Stiffness * (0.5f + 0.5f * along));
+                Vector2 wish;
+                float weight;
+                if (hasTarget && k >= bodyCount)
+                {
+                    wish = CoilWish(k);
+                    weight = BladeOfGrassTuning.CoilStiffness;
+                }
+                else
+                {
+                    // The wish line runs from the root to a goal that is fixed in the world, so a point far from the root hardly feels the root move.
+                    float along = k / (float)Math.Max(1, bodyCount);
+                    float envelope = 4f * along * (1f - along) + 0.25f * along; // the wave is biggest in the middle, a little lash at the tip
+                    float wave = (float)Math.Sin(holdTicks * BladeOfGrassTuning.WriggleSpeed + along * BladeOfGrassTuning.WriggleWaves + vine.Seed);
+                    wish = root + toEnd * along + perpendicular * (wave * wiggle * envelope);
+                    float influence = BladeOfGrassTuning.RootInfluenceFloor + (1f - BladeOfGrassTuning.RootInfluenceFloor) * (float)Math.Pow(along, Math.Max(0.1f, BladeOfGrassTuning.TipInfluencePower));
+                    weight = BladeOfGrassTuning.Stiffness * (hasTarget ? BladeOfGrassTuning.TargetStiffnessBoost : 1f) * influence;
+                }
+                point += (wish - point) * weight;
                 vine.P[k] = point;
             }
             vine.Old[0] = root;
@@ -445,6 +493,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 return;
             }
 
+            wrapped = EnforceEnemyCap(npc.whoAmI, wrapped);
             EnforceSegmentCap();
             float lengthFactor = MathHelper.Lerp(BladeOfGrassTuning.SegmentMinLengthFactor, BladeOfGrassTuning.SegmentMaxLengthFactor, MathHelper.Clamp(wrapped / Math.Max(1f, BladeOfGrassTuning.MaxLength), 0f, 1f));
             int damage = Math.Max(1, (int)(Projectile.damage * BladeOfGrassTuning.SegmentDamageScale * lengthFactor));
@@ -458,6 +507,33 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             vine.WrapTicks = 0;
             vine.Cooldown = BladeOfGrassTuning.WrapCooldownTicks;
             Projectile.netUpdate = true;
+        }
+
+        // Owner only: all sections on one enemy together stay under EnemyCapFraction of a full vine. The new section is cut to the cap,
+        // and the oldest sections on that enemy are removed until the new one fits. Returns the (possibly shortened) section length.
+        float EnforceEnemyCap(int enemy, float wrapped)
+        {
+            float cap = BladeOfGrassTuning.MaxLength * BladeOfGrassTuning.EnemyCapFraction;
+            wrapped = Math.Min(wrapped, cap);
+            int type = ModContent.ProjectileType<BladeOfGrassSpineProjectile>();
+            while (true)
+            {
+                float total = 0f;
+                int oldest = -1;
+                for (int i = 0; i < Main.maxProjectiles; i++)
+                {
+                    Projectile projectile = Main.projectile[i];
+                    if (!projectile.active || projectile.owner != Projectile.owner || projectile.type != type || (int)projectile.ai[0] != enemy)
+                        continue;
+                    total += projectile.ai[1];
+                    if (oldest < 0 || projectile.timeLeft < Main.projectile[oldest].timeLeft)
+                        oldest = i;
+                }
+                if (oldest < 0 || total + wrapped <= cap + 0.5f)
+                    break;
+                Main.projectile[oldest].Kill();
+            }
+            return wrapped;
         }
 
         void EnforceSegmentCap()
@@ -501,13 +577,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             if (Main.dedServ || vines == null)
                 return false;
             chainAsset ??= ModContent.Request<Texture2D>("Terraria/Images/" + BladeOfGrassTuning.VineChainName);
-            whipAsset ??= ModContent.Request<Texture2D>("Terraria/Images/Projectile_" + BladeOfGrassTuning.SpineProjectileId);
+            headAsset ??= ModContent.Request<Texture2D>("Terraria/Images/Projectile_" + BladeOfGrassTuning.VineHeadId);
             Texture2D chain = chainAsset.Value;
-            Texture2D whip = whipAsset.Value;
+            Texture2D head = headAsset.Value;
 
             // The vines go behind the sword.
             for (int i = 0; i < vines.Length; i++)
-                DrawVine(vines[i], chain, whip);
+                DrawVine(vines[i], chain, head);
 
             Texture2D texture = TextureAssets.Projectile[Type].Value;
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
@@ -526,7 +602,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             return false;
         }
 
-        void DrawVine(Vine vine, Texture2D chain, Texture2D whip)
+        void DrawVine(Vine vine, Texture2D chain, Texture2D head)
         {
             if (!vine.Init || vine.P == null || vine.Length < 2f)
                 return;
@@ -543,14 +619,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 Main.EntitySpriteDraw(chain, world - Main.screenPosition, null, color, sampleAngles[s] - MathHelper.PiOver2, chainOrigin, scale, SpriteEffects.None, 0);
             }
 
-            // The stinger: the tip frame of the Snapthorn whip at the end of the vine, pointing along its last stretch.
-            int frames = Math.Max(1, BladeOfGrassTuning.SpineSheetFrames);
-            int frameHeight = whip.Height / frames;
-            Rectangle tip = new Rectangle(0, (frames - 1) * frameHeight, whip.Width, frameHeight);
+            // The Ivy Whip head over the end of the vine; its back covers the last links, so there is no gap.
             Vector2 end = vine.P[n - 1];
-            float angle = (end - vine.P[n - 2]).ToRotation();
-            Color tipColor = Lighting.GetColor(end.ToTileCoordinates());
-            Main.EntitySpriteDraw(whip, end - Main.screenPosition, tip, tipColor, angle - MathHelper.PiOver2, new Vector2(tip.Width * 0.5f, 0f), BladeOfGrassTuning.StingerScale, SpriteEffects.None, 0);
+            float angle = (end - vine.P[Math.Max(0, n - 3)]).ToRotation();
+            BladeOfGrassVineDraw.DrawHead(head, end, angle, BladeOfGrassTuning.HeadScale, Lighting.GetColor(end.ToTileCoordinates()));
         }
     }
 }
