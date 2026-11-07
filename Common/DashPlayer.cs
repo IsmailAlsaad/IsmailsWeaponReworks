@@ -34,15 +34,20 @@ namespace IsmailsWeaponReworks.Common
         Vector2 bounceVelocity;
         float boost = 1f; // liquid slows the player's movement down; this scales the velocity up until the real travel matches the speed
 
+        Vector2? aimPoint;   // a dash toward a point (PlayerDash.Begin with a target); null = a plain dash along Direction
+        int stuckTicks;
+
         bool Local => Player.whoAmI == Main.myPlayer;
 
-        public void Begin(Vector2 direction, DashSettings settings, Action<Vector2, Vector2, bool> bounceCallback)
+        public void Begin(Vector2 direction, DashSettings settings, Action<Vector2, Vector2, bool> bounceCallback, Vector2? target = null)
         {
             if (!Local)
                 return;
             Direction = direction.SafeNormalize(new Vector2(Player.direction, 0f));
             Settings = settings;
             onBounce = bounceCallback;
+            aimPoint = target;
+            stuckTicks = 0;
             Bounced = false;
             boost = 1f;
             ticksLeft = settings.Ticks;
@@ -112,6 +117,12 @@ namespace IsmailsWeaponReworks.Common
             else if (!touching && moved > 1f)
                 boost = MathHelper.Clamp(boost * Settings.Speed / moved, 1f, 4f);
 
+            if (aimPoint.HasValue)
+            {
+                TickTargetDash(touching, normal, moved);
+                return;
+            }
+
             if (touching)
             {
                 float into = -Vector2.Dot(Direction, normal); // 1 = straight into the surface, 0 = along it
@@ -134,6 +145,53 @@ namespace IsmailsWeaponReworks.Common
 
             if (--ticksLeft <= 0)
                 Finish(true);
+        }
+
+        // A dash toward a point (the Katana's blade). It never just stops: the player is wider than the line that was aimed at the point, so
+        // a corner is the usual obstacle and it is slid along (the heading is steered back toward the point every tick). The dash ends when
+        // the player has arrived (ArriveDistance), when the ticks run out, or when he is pressed against a tile and has not moved for
+        // StuckTicks, and it always ends with an impulse toward the point instead of a dead stop.
+        void TickTargetDash(bool touching, Vector2 normal, float moved)
+        {
+            Vector2 toTarget = aimPoint.Value - Player.Center;
+            float distance = toTarget.Length();
+            Vector2 heading = distance > 0.01f ? toTarget / distance : Direction;
+
+            if (Settings.ArriveDistance > 0f && distance <= Settings.ArriveDistance)
+            {
+                FinishWithImpulse();
+                return;
+            }
+
+            if (touching)
+            {
+                Vector2 slide = BounceMath.Slide(heading, normal);
+                Direction = slide.LengthSquared() > 0.0001f ? Vector2.Normalize(slide) : heading;
+            }
+            else
+                Direction = heading;
+
+            if (touching && moved < Settings.Speed * 0.1f)
+                stuckTicks++;
+            else
+                stuckTicks = 0;
+            if (Settings.StuckTicks > 0 && stuckTicks >= Settings.StuckTicks)
+            {
+                FinishWithImpulse();
+                return;
+            }
+
+            if (--ticksLeft <= 0)
+                FinishWithImpulse();
+        }
+
+        // Ends a target dash and leaves the player moving along the vector from his center to the target.
+        void FinishWithImpulse()
+        {
+            Vector2 toTarget = aimPoint.HasValue ? aimPoint.Value - Player.Center : Direction;
+            Vector2 impulse = toTarget.SafeNormalize(Direction) * (Settings.Speed * Settings.ImpulseKeep);
+            Finish(false);
+            Player.velocity = impulse;
         }
 
         // Called by the weapon (an enemy hit) or by TickDash (a tile hit). Reflects the dash, freezes for the hit-stop, then flies back.
@@ -187,6 +245,8 @@ namespace IsmailsWeaponReworks.Common
                 Immunity.Grant(Player, Settings.ImmuneTailTicks); // the grace period after the dash, however it ended
             Phase = DashPhase.None;
             onBounce = null;
+            aimPoint = null;
+            stuckTicks = 0;
             HoldFall();
         }
 

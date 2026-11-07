@@ -90,7 +90,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.MaxMana with { Volume = 0.5f, Pitch = 0.3f }, hand);
+            //SoundEngine.PlaySound(SoundID.MaxMana with { Volume = 0.5f, Pitch = 0.3f }, hand);
             for (int i = 0; i < 7; i++)
                 Spark(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Circular(1.2f, 1.2f), 1f, true);
         }
@@ -101,6 +101,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             if (Main.dedServ)
                 return;
             Spark(position, new Vector2(0f, -0.3f) + Main.rand.NextVector2Circular(0.3f, 0.3f), 0.8f, true);
+        }
+
+        // The dash is over and the stuck blade fades away: a few sparks, no sound.
+        public static void Unstick(Vector2 head, Vector2 direction)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 6; i++)
+                Spark(head, (-direction).RotatedByRandom(1.2f) * Main.rand.NextFloat(0.5f, 2f), 1f, i % 2 == 0);
         }
 
         // The tile around the stuck blade is gone: it pops loose.

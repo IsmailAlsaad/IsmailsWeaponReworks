@@ -22,8 +22,11 @@ namespace IsmailsWeaponReworks.Common
         public readonly float GrazeCos;
         public readonly float BounceDrag;
         public readonly int ImmuneTailTicks;   // extra immunity after the dash ends, however it ends (0 = none)
+        public readonly float ArriveDistance;  // target dashes only: the dash is over once the player's center is this close to the target (0 = run the ticks out)
+        public readonly int StuckTicks;        // target dashes only: pressed against a tile without moving this many ticks ends the dash (0 = never)
+        public readonly float ImpulseKeep;     // target dashes only: a dash that ends leaves the player moving toward the target at Speed x this
 
-        public DashSettings(float speed, int ticks, bool bounceOnTile, float bounceSpeed, int hitStopTicks, int bounceTicks, int immuneTicks = 0, float grazeCos = 0.3f, float bounceDrag = 0.88f, int immuneTailTicks = 0)
+        public DashSettings(float speed, int ticks, bool bounceOnTile, float bounceSpeed, int hitStopTicks, int bounceTicks, int immuneTicks = 0, float grazeCos = 0.3f, float bounceDrag = 0.88f, int immuneTailTicks = 0, float arriveDistance = 0f, int stuckTicks = 0, float impulseKeep = 0f)
         {
             Speed = speed;
             Ticks = Math.Max(1, ticks);
@@ -35,6 +38,9 @@ namespace IsmailsWeaponReworks.Common
             GrazeCos = grazeCos;
             BounceDrag = bounceDrag;
             ImmuneTailTicks = Math.Max(0, immuneTailTicks);
+            ArriveDistance = Math.Max(0f, arriveDistance);
+            StuckTicks = Math.Max(0, stuckTicks);
+            ImpulseKeep = Math.Max(0f, impulseKeep);
         }
     }
 
@@ -47,11 +53,13 @@ namespace IsmailsWeaponReworks.Common
     {
         // Starts a dash toward 'direction' (a unit vector in the world). onBounce(position, normal, isTile) runs on the owner's client at
         // the moment of a bounce so the weapon can add its sparks, sound and camera shake. Does nothing on other players' machines.
-        public static void Begin(Player player, Vector2 direction, DashSettings settings, Action<Vector2, Vector2, bool> onBounce = null)
+        // 'target' (optional) makes it a dash TOWARD a point: a tile in the way is slid along instead of stopping the dash, and however the
+        // dash ends the player keeps an impulse toward the point (see DashPlayer.TickTargetDash and the target fields of DashSettings).
+        public static void Begin(Player player, Vector2 direction, DashSettings settings, Action<Vector2, Vector2, bool> onBounce = null, Vector2? target = null)
         {
             if (player.whoAmI != Main.myPlayer)
                 return;
-            player.GetModPlayer<DashPlayer>().Begin(direction, settings, onBounce);
+            player.GetModPlayer<DashPlayer>().Begin(direction, settings, onBounce, target);
         }
 
         // The tip hit an enemy: bounce off it (once per dash). Returns false when there was no dash, or it already bounced.

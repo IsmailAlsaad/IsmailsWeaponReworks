@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Common;
+using Microsoft.Xna.Framework;
 using System;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
@@ -99,5 +100,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         public static float SlashHitShake => 2f;        // camera punch when a stroke hits something
         public static float SlashPitchLow => -0.1f;     // the stroke sounds rise in pitch from the first stroke ...
         public static float SlashPitchHigh => 0.8f;     // ... to the eighth
+
+        // ---- hit marks: the Katana's streaks across a hit enemy, in blue (they grow with the enemy's hitbox; these are the minimums) ----
+        public static int HitMarkTicks => 14;           // life of one mark (keep it under SlashLingerTicks: the stroke ends then)
+        public static int HitMarkCount => 2;            // marks laid across each enemy per stroke
+        public static float HitMarkLength => 72f;       // pixels, the main mark (the others are shorter)
+        public static float HitMarkWidth => 8f;         // pixels at its thickest
+        public static float HitMarkAngleDeg => 25f;    // each mark is 90 degrees to the stroke, give or take up to this
+        public static int MaxHitMarks => 24;
+        public static float HitMarkCoverage => 1.15f;   // on a big enemy a mark grows to cover this much of its size across the mark
+        public static float HitMarkWidthGrow => 0.5f;   // how much of that growth the mark's thickness follows
+        public static float HitMarkMaxScale => 6f;      // the most a mark grows, times its normal size
+        public static HitMarkStyle HitMarks => new HitMarkStyle(HitMarkTicks, HitMarkCount, MaxHitMarks, HitMarkLength, HitMarkWidth, HitMarkAngleDeg, HitMarkCoverage, HitMarkWidthGrow, HitMarkMaxScale, PixelSize, DeepColor, BlueColor, CoreColor);
     }
 }

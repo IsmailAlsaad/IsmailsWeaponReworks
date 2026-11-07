@@ -102,7 +102,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             clickFlash = Math.Max(0f, clickFlash - 1f / Math.Max(1, KatanaTuning.ClickFlashTicks));
 
             // The cooldown counted on this machine from the spawn: when it is over the sword glows white (a chime only if it had to wait).
-            bool ready = ticks >= CooldownLeft;
+            bool ready = clicked && ticks >= CooldownLeft; // only once the sword has clicked shut (fully sheathed): no glow, chime or flash before
             if (ready && !readyAnnounced)
             {
                 readyAnnounced = true;

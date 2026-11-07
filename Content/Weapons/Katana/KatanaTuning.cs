@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Common;
+using Microsoft.Xna.Framework;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Katana
 {
@@ -42,6 +43,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         public static float MinDashPixels => 8f;      // a blade closer than this does nothing (no dash, no cooldown)
         public static float DashGraze => 0.3f;        // a wall hit at a shallower angle than this (cosine) slides the dash along it; a head-on hit stops it
         public static int ImmuneTailTicks => 10;      // nothing can hurt the player for this long after the dash ends, however it ends
+        public static float DashArrivePixels => 28f; // a dash into a tile is over once the player's center is this close to the blade (a tile in the way before that is slid along, never a stop)
+        public static int DashStuckTicks => 3;        // pressed against a tile without moving for this many ticks: the dash ends
+        public static float DashImpulseKeep => 0.4f;  // however the dash ends the player keeps this fraction of DashSpeed, aimed from his center at the blade
         public static bool VanillaShadow => false;    // the three vanilla shadow copies of the player (off: the afterimages below replace them)
         public static int DashShadowTicks => 8;       // vanilla shadow only: how long they trail behind him after the dash
 
@@ -81,10 +85,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         public static float HitMarkWidth => 8f;       // pixels at its thickest
         public static float HitMarkAngleDeg => 25f;   // each mark is 90 degrees to the cut, give or take up to this
         public static int MaxHitMarks => 24;
+        public static float HitMarkCoverage => 1.15f; // on a big enemy a mark grows to cover this much of its size across the mark (HitMarkLength stays the minimum)
+        public static float HitMarkWidthGrow => 0.5f; // how much of that growth the mark's thickness follows (0 = none, 1 = all)
+        public static float HitMarkMaxScale => 6f;    // the most a mark grows, times its normal size
+        public static HitMarkStyle HitMarks => new HitMarkStyle(HitMarkTicks, HitMarkCount, MaxHitMarks, HitMarkLength, HitMarkWidth, HitMarkAngleDeg, HitMarkCoverage, HitMarkWidthGrow, HitMarkMaxScale, PixelSize, EdgeColor, GlowColor, CoreColor);
 
         // ---- the stuck blade: stays in its tile, drops and falls when the tile is mined ----
         public static int EmbedStayTicks => 600;      // a blade stuck in a tile stays this long (10 s), then fades
         public static int EmbedFadeTicks => 30;       // the fade at the end of that
+        public static int EmbedVanishTicks => 8;      // a stuck blade fades out this fast once the dash that came to it is over (EmbedStayTicks is only the safety cap)
         public static float DropGravity => 0.45f;     // pixels per tick per tick
         public static float DropMaxFallSpeed => 12f;
         public static float DropKick => 1.5f;         // the blade pops loose backward at this speed

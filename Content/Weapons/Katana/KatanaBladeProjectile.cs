@@ -17,7 +17,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
     /// edge-first for a moment): the player flies toward the blade at DashSpeed through the shared PlayerDash (invincible while he
     /// travels, stopped or slid along by a tile in his way), the cooldown starts, a KatanaSlashProjectile cuts the line he travels, and a
     /// new stance starts.
-    /// A blade that bit into a tile stays in it for EmbedStayTicks. If the tile is mined away (every machine checks the tile it sees)
+    /// A blade that bit into a tile stays in it until the dash that came to it is over (the owner flags that in ai[1] = -1 and it fades in
+    /// EmbedVanishTicks; EmbedStayTicks is only a safety cap). If the tile is mined away (every machine checks the tile it sees)
     /// the blade pops loose, tumbles, falls and bounces on whatever it lands on, then fades: a purely visual drop, computed on every
     /// machine by itself, nothing synced. The owner's client ends the projectile when the show is over. Throwing again ends it too.
     /// MULTIPLAYER: the owner's client decides everything and spawns it with ai[0] = the aim (player's own frame), ai[1] = how far the
@@ -36,6 +37,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         float Aim => Projectile.ai[0];
         float Reach => Math.Max(0f, Projectile.ai[1]);
         bool Released => Projectile.ai[2] >= 0f;
+        bool DashOver => Released && Projectile.ai[1] < 0f; // ai[1] is only the reach while flying; after the release the owner sets it to -1 when the dash ends
         int Facing => HeldAim.Facing(Aim);
         Vector2 Direction => haveDirection ? cachedDirection : HeldAim.ToWorldDirection(Owner, Aim); // cached on the first tick, so a flipped gravity cannot turn a stuck blade
 
@@ -61,6 +63,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         int landFade = -1;         // -1 = still falling, otherwise ticks since it lay still
         bool releaseSeen;
         int releaseTicks;
+        int dashOverTicks;         // ticks since the dash that came to this stuck blade ended
         AfterimageTrail afterimages;
         readonly Vector2[] guidePoints = new Vector2[2];
         readonly float[] guideTs = { 0f, 1f };
@@ -239,6 +242,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             if (!dropped)
             {
                 stayTicks++;
+                // The dash that came to the blade is over: the owner flags it (synced), every machine fades the blade out and the owner ends it.
+                if (IsOwner && !DashOver && releaseTicks > 1 && !PlayerDash.IsDashing(Owner))
+                {
+                    Projectile.ai[1] = -1f;
+                    Projectile.netUpdate = true;
+                }
+                if (DashOver)
+                {
+                    dashOverTicks++;
+                    if (IsOwner && dashOverTicks >= Math.Max(1, KatanaTuning.EmbedVanishTicks))
+                    {
+                        KatanaFx.Unstick(head + Direction * (KatanaTuning.SinkDepth * scale), Direction);
+                        Projectile.Kill();
+                        return true;
+                    }
+                }
                 // The probe sits just inside the tile the blade bit into (the contact test of the raycast was the same 2x2 box).
                 if (releaseTicks > 1 && !Collision.SolidCollision(head + Direction * 2f - Vector2.One, 2, 2))
                 {
@@ -326,7 +345,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             if (dropped)
                 return landFade >= 0 ? 1f - MathHelper.Clamp(landFade / (float)Math.Max(1, KatanaTuning.DropFadeTicks), 0f, 1f) : 1f;
             int fadeTicks = Math.Max(1, KatanaTuning.EmbedFadeTicks);
-            return MathHelper.Clamp((KatanaTuning.EmbedStayTicks - stayTicks) / (float)fadeTicks, 0f, 1f);
+            float stay = MathHelper.Clamp((KatanaTuning.EmbedStayTicks - stayTicks) / (float)fadeTicks, 0f, 1f);
+            float over = DashOver ? 1f - MathHelper.Clamp(dashOverTicks / (float)Math.Max(1, KatanaTuning.EmbedVanishTicks), 0f, 1f) : 1f;
+            return Math.Min(stay, over);
         }
 
         void EnsureAfterimages()
@@ -360,8 +381,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             {
                 float speed = Math.Max(1f, KatanaTuning.DashSpeed);
                 int dashTicks = Math.Max(1, (int)Math.Ceiling(length / speed));
-                DashSettings settings = new DashSettings(speed, dashTicks, false, 0f, 0, 0, dashTicks, KatanaTuning.DashGraze, 0.88f, KatanaTuning.ImmuneTailTicks);
-                PlayerDash.Begin(owner, travel / length, settings);
+                // A dash toward the blade's point: tiles in the way are slid along, and it always ends with an impulse from the player's
+                // center toward the blade (the tile it is stuck in) instead of a dead stop.
+                DashSettings settings = new DashSettings(speed, dashTicks, false, 0f, 0, 0, dashTicks, KatanaTuning.DashGraze, 0.88f, KatanaTuning.ImmuneTailTicks,
+                    endsInTile ? KatanaTuning.DashArrivePixels : 0f, KatanaTuning.DashStuckTicks, KatanaTuning.DashImpulseKeep);
+                Vector2 target = origin + Direction * (distance + (endsInTile ? KatanaTuning.SinkDepth : 0f));
+                PlayerDash.Begin(owner, travel / length, settings, null, target);
                 owner.GetModPlayer<KatanaPlayer>().CooldownTicks = KatanaTuning.CooldownTicks;
 
                 int damage = (int)(owner.GetWeaponDamage(item) * KatanaTuning.SlashDamageMultiplier);

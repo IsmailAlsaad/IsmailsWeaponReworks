@@ -38,19 +38,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         int ticks;
         Vector2 endPoint;
         bool tracked;
-        struct HitMark
-        {
-            public Vector2 Center;
-            public float Angle;
-            public float Length;
-            public float Width;
-            public int Age;
-        }
-
         readonly HashSet<int> seen = new HashSet<int>();      // enemies this machine has already frozen and marked
-        readonly List<HitMark> marks = new List<HitMark>();
-        readonly Vector2[] markPoints = new Vector2[8];
-        readonly float[] markTs = new float[8];
+        readonly HitMarkSet marks = new HitMarkSet();         // the streaks across hit enemies (shared with the Muramasa)
         AfterimageTrail playerImages;
         Vector2 lastImagePosition;
         bool haveLastImage;
@@ -101,7 +90,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                 if (ticks <= DashTicks && playerImages != null)
                     LayImages(owner);
             }
-            TickMarks();
+            marks.Tick(KatanaTuning.HitMarks);
 
             // Hit-stop (every machine, the server too) and, on the machines that do not own the cut, the hit marks and sparks.
             if (Damaging)
@@ -139,7 +128,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            AddMarks(target.Center);
+            AddMarks(target);
             KatanaFx.HitSpark(target.Center);
             CameraShake.Punch(target.Center, KatanaTuning.SlashHitShake, 8);
         }
@@ -161,48 +150,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                 {
                     KatanaFx.HitSpark(npc.Center);
                     CameraShake.Punch(npc.Center, KatanaTuning.SlashHitShake, 8);
-                    AddMarks(npc.Center);
+                    AddMarks(npc);
                 }
             }
         }
 
-        // Streaks across the enemy: the main one at about 90 degrees to the cut (give or take HitMarkAngleDeg), the others shorter, each at its own angle.
-        void AddMarks(Vector2 at)
+        // Streaks across the enemy at about 90 degrees to the cut; they grow with the enemy's hitbox (HitMarkSet, shared with the Muramasa).
+        void AddMarks(NPC npc)
         {
             if (Main.dedServ)
                 return;
-            Vector2 line = (End - Start).SafeNormalize(Vector2.UnitX);
-            float baseAngle = line.ToRotation() + MathHelper.PiOver2;
-            float variance = MathHelper.ToRadians(KatanaTuning.HitMarkAngleDeg);
-            int count = Math.Max(1, KatanaTuning.HitMarkCount);
-            for (int i = 0; i < count; i++)
-            {
-                if (marks.Count >= Math.Max(1, KatanaTuning.MaxHitMarks))
-                    marks.RemoveAt(0);
-                float size = i == 0 ? 1f : Main.rand.NextFloat(0.5f, 0.8f);
-                marks.Add(new HitMark
-                {
-                    Center = at + (i == 0 ? Vector2.Zero : line * (Main.rand.NextFloatDirection() * 10f)) + Main.rand.NextVector2Circular(4f, 4f),
-                    Angle = baseAngle + Main.rand.NextFloatDirection() * variance,
-                    Length = KatanaTuning.HitMarkLength * size * Main.rand.NextFloat(0.85f, 1.15f),
-                    Width = KatanaTuning.HitMarkWidth * size,
-                    Age = 0
-                });
-            }
-            KatanaFx.HitMark(at, baseAngle);
-        }
-
-        void TickMarks()
-        {
-            for (int i = marks.Count - 1; i >= 0; i--)
-            {
-                HitMark mark = marks[i];
-                mark.Age++;
-                if (mark.Age >= Math.Max(1, KatanaTuning.HitMarkTicks))
-                    marks.RemoveAt(i);
-                else
-                    marks[i] = mark;
-            }
+            float angle = marks.Add(KatanaTuning.HitMarks, npc.Center, End - Start, npc.Hitbox);
+            KatanaFx.HitMark(npc.Center, angle);
         }
 
         // The copies are the real player drawn at an old position (the pose of the moment they are drawn), more see-through the older they are.
@@ -270,39 +229,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             PixelLine.Draw(linePoints, lineTs, count, grid, t => width * 2f * (0.3f + 0.7f * t), t => KatanaTuning.EdgeColor * (0.5f * fade * (0.3f + 0.7f * t)));
             PixelLine.Draw(linePoints, lineTs, count, grid, t => width * (0.3f + 0.7f * t), t => KatanaTuning.GlowColor * (fade * (0.4f + 0.6f * t)));
             PixelLine.Draw(linePoints, lineTs, count, grid, t => Math.Max(grid, width * 0.4f * (0.3f + 0.7f * t)), t => KatanaTuning.CoreColor * (fade * (0.5f + 0.5f * t)));
-            DrawMarks(grid);
+            marks.Draw(KatanaTuning.HitMarks);
             return false;
         }
 
-        // The hit marks: a pointed streak that shoots out to its full length in a quarter of its life, then thins and fades.
-        void DrawMarks(float grid)
-        {
-            int count = markPoints.Length;
-            for (int m = 0; m < marks.Count; m++)
-            {
-                HitMark mark = marks[m];
-                float t = MathHelper.Clamp(mark.Age / (float)Math.Max(1, KatanaTuning.HitMarkTicks), 0f, 1f);
-                float quick = Math.Min(1f, t * 4f);
-                float grow = 1f - (1f - quick) * (1f - quick);
-                float fade = (1f - t) * (1f - t);
-                float half = mark.Length * 0.5f * grow;
-                float width = mark.Width * (1f - 0.6f * t);
-                Vector2 axis = mark.Angle.ToRotationVector2();
-                for (int i = 0; i < count; i++)
-                {
-                    markTs[i] = i / (float)(count - 1);
-                    markPoints[i] = mark.Center + axis * MathHelper.Lerp(-half, half, markTs[i]);
-                }
-                PixelLine.Draw(markPoints, markTs, count, grid, u => width * 2f * Taper(u), u => KatanaTuning.EdgeColor * (0.5f * fade));
-                PixelLine.Draw(markPoints, markTs, count, grid, u => width * Taper(u), u => KatanaTuning.GlowColor * fade);
-                PixelLine.Draw(markPoints, markTs, count, grid, u => Math.Max(grid, width * 0.4f * Taper(u)), u => KatanaTuning.CoreColor * fade);
-            }
-        }
 
-        // 0 at both ends, 1 in the middle (a pointed streak).
-        static float Taper(float u)
-        {
-            return (float)Math.Pow(Math.Max(0f, 1f - Math.Abs(2f * u - 1f)), 0.7f);
-        }
     }
 }

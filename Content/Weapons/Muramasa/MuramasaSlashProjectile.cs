@@ -38,6 +38,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         Vector2 previousHead;
         AfterimageTrail afterimages;
         readonly RemoteHitTracker remote = new RemoteHitTracker();
+        readonly HitMarkSet marks = new HitMarkSet();   // the blue streaks across hit enemies (shared with the Katana)
         readonly Vector2[] linePoints = new Vector2[14];
         readonly float[] lineTs = new float[14];
 
@@ -111,6 +112,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                     {
                         MuramasaFx.HitSpark(npc.Center);
                         CameraShake.Punch(npc.Center, MuramasaTuning.SlashHitShake, 8);
+                        AddMarks(npc);
                     });
 
                 if (local >= Travel + Math.Max(1, MuramasaTuning.SlashLingerTicks))
@@ -119,6 +121,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                     return;
                 }
             }
+            marks.Tick(MuramasaTuning.HitMarks);
             ticks++;
         }
 
@@ -162,6 +165,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         {
             MuramasaFx.HitSpark(target.Center);
             CameraShake.Punch(target.Center, MuramasaTuning.SlashHitShake, 8);
+            AddMarks(target);
+        }
+
+        // Blue streaks across the enemy at about 90 degrees to the stroke; they grow with the enemy's hitbox (HitMarkSet).
+        void AddMarks(NPC npc)
+        {
+            if (Main.dedServ)
+                return;
+            float angle = marks.Add(MuramasaTuning.HitMarks, npc.Center, Offset, npc.Hitbox);
+            MuramasaFx.HitMark(npc.Center, angle);
         }
 
         public override void OnKill(int timeLeft)
@@ -196,6 +209,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             PixelLine.Draw(linePoints, lineTs, count, grid, t => width * 2f * (0.3f + 0.7f * t), t => MuramasaTuning.DeepColor * (0.5f * fade * (0.3f + 0.7f * t)));
             PixelLine.Draw(linePoints, lineTs, count, grid, t => width * (0.3f + 0.7f * t), t => MuramasaTuning.BlueColor * (fade * (0.4f + 0.6f * t)));
             PixelLine.Draw(linePoints, lineTs, count, grid, t => Math.Max(grid, width * 0.4f * (0.3f + 0.7f * t)), t => MuramasaTuning.CoreColor * (fade * (0.5f + 0.5f * t)));
+            marks.Draw(MuramasaTuning.HitMarks);
 
             // The phantom sword, centered on the head, only while it travels.
             if (local < Travel)

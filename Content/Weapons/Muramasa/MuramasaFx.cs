@@ -165,5 +165,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             for (int i = 0; i < 8; i++)
                 Spark(position, Main.rand.NextVector2Circular(3f, 3f), 1.2f, i % 2 == 0);
         }
+
+        // A hit mark crosses the enemy: a quiet ring and blue sparks flying out along both ends of the main mark.
+        public static void HitMark(Vector2 center, float angle)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.NPCHit52 with { Volume = 0.4f, Pitch = 0.8f, PitchVariance = 0.1f }, center);
+            Vector2 axis = angle.ToRotationVector2();
+            for (int i = 0; i < 10; i++)
+            {
+                float side = i % 2 == 0 ? 1f : -1f;
+                Spark(center, (axis * side).RotatedByRandom(0.15f) * Main.rand.NextFloat(3f, 8f), 1.1f, i % 3 != 0);
+            }
+        }
     }
 }
