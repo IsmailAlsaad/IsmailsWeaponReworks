@@ -13,16 +13,26 @@ namespace IsmailsWeaponReworks.Common
     /// </summary>
     public class MetaballLayers : ModSystem
     {
-        readonly Dictionary<Type, MetaballLayer> layers = new Dictionary<Type, MetaballLayer>();
+        readonly Dictionary<(Type, int), MetaballLayer> layers = new Dictionary<(Type, int), MetaballLayer>();
         int tick;
 
         public static MetaballLayer Of<TStyle>() where TStyle : MetaballStyle, new()
         {
+            return Of<TStyle>(0);
+        }
+
+        /// <summary>
+        /// A layer of its own for this style and 'slot' (for example a player's index): the same look, but its own particles, blobs and
+        /// CellFilter, so two swords do not share a clip. Ticked and drawn like every other layer. Of&lt;TStyle&gt;() is slot 0.
+        /// </summary>
+        public static MetaballLayer Of<TStyle>(int slot) where TStyle : MetaballStyle, new()
+        {
             MetaballLayers system = ModContent.GetInstance<MetaballLayers>();
-            if (!system.layers.TryGetValue(typeof(TStyle), out MetaballLayer layer))
+            (Type, int) key = (typeof(TStyle), slot);
+            if (!system.layers.TryGetValue(key, out MetaballLayer layer))
             {
                 layer = new MetaballLayer(new TStyle());
-                system.layers[typeof(TStyle)] = layer;
+                system.layers[key] = layer;
             }
             return layer;
         }

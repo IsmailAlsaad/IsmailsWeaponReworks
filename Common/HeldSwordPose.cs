@@ -58,8 +58,27 @@ namespace IsmailsWeaponReworks.Common
         }
 
         // Origin, rotation offset and flip for drawing a vanilla sword item sprite (hilt in the bottom-left corner) along Projectile.rotation.
-        public static void Sprite(Texture2D texture, int spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects)
+        // 'mirrored' draws the sprite flipped ACROSS THE BLADE'S OWN AXIS (the hilt stays at the hand, the blade stays on the same line, only
+        // its two sides swap): a swing that goes the other way round then still leads with the sharp edge. Added for the Night's Edge's up swing.
+        public static void Sprite(Texture2D texture, int spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects, bool mirrored = false)
         {
+            if (mirrored)
+            {
+                if (spriteDirection > 0)
+                {
+                    origin = Vector2.Zero;                                  // the hilt, after the vertical flip, is the top-left of the quad
+                    rotationOffset = MathHelper.ToRadians(-45f);
+                    effects = SpriteEffects.FlipVertically;
+                }
+                else
+                {
+                    origin = new Vector2(texture.Width, 0f);                // after both flips the hilt is the top-right of the quad
+                    rotationOffset = MathHelper.ToRadians(-135f);
+                    effects = SpriteEffects.FlipHorizontally | SpriteEffects.FlipVertically;
+                }
+                return;
+            }
+
             if (spriteDirection > 0)
             {
                 origin = new Vector2(0f, texture.Height); // the hilt is the bottom-left corner of the sprite

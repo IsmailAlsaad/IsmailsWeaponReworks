@@ -45,14 +45,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             uint since = Main.GameUpdateCount - state.LastEndTick;
             bool combo = state.LastPhase >= 0 && since <= (uint)NightsEdgeTuning.ComboWindowTicks;
 
-            // The level is how many consecutive swings came before this one (0 = a fresh combo, ChargeSwings = a charged swing). A gap longer
-            // than the combo window resets it, except that a fully charged sword stays charged for ChargedLingerTicks.
+            // The level is how many consecutive swings that HIT an enemy came before this one (0 = a fresh combo, ChargeSwings = a charged
+            // swing). A gap longer than the combo window resets it, except that a fully charged sword stays charged for ChargedLingerTicks.
+            // A swing does not add to it here: the swing projectile adds one the first time it hits something (NightsEdgeSwingProjectile.OnHitNPC).
             int max = Math.Max(1, NightsEdgeTuning.ChargeSwings);
             int level = Math.Min(state.Charge, max);
             bool lingering = state.LastPhase >= 0 && level >= max && since <= (uint)NightsEdgeTuning.ChargedLingerTicks;
             if (!combo && !lingering)
                 level = 0;
-            state.Charge = Math.Min(max, level + 1);
+            state.Charge = level;
 
             // The aim is captured here, once, and travels in the spawn packet (ai[2]) so every machine poses the same swing. It is kept in the
             // player's own frame (mirrored when gravity is flipped), like the arm angles; the whole swing is relative to it.

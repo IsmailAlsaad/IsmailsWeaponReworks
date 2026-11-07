@@ -37,7 +37,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int ComboWindowTicks => 30;     // a swing started within this long after the last one ended is consecutive (alternates and charges)
         public static float HitLengthScale => 1.3f;   // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
         public static float HitWidth => 18f;          // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
-        public static float HitShake => 0.5f;         // camera punch on a hit (pixels)
+        public static float HitShake => 0.25f;         // camera punch on a hit (pixels)
 
         // ---- the combo: every consecutive swing is faster and charges the sword ----
         public static int ChargeSwings => 6;          // this many consecutive swings fully charge the sword (the swing after them is the first charged one)
@@ -85,5 +85,37 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static Color OutlineCoreColor => new Color(235, 200, 255, 0);
         public static float ChargeUpPunch => 0.8f;      // camera punch when the sword becomes fully charged
         public static int FlashTicks => 14;             // how long the charge-up flash on the blade lasts
+
+        // ---- the edge flames (patch 2): metaballs along the blade edge, clipped to Ismail's mask, and free flames that leave it ----
+        public static int FlameGrowSteps => 2;          // the flames grow in over the last this-many combo steps before full charge
+        public static int EdgeAnchors => 14;            // blobs along the edge (the edge is cut into this many slices from hilt to tip)
+        public static float EdgeRadius => 5f;           // radius of one edge blob at full strength (px at scale 1)
+        public static float EdgeRadiusPulse => 0.3f;    // how much the blobs breathe (0.3 = 30%)
+        public static float EdgeJitter => 1.5f;         // how far the blobs wander around their spot (px at scale 1)
+        public static float EdgeHeatBase => 0.55f;      // the heat of the edge, with a wave running up the blade around it
+        public static float EdgeHeatWave => 0.45f;
+        public static float EdgeWaveSpeed => 0.16f;     // radians per tick: how fast the heat wave runs along the blade
+        public static float EdgeWaveLength => 1.6f;     // waves on the blade at once
+        public static float FlameSpawnChance => 0.6f;   // free flames per tick at full strength (0.6 = about 3 in 5 ticks)
+        public static float FlameSize => 3.5f;          // radius of a free flame at birth (px at scale 1)
+        public static int FlameLifeTicks => 34;
+        public static float FlameKick => 0.5f;          // random push when a free flame starts
+        public static float FlameInherit => 0.3f;       // how much of the blade's motion a free flame takes with it
+        public static float FlameInheritMax => 6f;      // ... at most this fast (px per tick)
+        public static float FlameHeat => 0.9f;          // free flames start this hot and cool down
+        public static float FlameRise => 0.06f;         // upward push per tick
+        public static float FlameDrag => 0.95f;
+        public static float FlameWobble => 0.05f;
+        public static int FlameMaxParticles => 260;
+        public static float FlamePixelSize => 2f;       // world px per flame pixel
+        public static float FlameMerge => 2.2f;         // how far a blob's field reaches (bigger = merges from further away)
+        public static float FlameOutlineWidth => 0.2f;
+        public static int FlameBands => 5;              // hard color bands
+        public static float FlameGlow => 0.25f;         // faint glow around the blobs (0 = none)
+        public static float FlameLight => 0.9f;         // light the flames cast (0 = none)
+        public static Color FlameColdColor => new Color(55, 14, 105);
+        public static Color FlameMidColor => new Color(150, 60, 230);
+        public static Color FlameHotColor => new Color(238, 205, 255);
+        public static Color FlameOutlineColor => new Color(34, 8, 70);
     }
 }

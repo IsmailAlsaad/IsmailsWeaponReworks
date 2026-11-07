@@ -102,6 +102,13 @@ namespace IsmailsWeaponReworks.Common
         // Set by MetaballLayers every frame; DrawInBatch draws at most once per frame (several projectiles may ask).
         public bool DrawnThisFrame;
 
+        /// <summary>
+        /// Optional clip: called with the WORLD position of the middle of every cell about to be drawn (fill, outline and glow); a cell for
+        /// which it returns false is skipped. The weapon sets it every tick (it usually captures where its sprite is), e.g. to keep flames
+        /// inside a hand-drawn mask. Null = no clip.
+        /// </summary>
+        public Func<Vector2, bool> CellFilter;
+
         public void Draw()
         {
             DrawCells(true);
@@ -171,6 +178,8 @@ namespace IsmailsWeaponReworks.Common
             {
                 float f = fieldSum[i];
                 if (f < glowFrom)
+                    continue;
+                if (CellFilter != null && !CellFilter(new Vector2((cellX[i] + 0.5f) * grid, (cellY[i] + 0.5f) * grid)))
                     continue;
 
                 Color color;
