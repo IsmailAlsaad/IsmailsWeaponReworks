@@ -58,7 +58,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = 0.2f }, head);
+            SoundEngine.PlaySound(SoundID.DD2_MonkStaffGroundImpact with { Volume = 1f, Pitch = 0.2f }, head);
             for (int i = 0; i < 8; i++)
                 Spark(head, (-direction).RotatedByRandom(1.0f) * Main.rand.NextFloat(1f, 4f), 1.1f, true);
             for (int i = 0; i < 6; i++)
@@ -119,7 +119,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.6f, Pitch = 0.5f }, position);
+            //SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.6f, Pitch = 0.5f }, position);
             for (int i = 0; i < 6; i++)
                 Spark(position, (-direction).RotatedByRandom(1.2f) * Main.rand.NextFloat(0.5f, 2.5f), 1.2f, i % 2 == 0);
         }
@@ -129,7 +129,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Tink with { Volume = MathHelper.Clamp(0.25f + 0.08f * strength, 0.25f, 0.8f), Pitch = 0.1f }, position);
+            //SoundEngine.PlaySound(SoundID.Tink with { Volume = MathHelper.Clamp(0.25f + 0.08f * strength, 0.25f, 0.8f), Pitch = 0.1f }, position);
             for (int i = 0; i < 4; i++)
                 Spark(position, new Vector2(Main.rand.NextFloat(-1.5f, 1.5f), -Main.rand.NextFloat(0.5f, 2f)), 1f, i % 2 == 0);
         }
