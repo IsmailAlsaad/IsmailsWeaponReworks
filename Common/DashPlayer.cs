@@ -184,6 +184,14 @@ namespace IsmailsWeaponReworks.Common
                 return;
             }
 
+            // Past the target (a dash overshoots it by up to one step on its last tick): the dash is over. The heading must NOT be turned
+            // toward the target now, it points backward, and that was what threw the player back the way he came.
+            if (Vector2.Dot(toTarget, Direction) < 0f)
+            {
+                FinishWithImpulse();
+                return;
+            }
+
             if (touching)
             {
                 Vector2 slide = BounceMath.Slide(heading, normal);

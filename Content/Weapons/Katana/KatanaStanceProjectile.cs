@@ -45,6 +45,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         float Progress => MathHelper.Clamp(ticks / (float)Math.Max(1, KatanaTuning.SheathEaseTicks), 0f, 1f);
         bool Settled => ticks >= KatanaTuning.SheathEaseTicks;
 
+        // The sword has clicked shut and the cooldown is over (the white glow is on): only then may the next blade be thrown.
+        public bool ReadyToThrow => readyAnnounced;
+
         public static void Spawn(IEntitySource source, Player owner, float startArmLocal, float startTilt, int cooldownTicks)
         {
             Projectile.NewProjectile(source, owner.MountedCenter, Vector2.Zero, ModContent.ProjectileType<KatanaStanceProjectile>(), 0, 0f, owner.whoAmI, startArmLocal, startTilt, Math.Max(0, cooldownTicks));

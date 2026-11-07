@@ -37,6 +37,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         {
             if (!player.GetModPlayer<KatanaPlayer>().Ready)
                 return false;
+            // Only a fully sheathed sword (clicked shut, cooldown over, the white glow) may throw: the cooldown alone is shorter than the sheathing.
+            Projectile stance = KatanaPlayer.Find(player.whoAmI, ModContent.ProjectileType<KatanaStanceProjectile>());
+            if (stance == null || !(stance.ModProjectile is KatanaStanceProjectile sheathed) || !sheathed.ReadyToThrow)
+                return false;
             return !KatanaPlayer.BladeFlying(player.whoAmI); // a blade stuck in a tile or falling does not block the next throw
         }
 
