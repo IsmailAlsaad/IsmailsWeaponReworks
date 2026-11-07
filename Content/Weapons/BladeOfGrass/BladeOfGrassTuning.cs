@@ -33,7 +33,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public static float GrowSpeed => 1.5f;           // how fast a vine gets longer, pixels per tick (also how fast it regrows after a cut)
         public static float SpreadDeg => 9f;           // the three vines fan out by this much around the cursor direction
         public static float FreeSlackPx => 16f;        // a free vine shows this much more than the straight distance to its goal (room for the wave); it only shows what it needs to put its tip on the cursor
-        public static float VineVariation => 0.25f;    // how different the three vines are (wave, stiffness, speed, growth, length); 0 = identical copies
+        public static float VineVariation => 0.1f;    // how different the three vines are (wave, stiffness, speed, growth, length); 0 = identical copies
 
         // ---- the rope: how lively the vines are ----
         public static float Damping => 0.93f;          // velocity kept per tick
@@ -52,7 +52,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
 
         // ---- targeting ----
         public static float TargetRadius => 200f;      // an enemy this close to the cursor (pixels) can be targeted
-        public static float ReachSlack => 40f;         // an enemy may be this much farther than the vine's current length and still count as in reach
+        public static float ReachSlack => 10f;         // an enemy may be this much farther than the vine's current length and still count as in reach
         public static float LoseTargetFactor => 1.5f;  // a target is dropped when the cursor moves farther than TargetRadius times this from it
         public static int RetargetInterval => 5;       // ticks between target searches
         public static float SamePenalty => 100000f;    // added to an enemy's score per vine already on it, so vines spread out; the same enemy is only reused when nothing else is in reach
