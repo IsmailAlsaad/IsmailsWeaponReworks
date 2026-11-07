@@ -54,6 +54,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         float aimShown;         // aim in the player's own frame
         float syncAim;          // other machines: the owner's latest aim
         bool gotAim;
+        bool retracting;        // the button was let go or the weapon swapped: the vines shrink away, bit by bit
+        bool handLocked;
+        Vector2 handOffset;     // where the blade's hand was relative to the player when the retreat began (the roots stay there)
+
+        public bool Retracting => retracting;
         float cursorDist;
         int syncTimer;
         int searchTimer;
@@ -114,6 +119,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 writer.Write((short)vines[i].Target);
                 writer.Write((short)Math.Round(vines[i].Length));
             }
+            writer.Write(retracting);
         }
 
         public override void ReceiveExtraAI(BinaryReader reader)
@@ -137,6 +143,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                     vines[i].SyncLength = length;
                 }
             }
+            if (reader.ReadBoolean())
+                retracting = true;
         }
 
         // ---------------------------------------------------------------- AI
@@ -151,24 +159,38 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 Projectile.Kill();
                 return;
             }
-            // The owner's client ends it when the button is let go, the item is swapped, or the player is crowd-controlled; the kill is synced.
-            if (isOwner && (!owner.channel || owner.noItems || owner.CCed || owner.HeldItem.type != ItemID.BladeofGrass))
+            // The owner's client starts the retreat when the button is let go, the item is swapped, or the player is crowd-controlled;
+            // the flag is synced and every machine then shrinks its own copy of the vines. The owner ends the projectile when they are gone.
+            if (isOwner && !retracting && (!owner.channel || owner.noItems || owner.CCed || owner.HeldItem.type != ItemID.BladeofGrass))
             {
-                Projectile.Kill();
-                return;
+                EnsureVines();
+                retracting = true;
+                syncAim = aimShown;
+                for (int i = 0; i < vines.Length; i++)
+                {
+                    vines[i].Target = -1;
+                    vines[i].WrapTicks = 0;
+                }
+                Projectile.netUpdate = true;
             }
 
             EnsureVines();
             Projectile.timeLeft = 2;
-            owner.heldProj = Projectile.whoAmI;
-            owner.itemTime = 2;
-            owner.itemAnimation = 2;
+            if (!retracting)
+            {
+                owner.heldProj = Projectile.whoAmI;
+                owner.itemTime = 2;
+                owner.itemAnimation = 2;
+            }
             Projectile.scale = BladeOfGrassTuning.SwordScale * owner.GetAdjustedItemScale(owner.HeldItem);
             holdTicks++;
-            charge = MathHelper.Clamp(holdTicks / (float)Math.Max(1, BladeOfGrassTuning.ChargeTicks), 0f, 1f);
+            if (retracting)
+                charge = Math.Max(0f, charge - 0.03f);
+            else
+                charge = MathHelper.Clamp(holdTicks / (float)Math.Max(1, BladeOfGrassTuning.ChargeTicks), 0f, 1f);
 
             Vector2 cursorWorld;
-            if (isOwner)
+            if (isOwner && !retracting)
             {
                 aimShown = HeldAim.Capture(owner);
                 cursorWorld = Main.MouseWorld;
@@ -186,9 +208,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 cursorWorld = owner.MountedCenter + HeldAim.ToWorldDirection(owner, aimShown) * cursorDist;
             }
 
-            ApplyPose(owner);
+            if (!retracting || hand == Vector2.Zero)
+                ApplyPose(owner);
+            if (retracting)
+                LockHand(owner);
 
-            if (isOwner && ++searchTimer >= Math.Max(1, BladeOfGrassTuning.RetargetInterval))
+            if (isOwner && !retracting && ++searchTimer >= Math.Max(1, BladeOfGrassTuning.RetargetInterval))
             {
                 searchTimer = 0;
                 AssignTargets(cursorWorld);
@@ -197,10 +222,41 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             for (int i = 0; i < vines.Length; i++)
                 StepVine(i, vines[i], cursorWorld, isOwner);
 
+            if (retracting)
+            {
+                bool any = false;
+                for (int i = 0; i < vines.Length; i++)
+                {
+                    Vine vine = vines[i];
+                    if (vine.Length < 2f || !vine.Init)
+                        continue;
+                    any = true;
+                    if (holdTicks % 4 == 0 && !Main.dedServ)
+                        BladeOfGrassFx.Release(vine.P[vine.P.Length - 1]);
+                }
+                if (!any && isOwner)
+                {
+                    Projectile.Kill();
+                    return;
+                }
+            }
+
             // Leaves fly off the shaking blade.
-            if (charge > 0.2f && Main.rand.NextFloat() < charge * 6f / Math.Max(1, BladeOfGrassTuning.ChargeDustInterval) * 0.2f)
+            if (!retracting && charge > 0.2f && Main.rand.NextFloat() < charge * 6f / Math.Max(1, BladeOfGrassTuning.ChargeDustInterval) * 0.2f)
                 BladeOfGrassFx.ChargeLeaf(hand + bladeDir * (BladeOfGrassTuning.BladeLength * Projectile.scale * Main.rand.NextFloat()), charge);
             Lighting.AddLight(hand + bladeDir * (BladeOfGrassTuning.BladeLength * 0.5f), 0.1f + 0.2f * charge, 0.3f + 0.3f * charge, 0.08f);
+        }
+
+        // While the vines retract the blade is no longer held; the roots stay where the hand was, relative to the player.
+        void LockHand(Player owner)
+        {
+            if (!handLocked)
+            {
+                handOffset = hand - owner.MountedCenter;
+                handLocked = true;
+            }
+            hand = owner.MountedCenter + handOffset;
+            Projectile.Center = hand;
         }
 
         // Smooth shake that is not periodic enough to look mechanical.
@@ -318,12 +374,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             if (isOwner)
             {
                 float start = BladeOfGrassTuning.StartTicks + index * BladeOfGrassTuning.StaggerTicks;
-                float desired = holdTicks < start ? 0f
+                float desired = retracting || holdTicks < start ? 0f
                     : MathHelper.Lerp(BladeOfGrassTuning.MinLength, BladeOfGrassTuning.MaxLength, MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp((holdTicks - start) / (float)Math.Max(1, BladeOfGrassTuning.GrowTicks), 0f, 1f)));
                 if (vine.Length < desired)
                     vine.Length = Math.Min(desired, vine.Length + BladeOfGrassTuning.GrowSpeed);
                 else if (vine.Length > desired)
-                    vine.Length = desired;
+                    vine.Length = retracting ? Math.Max(desired, vine.Length - BladeOfGrassTuning.RetractSpeed) : desired;
                 vine.SyncLength = vine.Length;
                 if (vine.Cooldown > 0)
                     vine.Cooldown--;
@@ -577,13 +633,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             if (Main.dedServ || vines == null)
                 return false;
             chainAsset ??= ModContent.Request<Texture2D>("Terraria/Images/" + BladeOfGrassTuning.VineChainName);
-            headAsset ??= ModContent.Request<Texture2D>("Terraria/Images/Projectile_" + BladeOfGrassTuning.VineHeadId);
+            headAsset ??= ModContent.Request<Texture2D>("Terraria/Images/Projectile_" + ProjectileID.IvyWhip);
             Texture2D chain = chainAsset.Value;
             Texture2D head = headAsset.Value;
 
-            // The vines go behind the sword.
+            // The vines go behind the sword: all the chains first (as one mesh each, see DrawStrip), then the heads.
+            BladeOfGrassVineDraw.BeginMesh();
             for (int i = 0; i < vines.Length; i++)
-                DrawVine(vines[i], chain, head);
+                DrawVineBody(vines[i], chain);
+            BladeOfGrassVineDraw.EndMesh();
+            for (int i = 0; i < vines.Length; i++)
+                DrawVineHead(vines[i], head);
+            if (retracting)
+                return false; // the blade is no longer held
 
             Texture2D texture = TextureAssets.Projectile[Type].Value;
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
@@ -602,23 +664,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             return false;
         }
 
-        void DrawVine(Vine vine, Texture2D chain, Texture2D head)
+        void DrawVineBody(Vine vine, Texture2D chain)
+        {
+            if (!vine.Init || vine.P == null || vine.Length < 2f)
+                return;
+            BladeOfGrassVineDraw.DrawStrip(chain, vine.P, vine.P.Length, BladeOfGrassTuning.VineScale, BladeOfGrassTuning.VineScale * BladeOfGrassTuning.VineTipScale, 1f, 0f, BladeOfGrassTuning.ChainEndTrimPx);
+        }
+
+        void DrawVineHead(Vine vine, Texture2D head)
         {
             if (!vine.Init || vine.P == null || vine.Length < 2f)
                 return;
             int n = vine.P.Length;
-            BladeOfGrassVineDraw.Resample(vine.P, n, chain.Height * BladeOfGrassTuning.ChainSpacing * BladeOfGrassTuning.VineScale, samplePositions, sampleAngles);
-            int count = samplePositions.Count;
-            Vector2 chainOrigin = chain.Size() * 0.5f;
-            for (int s = 0; s < count; s++)
-            {
-                float along = count <= 1 ? 0f : s / (float)(count - 1);
-                float scale = BladeOfGrassTuning.VineScale * MathHelper.Lerp(1f, BladeOfGrassTuning.VineTipScale, along);
-                Vector2 world = samplePositions[s];
-                Color color = Lighting.GetColor(world.ToTileCoordinates());
-                Main.EntitySpriteDraw(chain, world - Main.screenPosition, null, color, sampleAngles[s] - MathHelper.PiOver2, chainOrigin, scale, SpriteEffects.None, 0);
-            }
-
             // The Ivy Whip head over the end of the vine; its back covers the last links, so there is no gap.
             Vector2 end = vine.P[n - 1];
             float angle = (end - vine.P[Math.Max(0, n - 3)]).ToRotation();

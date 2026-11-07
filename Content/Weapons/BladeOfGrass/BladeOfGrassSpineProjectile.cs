@@ -21,7 +21,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
     public class BladeOfGrassSpineProjectile : ModProjectile
     {
         // Uses the Snapthorn whip sheet as its texture so nothing is missing; the drawing picks the frames itself.
-        public override string Texture => "Terraria/Images/Projectile_" + BladeOfGrassTuning.SpineHeadId;
+        public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.ThornHook;
 
         int age;
         bool detached; // the enemy is gone: stop drawing
@@ -106,8 +106,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
 
             chainAsset ??= ModContent.Request<Texture2D>("Terraria/Images/" + BladeOfGrassTuning.VineChainName);
             thornChainAsset ??= ModContent.Request<Texture2D>("Terraria/Images/" + BladeOfGrassTuning.SpineChainName);
-            vineHeadAsset ??= ModContent.Request<Texture2D>("Terraria/Images/Projectile_" + BladeOfGrassTuning.VineHeadId);
-            thornHeadAsset ??= ModContent.Request<Texture2D>("Terraria/Images/Projectile_" + BladeOfGrassTuning.SpineHeadId);
+            vineHeadAsset ??= ModContent.Request<Texture2D>("Terraria/Images/Projectile_" + ProjectileID.IvyWhip);
+            thornHeadAsset ??= ModContent.Request<Texture2D>("Terraria/Images/Projectile_" + ProjectileID.ThornHook);
             Texture2D chain = chainAsset.Value;
             Texture2D thornChain = thornChainAsset.Value;
             Texture2D vineHead = vineHeadAsset.Value;
@@ -136,36 +136,36 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 coil[j] = npc.Center + new Vector2((float)Math.Cos(angle) * (rx + wobble), (float)Math.Sin(angle) * (ry + wobble) * 0.85f + (u - 0.5f) * npc.height * BladeOfGrassTuning.CoilDrift);
             }
 
-            // The end of the coil: the heads sit over it exactly like on a free vine.
+            // The coil has a head on EACH end: the Ivy Whip head while it is still smooth, the Thorn Hook head once it is spiny.
+            Vector2 coilStart = coil[0];
             Vector2 coilEnd = coil[samples - 1];
-            Vector2 coilBefore = coil[samples - 3];
-            bool hasEnd = Vector2.DistanceSquared(coilEnd, coilBefore) > 0.01f;
-            float endAngle = hasEnd ? (coilEnd - coilBefore).ToRotation() : 0f;
+            bool hasStart = Vector2.DistanceSquared(coilStart, coil[2]) > 0.01f;
+            bool hasEnd = Vector2.DistanceSquared(coilEnd, coil[samples - 3]) > 0.01f;
+            float startAngle = (coilStart - coil[2]).ToRotation(); // pointing out of the coil at its start
+            float endAngle = (coilEnd - coil[samples - 3]).ToRotation();
+            Color startLight = Lighting.GetColor(coilStart.ToTileCoordinates());
+            Color endLight = Lighting.GetColor(coilEnd.ToTileCoordinates());
+            float trim = BladeOfGrassTuning.ChainEndTrimPx;
 
-            // The smooth vine (Ivy Whip chain and head) fades out while the spiny one (Thorn Hook chain and head) fades in.
+            // The smooth vine (Ivy Whip chain) fades out while the spiny one (Thorn Hook chain) fades in; each is one mesh, see DrawStrip.
+            BladeOfGrassVineDraw.BeginMesh();
+            BladeOfGrassVineDraw.DrawStrip(chain, coil, samples, BladeOfGrassTuning.VineScale, BladeOfGrassTuning.VineScale, 1f - spines, trim, trim);
+            BladeOfGrassVineDraw.DrawStrip(thornChain, coil, samples, BladeOfGrassTuning.SpineScale, BladeOfGrassTuning.SpineScale, spines, trim, trim);
+            BladeOfGrassVineDraw.EndMesh();
+
             if (spines < 1f)
             {
-                BladeOfGrassVineDraw.Resample(coil, samples, chain.Height * BladeOfGrassTuning.ChainSpacing * BladeOfGrassTuning.VineScale, samplePositions, sampleAngles);
-                Vector2 chainOrigin = chain.Size() * 0.5f;
-                for (int s = 0; s < samplePositions.Count; s++)
-                {
-                    Color color = Lighting.GetColor(samplePositions[s].ToTileCoordinates()) * (1f - spines);
-                    Main.EntitySpriteDraw(chain, samplePositions[s] - Main.screenPosition, null, color, sampleAngles[s] - MathHelper.PiOver2, chainOrigin, BladeOfGrassTuning.VineScale, SpriteEffects.None, 0);
-                }
+                if (hasStart)
+                    BladeOfGrassVineDraw.DrawHead(vineHead, coilStart, startAngle, BladeOfGrassTuning.HeadScale, startLight * (1f - spines));
                 if (hasEnd)
-                    BladeOfGrassVineDraw.DrawHead(vineHead, coilEnd, endAngle, BladeOfGrassTuning.HeadScale, Lighting.GetColor(coilEnd.ToTileCoordinates()) * (1f - spines));
+                    BladeOfGrassVineDraw.DrawHead(vineHead, coilEnd, endAngle, BladeOfGrassTuning.HeadScale, endLight * (1f - spines));
             }
             if (spines > 0f)
             {
-                BladeOfGrassVineDraw.Resample(coil, samples, thornChain.Height * BladeOfGrassTuning.ChainSpacing * BladeOfGrassTuning.SpineScale, samplePositions, sampleAngles);
-                Vector2 thornOrigin = thornChain.Size() * 0.5f;
-                for (int s = 0; s < samplePositions.Count; s++)
-                {
-                    Color color = Lighting.GetColor(samplePositions[s].ToTileCoordinates()) * spines;
-                    Main.EntitySpriteDraw(thornChain, samplePositions[s] - Main.screenPosition, null, color, sampleAngles[s] - MathHelper.PiOver2, thornOrigin, BladeOfGrassTuning.SpineScale, SpriteEffects.None, 0);
-                }
+                if (hasStart)
+                    BladeOfGrassVineDraw.DrawHead(thornHead, coilStart, startAngle, BladeOfGrassTuning.HeadScale, startLight * spines);
                 if (hasEnd)
-                    BladeOfGrassVineDraw.DrawHead(thornHead, coilEnd, endAngle, BladeOfGrassTuning.HeadScale, Lighting.GetColor(coilEnd.ToTileCoordinates()) * spines);
+                    BladeOfGrassVineDraw.DrawHead(thornHead, coilEnd, endAngle, BladeOfGrassTuning.HeadScale, endLight * spines);
             }
             return false;
         }

@@ -16,8 +16,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         // ---- the charge: holding makes the blade shake more and more ----
         public static int ChargeTicks => 120;          // how long the shake takes to reach its maximum
         public static float ShakeCurve => 2f;          // 1 = linear, 2 = the shake stays small for a while and then rises fast
-        public static float ShakeArmDeg => 5f;         // arm jitter at full charge
-        public static float ShakeHandPx => 2.5f;       // hand jitter at full charge
+        public static float ShakeArmDeg => 1f;         // arm jitter at full charge
+        public static float ShakeHandPx => 0.5f;       // hand jitter at full charge
         public static int ChargeDustInterval => 6;     // a leaf off the blade this often at full charge (rarer when less charged)
 
         // ---- the vines ----
@@ -27,25 +27,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public static float RootEnd => 0.9f;           // and the last
         public static int StartTicks => 18;            // the first vine starts growing after this many ticks of holding
         public static int StaggerTicks => 10;          // each next vine starts this much later
-        public static int GrowTicks => 150;            // ticks of holding (after its start) for a vine to reach MaxLength
+        public static int GrowTicks => 360;            // ticks of holding (after its start) for a vine to reach MaxLength
         public static float MinLength => 70f;          // length a vine starts with
         public static float MaxLength => 460f;         // the longest a vine gets (about 29 tiles)
-        public static float GrowSpeed => 3f;           // how fast a vine gets longer, pixels per tick (also how fast it regrows after a cut)
+        public static float GrowSpeed => 1.5f;           // how fast a vine gets longer, pixels per tick (also how fast it regrows after a cut)
         public static float SpreadDeg => 9f;           // the three vines fan out by this much around the cursor direction
 
         // ---- the rope: how lively the vines are ----
         public static float Damping => 0.93f;          // velocity kept per tick
         public static float Stiffness => 0.16f;        // how hard each point is pulled toward where the vine wants to be
         public static float Gravity => 0.08f;
-        public static float WrigglePx => 18f;          // sideways wave of a free vine (pixels)
+        public static float WrigglePx => 8f;          // sideways wave of a free vine (pixels)
         public static float WriggleSpeed => 0.22f;     // radians per tick
-        public static float WriggleWaves => 5f;        // radians of wave along the whole vine
+        public static float WriggleWaves => 4f;        // radians of wave along the whole vine
         public static float WriggleTargetFactor => 0.4f; // the wave shrinks to this fraction while a vine has a target
         public static float WriggleChargeBoost => 1.5f;  // extra wave at full charge (the vines get wilder)
         public static float MaxPointSpeed => 40f;      // a point never moves faster than this per tick (keeps a quick player move from flinging the rope)
         public static int ConstraintPasses => 2;
         public static float RootInfluenceFloor => 0.1f; // how strongly the point next to the root follows the vine's world goal (the rest follows the root through the rope)
-        public static float TipInfluencePower => 1.5f; // the pull toward the goal grows with this power toward the tip (higher = the tip is freer)
+        public static float TipInfluencePower => 1f; // the pull toward the goal grows with this power toward the tip (higher = the tip is freer)
         public static float TargetStiffnessBoost => 2f; // the whole vine is pulled harder toward its goal while it reaches for an enemy
 
         // ---- targeting ----
@@ -93,14 +93,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         // ---- vanilla textures ----
         public static string VineChainName => "Chain5";    // Terraria/Images/<this>: the Vine Hook (Ivy Whip) chain. If the look is wrong try another Chain1..Chain43
         public static string SpineChainName => "Chains_1";   // Terraria/Images/<this>: the Thorn Hook chain, used for the spiny coil
-        public static int VineHeadId => 32;                // Terraria/Images/Projectile_<this>: the Ivy Whip head, the tip of the smooth vine
-        public static int SpineHeadId => 375;              // the Thorn Hook head, the end of the spiny coil. If the look is wrong try 372..375 (the four mimic/plantera hooks)
         public static float HeadForwardPx => 2f;           // the head sticks out this far beyond the end of the vine (its back overlaps the chain, so there is no gap)
         public static float VineScale => 1f;
         public static float VineTipScale => 0.7f;          // the vine gets this thick at its tip (fraction of VineScale)
         public static float SpineScale => 1f;
         public static float HeadScale => 1f;
         public static float ChainSpacing => 0.8f;          // distance between sprites along a vine, as a fraction of the sprite's height
+        public static float ChainEndTrimPx => 4f;          // the chain stops this many pixels before each end (the head covers the rest), raise it if a link pokes out of a head
+        public static float RetractSpeed => 6f;            // pixels per tick the vines shrink after the button is released or the weapon is swapped
 
         // ---- netcode ----
         public static int SyncIntervalTicks => 4;      // how often the owner sends the aim, the targets and the lengths
