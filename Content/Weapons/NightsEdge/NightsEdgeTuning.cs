@@ -117,12 +117,5 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static Color FlameMidColor => new Color(150, 60, 230);
         public static Color FlameHotColor => new Color(238, 205, 255);
         public static Color FlameOutlineColor => new Color(34, 8, 70);
-
-        // ---- the idle stance (patch 2b): the sword held out while not swinging. Angles are for a player facing right, positive = down ----
-        public static float IdleArmDeg => 40f;          // the hand: in front of the body, a little low
-        public static float IdleTiltDeg => -80f;       // the blade relative to the arm (arm + tilt = -60: pointing up and forward)
-        public static int IdleEaseTicks => 14;          // how long the sword takes to settle from where a swing ended
-        public static float IdleBobDeg => 2.5f;         // the slow breathing bob of the hand
-        public static int IdleBobTicks => 100;          // one full bob
     }
 }

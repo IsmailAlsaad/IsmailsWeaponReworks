@@ -55,5 +55,4 @@ Projectiles: {
 	BladeOfGrassHoldProjectile.DisplayName: Blade Of Grass Hold Projectile
 	BladeOfGrassSpineProjectile.DisplayName: Blade Of Grass Spine Projectile
 	NightsEdgeSwingProjectile.DisplayName: Nights Edge Swing Projectile
-	NightsEdgeStanceProjectile.DisplayName: Nights Edge Stance Projectile
 }

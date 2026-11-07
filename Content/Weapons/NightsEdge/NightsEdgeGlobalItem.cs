@@ -63,16 +63,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             bool afterDown = combo && state.LastPhase == (int)NightsEdgeSwingProjectile.Phase.SwingDown;
             NightsEdgeSwingProjectile.Phase phase = afterDown ? NightsEdgeSwingProjectile.Phase.SwingUp : NightsEdgeSwingProjectile.Phase.SwingDown;
             float startArm = combo ? state.LastEndArm : MathHelper.ToRadians(NightsEdgeTuning.RestArmDeg); // relative to the aim
-            float startTilt = MathHelper.ToRadians(phase == NightsEdgeSwingProjectile.Phase.SwingUp ? NightsEdgeTuning.TiltLowDeg : NightsEdgeTuning.TiltHighDeg);
-
-            // While the sword is held out in its idle stance the swing starts from where the arm and blade really are (relative to the aim).
-            Projectile stance = NightsEdgePlayer.Find(player.whoAmI, ModContent.ProjectileType<NightsEdgeStanceProjectile>());
-            if (stance != null && stance.ModProjectile is NightsEdgeStanceProjectile held)
-            {
-                int facing = Math.Cos(aim) >= 0.0 ? 1 : -1;
-                startArm = MathHelper.WrapAngle((held.WorldArmNow - aim) * facing);
-                startTilt = MathHelper.WrapAngle((held.WorldBladeNow - held.WorldArmNow) * facing);
-            }
 
             // The timeline speed (the combo times the owner's melee attack speed) travels in the spawn velocity's X: the projectile never moves
             // by its velocity, reads it back on its first tick on every machine and clears it, so no machine has to guess another player's stats.
@@ -82,7 +72,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             // ai[0] = phase + 10 * level, ai[1] = start arm angle (relative to the aim), ai[2] = the aim.
             int swingDamage = (int)Math.Round(damage * NightsEdgeTuning.SwingDamageMultiplier);
             float swingKnockback = knockback * NightsEdgeTuning.SwingKnockbackMultiplier;
-            Projectile.NewProjectile(source, player.MountedCenter, new Vector2(speed, startTilt), type, swingDamage, swingKnockback, player.whoAmI, (float)phase + 10f * level, startArm, aim);
+            Projectile.NewProjectile(source, player.MountedCenter, new Vector2(speed, 0f), type, swingDamage, swingKnockback, player.whoAmI, (float)phase + 10f * level, startArm, aim);
             return false;
         }
     }

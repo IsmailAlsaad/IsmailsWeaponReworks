@@ -100,15 +100,10 @@ namespace IsmailsWeaponReworks.Common
                 return sampler;
 
             Texture2D texture = fallback;
-            bool found = ModContent.RequestIfExists<Texture2D>(assetPath, out Asset<Texture2D> asset);
-            if (found)
+            if (ModContent.RequestIfExists<Texture2D>(assetPath, out Asset<Texture2D> asset))
                 texture = asset.Value;
             sampler = new MaskSampler(texture);
             loaded[assetPath] = sampler;
-
-            // One line in the log says what the flames are clipped to (client.log).
-            if (ModLoader.TryGetMod("IsmailsWeaponReworks", out Mod mod))
-                mod.Logger.Info("MaskSampler: " + assetPath + (found ? " found, " : " NOT FOUND (using the sprite itself), ") + texture.Width + "x" + texture.Height + ", " + sampler.OpaqueTexels.Length + " opaque pixels, " + sampler.Anchors(14).Length + " anchors");
             return sampler;
         }
 
