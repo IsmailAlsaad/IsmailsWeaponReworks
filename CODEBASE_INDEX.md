@@ -132,7 +132,7 @@ tModLoader/other bases -> project types:
     +Style:PixelTrailStyle +IsOwner:bool +Count:int +IsEmpty:bool +Clock:int +PointAt(int) +AgeAt(int) +Add(Vector2) +FadeWithin(int) +Tick() +Draw()
 **PlayerDash.cs** uses: Afterimage, DashPhase, DashPlayer, Phase
   struct DashSettings
-    +Speed:float +Ticks:int +BounceOnTile:bool +BounceSpeed:float +HitStopTicks:int +BounceTicks:int +ImmuneTicks:int +GrazeCos:float +BounceDrag:float +ImmuneTailTicks:int +ArriveDistance:float +StuckTicks:int +ImpulseKeep:float
+    +Speed:float +Ticks:int +BounceOnTile:bool +BounceSpeed:float +HitStopTicks:int +BounceTicks:int +ImmuneTicks:int +GrazeCos:float +BounceDrag:float +ImmuneTailTicks:int +ArriveDistance:float +StuckTicks:int +PassPlatforms:bool +ImpulseKeep:float
   static class PlayerDash
     +Begin(Player,Vector2,DashSettings,Action<Vector2, Vector2, bool>,Vector2?)[s] +Bounce(Player,Vector2)[s] +End(Player)[s] +IsDashing(Player)[s] +Afterimage(Player)[s]
 **RemoteHitTracker.cs**
@@ -391,9 +391,9 @@ tModLoader/other bases -> project types:
 **KatanaHitStopNPC.cs** uses: KatanaTuning
   class KatanaHitStopNPC : GlobalNPC
     +InstancePerEntity:bool[ov] +Apply(NPC,int)[s] +PreAI(NPC)[ov] +DrawEffects(NPC,ref Color)[ov]
-**KatanaPlayer.cs** uses: DashPhase, DashPlayer, KatanaBladeProjectile, KatanaStanceProjectile, KatanaTuning, Phase
+**KatanaPlayer.cs** uses: KatanaBladeProjectile, KatanaStanceProjectile, KatanaTuning
   class KatanaPlayer : ModPlayer
-    +CooldownTicks:int +Ready:bool +Find(int,int)[s] +BladeFlying(int)[s] +KillReleasedBlades(int)[s] +SetControls()[ov] +PreUpdateMovement()[ov] +PostUpdate()[ov]
+    +CooldownTicks:int +Ready:bool +Find(int,int)[s] +BladeFlying(int)[s] +KillReleasedBlades(int)[s] +PostUpdate()[ov]
 **KatanaSlashProjectile.cs** uses: AfterimageTrail, CameraShake, HitMarkSet, KatanaFx, KatanaHitStopNPC, KatanaTuning, PixelLine
   class KatanaSlashProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]

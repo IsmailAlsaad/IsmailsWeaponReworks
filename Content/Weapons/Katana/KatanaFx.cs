@@ -10,7 +10,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
     {
         static void Spark(Vector2 position, Vector2 velocity, float scale, bool bright)
         {
-            Dust dust = Dust.NewDustPerfect(position, bright ? DustID.IceTorch : DustID.Smoke, velocity, bright ? 0 : 100, default, scale);
+            scale *= 1.5f;
+
+            Dust dust = Dust.NewDustPerfect(position, bright ? DustID.WhiteTorch : DustID.Smoke, velocity, bright ? 0 : 100, default, scale);
             dust.noGravity = true;
         }
 

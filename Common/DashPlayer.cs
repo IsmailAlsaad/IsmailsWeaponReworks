@@ -74,6 +74,8 @@ namespace IsmailsWeaponReworks.Common
             {
                 case DashPhase.Dash:
                     Player.velocity = Direction * (Settings.Speed * boost);
+                    if (Settings.PassPlatforms && Direction.Y * Player.gravDir > 0.05f)
+                        StepThroughPlatforms();
                     break;
                 case DashPhase.HitStop:
                     Player.velocity = Vector2.Zero;
@@ -104,6 +106,25 @@ namespace IsmailsWeaponReworks.Common
                         Finish(true);
                     break;
             }
+        }
+
+        // Platforms: vanilla's move step only lets a body through a platform with its own "fall through" flag, which is tied to the real
+        // Down key (forcing controlDown never reached it; the Factorraria mech suit found the same). So the dash does the step itself: when
+        // the move is blocked only because of a platform (the same TileCollision with and without fall-through gives different answers),
+        // the player is moved by the fall-through result and the velocity is cleared, so vanilla's step that follows has nothing left to
+        // block. The velocity is rebuilt every tick of the dash, so clearing it costs nothing.
+        void StepThroughPlatforms()
+        {
+            Vector2 velocity = Player.velocity;
+            if (velocity == Vector2.Zero)
+                return;
+            int gravDir = (int)Player.gravDir;
+            Vector2 solid = Collision.TileCollision(Player.position, velocity, Player.width, Player.height, false, false, gravDir);
+            Vector2 through = Collision.TileCollision(Player.position, velocity, Player.width, Player.height, true, true, gravDir);
+            if (solid == through)
+                return;
+            Player.position += through;
+            Player.velocity = Vector2.Zero;
         }
 
         void TickDash()
@@ -188,8 +209,16 @@ namespace IsmailsWeaponReworks.Common
         // Ends a target dash and leaves the player moving along the vector from his center to the target.
         void FinishWithImpulse()
         {
-            Vector2 toTarget = aimPoint.HasValue ? aimPoint.Value - Player.Center : Direction;
-            Vector2 impulse = toTarget.SafeNormalize(Direction) * (Settings.Speed * Settings.ImpulseKeep);
+            // Toward the target while it is still ahead; when the player has flown past it (a dash overshoots by up to a step) the impulse
+            // keeps the dash's own heading, so he never gets thrown back the way he came.
+            Vector2 heading = Direction;
+            if (aimPoint.HasValue)
+            {
+                Vector2 toTarget = aimPoint.Value - Player.Center;
+                if (toTarget.LengthSquared() > 1f && Vector2.Dot(toTarget, Direction) > 0f)
+                    heading = Vector2.Normalize(toTarget);
+            }
+            Vector2 impulse = heading * (Settings.Speed * Settings.ImpulseKeep);
             Finish(false);
             Player.velocity = impulse;
         }

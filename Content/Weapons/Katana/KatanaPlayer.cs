@@ -55,28 +55,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             }
         }
 
-        // While the dash heads downward the player falls through platforms (vanilla lets a player drop through them when Down is held).
-        // SetControls runs on the owner's client, before the movement and its tile collision.
-        public override void SetControls()
-        {
-            HoldDown();
-        }
 
-        // Set again right before the movement (and so right before vanilla's platform test), in case anything between SetControls and the
-        // movement cleared it.
-        public override void PreUpdateMovement()
-        {
-            HoldDown();
-        }
-
-        void HoldDown()
-        {
-            if (Player.whoAmI != Main.myPlayer)
-                return;
-            DashPlayer dash = Player.GetModPlayer<DashPlayer>();
-            if (dash.Phase == DashPhase.Dash && dash.Direction.Y > 0.05f && Player.HeldItem.type == ItemID.Katana)
-                Player.controlDown = true;
-        }
 
         public override void PostUpdate()
         {

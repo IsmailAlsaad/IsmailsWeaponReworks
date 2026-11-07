@@ -384,7 +384,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
                 // A dash toward the blade's point: tiles in the way are slid along, and it always ends with an impulse from the player's
                 // center toward the blade (the tile it is stuck in) instead of a dead stop.
                 DashSettings settings = new DashSettings(speed, dashTicks, false, 0f, 0, 0, dashTicks, KatanaTuning.DashGraze, 0.88f, KatanaTuning.ImmuneTailTicks,
-                    endsInTile ? KatanaTuning.DashArrivePixels : 0f, KatanaTuning.DashStuckTicks, KatanaTuning.DashImpulseKeep);
+                    endsInTile ? KatanaTuning.DashArrivePixels : 0f, KatanaTuning.DashStuckTicks, KatanaTuning.DashImpulseKeep, true);
                 Vector2 target = origin + Direction * (distance + (endsInTile ? KatanaTuning.SinkDepth : 0f));
                 PlayerDash.Begin(owner, travel / length, settings, null, target);
                 owner.GetModPlayer<KatanaPlayer>().CooldownTicks = KatanaTuning.CooldownTicks;

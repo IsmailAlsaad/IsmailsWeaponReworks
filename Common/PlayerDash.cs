@@ -24,9 +24,10 @@ namespace IsmailsWeaponReworks.Common
         public readonly int ImmuneTailTicks;   // extra immunity after the dash ends, however it ends (0 = none)
         public readonly float ArriveDistance;  // target dashes only: the dash is over once the player's center is this close to the target (0 = run the ticks out)
         public readonly int StuckTicks;        // target dashes only: pressed against a tile without moving this many ticks ends the dash (0 = never)
+        public readonly bool PassPlatforms;    // a dash that heads down moves through platforms (DashPlayer.StepThroughPlatforms)
         public readonly float ImpulseKeep;     // target dashes only: a dash that ends leaves the player moving toward the target at Speed x this
 
-        public DashSettings(float speed, int ticks, bool bounceOnTile, float bounceSpeed, int hitStopTicks, int bounceTicks, int immuneTicks = 0, float grazeCos = 0.3f, float bounceDrag = 0.88f, int immuneTailTicks = 0, float arriveDistance = 0f, int stuckTicks = 0, float impulseKeep = 0f)
+        public DashSettings(float speed, int ticks, bool bounceOnTile, float bounceSpeed, int hitStopTicks, int bounceTicks, int immuneTicks = 0, float grazeCos = 0.3f, float bounceDrag = 0.88f, int immuneTailTicks = 0, float arriveDistance = 0f, int stuckTicks = 0, float impulseKeep = 0f, bool passPlatforms = false)
         {
             Speed = speed;
             Ticks = Math.Max(1, ticks);
@@ -41,6 +42,7 @@ namespace IsmailsWeaponReworks.Common
             ArriveDistance = Math.Max(0f, arriveDistance);
             StuckTicks = Math.Max(0, stuckTicks);
             ImpulseKeep = Math.Max(0f, impulseKeep);
+            PassPlatforms = passPlatforms;
         }
     }
 
