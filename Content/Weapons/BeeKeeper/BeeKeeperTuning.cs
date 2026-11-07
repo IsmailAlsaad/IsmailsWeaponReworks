@@ -125,13 +125,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
         // the metaball look of the drips and of the blob a bee carries
         public static float HoneyPixelSize => 2f;
         public static float HoneyMerge => 2.2f;
-        public static float HoneyBlobOutline => 0.22f;
+        public static float HoneyBlobOutline => 0f;
         public static float HoneyGlow => 0.25f;
         public static float HoneyDripHeat => 0.55f;
         public static Color HoneyFillDark => new Color(190, 85, 15);
         public static Color HoneyFillLight => new Color(255, 200, 60);
         public static Color HoneyFillShine => new Color(255, 238, 160);
-        public static Color HoneyDripOutlineColor => new Color(115, 45, 8);
+        public static Color HoneyDripOutlineColor => HoneyFillLight;
         public static Color HoneyGlowColor => new Color(255, 160, 30);
 
         public static Color HoneyFill(float heat)
