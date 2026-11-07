@@ -26,7 +26,7 @@ namespace IsmailsWeaponReworks.Common
         // that is not bigger than maxSize pixels (width or height).
         public static bool CanCarry(NPC npc, float maxSize)
         {
-            return npc.CanBeChasedBy() && EnemyGrab.CanGrip(npc, maxSize);
+            return npc.CanBeChasedBy() && !npc.boss && npc.knockBackResist > 0f && npc.realLife < 0 && Math.Max(npc.width, npc.height) <= maxSize;
         }
 
         // The carrier calls this every tick on every machine for each carried enemy.

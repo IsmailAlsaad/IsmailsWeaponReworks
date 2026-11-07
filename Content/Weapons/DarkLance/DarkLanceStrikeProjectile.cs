@@ -82,6 +82,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
         Vector2 pivot;         // the hand the lance turns around (the gather test measures every orb's angle from it)
         PixelTrail sweepTrail;
         PixelTrail thrustTrail;
+        readonly Vector2[] outlineDirections =
+        {
+            new Vector2(1f, 0f), new Vector2(-1f, 0f), new Vector2(0f, 1f), new Vector2(0f, -1f),
+            new Vector2(1f, 1f), new Vector2(-1f, 1f), new Vector2(1f, -1f), new Vector2(-1f, -1f)
+        };
         RemoteHitTracker remoteHits; // created on first use: a field initializer here would be shared by every projectile of the type
 
         public override void SetDefaults()
@@ -625,8 +630,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.DarkLance
             if (outlineShown > 0.01f)
             {
                 float strength = outlineShown * MathHelper.Lerp(DarkLanceTuning.PrimedOutlineMin, DarkLanceTuning.PrimedOutlineMax, wave);
-                SpriteOutline.Draw(strength, DarkLanceTuning.PrimedOutlineWidth, DarkLanceTuning.PrimedGlowScale, scale, DarkLanceTuning.PrimedOutlineColor, DarkLanceTuning.PrimedOutlineCoreColor,
-                    (color, copyScale, centerScale, offset) => DrawLance(texture, copyScale, color, centerScale, offset));
+                DrawLance(texture, scale * DarkLanceTuning.PrimedGlowScale, DarkLanceTuning.PrimedOutlineColor * (0.4f * strength), scale);
+                float width = DarkLanceTuning.PrimedOutlineWidth;
+                for (int i = 0; i < outlineDirections.Length; i++)
+                    DrawLance(texture, scale, DarkLanceTuning.PrimedOutlineColor * (0.9f * strength), 0f, outlineDirections[i] * width);
+                for (int i = 0; i < 4; i++)
+                    DrawLance(texture, scale, DarkLanceTuning.PrimedOutlineCoreColor * (0.5f * strength), 0f, outlineDirections[i] * (width * 0.5f));
             }
 
             DrawLance(texture, scale * 1.18f, palette.Halo * (0.45f * glow), scale);
