@@ -83,7 +83,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public static int SegmentFadeTicks => 24;      // the coil unwinds over the last ticks
         public static int HitIntervalTicks => 12;      // damage tick of one section
         public static int PoisonTicks => 30;           // Poisoned is topped up to this on the damage ticks of a latched coil, so it lasts as long as a coil is on the enemy and about this long after the last one
-        public static float SegmentDamageScale => 0.2f; // damage of one tick, as a fraction of the weapon's damage
+        public static float SegmentDamageScale => 0.3f; // damage of one tick, as a fraction of the weapon's damage
         public static float SegmentMinLengthFactor => 0.7f; // a short section deals this times the scale ...
         public static float SegmentMaxLengthFactor => 1.5f; // ... and a section as long as MaxLength this times
         public static int MaxSegments => 12;           // per player; the oldest is removed first

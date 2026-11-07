@@ -17,6 +17,9 @@ and a variable like this one
 
 +Always draw halo after images as expanded from the center of the sprite instead of from the pivot
 
+and when making the Tuning.cs for a weapon
+always include all variables relating to damage in their own section
+
 Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projectiles, Tuning, Fx, art). Namespace always equals the folder path. Shared code goes into `Common/` only when a second weapon needs it.
 
 ## Progress
