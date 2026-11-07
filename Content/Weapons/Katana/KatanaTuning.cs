@@ -13,7 +13,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
         // ---- sword ----
         public static float BladeLength => 44f;       // hand to tip, in pixels at scale 1 (adjust to the real sprite)
         public static float SwordScale => 1.1f;
-        public static float GripOffset => 0f;         // where the hand holds the sword: pixels up from the end of the handle, at scale 1 (0 = the very end; try 6-10 for the middle of the handle). The sprite moves, the hit geometry and BladeLength do not: if the tip looks too short, lower BladeLength by the same amount
+        public static float GripOffset => 10f;         // where the hand holds the sword: pixels up from the end of the handle, at scale 1 (0 = the very end; try 6-10 for the middle of the handle). The sprite moves, the hit geometry and BladeLength do not: if the tip looks too short, lower BladeLength by the same amount
 
         // ---- the sheathed pose (copied from the Muramasa) ----
         public static float ReadyArmDeg => -20f;      // where the sword starts when it is first taken out (facing-local arm angle)
