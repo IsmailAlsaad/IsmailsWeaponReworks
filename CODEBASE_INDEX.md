@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-07 | 193 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-07 | 191 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-DetachedTrails(28) ThrustPalette(24) RemoteHitTracker(23) CameraShake(22) HeldSwordPose(17) HeldAim(16) AfterimageTrail(16) ThrustPlayer(12) SweepTrail(11) IceFx(11) PixelLine(10) DarkLanceTuning(10) ThrustChain(9) PixelTrail(9) MuramasaTuning(9) VolcanoTuning(8) SweepTrailStyle(8) MetaballLayers(8) MetaballLayer(8) BoomerangFlight(8)
+DetachedTrails(28) ThrustPalette(24) RemoteHitTracker(23) CameraShake(22) HeldSwordPose(17) HeldAim(16) AfterimageTrail(16) ThrustPlayer(12) SweepTrail(11) IceFx(11) PixelLine(10) DarkLanceTuning(10) ThrustChain(9) PixelTrail(9) MuramasaTuning(9) VolcanoTuning(8) SweepTrailStyle(8) BoomerangFlight(8) SweepFade(7) FlamerangTuning(7)
 
 ## Inheritance
 Project bases -> derived:
@@ -12,8 +12,7 @@ Project bases -> derived:
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
-- MetaballStyle: BeeKeeperHoneyStyle, DarkLanceBlobStyle, NightsEdgeFlameStyle, VolcanoBlobStyle, VolcanoDripStyle
-- NightsEdgeFlameStyle: NightsEdgeEdgeFlameStyle
+- MetaballStyle: BeeKeeperHoneyStyle, DarkLanceBlobStyle, VolcanoBlobStyle, VolcanoDripStyle
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, IceBladeTrailStyle, MuramasaSweepTrailStyle, NightsEdgeSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
 - VolcanoDripStyle: VolcanoBurstStyle
@@ -83,7 +82,7 @@ tModLoader/other bases -> project types:
     #ItemType:int[ab] #Chain:ThrustChain[ab] #Reach:float[ab] #Palette:ThrustPalette[ab] #SpearScale:float[v] #GripFraction:float[v] #HitWidth:float[v] #RetargetEachThrust:bool[v] #TrailLifeTicks:int[v] #TrailRails:int[v] #TrailOpacity:float[v] #PixelSize:float[v] #TrailTaper:float[v] #OnThrustStart(int)[v] #OnStrikeStart(int)[v] #OnTipStep(Vector2,Vector2,float)[v] #OnTipHit(NPC,HitInfo,int)[v] #ShouldContinue(int)[v] #ThrustPitch(int)[v] #SpriteRotation:float[v] #SpritePivot:Vector2[v] #ShaftLength()[v] +Texture:string[ov] #Owner:Player #IsOwner:bool #BaseAim:float #Seed:int #Mode:int #EndAge:int #Age:int #ThrustIndex:int #Extension:float #Striking:bool #Butt:Vector2 #Tip:Vector2 #Direction:Vector2 +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 **HeldSwordPose.cs**
   static class HeldSwordPose
-    +ToWorld(int,float)[s] +Hand(Player,int,float)[s] +BladeDirection(Player,int,float,float)[s] +HandWorld(Player,float)[s] +BladeDirectionWorld(Player,float)[s] +GripShift(float,float,float)[s] +Sprite(Texture2D,int,out Vector2,out float,out SpriteEffects,bool)[s]
+    +ToWorld(int,float)[s] +Hand(Player,int,float)[s] +BladeDirection(Player,int,float,float)[s] +HandWorld(Player,float)[s] +BladeDirectionWorld(Player,float)[s] +GripShift(float,float,float)[s] +Sprite(Texture2D,int,out Vector2,out float,out SpriteEffects)[s]
 **HitMarks.cs** uses: PixelLine
   struct HitMarkStyle
     +Ticks:int +Count:int +MaxMarks:int +Length:float +Width:float +AngleDeg:float +Coverage:float +WidthGrow:float +MaxScale:float +Grid:float +Edge:Color +Glow:Color +Core:Color
@@ -104,19 +103,14 @@ tModLoader/other bases -> project types:
     {None, Water, Lava, Honey, Shimmer}
   static class LiquidState
     +Touching(Player)[s] +HeadUnder(Player)[s] +Kind(Player)[s]
-**MaskSampler.cs**
-  struct SpriteTransform
-    +Position:Vector2 +Rotation:float +Origin:Vector2 +Scale:float +Effects:SpriteEffects +Size:Vector2 +TexelToWorld(Vector2) +WorldToTexel(Vector2)
-  class MaskSampler
-    +OpaqueTexels:Vector2 +Load(string,Texture2D)[s] +ToSprite(Vector2,Vector2) +Contains(SpriteTransform,Vector2) +Anchors(int)
 **MetaballLayer.cs** uses: MetaballParticle, MetaballStyle
   class MetaballLayer
-    +Style:MetaballStyle +IsEmpty:bool +Spawn(Vector2,Vector2,int,float) +AddBlob(Vector2,float,float) +Tick(int) +Clear() +DrawnThisFrame:bool +CellFilter:Func<Vector2, bool> +Draw() +DrawInBatch()
+    +Style:MetaballStyle +IsEmpty:bool +Spawn(Vector2,Vector2,int,float) +AddBlob(Vector2,float,float) +Tick(int) +Clear() +DrawnThisFrame:bool +Draw() +DrawInBatch()
     struct Blob
       +Position:Vector2 +Radius:float +Heat:float +Stamp:int
 **MetaballLayers.cs** uses: MetaballLayer, MetaballStyle
   class MetaballLayers : ModSystem
-    +Of<TStyle>()[s] +Of<TStyle>(int)[s] +PostUpdateEverything()[ov] +PostDrawTiles()[ov] +OnWorldUnload()[ov] +Unload()[ov]
+    +Of<TStyle>()[s] +PostUpdateEverything()[ov] +PostDrawTiles()[ov] +OnWorldUnload()[ov] +Unload()[ov]
 **MetaballStyle.cs**
   class MetaballParticle
     +Position:Vector2 +Velocity:Vector2 +Age:int +Life:int +Size:float +Wobble:float
@@ -475,13 +469,6 @@ tModLoader/other bases -> project types:
     +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +SheathTicks:int[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +SheathArmDeg:float[s] +SheathTiltDeg:float[s] +ScrapeAt:float[s] +ClickKickDeg:float[s] +ClickFlashTicks:int[s] +ClickDustCount:int[s] +ClickShake:float[s] +OutlineWidth:float[s] +OutlinePulseTicks:int[s] +OutlineMin:float[s] +OutlineMax:float[s] +OutlineFade:float[s] +GlowScale:float[s] +OutlineColor:Color[s] +OutlineCoreColor:Color[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +HitShake:float[s] +FlashTicks:int[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOpacity:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +BlueColor:Color[s] +DeepColor:Color[s] +TrailLagTicks:float[s] +TrailLengthScale:float[s] +ShowBladeDebug:bool[s] +DrawWindowTicks:int[s] +DrawSampleSpacing:float[s] +DrawMinPathPixels:float[s] +DrawMaxStrokes:int[s] +DrawSimplifyTolerance:float[s] +DrawLineWidth:float[s] +DrawRingMax:float[s] +DrawRingMin:float[s] +DrawWarnFraction:float[s] +IaidoDrawTicks:int[s] +IaidoRecoverTicks:int[s] +SlashGapTicks:int[s] +SlashSpeed:float[s] +SlashMinTravelTicks:int[s] +SlashMaxTravelTicks:int[s] +SlashEasePower:float[s] +SlashDamageMultiplier:float[s] +SlashWidth:float[s] +SlashLineWidth:float[s] +SlashLingerTicks:int[s] +SlashAfterimageTicks:int[s] +SlashShake:float[s] +SlashHitShake:float[s] +SlashPitchLow:float[s] +SlashPitchHigh:float[s] +HitMarkTicks:int[s] +HitMarkCount:int[s] +HitMarkLength:float[s] +HitMarkWidth:float[s] +HitMarkAngleDeg:float[s] +MaxHitMarks:int[s] +HitMarkCoverage:float[s] +HitMarkWidthGrow:float[s] +HitMarkMaxScale:float[s] +HitMarks:HitMarkStyle[s]
 
 ### Content/Weapons/NightsEdge/
-**NightsEdgeFlames.cs** uses: MaskSampler, MetaballLayer, MetaballLayers, MetaballStyle, NightsEdgeTuning, SpriteTransform
-  class NightsEdgeFlameStyle : MetaballStyle
-    +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +Rise:float[ov] +Drag:float[ov] +Wobble:float[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]
-  class NightsEdgeEdgeFlameStyle : NightsEdgeFlameStyle
-    +DrawInProjectile:bool[ov]
-  static class NightsEdgeFlames
-    +MaskPath:string[s] +Strength(float,int)[s] +Update(MetaballLayer,MaskSampler,SpriteTransform,SpriteTransform,float)[s]
 **NightsEdgeFx.cs**
   static class NightsEdgeFx
     +PlaySwing(Vector2,bool,bool)[s] +PlayChargeUp(Vector2)[s] +PlayHit(Vector2)[s] +SlashDust(Vector2,bool)[s] +HitSpark(Vector2)[s] +ChargeUp(Vector2)[s] +ChargeSparkle(Vector2,Vector2)[s]
@@ -494,14 +481,14 @@ tModLoader/other bases -> project types:
 **NightsEdgeStyles.cs** uses: NightsEdgeTuning, SweepFade, SweepTrailStyle
   class NightsEdgeSweepTrailStyle : SweepTrailStyle
     +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
-**NightsEdgeSwingProjectile.cs** uses: CameraShake, DetachedTrails, HeldSwordPose, MaskSampler, MetaballLayer, MetaballLayers, NightsEdgeEdgeFlameStyle, NightsEdgeFlames, NightsEdgeFx, NightsEdgePlayer, NightsEdgeSweepTrailStyle, NightsEdgeTuning, SpriteOutline, SpriteTransform, SweepTrail
+**NightsEdgeSwingProjectile.cs** uses: CameraShake, DetachedTrails, HeldSwordPose, NightsEdgeFx, NightsEdgePlayer, NightsEdgeSweepTrailStyle, NightsEdgeTuning, SpriteOutline, SweepTrail
   class NightsEdgeSwingProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
       {SwingDown, SwingUp}
 **NightsEdgeTuning.cs**
   static class NightsEdgeTuning
-    +SwingDamageMultiplier:float[s] +SwingKnockbackMultiplier:float[s] +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboWindowTicks:int[s] +HitLengthScale:float[s] +HitWidth:float[s] +HitShake:float[s] +ChargeSwings:int[s] +ComboSpeedMin:float[s] +ComboSpeedMax:float[s] +ChargedLingerTicks:int[s] +AttackSpeedInfluence:float[s] +SpeedScaleMin:float[s] +SpeedScaleMax:float[s] +ComboSpeedAt(int)[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailOpacityLow:float[s] +TrailOpacityHigh:float[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +MidColor:Color[s] +DeepColor:Color[s] +ChargeGlowAlpha:float[s] +ChargeGlowFollow:float[s] +ChargeGlowColor:Color[s] +OutlineWidth:float[s] +OutlinePulseTicks:int[s] +OutlineMin:float[s] +OutlineMax:float[s] +OutlineFade:float[s] +OutlineGlowScale:float[s] +OutlineColor:Color[s] +OutlineCoreColor:Color[s] +ChargeUpPunch:float[s] +FlashTicks:int[s] +FlameGrowSteps:int[s] +EdgeAnchors:int[s] +EdgeRadius:float[s] +EdgeRadiusPulse:float[s] +EdgeJitter:float[s] +EdgeHeatBase:float[s] +EdgeHeatWave:float[s] +EdgeWaveSpeed:float[s] +EdgeWaveLength:float[s] +FlameSpawnChance:float[s] +FlameSize:float[s] +FlameLifeTicks:int[s] +FlameKick:float[s] +FlameInherit:float[s] +FlameInheritMax:float[s] +FlameHeat:float[s] +FlameRise:float[s] +FlameDrag:float[s] +FlameWobble:float[s] +FlameMaxParticles:int[s] +FlamePixelSize:float[s] +FlameMerge:float[s] +FlameOutlineWidth:float[s] +FlameBands:int[s] +FlameGlow:float[s] +FlameLight:float[s] +FlameColdColor:Color[s] +FlameMidColor:Color[s] +FlameHotColor:Color[s] +FlameOutlineColor:Color[s]
+    +SwingDamageMultiplier:float[s] +SwingKnockbackMultiplier:float[s] +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboWindowTicks:int[s] +HitLengthScale:float[s] +HitWidth:float[s] +HitShake:float[s] +ChargeSwings:int[s] +ComboSpeedMin:float[s] +ComboSpeedMax:float[s] +ChargedLingerTicks:int[s] +AttackSpeedInfluence:float[s] +SpeedScaleMin:float[s] +SpeedScaleMax:float[s] +ComboSpeedAt(int)[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailOpacityLow:float[s] +TrailOpacityHigh:float[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +MidColor:Color[s] +DeepColor:Color[s] +ChargeGlowAlpha:float[s] +ChargeGlowFollow:float[s] +ChargeGlowColor:Color[s] +OutlineWidth:float[s] +OutlinePulseTicks:int[s] +OutlineMin:float[s] +OutlineMax:float[s] +OutlineFade:float[s] +OutlineGlowScale:float[s] +OutlineColor:Color[s] +OutlineCoreColor:Color[s] +ChargeUpPunch:float[s] +FlashTicks:int[s]
 
 ### Content/Weapons/RottedFork/
 **RottedForkFx.cs** uses: CameraShake, OrbitRing, RottedForkTuning, ThrustPalette

@@ -1,9 +1,7 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ReLogic.Content;
 using System;
-using System.IO;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ID;
@@ -15,18 +13,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
     /// The held Night's Edge. It draws the sword, poses the owner's arm and runs the left click swing, which is the Starfury's: SWING DOWN /
     /// SWING UP, a custom melee chop centered on the cursor: a slow heavy anticipation, a fast strike that decelerates, a short recover.
     /// Consecutive swings alternate down, up, down ... and each one starts where the previous one ended, so a held button flows.
-    /// THE COMBO: every consecutive swing runs faster than the one before (the timeline advances by speedScale per tick) and a swing that
-    /// HITS an enemy charges the sword by one step (once per swing): a soft purple glow grows with the charge, and when the ChargeSwings-th
-    /// hitting swing lands the sword is fully charged: a flash, a ring of dark flame, and from then on a pulsing purple outline (the Dark
-    /// Lance's, through Common/SpriteOutline), the fastest swing and the edge flames (NightsEdgeFlames: metaballs along the blade edge,
-    /// clipped to Ismail's mask, and free flames that leave it). On up swings the sprite is mirrored across the blade so the sharp edge leads.
+    /// THE COMBO: every consecutive swing runs faster than the one before (the timeline advances by speedScale per tick) and charges the
+    /// sword: a soft purple glow grows with the charge, and when the ChargeSwings-th swing ends the sword is fully charged: a flash, a ring
+    /// of dark flame, and from then on a pulsing purple outline (the Dark Lance's, through Common/SpriteOutline) and the fastest swing.
     /// An expanding sweep trail (SweepTrail) fills the area the blade crosses. The strike hits every enemy once.
     /// MULTIPLAYER: the owner's client decides everything (which swing it is, the combo level, where the arm starts, the aim, the speed) and
     /// passes what the other machines need in the spawn packet: ai[0] = phase (0 down, 1 up) + 10 * combo level, ai[1] = start arm angle
     /// (relative to the aim), ai[2] = the aim angle captured at the click (radians, the player's own frame), velocity X = the timeline
     /// speed (read on the first tick, then cleared). Every machine then runs the same timers for the pose, sounds, dust, glow and trail.
-    /// The owner's client is the only one that sees the hit, so it tells the others ONCE through SendExtraAI (hitLanded): every machine then
-    /// steps its glow and plays the charge-up from it. The flames are visual only and nothing about them is synced.
     /// Hits are detected by the owner's client like any projectile. No custom packets.
     /// </summary>
     public class NightsEdgeSwingProjectile : ModProjectile
@@ -62,10 +56,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         float chargeShown;     // 0..1, the purple glow's strength: follows the combo smoothly
         float outlineShown;    // 0..1, the outline's fade in and out
         bool chargeUpDone;     // the swing that completes the charge has played its charge-up
-        bool hitLanded;        // this swing has hit an enemy (the owner sets it, SendExtraAI tells the others): it adds one step of charge
-        SpriteTransform sprite;        // where the sword sprite is drawn this tick (the flames and their clip follow it) ...
-        SpriteTransform spriteBefore;  // ... and where it was drawn on the previous tick (free flames take part of the motion)
-        bool hasSprite;
 
         public override void SetDefaults()
         {
@@ -196,7 +186,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
 
             UpdateCharge();
             SwingEffects();
-            FlameEffects();
 
             flash = Math.Max(0f, flash - 1f / Math.Max(1, NightsEdgeTuning.FlashTicks));
             trail?.Tick();
@@ -205,8 +194,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             timer += speedScale;
         }
 
-        // Every machine: the glow follows the combo, the swing that completes the charge plays the charge-up when it hits, and the outline
-        // fades in once the sword is charged.
+        // Every machine: the glow follows the combo, the swing that completes the charge plays the charge-up when its strike ends, and the
+        // outline fades in once the sword is charged.
         void UpdateCharge()
         {
             bool completing = Level == MaxLevel - 1; // this swing is the one that fully charges the sword
@@ -216,7 +205,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
                 outlineShown = Charged ? 1f : 0f;
             }
 
-            if (completing && !chargeUpDone && hitLanded)
+            if (completing && !chargeUpDone && timer >= StrikeEnd)
             {
                 chargeUpDone = true;
                 flash = 1f;
@@ -225,7 +214,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
                 CameraShake.Punch(tipPosition, NightsEdgeTuning.ChargeUpPunch, 12);
             }
 
-            float target = MathHelper.Clamp((Level + (hitLanded ? 1 : 0)) / (float)MaxLevel, 0f, 1f);
+            float target = MathHelper.Clamp((Level + (timer >= StrikeEnd ? 1 : 0)) / (float)MaxLevel, 0f, 1f);
             chargeShown = MathHelper.Lerp(chargeShown, target, MathHelper.Clamp(NightsEdgeTuning.ChargeGlowFollow, 0.01f, 1f));
             float outlineTarget = Charged || chargeUpDone ? 1f : 0f;
             outlineShown += (outlineTarget - outlineShown) * MathHelper.Clamp(NightsEdgeTuning.OutlineFade, 0.01f, 1f);
@@ -299,67 +288,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             owner.heldProj = Projectile.whoAmI; // also ends the projectile when the player swaps items
         }
 
-        // ---- the edge flames (visual only, every machine) ----
-
-        // Where the sword sprite is drawn right now, the same way DrawSword draws it (no glow scale): the mask and the flames use it.
-        SpriteTransform SpriteNow(Texture2D texture)
-        {
-            HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects, IsUp);
-            return new SpriteTransform
-            {
-                Position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, NightsEdgeTuning.GripOffset, Projectile.scale),
-                Rotation = Projectile.rotation + rotationOffset,
-                Origin = origin,
-                Scale = Projectile.scale,
-                Effects = effects,
-                Size = texture.Size()
-            };
-        }
-
-        // The flames grow in over the last combo steps (they follow the glow, so they grow smoothly). The edge layer is private to this
-        // player and clipped to the mask; the swing's PreDraw draws it in front of the sword.
-        void FlameEffects()
-        {
-            if (Main.dedServ)
-                return;
-            Asset<Texture2D> art = TextureAssets.Projectile[Type];
-            if (!art.IsLoaded)
-                return;
-
-            Texture2D texture = art.Value;
-            SpriteTransform now = SpriteNow(texture);
-            spriteBefore = hasSprite ? sprite : now;
-            sprite = now;
-            hasSprite = true;
-
-            float strength = NightsEdgeFlames.Strength(chargeShown, MaxLevel);
-            MaskSampler mask = MaskSampler.Load(NightsEdgeFlames.MaskPath, texture);
-            MetaballLayer edge = MetaballLayers.Of<NightsEdgeEdgeFlameStyle>(Projectile.owner);
-            SpriteTransform clip = sprite;
-            edge.CellFilter = cell => mask.Contains(clip, cell);
-            NightsEdgeFlames.Update(edge, mask, sprite, spriteBefore, strength);
-
-            if (strength > 0.02f && NightsEdgeTuning.FlameLight > 0f)
-            {
-                float light = NightsEdgeTuning.FlameLight * strength;
-                Lighting.AddLight(Vector2.Lerp(Projectile.Center, tipPosition, 0.6f), 0.55f * light, 0.2f * light, 0.95f * light);
-            }
-        }
-
-        // ---- sync ----
-
-        // One flag: the owner saw this swing hit something (netUpdate is raised once, at that hit).
-        public override void SendExtraAI(BinaryWriter writer)
-        {
-            writer.Write(hitLanded);
-        }
-
-        public override void ReceiveExtraAI(BinaryReader reader)
-        {
-            if (reader.ReadBoolean())
-                hitLanded = true;
-        }
-
         // ---- hits ----
 
         public override bool? CanDamage()
@@ -405,14 +333,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             NightsEdgeFx.HitSpark(target.Center);
             NightsEdgeFx.PlayHit(target.Center);
             CameraShake.Punch(target.Center, NightsEdgeTuning.HitShake, 8);
-
-            // The first enemy this swing hits charges the sword by one step (once per swing, however many enemies it hits).
-            if (!hitLanded)
-            {
-                hitLanded = true;
-                Projectile.netUpdate = true; // the other machines hear about it through SendExtraAI
-                Owner.GetModPlayer<NightsEdgePlayer>().Charge = Math.Min(MaxLevel, Level + 1);
-            }
         }
 
         // The trail outlives the swing and keeps fading on its own (DetachedTrails). The owner remembers how this swing ended, so the
@@ -437,7 +357,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         // blade (draw only).
         void DrawSword(Texture2D texture, float scale, Color color, float centerScale = 0f, Vector2 offset = default)
         {
-            HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects, IsUp);
+            HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
             float rotation = Projectile.rotation + rotationOffset;
             Vector2 position = Projectile.Center + offset + HeldSwordPose.GripShift(Projectile.rotation, NightsEdgeTuning.GripOffset, Projectile.scale);
             if (centerScale > 0f && centerScale != scale)
@@ -473,10 +393,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             }
 
             DrawSword(texture, scale, Color.Lerp(lightColor, Color.White, 0.35f));
-
-            // The edge flames, in front of the sword (the layer is clipped to the mask and drawn once per frame).
-            MetaballLayers.Of<NightsEdgeEdgeFlameStyle>(Projectile.owner).DrawInBatch();
-
             if (flash > 0.01f)
                 DrawSword(texture, scale, NightsEdgeTuning.OutlineCoreColor * (0.8f * flash));
             return false;
