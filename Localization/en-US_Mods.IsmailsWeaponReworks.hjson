@@ -52,4 +52,6 @@ Projectiles: {
 	VolcanoBlastProjectile.DisplayName: Volcano Blast Projectile
 	VolcanoThrownProjectile.DisplayName: Volcano Thrown Projectile
 	VolcanoLavaDropProjectile.DisplayName: Volcano Lava Drop Projectile
+	BladeOfGrassHoldProjectile.DisplayName: Blade Of Grass Hold Projectile
+	BladeOfGrassSpineProjectile.DisplayName: Blade Of Grass Spine Projectile
 }

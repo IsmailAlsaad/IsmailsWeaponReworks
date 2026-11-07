@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using Terraria;
 
 namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
 {

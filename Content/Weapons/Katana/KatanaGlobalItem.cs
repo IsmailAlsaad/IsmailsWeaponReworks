@@ -53,7 +53,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Katana1", "Hold to throw the blade, let go or hit a wall to dash to it and cut everything on the way"));
+            //tooltips.Add(new TooltipLine(Mod, "Katana1", "Hold to throw the blade, let go or hit a wall to dash to it and cut everything on the way"));
         }
     }
 }
