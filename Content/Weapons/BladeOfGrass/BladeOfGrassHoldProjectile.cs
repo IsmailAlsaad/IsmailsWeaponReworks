@@ -44,6 +44,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             public float Seed;
             public float Shown;       // length of the vine actually on show (shorter than Length while it reaches for an enemy)
             public int LoopClock;     // ticks since this machine saw the vine lock on (visual only, so every machine has it)
+            public Vector2 AimPos, AimVel; // the homing point the free tip reaches for (visual only)
             // Per-vine character, rolled once per held blade from its synced identity (so every machine gives the same vine the same traits;
             // visual, never synced). 1 = the tuning value.
             public float WaveAmp = 1f, WaveSpeed = 1f, WaveLen = 1f, StiffnessFactor = 1f, SpeedFactor = 1f, LengthFactor = 1f, GrowFactor = 1f;
@@ -409,7 +410,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 vine.SpeedFactor = Spread(1.2f);
 
                 vine.GrowFactor = Spread(0.8f);
-                vine.LengthFactor = 1f - (float)random.NextDouble() * BladeOfGrassTuning.VineVariation * 0.5f; // never longer than MaxLength
+                vine.LengthFactor = 1f - (float)random.NextDouble() * BladeOfGrassTuning.VineVariation * 2f; // never longer than MaxLength
                 vine.SpreadJitterDeg = ((float)random.NextDouble() * 2f - 1f) * BladeOfGrassTuning.VineVariation * 8f;
 
                 vine.StartJitter = random.Next(0, 7);
@@ -526,6 +527,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                     vine.P[k] = root + freeDirection * (segment * k);
                     vine.Old[k] = vine.P[k];
                 }
+                vine.AimPos = vine.P[n - 1];
+                vine.AimVel = Vector2.Zero;
                 vine.Init = true;
             }
 
@@ -543,7 +546,33 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 return targetNpc.Center + angle.ToRotationVector2() * ringRadius;
             }
 
-            Vector2 bodyEnd = hasTarget ? CoilWish(bodyCount) : tipGoal;
+            // The free tip homes on the cursor goal: it accelerates toward it (limited acceleration = inertia), eases in near it and
+            // never exceeds a top speed. While wrapping an enemy it just rides along with the rope so letting go is smooth.
+            if (hasTarget)
+            {
+                vine.AimPos = vine.P[n - 1];
+                vine.AimVel = Vector2.Zero;
+            }
+            else
+            {
+                Vector2 toGoal = tipGoal - vine.AimPos;
+                float goalDistance = toGoal.Length();
+                float topSpeed = BladeOfGrassTuning.TipMaxSpeed * vine.SpeedFactor;
+                Vector2 desiredVelocity = toGoal.SafeNormalize(Vector2.Zero) * Math.Min(topSpeed, goalDistance * BladeOfGrassTuning.TipArrive);
+                Vector2 steer = desiredVelocity - vine.AimVel;
+                float maxSteer = BladeOfGrassTuning.TipAccel * vine.SpeedFactor;
+                if (steer.Length() > maxSteer)
+                    steer = steer.SafeNormalize(Vector2.Zero) * maxSteer;
+                vine.AimVel += steer;
+                vine.AimPos += vine.AimVel;
+
+                // Never farther from the root than the vine actually shows.
+                Vector2 fromRoot = vine.AimPos - root;
+                if (fromRoot.Length() > vine.Shown)
+                    vine.AimPos = root + fromRoot.SafeNormalize(freeDirection) * vine.Shown;
+            }
+
+            Vector2 bodyEnd = hasTarget ? CoilWish(bodyCount) : vine.AimPos;
             Vector2 toEnd = bodyEnd - root;
             Vector2 direction = toEnd.SafeNormalize(freeDirection);
             Vector2 perpendicular = direction.RotatedBy(MathHelper.PiOver2);

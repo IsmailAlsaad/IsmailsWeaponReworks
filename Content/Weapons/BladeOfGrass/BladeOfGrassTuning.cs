@@ -49,6 +49,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public static float RootInfluenceFloor => 0.1f; // how strongly the point next to the root follows the vine's world goal (the rest follows the root through the rope)
         public static float TipInfluencePower => 1f; // the pull toward the goal grows with this power toward the tip (higher = the tip is freer)
         public static float TargetStiffnessBoost => 2f; // the whole vine is pulled harder toward its goal while it reaches for an enemy
+        public static float TipMaxSpeed => 50f;        // top speed of a vine tip homing on the cursor (pixels per tick)
+        public static float TipAccel => 1.7f;          // how fast the tip can change its velocity per tick (lower = heavier, more inertia and overshoot)
+        public static float TipArrive => 0.3f;         // slows the tip down near the cursor (fraction of the distance per tick; lower = longer, floatier glide in)
 
         // ---- targeting ----
         public static float TargetRadius => 200f;      // an enemy this close to the cursor (pixels) can be targeted
