@@ -50,6 +50,13 @@ namespace IsmailsWeaponReworks.Common
             return (owner.gravDir == -1f ? -worldBlade : worldBlade).ToRotationVector2();
         }
 
+        // Where to draw the sprite so the hand holds it 'grip' pixels (at scale 1) up from the end of the handle: the sprite's hilt corner is
+        // drawn at the hand, so the sprite is moved back along the blade by that much. Add the result to the draw position (visual only).
+        public static Vector2 GripShift(float bladeRotation, float grip, float scale)
+        {
+            return -bladeRotation.ToRotationVector2() * (grip * scale);
+        }
+
         // Origin, rotation offset and flip for drawing a vanilla sword item sprite (hilt in the bottom-left corner) along Projectile.rotation.
         public static void Sprite(Texture2D texture, int spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects)
         {

@@ -201,7 +201,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             Texture2D texture = TextureAssets.Projectile[Type].Value;
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
 
-            Vector2 position = Projectile.Center - Main.screenPosition;
+            Vector2 position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, MuramasaTuning.GripOffset, Projectile.scale) - Main.screenPosition;
             float rotation = Projectile.rotation + rotationOffset;
             float scale = Projectile.scale;
 

@@ -14,6 +14,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         // ---- sword ----
         public static float BladeLength => 60f;       // hand to tip, in pixels at scale 1 (adjust to the real sprite)
         public static float SwordScale => 1.1f;
+        public static float GripOffset => 0f;         // where the hand holds the sword: pixels up from the end of the handle, at scale 1 (0 = the very end; try 6-10 for the middle of the handle). The sprite moves, the hit geometry, trail and BladeLength do not: if the tip looks too short, lower BladeLength by the same amount
 
         // ---- sheathing: after every attack (and when the sword is taken out) the player slowly lowers the sword to the hip ----
         public static int SheathTicks => 150;          // fixed ticks, NOT scaled by melee speed
