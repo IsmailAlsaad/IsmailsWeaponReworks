@@ -32,6 +32,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public static float MaxLength => 460f;         // the longest a vine gets (about 29 tiles)
         public static float GrowSpeed => 1.5f;           // how fast a vine gets longer, pixels per tick (also how fast it regrows after a cut)
         public static float SpreadDeg => 9f;           // the three vines fan out by this much around the cursor direction
+        public static float FreeSlackPx => 16f;        // a free vine shows this much more than the straight distance to its goal (room for the wave); it only shows what it needs to put its tip on the cursor
 
         // ---- the rope: how lively the vines are ----
         public static float Damping => 0.93f;          // velocity kept per tick
@@ -81,7 +82,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         public static float SegmentMinLengthFactor => 0.7f; // a short section deals this times the scale ...
         public static float SegmentMaxLengthFactor => 1.5f; // ... and a section as long as MaxLength this times
         public static int MaxSegments => 12;           // per player; the oldest is removed first
-        public static float EnemyCapFraction => 0.5f;  // all sections on ONE enemy together are at most this fraction of MaxLength (the oldest on that enemy go first)
+        public static float EnemyCapFraction => 1f;    // all sections on ONE enemy together are at most this fraction of MaxLength (1 = one full vine); a new section is cut to the room that is left
+        public static float MinEnemyRoomPx => 40f;     // an enemy with less room than this left under the cap is left alone: no vine targets it until some sections expire
         public static int CoilGrowTicks => 14;         // the coil winds around the enemy over this time
         public static int SpineGrowTicks => 18;        // the smooth vine turns into the spiny one over this time
         public static float CoilRadiusScale => 0.55f;  // coil half-size relative to the enemy's half-size

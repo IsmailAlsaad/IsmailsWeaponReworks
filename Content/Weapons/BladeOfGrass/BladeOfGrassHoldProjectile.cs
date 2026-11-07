@@ -57,14 +57,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         bool retracting;        // the button was let go or the weapon swapped: the vines shrink away, bit by bit
         bool handLocked;
         Vector2 handOffset;     // where the blade's hand was relative to the player when the retreat began (the roots stay there)
+        bool keepHeld = true;   // while the vines retract the player keeps holding the blade; false for good once the weapon was swapped away
 
         public bool Retracting => retracting;
+        public bool KeepsHolding => retracting && keepHeld; // retracting, but the blade is still in the player's hand
         float cursorDist;
         int syncTimer;
         int searchTimer;
         Vector2 hand;
         Vector2 bladeDir;
         int[] targetCounts;
+        float[] coilTotals;     // owner: per enemy, the length of this player's coils on it (the enemy cap counts against it)
         Asset<Texture2D> chainAsset;
         Asset<Texture2D> headAsset;
         readonly List<Vector2> samplePositions = new List<Vector2>();
@@ -176,7 +179,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
 
             EnsureVines();
             Projectile.timeLeft = 2;
-            if (!retracting)
+            // While the vines retract the player keeps holding the blade (and cannot switch items) until the last vine is gone.
+            // Swapping away anyway ends that for good: the blade is then no longer drawn and the roots stay where the hand was.
+            if (retracting && keepHeld && owner.HeldItem.type != ItemID.BladeofGrass)
+            {
+                keepHeld = false;
+                syncAim = aimShown;
+            }
+            bool heldPose = !retracting || keepHeld;
+            if (heldPose)
             {
                 owner.heldProj = Projectile.whoAmI;
                 owner.itemTime = 2;
@@ -190,7 +201,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 charge = MathHelper.Clamp(holdTicks / (float)Math.Max(1, BladeOfGrassTuning.ChargeTicks), 0f, 1f);
 
             Vector2 cursorWorld;
-            if (isOwner && !retracting)
+            if (isOwner && heldPose)
             {
                 aimShown = HeldAim.Capture(owner);
                 cursorWorld = Main.MouseWorld;
@@ -208,9 +219,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 cursorWorld = owner.MountedCenter + HeldAim.ToWorldDirection(owner, aimShown) * cursorDist;
             }
 
-            if (!retracting || hand == Vector2.Zero)
+            if (heldPose || hand == Vector2.Zero)
                 ApplyPose(owner);
-            if (retracting)
+            if (!heldPose)
                 LockHand(owner);
 
             if (isOwner && !retracting && ++searchTimer >= Math.Max(1, BladeOfGrassTuning.RetargetInterval))
@@ -298,6 +309,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             if (targetCounts == null || targetCounts.Length != Main.maxNPCs)
                 targetCounts = new int[Main.maxNPCs];
             Array.Clear(targetCounts, 0, targetCounts.Length);
+            FillCoilTotals();
 
             // 1) Keep the targets that are still good (a vine in the middle of a loop always keeps its enemy while it is valid).
             for (int i = 0; i < vines.Length; i++)
@@ -306,7 +318,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 if (vine.Target < 0)
                     continue;
                 NPC npc = Main.npc[vine.Target];
-                bool keep = Valid(npc);
+                bool keep = Valid(npc) && HasRoom(vine.Target); // an enemy that is full of vine is left alone, also in the middle of a loop
                 if (keep && vine.WrapTicks <= 0)
                 {
                     keep = Vector2.Distance(cursorWorld, npc.Center) <= BladeOfGrassTuning.TargetRadius * BladeOfGrassTuning.LoseTargetFactor
@@ -334,7 +346,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 for (int n = 0; n < Main.maxNPCs; n++)
                 {
                     NPC npc = Main.npc[n];
-                    if (!Valid(npc))
+                    if (!Valid(npc) || !HasRoom(n))
                         continue;
                     float cursorDistance = Vector2.Distance(cursorWorld, npc.Center);
                     if (cursorDistance > BladeOfGrassTuning.TargetRadius || Vector2.Distance(root, npc.Center) > vine.Length + BladeOfGrassTuning.ReachSlack)
@@ -444,6 +456,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             float shownGoal = vine.Length;
             if (hasTarget)
                 shownGoal = Math.Min(vine.Length, Math.Max(0f, Vector2.Distance(root, targetNpc.Center) - radius) + arc + BladeOfGrassTuning.WrapSlackPx);
+            else
+            {
+                // A free vine reaches for the cursor itself: it shows only what it needs to put its tip on the cursor (plus a little slack to
+                // wave in), the rest stays coiled up, so it never shoots past a cursor that is nearer than the vine is long.
+                Vector2 cursorGoal = center + freeDirection * Vector2.Distance(center, cursorWorld);
+                shownGoal = Math.Min(vine.Length, Vector2.Distance(root, cursorGoal) + BladeOfGrassTuning.FreeSlackPx);
+            }
             if (vine.Shown <= 0f)
                 vine.Shown = shownGoal;
             else
@@ -464,7 +483,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             // Points 0..bodyCount-1 are the free body; the points from bodyCount to the tip are the coil (only while looping).
             int tail = hasTarget ? Math.Clamp((int)Math.Round(arc / segment), 2, n - 2) : 0;
             int bodyCount = n - 1 - tail;
-            Vector2 tipGoal = center + freeDirection * (vine.Shown + Vector2.Distance(center, root));
+            // The tip heads for the cursor itself (at the vine's own fan angle), but never farther than the vine reaches.
+            Vector2 tipGoal = center + freeDirection * Math.Min(Vector2.Distance(center, cursorWorld), vine.Shown + Vector2.Distance(center, root));
 
             Vector2 CoilWish(int k)
             {
@@ -543,13 +563,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             float wrapped = vine.Length * wrapFraction;
             wrapped = Math.Max(wrapped, BladeOfGrassTuning.MinWrapPixels);
             wrapped = Math.Min(wrapped, vine.Length - BladeOfGrassTuning.MinRemainPixels);
+            // The enemy only has room for so much vine: what is already on it counts against the cap and the new section is cut to what is left.
+            FillCoilTotals();
+            wrapped = Math.Min(wrapped, EnemyCap - coilTotals[npc.whoAmI]);
             if (wrapped < 8f)
             {
-                vine.WrapTicks = 0; // the vine is too short to give anything: keep circling
+                vine.WrapTicks = 0; // the vine is too short (or the enemy is full) to give anything: keep circling until the targets are refreshed
                 return;
             }
 
-            wrapped = EnforceEnemyCap(npc.whoAmI, wrapped);
             EnforceSegmentCap();
             float lengthFactor = MathHelper.Lerp(BladeOfGrassTuning.SegmentMinLengthFactor, BladeOfGrassTuning.SegmentMaxLengthFactor, MathHelper.Clamp(wrapped / Math.Max(1f, BladeOfGrassTuning.MaxLength), 0f, 1f));
             int damage = Math.Max(1, (int)(Projectile.damage * BladeOfGrassTuning.SegmentDamageScale * lengthFactor));
@@ -565,31 +587,30 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             Projectile.netUpdate = true;
         }
 
-        // Owner only: all sections on one enemy together stay under EnemyCapFraction of a full vine. The new section is cut to the cap,
-        // and the oldest sections on that enemy are removed until the new one fits. Returns the (possibly shortened) section length.
-        float EnforceEnemyCap(int enemy, float wrapped)
+        float EnemyCap => BladeOfGrassTuning.MaxLength * BladeOfGrassTuning.EnemyCapFraction;
+
+        // Owner only: coilTotals[i] = the length of all this player's coils that are on enemy i right now (they count against the enemy cap).
+        void FillCoilTotals()
         {
-            float cap = BladeOfGrassTuning.MaxLength * BladeOfGrassTuning.EnemyCapFraction;
-            wrapped = Math.Min(wrapped, cap);
+            if (coilTotals == null || coilTotals.Length != Main.maxNPCs)
+                coilTotals = new float[Main.maxNPCs];
+            Array.Clear(coilTotals, 0, coilTotals.Length);
             int type = ModContent.ProjectileType<BladeOfGrassSpineProjectile>();
-            while (true)
+            for (int i = 0; i < Main.maxProjectiles; i++)
             {
-                float total = 0f;
-                int oldest = -1;
-                for (int i = 0; i < Main.maxProjectiles; i++)
-                {
-                    Projectile projectile = Main.projectile[i];
-                    if (!projectile.active || projectile.owner != Projectile.owner || projectile.type != type || (int)projectile.ai[0] != enemy)
-                        continue;
-                    total += projectile.ai[1];
-                    if (oldest < 0 || projectile.timeLeft < Main.projectile[oldest].timeLeft)
-                        oldest = i;
-                }
-                if (oldest < 0 || total + wrapped <= cap + 0.5f)
-                    break;
-                Main.projectile[oldest].Kill();
+                Projectile projectile = Main.projectile[i];
+                if (!projectile.active || projectile.owner != Projectile.owner || projectile.type != type)
+                    continue;
+                int enemy = (int)projectile.ai[0];
+                if (enemy >= 0 && enemy < Main.maxNPCs)
+                    coilTotals[enemy] += projectile.ai[1];
             }
-            return wrapped;
+        }
+
+        // An enemy that already carries a full vine's worth of coils (less than MinEnemyRoomPx room left) is left alone until some of them expire.
+        bool HasRoom(int enemy)
+        {
+            return EnemyCap - coilTotals[enemy] >= BladeOfGrassTuning.MinEnemyRoomPx;
         }
 
         void EnforceSegmentCap()
@@ -644,7 +665,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             BladeOfGrassVineDraw.EndMesh();
             for (int i = 0; i < vines.Length; i++)
                 DrawVineHead(vines[i], head);
-            if (retracting)
+            if (retracting && !keepHeld)
                 return false; // the blade is no longer held
 
             Texture2D texture = TextureAssets.Projectile[Type].Value;

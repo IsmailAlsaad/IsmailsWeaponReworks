@@ -41,8 +41,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 Projectile projectile = Main.projectile[i];
                 if (projectile.active && projectile.owner == player.whoAmI && projectile.type == type)
                 {
-                    if (projectile.ModProjectile is BladeOfGrassHoldProjectile hold && hold.Retracting)
-                        continue; // its vines are still shrinking away: that does not stop a new hold
+                    if (projectile.ModProjectile is BladeOfGrassHoldProjectile hold && hold.Retracting && !hold.KeepsHolding)
+                        continue; // its vines are still shrinking away and the blade left the hand (weapon swapped): that does not stop a new hold
                     return false;
                 }
             }
