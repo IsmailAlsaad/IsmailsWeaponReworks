@@ -1,0 +1,36 @@
+﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
+
+namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
+{
+    /// <summary>Lays sprites along a polyline: the vines (hold projectile) and the coils (spine projectile) both draw this way.</summary>
+    public static class BladeOfGrassVineDraw
+    {
+        // Resamples the first 'count' points into positions 'spacing' pixels apart along the line (the first one at the start), each with
+        // the angle of the line there. The lists are cleared first and reused by the caller, so drawing allocates nothing.
+        public static void Resample(Vector2[] points, int count, float spacing, List<Vector2> positions, List<float> angles)
+        {
+            positions.Clear();
+            angles.Clear();
+            spacing = MathHelper.Max(1f, spacing);
+            float next = 0f;
+            for (int k = 1; k < count; k++)
+            {
+                Vector2 a = points[k - 1];
+                Vector2 b = points[k];
+                float length = Vector2.Distance(a, b);
+                if (length < 0.001f)
+                    continue;
+                Vector2 direction = (b - a) / length;
+                float angle = direction.ToRotation();
+                while (next <= length)
+                {
+                    positions.Add(a + direction * next);
+                    angles.Add(angle);
+                    next += spacing;
+                }
+                next -= length;
+            }
+        }
+    }
+}
