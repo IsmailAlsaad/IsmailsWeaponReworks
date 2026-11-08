@@ -147,12 +147,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             return false;
         }
 
-        readonly Vector2[] OutlineDirections =
-        {
-            new Vector2(1f, 0f), new Vector2(-1f, 0f), new Vector2(0f, 1f), new Vector2(0f, -1f),
-            new Vector2(1f, 1f), new Vector2(-1f, 1f), new Vector2(1f, -1f), new Vector2(-1f, -1f)
-        };
-
         public override bool PreDraw(ref Color lightColor)
         {
             if (Main.dedServ)
@@ -167,19 +161,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Katana
             // and the sprite repeated in the eight directions around it, a pixel-style outline. Both pulse; the colors have alpha 0 = additive.
             if (readyShown > 0.01f)
             {
-                float wave = 0.5f + 0.5f * (float)Math.Sin(MathHelper.TwoPi * ticks / Math.Max(1, KatanaTuning.ReadyPulseTicks));
-                float strength = readyShown * MathHelper.Lerp(KatanaTuning.ReadyOutlineMin, KatanaTuning.ReadyOutlineMax, wave);
+                float strength = readyShown * PixelOutline.Pulse(ticks, KatanaTuning.ReadyPulseTicks, KatanaTuning.ReadyOutlineMin, KatanaTuning.ReadyOutlineMax);
 
-                Vector2 hiltToCenter = new Vector2(Projectile.spriteDirection > 0 ? texture.Width * 0.5f : -texture.Width * 0.5f, -texture.Height * 0.5f);
-                Vector2 centerPosition = position + (hiltToCenter * scale).RotatedBy(rotation);
-                Vector2 centerOrigin = texture.Size() * 0.5f;
-                Main.EntitySpriteDraw(texture, centerPosition, null, KatanaTuning.ReadyOutlineColor * (0.4f * strength), rotation, centerOrigin, scale * KatanaTuning.ReadyGlowScale, effects, 0);
-
-                float width = KatanaTuning.ReadyOutlineWidth;
-                for (int i = 0; i < OutlineDirections.Length; i++)
-                    Main.EntitySpriteDraw(texture, position + OutlineDirections[i] * width, null, KatanaTuning.ReadyOutlineColor * (0.9f * strength), rotation, origin, scale, effects, 0);
-                for (int i = 0; i < 4; i++)
-                    Main.EntitySpriteDraw(texture, position + OutlineDirections[i] * (width * 0.5f), null, KatanaTuning.ReadyCoreColor * (0.5f * strength), rotation, origin, scale, effects, 0);
+                PixelOutline.Draw(texture, position, rotation, origin, scale, effects, Projectile.spriteDirection, strength, KatanaTuning.ReadyOutlineWidth, KatanaTuning.ReadyGlowScale,
+                    KatanaTuning.ReadyOutlineColor, KatanaTuning.ReadyCoreColor);
             }
 
             // The sword itself, brightened a little (the click flares it white, and so does the moment it is ready again).

@@ -188,12 +188,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
 
         // ---- drawing ----
 
-        readonly Vector2[] OutlineDirections =
-        {
-            new Vector2(1f, 0f), new Vector2(-1f, 0f), new Vector2(0f, 1f), new Vector2(0f, -1f),
-            new Vector2(1f, 1f), new Vector2(-1f, 1f), new Vector2(1f, -1f), new Vector2(-1f, -1f)
-        };
-
         public override bool PreDraw(ref Color lightColor)
         {
             draw?.Draw();
@@ -209,19 +203,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             // and the sprite repeated in the eight directions around it, a pixel-style outline. Both pulse; the colors have alpha 0 = additive.
             if (outlineShown > 0.01f)
             {
-                float wave = 0.5f + 0.5f * (float)Math.Sin(MathHelper.TwoPi * ticks / Math.Max(1, MuramasaTuning.OutlinePulseTicks));
-                float strength = outlineShown * MathHelper.Lerp(MuramasaTuning.OutlineMin, MuramasaTuning.OutlineMax, wave);
+                float strength = outlineShown * PixelOutline.Pulse(ticks, MuramasaTuning.OutlinePulseTicks, MuramasaTuning.OutlineMin, MuramasaTuning.OutlineMax);
 
-                Vector2 hiltToCenter = new Vector2(Projectile.spriteDirection > 0 ? texture.Width * 0.5f : -texture.Width * 0.5f, -texture.Height * 0.5f);
-                Vector2 centerPosition = position + (hiltToCenter * scale).RotatedBy(rotation);
-                Vector2 centerOrigin = texture.Size() * 0.5f;
-                Main.EntitySpriteDraw(texture, centerPosition, null, MuramasaTuning.OutlineColor * (0.4f * strength), rotation, centerOrigin, scale * MuramasaTuning.GlowScale, effects, 0);
-
-                float width = MuramasaTuning.OutlineWidth;
-                for (int i = 0; i < OutlineDirections.Length; i++)
-                    Main.EntitySpriteDraw(texture, position + OutlineDirections[i] * width, null, MuramasaTuning.OutlineColor * (0.9f * strength), rotation, origin, scale, effects, 0);
-                for (int i = 0; i < 4; i++)
-                    Main.EntitySpriteDraw(texture, position + OutlineDirections[i] * (width * 0.5f), null, MuramasaTuning.OutlineCoreColor * (0.5f * strength), rotation, origin, scale, effects, 0);
+                PixelOutline.Draw(texture, position, rotation, origin, scale, effects, Projectile.spriteDirection, strength, MuramasaTuning.OutlineWidth, MuramasaTuning.GlowScale,
+                    MuramasaTuning.OutlineColor, MuramasaTuning.OutlineCoreColor);
             }
 
             // The sword itself, brightened a little (the click flares it white).
