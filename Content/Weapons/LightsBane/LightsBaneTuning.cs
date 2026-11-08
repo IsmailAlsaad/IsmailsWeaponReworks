@@ -32,7 +32,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         public static float ChargedAt => 0.995f;        // from this charge on the sword counts as fully charged
         public static float ChargeShowEase => 0.15f;    // how fast the DRAWN charge follows the real one (per tick, 0..1)
         public static float ChargeSyncStep => 0.04f;    // the owner tells the other machines when the charge moved this much
-        public static float MaxSpeedScale => 2.5f;      // swing speed at full charge, as a multiple of the normal speed
+        public static float MaxSpeedScale => 4f;      // swing speed at full charge, as a multiple of the normal speed
         public static float SpeedCurvePower => 1f;      // 1 = the speed rises evenly with the charge; above 1 it rises late
 
         // ---- the swing (a chop centered on the cursor, alternating up and down; scaled by the charge and by melee speed) ----
@@ -44,7 +44,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         public static int ChainAnticipateTicks => 9;    // a swing that FLOWS out of the previous one: the previous strike carries on through this wind-up ...
         public static float ChainAnticipateDeg => 24f;  // ... to this far past the end of the arc. Keep it above OvershootDeg, so the arm keeps drifting the way it was going
         public static float AnticipateTiltDeg => 10f;   // the wrist cocks back this much before every strike
-        public static int SwingTicks => 6;              // the strike (the only part that damages)
+        public static int SwingTicks => 10;              // the strike (the only part that damages)
         public static float SwingEasePower => 2f;       // 1 = even speed; higher = faster start and a longer deceleration
         public static float OvershootDeg => 8f;         // the strike carries this far past the end of the arc
         public static int RecoverTicks => 7;            // only when the button is let go: the arm settles back to the end of the arc over this long
