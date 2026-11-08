@@ -86,10 +86,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         public static float HitShake => 0.6f;           // camera punch on a hit (grows with the charge)
         public static float SparkleChance => 0.25f;     // per tick, while fully charged: a mote somewhere along the blade
 
-        // ---- the stab (right click at full charge): the blade turns to the chest, the sword shrinks to a dagger, plunges in, and the player is imbued ----
+        // ---- the stab (right click at full charge): the blade turns to the chest, is held by its sharp end and driven in, and the player is imbued ----
         // Arm angles are facing-local (0 = forward, negative = up). The blade is much longer than the player's arm reach, so during the stab the
-        // sword is drawn shrunk and slid back through the fist, so that its tip can stop at the chest (the hand itself never moves off the arm).
-        public static int StabTurnTicks => 12;          // the arm goes to StabArmDeg, the blade turns to point at the chest and shrinks to dagger size
+        // sword (full size) is slid back through the fist until the fist holds it near the tip (the hand itself never moves off the arm): the tip
+        // stands StabAimDistance in front of the chest while aiming and the fist slides up the blade during the plunge.
+        public static int StabTurnTicks => 12;          // the arm goes to StabArmDeg, the blade turns to point at the chest and slides back through the fist
         public static int StabAimTicks => 5;            // a short held aim: the blade trembles and sparkles
         public static int StabPlungeTicks => 3;         // the plunge (fast)
         public static int StabHoldTicks => 7;           // the blade stays buried while the burst plays
@@ -98,9 +99,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         public static float StabAimDistance => 10f;     // while aiming, the tip stands this far in front of the chest (px)
         public static float StabDepth => 6f;            // when plunged, the tip is this far PAST the center of the chest (px)
         public static float StabChestOffsetY => -2f;    // the chest point the blade aims at, relative to the player's center (px, negative = up)
-        public static float StabMinScale => 0.3f;       // the dagger form is never smaller than this fraction of the sword
         public static float StabShake => 1.2f;          // tremble of the blade while aiming and buried (px; half as much while aiming)
-        public static float StabBlendOut => 0.2f;       // after the stab the sword regrows from dagger size by this much per tick (0..1)
+        public static float StabBlendOut => 0.2f;       // after the stab the sword slides back out of the chest into the hand by this much per tick (0..1)
         public static float StabHitShake => 2.5f;       // camera punch of the impact
 
         // ---- the imbue (after the stab): a speed boost with purple dust and light ----
@@ -110,6 +110,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         public static float ImbueAccelMultiplier => 1.6f; // how fast the player gets there (runAcceleration)
         public static float ImbueDustChance => 0.6f;    // per tick while moving: a purple mote at the feet
         public static float ImbueDustMinSpeed => 2f;    // the player must move at least this fast (px per tick) for the dust
+        public static int ImbueBuffGraceTicks => 30;    // the imbue's visuals ignore a missing buff this long after they start (on other machines the buff can arrive a moment late)
 
         // ---- colors (alpha 0 = additive) ----
         public static Color OutlineColor => new Color(150, 70, 255, 0);

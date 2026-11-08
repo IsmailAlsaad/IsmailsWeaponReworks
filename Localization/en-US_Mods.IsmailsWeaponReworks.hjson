@@ -57,3 +57,10 @@ Projectiles: {
 	LightsBaneBladeProjectile.DisplayName: Light's Bane Blade Projectile
 	LightsBaneImbueProjectile.DisplayName: Light's Bane Imbue Projectile
 }
+
+Buffs: {
+	LightsBaneImbueBuff: {
+		DisplayName: Shadow Speed
+		Description: Greatly increased movement speed
+	}
+}

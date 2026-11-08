@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-08 | 191 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-08 | 192 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -23,6 +23,7 @@ tModLoader/other bases -> project types:
 - GlobalNPC (3): BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC
 - ModSystem (2): DetachedTrails, MetaballLayers
 - Mod (1): IsmailsWeaponReworks
+- ModBuff (1): LightsBaneImbueBuff
 - PlayerDrawLayer (1): BladeOfGrassSwordLayer
 
 ## Files
@@ -434,7 +435,7 @@ tModLoader/other bases -> project types:
     +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +SheathArmDeg:float[s] +SheathTiltDeg:float[s] +SheathEaseTicks:int[s] +ClickKickDeg:float[s] +ClickFlashTicks:int[s] +ClickDustCount:int[s] +ClickShake:float[s] +MaxRangeTiles:float[s] +MaxChargeTicks:int[s] +MinRangePixels:float[s] +ReachEasePower:float[s] +StepPixels:float[s] +SinkDepth:float[s] +EmbedShake:float[s] +EmbedShakeDecay:float[s] +EmbedCameraShake:float[s] +VanishTicks:int[s] +CooldownTicks:int[s] +DashSpeed:float[s] +MinDashPixels:float[s] +DashGraze:float[s] +ImmuneTailTicks:int[s] +DashArrivePixels:float[s] +DashStuckTicks:int[s] +DashImpulseKeep:float[s] +VanillaShadow:bool[s] +DashShadowTicks:int[s] +SlashDamageMultiplier:float[s] +SlashWidth:float[s] +SlashHitTicks:int[s] +TrailFollowTicks:int[s] +SlashLingerTicks:int[s] +SlashLineWidth:float[s] +SlashShake:float[s] +SlashHitShake:float[s] +ReadyOutlineWidth:float[s] +ReadyPulseTicks:int[s] +ReadyOutlineMin:float[s] +ReadyOutlineMax:float[s] +ReadyFade:float[s] +ReadyGlowScale:float[s] +ReadyFlashTicks:int[s] +ReadySparkleChance:float[s] +ReadyOutlineColor:Color[s] +ReadyCoreColor:Color[s] +AfterimageSpacing:float[s] +PlayerAfterimageTicks:int[s] +AfterimageShadow:float[s] +HitStopTicks:int[s] +HitStopFlash:float[s] +HitMarkTicks:int[s] +HitMarkCount:int[s] +HitMarkLength:float[s] +HitMarkWidth:float[s] +HitMarkAngleDeg:float[s] +MaxHitMarks:int[s] +HitMarkCoverage:float[s] +HitMarkWidthGrow:float[s] +HitMarkMaxScale:float[s] +HitMarks:HitMarkStyle[s] +EmbedStayTicks:int[s] +EmbedFadeTicks:int[s] +EmbedVanishTicks:int[s] +DropGravity:float[s] +DropMaxFallSpeed:float[s] +DropKick:float[s] +DropSpin:float[s] +DropBounceKeep:float[s] +DropMaxBounces:int[s] +DropMaxTicks:int[s] +DropFadeTicks:int[s] +PixelSize:float[s] +AfterimageTicks:int[s] +CoreColor:Color[s] +GlowColor:Color[s] +EdgeColor:Color[s]
 
 ### Content/Weapons/LightsBane/
-**LightsBaneBladeProjectile.cs** uses: CameraShake, DetachedTrails, HeldAim, HeldSwordPose, LightsBaneFx, LightsBaneImbueProjectile, LightsBanePlayer, LightsBaneSweepTrailStyle, LightsBaneTuning, PixelOutline, RemoteHitTracker, SweepTrail
+**LightsBaneBladeProjectile.cs** uses: CameraShake, DetachedTrails, HeldAim, HeldSwordPose, LightsBaneFx, LightsBaneImbueBuff, LightsBaneImbueProjectile, LightsBanePlayer, LightsBaneSweepTrailStyle, LightsBaneTuning, PixelOutline, RemoteHitTracker, SweepTrail
   class LightsBaneBladeProjectile : ModProjectile
     +Texture:string[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 **LightsBaneFx.cs** uses: LightsBaneTuning
@@ -443,10 +444,13 @@ tModLoader/other bases -> project types:
 **LightsBaneGlobalItem.cs**
   class LightsBaneGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov]
-**LightsBaneImbueProjectile.cs** uses: LightsBaneFx, LightsBaneTuning
+**LightsBaneImbueBuff.cs**
+  class LightsBaneImbueBuff : ModBuff
+    +Texture:string[ov]
+**LightsBaneImbueProjectile.cs** uses: LightsBaneFx, LightsBaneImbueBuff, LightsBaneTuning
   class LightsBaneImbueProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +PreDraw(ref Color)[ov]
-**LightsBanePlayer.cs** uses: LightsBaneBladeProjectile, LightsBaneTuning
+**LightsBanePlayer.cs** uses: LightsBaneBladeProjectile, LightsBaneImbueBuff, LightsBaneTuning
   class LightsBanePlayer : ModPlayer
     +Charge:float +ImbueTicks:int +Find(int,int)[s] +AddCharge(Player,float)[s] +OnRespawn()[ov] +PostUpdateRunSpeeds()[ov] +PostUpdate()[ov]
 **LightsBaneTrail.cs** uses: LightsBaneTuning, SweepFade, SweepTrailStyle
@@ -454,7 +458,7 @@ tModLoader/other bases -> project types:
     +Charge:float +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
 **LightsBaneTuning.cs**
   static class LightsBaneTuning
-    +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +ShowBladeDebug:bool[s] +DamageMultiplier:float[s] +KnockbackMultiplier:float[s] +HitLengthScale:float[s] +HitWidth:float[s] +SweepHitSteps:int[s] +HitsToFull:int[s] +ChargePerHit:float[s] +ChargeHoldTicks:int[s] +ChargeDecayPerTick:float[s] +ChargedAt:float[s] +ChargeShowEase:float[s] +ChargeSyncStep:float[s] +MaxSpeedScale:float[s] +SpeedCurvePower:float[s] +AttackSpeedInfluence:float[s] +MinSpeed:float[s] +MaxSpeed:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +ChainAnticipateTicks:int[s] +ChainAnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +IdleBobDeg:float[s] +IdleBobTicks:int[s] +IdleEase:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInnerLow:float[s] +TrailInnerHigh:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailSamplesPerTick:int[s] +TrailOpacityLow:float[s] +TrailOpacityHigh:float[s] +GlowMaxAlpha:float[s] +GlowScale:float[s] +OutlineWidth:float[s] +OutlinePulseTicks:int[s] +OutlineMin:float[s] +OutlineMax:float[s] +OutlineFade:float[s] +FlashTicks:int[s] +HitShake:float[s] +SparkleChance:float[s] +StabTurnTicks:int[s] +StabAimTicks:int[s] +StabPlungeTicks:int[s] +StabHoldTicks:int[s] +StabBufferTicks:int[s] +StabArmDeg:float[s] +StabAimDistance:float[s] +StabDepth:float[s] +StabChestOffsetY:float[s] +StabMinScale:float[s] +StabShake:float[s] +StabBlendOut:float[s] +StabHitShake:float[s] +ImbueTicks:int[s] +ImbueFadeTicks:int[s] +ImbueSpeedMultiplier:float[s] +ImbueAccelMultiplier:float[s] +ImbueDustChance:float[s] +ImbueDustMinSpeed:float[s] +OutlineColor:Color[s] +OutlineCoreColor:Color[s] +CoreColor:Color[s] +PurpleColor:Color[s] +DeepColor:Color[s]
+    +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +ShowBladeDebug:bool[s] +DamageMultiplier:float[s] +KnockbackMultiplier:float[s] +HitLengthScale:float[s] +HitWidth:float[s] +SweepHitSteps:int[s] +HitsToFull:int[s] +ChargePerHit:float[s] +ChargeHoldTicks:int[s] +ChargeDecayPerTick:float[s] +ChargedAt:float[s] +ChargeShowEase:float[s] +ChargeSyncStep:float[s] +MaxSpeedScale:float[s] +SpeedCurvePower:float[s] +AttackSpeedInfluence:float[s] +MinSpeed:float[s] +MaxSpeed:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +ChainAnticipateTicks:int[s] +ChainAnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +IdleBobDeg:float[s] +IdleBobTicks:int[s] +IdleEase:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInnerLow:float[s] +TrailInnerHigh:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailSamplesPerTick:int[s] +TrailOpacityLow:float[s] +TrailOpacityHigh:float[s] +GlowMaxAlpha:float[s] +GlowScale:float[s] +OutlineWidth:float[s] +OutlinePulseTicks:int[s] +OutlineMin:float[s] +OutlineMax:float[s] +OutlineFade:float[s] +FlashTicks:int[s] +HitShake:float[s] +SparkleChance:float[s] +StabTurnTicks:int[s] +StabAimTicks:int[s] +StabPlungeTicks:int[s] +StabHoldTicks:int[s] +StabBufferTicks:int[s] +StabArmDeg:float[s] +StabAimDistance:float[s] +StabDepth:float[s] +StabChestOffsetY:float[s] +StabShake:float[s] +StabBlendOut:float[s] +StabHitShake:float[s] +ImbueTicks:int[s] +ImbueFadeTicks:int[s] +ImbueSpeedMultiplier:float[s] +ImbueAccelMultiplier:float[s] +ImbueDustChance:float[s] +ImbueDustMinSpeed:float[s] +ImbueBuffGraceTicks:int[s] +OutlineColor:Color[s] +OutlineCoreColor:Color[s] +CoreColor:Color[s] +PurpleColor:Color[s] +DeepColor:Color[s]
 
 ### Content/Weapons/Muramasa/
 **MuramasaDrawState.cs** uses: MuramasaFx, MuramasaTuning, PixelLine

@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Content.Buffs;
+using Microsoft.Xna.Framework;
 using System;
 using Terraria;
 using Terraria.ID;
@@ -9,8 +10,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
     /// <summary>
     /// The imbue (patch 2): spawned by the owner at the moment the blade is buried in the chest (ai[0] = how many ticks it lasts). It follows
     /// the player for that long and shows the imbue to EVERY machine: the purple dust trail at the feet and the purple light. It draws
-    /// nothing itself yet (patch 3 adds the player outline and the afterimages here). It is VISUAL ONLY: the speed boost lives in
-    /// LightsBanePlayer on the owner's machine (vanilla syncs the player's position, so nobody else needs the speed), so a machine that
+    /// nothing itself yet (patch 3 adds the player outline and the afterimages here). It is VISUAL ONLY and it ends with LightsBaneImbueBuff:
+    /// the speed boost lives in LightsBanePlayer on the owner's machine (vanilla syncs the player's position, so nobody else needs the speed), so a machine that
     /// misses this projectile (a late joiner) only misses some dust.
     /// </summary>
     public class LightsBaneImbueProjectile : ModProjectile
@@ -19,6 +20,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.CrystalShard;
 
         bool started;
+        int age;
 
         public override void SetDefaults()
         {
@@ -47,6 +49,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             {
                 started = true;
                 Projectile.timeLeft = Math.Max(2, (int)Projectile.ai[0]);
+            }
+
+            // The imbue is the buff: when it is gone (its time ran out, or the player cancelled it) so is this. The first ticks are skipped,
+            // because on the other machines the buff can arrive a moment after the projectile.
+            age++;
+            if (age > LightsBaneTuning.ImbueBuffGraceTicks && !owner.HasBuff(ModContent.BuffType<LightsBaneImbueBuff>()))
+            {
+                Projectile.Kill();
+                return;
             }
 
             Projectile.Center = owner.Center;

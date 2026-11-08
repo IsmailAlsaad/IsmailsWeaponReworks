@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Content.Buffs;
+using Microsoft.Xna.Framework;
 using System;
 using Terraria;
 using Terraria.ID;
@@ -15,7 +16,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
     public class LightsBanePlayer : ModPlayer
     {
         public float Charge;
-        public int ImbueTicks;   // ticks of imbue left (the owner's machine only; the imbue projectile shows it to everyone)
+        // Ticks of imbue left: the time left on LightsBaneImbueBuff (0 without it). The buff is the single source of truth, so right-clicking its
+        // icon cancels the imbue, death clears it, and every machine sees it (vanilla syncs the buff list).
+        public int ImbueTicks
+        {
+            get
+            {
+                int index = Player.FindBuffIndex(ModContent.BuffType<LightsBaneImbueBuff>());
+                return index >= 0 ? Player.buffTime[index] : 0;
+            }
+        }
         int sinceHit;
 
         public static Projectile Find(int owner, int type)
@@ -39,16 +49,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         public override void OnRespawn()
         {
             Charge = 0f;
-            ImbueTicks = 0;
         }
 
         // The imbue's speed boost: the owner's run speeds are scaled (vanilla syncs the position, so nobody else needs to know), easing out over the
         // last ImbueFadeTicks. It works in the air too, and it belongs to the player: swapping the sword away does not end it.
         public override void PostUpdateRunSpeeds()
         {
-            if (Player.whoAmI != Main.myPlayer || ImbueTicks <= 0)
+            int left = ImbueTicks;
+            if (Player.whoAmI != Main.myPlayer || left <= 0)
                 return;
-            float ease = MathHelper.Clamp(ImbueTicks / (float)Math.Max(1, LightsBaneTuning.ImbueFadeTicks), 0f, 1f);
+            float ease = MathHelper.Clamp(left / (float)Math.Max(1, LightsBaneTuning.ImbueFadeTicks), 0f, 1f);
             float speed = MathHelper.Lerp(1f, LightsBaneTuning.ImbueSpeedMultiplier, ease);
             float accel = MathHelper.Lerp(1f, LightsBaneTuning.ImbueAccelMultiplier, ease);
             Player.maxRunSpeed *= speed;
@@ -60,11 +70,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         {
             if (Player.whoAmI != Main.myPlayer)
                 return;
-
-            if (Player.dead)
-                ImbueTicks = 0;
-            else if (ImbueTicks > 0)
-                ImbueTicks--;
 
             if (Player.dead || Player.HeldItem.type != ItemID.LightsBane)
             {

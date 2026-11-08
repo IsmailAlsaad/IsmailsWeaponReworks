@@ -1,4 +1,5 @@
 ﻿using IsmailsWeaponReworks.Common;
+using IsmailsWeaponReworks.Content.Buffs;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -53,11 +54,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         bool stabbing;
         float stabTimer;          // ticks since the stab began
         bool stabImpacted;
-        float stabBlend;          // 0..1: how much of the dagger form is drawn (it fades back out after the stab)
-        float stabSpriteScale = 1f; // the dagger form's sprite scale, as a fraction of the sword's
-        float stabGripPx;         // how far the dagger form's sprite is slid back through the fist (px, at full dagger form)
+        float stabBlend;          // 0..1: how much of the reversed grip is drawn (it fades back out after the stab)
+        float stabSlide;          // how far the sprite is slid along the blade at full reversed grip (px, negative = back through the fist)
         float stabTipDist;        // hand to tip while stabbing (px)
-        float stabDaggerLength;   // the sprite's length in dagger form (px)
         float stabStartBlade;     // the blade's world angle when the stab began
         float stabStartArm;       // the arm's facing-local angle when the stab began
         float stabLastBlade;      // the blade angle the stab pose gave to ApplyPose last (to continue from when the stab ends)
@@ -358,8 +357,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         }
 
         // ---- the stab (right click at full charge) ----
-        // One timeline inside the held blade (the sprite never leaves): TURN (the arm goes up, the blade turns to point at the chest and shrinks to a
-        // dagger, because the sword is far longer than the arm's reach), AIM (it trembles), PLUNGE (fast, the tip goes into the chest), HOLD (it stays
+        // One timeline inside the held blade (the sprite never leaves): TURN (the arm goes up, the blade turns to point at the chest and slides back
+        // through the fist until the fist holds it by its sharp end, hilt sticking out behind the hand; the sword keeps its full size), AIM (it
+        // trembles), PLUNGE (fast, the tip is driven into the chest, the fist slides up the blade), HOLD (it stays
         // buried while the burst plays). At the impact the owner drops the charge to 0, starts the imbue and spawns the imbue projectile.
 
         // The owner starts a stab on a fresh right press (not over the inventory, not on a chest or a door) while the sword is fully charged and the
@@ -399,14 +399,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             stabStartArm = armLocal;
             stabStartBlade = Projectile.rotation;
 
-            // How long the dagger form is: just long enough to reach the chest from where the hand will be (the arm's reach is about the same
-            // wherever the arm points), plus the depth.
-            Vector2 chest = owner.Center + new Vector2(0f, LightsBaneTuning.StabChestOffsetY);
-            Vector2 handThere = HeldSwordPose.HandWorld(owner, HeldSwordPose.ToWorld(facing, Rad(LightsBaneTuning.StabArmDeg)));
-            float full = TotalLength;
-            stabDaggerLength = MathHelper.Clamp(Vector2.Distance(handThere, chest) + LightsBaneTuning.StabDepth, LightsBaneTuning.StabMinScale * full, full);
-            stabSpriteScale = stabDaggerLength / Math.Max(1f, full);
-
             if (IsOwner)
             {
                 stabSerial = (stabSerial + 1) & 255;
@@ -417,7 +409,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             LightsBaneFx.PlayStabWindup(Projectile.Center);
         }
 
-        // The arm, the blade's angle, the dagger form and the tip for this tick of the stab. Angles are given the way ApplyPose wants them (a
+        // The arm, the blade's angle, the slide (reversed grip) and the tip for this tick of the stab. Angles are given the way ApplyPose wants them (a
         // world angle that it mirrors itself under inverted gravity).
         void StabPose(Player owner, out float worldArm, out float worldBlade)
         {
@@ -437,7 +429,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             worldBlade = owner.gravDir == -1f ? -angle : angle;
             stabLastBlade = worldBlade;
 
-            // The tip: the full sword at first, then (during the turn) shrinking to the aim distance, then the plunge to the depth.
+            // The tip (its distance from the hand): the full sword's length at first, then (during the turn) the sprite slides back until the tip is at
+            // the aim distance, then the plunge to the depth.
             float full = TotalLength;
             float reach = Vector2.Distance(hand, chest);
             float tipAim = Math.Max(2f, reach - LightsBaneTuning.StabAimDistance);
@@ -449,10 +442,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
                 tipNow = MathHelper.Lerp(tipAim, tipEnd, 1f - (1f - u) * (1f - u));
             }
 
+            // Reversed grip: the sprite keeps its full size and is slid back along the blade, so the fist ends up near the sharp end and the hilt
+            // sticks out behind the hand. The tip is then 'tipNow' px in front of the hand (full length at s = 0, tipNow at s = 1).
             stabBlend = s;
-            stabGripPx = Math.Max(0f, stabDaggerLength - tipNow);
-            float spriteLength = MathHelper.Lerp(full, stabDaggerLength, s);
-            stabTipDist = spriteLength - stabGripPx * s;
+            stabSlide = tipNow - full;
+            stabTipDist = full + stabSlide * s;
 
             stabShake = stabTimer >= turn ? Main.rand.NextVector2Circular(1f, 1f) * LightsBaneTuning.StabShake * (stabTimer >= plungeEnd ? 1f : 0.5f) : Vector2.Zero;
         }
@@ -480,12 +474,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
                 return;
             LightsBanePlayer state = owner.GetModPlayer<LightsBanePlayer>();
             state.Charge = 0f;
-            state.ImbueTicks = LightsBaneTuning.ImbueTicks;
+            owner.AddBuff(ModContent.BuffType<LightsBaneImbueBuff>(), LightsBaneTuning.ImbueTicks); // vanilla syncs the buff list to the others
             Projectile.NewProjectile(Projectile.GetSource_FromThis(), owner.Center, Vector2.Zero, ModContent.ProjectileType<LightsBaneImbueProjectile>(), 0, 0f, owner.whoAmI, LightsBaneTuning.ImbueTicks);
         }
 
-        // The stab is over: the arm and blade angles it ended in become the resting angles the ready pose eases away from, and the dagger form
-        // fades out (StabBlendOut) while the sword regrows.
+        // The stab is over: the arm and blade angles it ended in become the resting angles the ready pose eases away from, and the reversed grip
+        // fades out (StabBlendOut) while the sword slides back out of the chest into the hand.
         void EndStab(Player owner)
         {
             stabbing = false;
@@ -729,9 +723,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             float scale = Projectile.scale;
             if (stabBlend > 0f)
             {
-                // The stab's dagger form: the sprite shrinks and slides back through the fist (draw only), so the tip can stop at the chest.
-                scale *= MathHelper.Lerp(1f, stabSpriteScale, stabBlend);
-                position += stabShake - Projectile.rotation.ToRotationVector2() * (stabGripPx * stabBlend);
+                // The stab's reversed grip: the sprite keeps its full size and slides back through the fist (draw only), so the fist holds the
+                // blade by its sharp end, the tip points at the chest and the hilt sticks out behind the hand.
+                position += stabShake + Projectile.rotation.ToRotationVector2() * (stabSlide * stabBlend);
             }
 
             // The charge: a soft glow behind the sword that grows with it (drawn around the CENTER of the blade sprite, so it swells outward
