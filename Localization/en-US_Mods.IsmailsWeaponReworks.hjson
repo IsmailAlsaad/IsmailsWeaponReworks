@@ -56,6 +56,7 @@ Projectiles: {
 	BladeOfGrassSpineProjectile.DisplayName: Blade Of Grass Spine Projectile
 	LightsBaneBladeProjectile.DisplayName: Light's Bane Blade Projectile
 	LightsBaneImbueProjectile.DisplayName: Light's Bane Imbue Projectile
+	EtherealSwordProjectile.DisplayName: Ethereal Sword Projectile
 }
 
 Buffs: {
