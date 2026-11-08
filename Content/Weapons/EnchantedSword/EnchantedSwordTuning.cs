@@ -27,7 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static int SweepHitSteps => 6;                 // the hit test is checked at this many poses between two ticks (a fast strike needs more)
 
         // ---- the hits: true melee hits give the blade a stronger outline, the last one discharges ----
-        public static int HitsToDischarge => 6;         // the FIRST enemy each swing or thrust touches counts as one hit (a swing through a crowd = 1)
+        public static int HitsToDischarge => 3;         // the FIRST enemy each swing or thrust touches counts as one hit (a swing through a crowd = 1)
         public static int HitHoldTicks => 150;          // the count is lost this long after the last counted hit
         public static float StageShowEase => 0.2f;      // how fast the DRAWN outline follows the real count (per tick, 0..1)
         public static float HitShake => 0.6f;           // camera punch on a hit (grows with the stage)
@@ -36,7 +36,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
         // ---- the cycle: up, down, thrust, up, down, thrust ... ----
         public static int StartKind => 1;               // the first swing after the sword was at rest: 0 = up, 1 = down, 2 = thrust
-        public static int CycleResetTicks => 40;        // the cycle starts over (at StartKind) when the sword rested this long
+        public static int CycleResetTicks => 10;        // the cycle starts over (at StartKind) when the sword rested this long
         public static float AttackSpeedInfluence => 1f; // 0 = ignore the player's melee attack speed, 1 = fully applied
         public static float MinSpeed => 0.3f;           // the final speed (melee speed) is clamped to this range
         public static float MaxSpeed => 6f;
