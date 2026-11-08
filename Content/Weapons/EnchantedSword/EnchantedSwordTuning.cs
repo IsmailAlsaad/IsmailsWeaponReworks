@@ -1,0 +1,133 @@
+﻿using Microsoft.Xna.Framework;
+using System;
+
+namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
+{
+    /// <summary>
+    /// Every tunable number of the Enchanted Sword rework in one place (ticks: 60 = 1 second). Properties instead of fields, so hot reload
+    /// can tweak them. Arm angles are for a player facing right and RELATIVE TO THE AIM (the direction to the cursor when the swing
+    /// starts): 0 = at the cursor, negative = above it, positive = below it; the ready pose is relative to the player instead (0 = forward,
+    /// positive = down). The blade angle is arm + tilt. The sword cycles UP, DOWN, THRUST (kinds 0, 1, 2).
+    /// </summary>
+    public static class EnchantedSwordTuning
+    {
+        // ---- sword ----
+        public static float BladeLength => 52f;       // hand to tip, px at scale 1: a first guess, tune it with ShowBladeDebug until the magenta square sits on the sprite's tip
+        public static float SwordScale => 1.1f;
+        public static float GripOffset => 0f;         // draw only: moves the sprite this far (px at scale 1) back along the blade, so the hand holds it higher or lower
+        public static bool ShowBladeDebug => false;   // true: a magenta square on the tip the hit test uses
+
+        // ---- damage: everything that decides what a swing or a thrust does to an enemy ----
+        public static float DamageMultiplier => 1f;           // of the item's damage, for the up and down swings
+        public static float KnockbackMultiplier => 1f;
+        public static float ThrustDamageMultiplier => 1.15f;  // the thrust on top of DamageMultiplier
+        public static float ThrustKnockbackMultiplier => 1.4f;
+        public static float HitLengthScale => 1.3f;           // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
+        public static float HitWidth => 18f;                  // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
+        public static int SweepHitSteps => 6;                 // the hit test is checked at this many poses between two ticks (a fast strike needs more)
+
+        // ---- the hits: true melee hits give the blade a stronger outline, the last one discharges ----
+        public static int HitsToDischarge => 6;         // the FIRST enemy each swing or thrust touches counts as one hit (a swing through a crowd = 1)
+        public static int HitHoldTicks => 150;          // the count is lost this long after the last counted hit
+        public static float StageShowEase => 0.2f;      // how fast the DRAWN outline follows the real count (per tick, 0..1)
+        public static float HitShake => 0.6f;           // camera punch on a hit (grows with the stage)
+        public static float DischargeShake => 2f;       // camera punch of the discharge
+        public static float DischargeBurstRadius => 72f; // size of the stardust burst (the Enchanted Boomerang's burst, 72 = its default)
+
+        // ---- the cycle: up, down, thrust, up, down, thrust ... ----
+        public static int StartKind => 1;               // the first swing after the sword was at rest: 0 = up, 1 = down, 2 = thrust
+        public static int CycleResetTicks => 40;        // the cycle starts over (at StartKind) when the sword rested this long
+        public static float AttackSpeedInfluence => 1f; // 0 = ignore the player's melee attack speed, 1 = fully applied
+        public static float MinSpeed => 0.3f;           // the final speed (melee speed) is clamped to this range
+        public static float MaxSpeed => 6f;
+
+        // ---- the up and down swings (a chop centered on the cursor) ----
+        public static int AnticipateTicks => 5;         // a swing that starts from the ready pose: the pull-back ...
+        public static float AnticipateDeg => 18f;       // ... this far past the start of the arc
+        public static int ChainAnticipateTicks => 9;    // a swing that FLOWS out of the previous one: the previous strike carries on through this wind-up ...
+        public static float ChainAnticipateDeg => 24f;  // ... to this far past the end of the arc. Keep it above OvershootDeg, so the arm keeps drifting the way it was going
+        public static float AnticipateTiltDeg => 10f;   // the wrist cocks back this much before every strike
+        public static int SwingTicks => 9;              // the strike (the only part that damages)
+        public static float SwingEasePower => 2f;       // 1 = even speed; higher = faster start and a longer deceleration
+        public static float OvershootDeg => 8f;         // the strike carries this far past the end of the arc
+        public static int RecoverTicks => 7;            // only when the button is let go: the arm settles back to the end of the arc over this long
+        public static float SwingHighDeg => -70f;       // top of the arc
+        public static float SwingLowDeg => 70f;         // bottom of the arc
+        public static float TiltHighDeg => -14f;        // blade tilt relative to the arm at the top (wrist) ...
+        public static float TiltLowDeg => 14f;          // ... and at the bottom
+
+        // ---- the thrust (a jab at the cursor: the arm points at it, the sword is pulled back and then driven forward through the fist) ----
+        public static float ThrustWindArmDeg => 22f;    // the arm while the sword is pulled back (positive = below the aim); the blade stays parallel to the aim
+        public static int ThrustAnticipateTicks => 6;   // a thrust that starts from the ready pose: the pull-back
+        public static int ThrustChainAnticipateTicks => 8; // a thrust that flows out of the previous swing
+        public static int ThrustTicks => 6;             // the strike (the only part that damages)
+        public static float ThrustEasePower => 3f;      // higher = a harder, faster jab that eases out at the end
+        public static float ThrustPullPx => 16f;        // before the jab the sword slides back through the fist this far (px at scale 1): the fist slides up the blade, the hilt trails behind it
+        public static float ThrustReachPx => 8f;        // at the end of the jab the sword is this far forward of its normal grip (the hilt leaves the fist by this much: keep it small or the sword looks detached)
+        public static float ThrustSettle => 0.5f;       // after the jab the sword rests at this fraction of ThrustReachPx until the next swing takes over
+
+        // ---- the ready pose (between swings): the sword held up at the shoulder, bobbing a little ----
+        public static float ReadyArmDeg => 30f;
+        public static float ReadyTiltDeg => -60f;
+        public static float IdleBobDeg => 2f;
+        public static int IdleBobTicks => 90;
+        public static float IdleEase => 0.15f;          // how fast the arm settles into the ready pose after a swing (per tick, 0..1)
+
+        // ---- swing trail (a SweepTrail fan, drawn by the shared pixel line renderer; it grows with the stage) ----
+        public static float PixelSize => 2f;
+        public static int TrailLifeTicks => 16;
+        public static float TailLifeScale => 0.45f;     // the first point of a swing's trail lives this fraction as long as the last one
+        public static int TrailRails => 7;              // parallel pixel lines that fill the fan
+        public static float TrailExpandBy => 0.8f;      // the fan has fully expanded this far into the strike (0..1)
+        public static float TrailInnerLow => 0.8f;      // fully expanded, the fan reaches down the blade to this fraction of its length: with no hits ...
+        public static float TrailInnerHigh => 0.4f;     // ... and at the highest stage
+        public static float TrailInnerThrust => 0.5f;   // the thrust's streak
+        public static float TrailOuter => 1.25f;        // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
+        public static float TrailLagTicks => 0.4f;      // how many ticks the trail runs BEHIND the sprite (0 = exactly on it)
+        public static int TrailSamplesPerTick => 8;     // trail points laid per tick (the strike is fast, so many keep the fan smooth)
+        public static float TrailOpacityLow => 0.3f;    // how strong the fan is with no hits ...
+        public static float TrailOpacityHigh => 0.8f;   // ... and at the highest stage
+
+        // ---- the outline: stage 0 = none, stage 1 = after the first hit, stage 2 = after the second ----
+        public static float Stage1Strength => 0.4f;
+        public static float Stage2Strength => 0.85f;
+        public static float Stage1Width => 1.5f;        // screen pixels
+        public static float Stage2Width => 2.5f;
+        public static int Stage1PulseTicks => 54;       // one full pulse
+        public static int Stage2PulseTicks => 28;       // faster at the higher stage
+        public static float OutlineMin => 0.55f;        // the pulse runs between these two strengths
+        public static float OutlineMax => 1f;
+        public static float GlowScale => 1.18f;         // the glow copy is this much bigger than the sword, grown from the MIDDLE of the sprite
+        public static float SparkleChance => 0.3f;      // per tick, at the highest stage: a mote somewhere along the blade (less at stage 1)
+        public static int FlashTicks => 12;             // the white flash when a strike starts and when the sword discharges
+
+        // ---- colors (alpha 0 = additive): the Enchanted Boomerang's stardust, gold and white into blue and pink ----
+        public static Color OutlineColor => new Color(110, 190, 255, 0);
+        public static Color OutlineCoreColor => new Color(255, 240, 200, 0);
+        public static Color CoreColor => new Color(255, 245, 215, 0);
+        public static Color BlueColor => new Color(120, 190, 255, 0);
+        public static Color PinkColor => new Color(235, 140, 220, 0);
+
+        // The outline's strength, width and pulse length for a (smoothly changing) stage between 0 and 2.
+        public static float OutlineStrengthAt(float stage)
+        {
+            return stage <= 1f ? MathHelper.Lerp(0f, Stage1Strength, Math.Max(0f, stage)) : MathHelper.Lerp(Stage1Strength, Stage2Strength, Math.Min(1f, stage - 1f));
+        }
+
+        public static float OutlineWidthAt(float stage)
+        {
+            return stage <= 1f ? MathHelper.Lerp(0f, Stage1Width, Math.Max(0f, stage)) : MathHelper.Lerp(Stage1Width, Stage2Width, Math.Min(1f, stage - 1f));
+        }
+
+        public static int PulseTicksAt(float stage)
+        {
+            return (int)MathHelper.Lerp(Stage1PulseTicks, Stage2PulseTicks, MathHelper.Clamp(stage - 1f, 0f, 1f));
+        }
+
+        // The stage as 0..1 (0 = none, 1 = the highest stage): drives the trail and the glow.
+        public static float Stage01(float stage)
+        {
+            return MathHelper.Clamp(stage / Math.Max(1f, HitsToDischarge - 1f), 0f, 1f);
+        }
+    }
+}
