@@ -110,6 +110,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         public static float ImbueAccelMultiplier => 1.6f; // how fast the player gets there (runAcceleration)
         public static float ImbueDustChance => 0.6f;    // per tick while moving: a purple mote at the feet
         public static float ImbueDustMinSpeed => 2f;    // the player must move at least this fast (px per tick) for the dust
+        public static int ImbueFlickerCycles => 5;      // over the last ImbueFadeTicks the Phase dye look blinks on and off, faster and faster: this many blinks
+        public static float ImbueAfterimageSpacing => 18f; // pixels the player travels between two afterimages
+        public static int ImbueAfterimageTicks => 16;   // how long one afterimage lasts
+        public static float ImbueAfterimageShadow => 0.45f; // how see-through the freshest afterimage is (0 = solid, 1 = invisible); it fades to 1
         public static int ImbueBuffGraceTicks => 30;    // the imbue's visuals ignore a missing buff this long after they start (on other machines the buff can arrive a moment late)
 
         // ---- colors (alpha 0 = additive) ----

@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework;
 using System;
 using Terraria;
+using Terraria.DataStructures;
+using Terraria.Graphics.Shaders;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -44,6 +46,44 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             LightsBanePlayer state = player.GetModPlayer<LightsBanePlayer>();
             state.Charge = MathHelper.Clamp(state.Charge + amount, 0f, 1f);
             state.sinceHit = 0;
+        }
+
+        // The imbue's look (visual only, set by LightsBaneImbueProjectile every tick on EVERY machine, so everyone sees it on everyone): true while
+        // the player should be drawn in the Phase dye. It is reset every tick, so it is false the moment the imbue projectile is gone.
+        public bool ImbueLook;
+
+        public override void ResetEffects()
+        {
+            ImbueLook = false;
+        }
+
+        // While ImbueLook is on, every dye slot of the DRAWN player is overridden with the vanilla Phase dye (armor and accessories alike, whatever
+        // dyes they really wear; no item is given or consumed). This runs on the drawn copy only, so nothing about the player's real dyes changes.
+        // The imbue's afterimages are drawn through the same path, so they are Phase-dyed too while the look is on.
+        public override void ModifyDrawInfo(ref PlayerDrawSet drawInfo)
+        {
+            if (!ImbueLook)
+                return;
+            int dye = GameShaders.Armor.GetShaderIdFromItemId(ItemID.PhaseDye);
+            drawInfo.cHead = dye;
+            drawInfo.cBody = dye;
+            drawInfo.cLegs = dye;
+            drawInfo.cHandOn = dye;
+            drawInfo.cHandOff = dye;
+            drawInfo.cBack = dye;
+            drawInfo.cFront = dye;
+            drawInfo.cShoe = dye;
+            drawInfo.cWaist = dye;
+            drawInfo.cShield = dye;
+            drawInfo.cNeck = dye;
+            drawInfo.cFace = dye;
+            drawInfo.cBalloon = dye;
+            drawInfo.cBalloonFront = dye;
+            drawInfo.cWings = dye;
+            drawInfo.cCarpet = dye;
+            drawInfo.cFloatingTube = dye;
+            drawInfo.cBackpack = dye;
+            drawInfo.cTail = dye;
         }
 
         public override void OnRespawn()
