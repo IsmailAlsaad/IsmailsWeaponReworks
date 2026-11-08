@@ -39,12 +39,29 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         float swingSpeed = 1f;    // the swing's speed: charge x the owner's melee speed, decided at the click
         bool swingChained;        // the swing flows out of the previous one (no ready pose in between)
         float chargeTarget;       // the real charge 0..1
+        int stabSerial;           // changes with every stab the owner starts
 
         // ---- per machine: counters and visuals, never synced ----
         bool pendingSwing;        // a swing the owner started that this machine has not begun yet
         float pendingAim;
         float pendingSpeed = 1f;
         bool pendingChained;
+        bool pendingStab;         // a stab the owner started that this machine has not begun yet
+        bool syncedOnce;          // the first packet only tells where the stab counter is (a late joiner must not replay an old stab)
+        bool rightWasDown;        // owner: the right button on the previous tick (a stab needs a fresh press)
+        int stabBuffer;           // owner: ticks a right click during a strike is still remembered
+        bool stabbing;
+        float stabTimer;          // ticks since the stab began
+        bool stabImpacted;
+        float stabBlend;          // 0..1: how much of the dagger form is drawn (it fades back out after the stab)
+        float stabSpriteScale = 1f; // the dagger form's sprite scale, as a fraction of the sword's
+        float stabGripPx;         // how far the dagger form's sprite is slid back through the fist (px, at full dagger form)
+        float stabTipDist;        // hand to tip while stabbing (px)
+        float stabDaggerLength;   // the sprite's length in dagger form (px)
+        float stabStartBlade;     // the blade's world angle when the stab began
+        float stabStartArm;       // the arm's facing-local angle when the stab began
+        float stabLastBlade;      // the blade angle the stab pose gave to ApplyPose last (to continue from when the stab ends)
+        Vector2 stabShake;
         float lastSentCharge = -1f;
         int ticks;
         bool swinging;
@@ -163,6 +180,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             writer.Write(swingAim);
             writer.Write(swingSpeed);
             writer.Write(swingChained);
+            writer.Write((byte)(stabSerial & 255));
         }
 
         public override void ReceiveExtraAI(BinaryReader reader)
@@ -172,6 +190,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             float readAim = reader.ReadSingle();
             float readSpeed = reader.ReadSingle();
             bool readChained = reader.ReadBoolean();
+            int readStab = reader.ReadByte();
+            if (!syncedOnce)
+                stabSerial = readStab;
+            else if (readStab != stabSerial)
+            {
+                stabSerial = readStab;
+                pendingStab = true;
+            }
+            syncedOnce = true;
             if (serial != swingSerial)
             {
                 swingSerial = serial;
@@ -207,6 +234,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
                 chargeShown = chargeTarget;
                 wasCharged = chargeTarget >= LightsBaneTuning.ChargedAt;
                 outlineShown = wasCharged ? 1f : 0f;
+                if (IsOwner)
+                    rightWasDown = owner.controlUseTile; // a button already held when the blade forms is not a fresh press
             }
 
             if (IsOwner)
@@ -230,6 +259,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             bool charged = chargeTarget >= LightsBaneTuning.ChargedAt;
             outlineShown += ((charged ? 1f : 0f) - outlineShown) * MathHelper.Clamp(LightsBaneTuning.OutlineFade, 0.01f, 1f);
 
+            // A stab (right click at full charge) is checked first, so it wins over the next swing.
+            TryStartStab(owner);
+
             // A swing starts: from the ready pose, or flowing out of the one that just finished its strike.
             TryStartSwing();
 
@@ -239,7 +271,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
 
             float worldArm;
             float worldBlade;
-            if (swinging)
+            if (stabbing)
+            {
+                StabPose(owner, out worldArm, out worldBlade);
+            }
+            else if (swinging)
             {
                 if (IsOwner)
                     owner.ChangeDir(facing); // every tick, so nothing (movement keys) can turn the player away from the swing
@@ -263,6 +299,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             }
 
             ApplyPose(owner, worldArm, worldBlade);
+            if (stabbing)
+            {
+                // The stab's blade is shorter than the sword: its tip is where the stab pose put it.
+                tipPosition = Projectile.Center + Projectile.rotation.ToRotationVector2() * stabTipDist;
+                owner.itemAnimation = 2; // keeps the item "in use" for as long as the stab lasts
+                owner.itemTime = 2;
+                if (IsOwner)
+                    owner.ChangeDir(facing);
+                if (!stabImpacted && stabBlend > 0.5f)
+                {
+                    flash = Math.Max(flash, 0.5f * stabBlend);
+                    if (Main.rand.NextBool(2))
+                        LightsBaneFx.Sparkle(Projectile.Center, tipPosition);
+                }
+                TickStab(owner);
+            }
+            else if (stabBlend > 0f)
+                stabBlend = Math.Max(0f, stabBlend - LightsBaneTuning.StabBlendOut);
             if (ticks == 0)
             {
                 prevCenter = Projectile.Center;
@@ -303,6 +357,145 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             ticks++;
         }
 
+        // ---- the stab (right click at full charge) ----
+        // One timeline inside the held blade (the sprite never leaves): TURN (the arm goes up, the blade turns to point at the chest and shrinks to a
+        // dagger, because the sword is far longer than the arm's reach), AIM (it trembles), PLUNGE (fast, the tip goes into the chest), HOLD (it stays
+        // buried while the burst plays). At the impact the owner drops the charge to 0, starts the imbue and spawns the imbue projectile.
+
+        // The owner starts a stab on a fresh right press (not over the inventory, not on a chest or a door) while the sword is fully charged and the
+        // player is not imbued; a press during a strike is remembered a few ticks and fires as soon as the strike is over. The other machines start
+        // the same stab when the owner's stab serial reaches them.
+        void TryStartStab(Player owner)
+        {
+            if (IsOwner)
+            {
+                bool rightDown = owner.controlUseTile && !owner.mouseInterface && !owner.tileInteractionHappened;
+                bool pressed = rightDown && !rightWasDown;
+                rightWasDown = rightDown;
+                bool ready = chargeTarget >= LightsBaneTuning.ChargedAt && owner.GetModPlayer<LightsBanePlayer>().ImbueTicks <= 0;
+                if (pressed && ready)
+                    stabBuffer = LightsBaneTuning.StabBufferTicks;
+                else if (stabBuffer > 0)
+                    stabBuffer--;
+                if (stabBuffer > 0 && ready && !stabbing && (!swinging || timer >= StrikeEnd))
+                    BeginStab(owner);
+            }
+            else if (pendingStab && !stabbing)
+            {
+                pendingStab = false;
+                BeginStab(owner);
+            }
+        }
+
+        void BeginStab(Player owner)
+        {
+            if (swinging)
+                EndSwing(owner); // settles the swing's pose into the resting angles the stab starts from
+
+            stabbing = true;
+            stabTimer = 0f;
+            stabImpacted = false;
+            facing = owner.direction >= 0 ? 1 : -1;
+            stabStartArm = armLocal;
+            stabStartBlade = Projectile.rotation;
+
+            // How long the dagger form is: just long enough to reach the chest from where the hand will be (the arm's reach is about the same
+            // wherever the arm points), plus the depth.
+            Vector2 chest = owner.Center + new Vector2(0f, LightsBaneTuning.StabChestOffsetY);
+            Vector2 handThere = HeldSwordPose.HandWorld(owner, HeldSwordPose.ToWorld(facing, Rad(LightsBaneTuning.StabArmDeg)));
+            float full = TotalLength;
+            stabDaggerLength = MathHelper.Clamp(Vector2.Distance(handThere, chest) + LightsBaneTuning.StabDepth, LightsBaneTuning.StabMinScale * full, full);
+            stabSpriteScale = stabDaggerLength / Math.Max(1f, full);
+
+            if (IsOwner)
+            {
+                stabSerial = (stabSerial + 1) & 255;
+                stabBuffer = 0;
+                Projectile.netUpdate = true;
+                owner.ChangeDir(facing);
+            }
+            LightsBaneFx.PlayStabWindup(Projectile.Center);
+        }
+
+        // The arm, the blade's angle, the dagger form and the tip for this tick of the stab. Angles are given the way ApplyPose wants them (a
+        // world angle that it mirrors itself under inverted gravity).
+        void StabPose(Player owner, out float worldArm, out float worldBlade)
+        {
+            float turn = Math.Max(1f, LightsBaneTuning.StabTurnTicks);
+            float aimEnd = turn + LightsBaneTuning.StabAimTicks;
+            float plungeEnd = aimEnd + Math.Max(1f, LightsBaneTuning.StabPlungeTicks);
+            float s = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(stabTimer / turn, 0f, 1f)); // 0..1 over the turn
+
+            float armNow = MathHelper.Lerp(stabStartArm, Rad(LightsBaneTuning.StabArmDeg), s);
+            worldArm = HeldSwordPose.ToWorld(facing, armNow);
+            Vector2 hand = HeldSwordPose.HandWorld(owner, worldArm);
+            Vector2 chest = owner.Center + new Vector2(0f, LightsBaneTuning.StabChestOffsetY);
+
+            // The blade turns from where it was to pointing from the hand at the chest (the short way round).
+            float aimAngle = (chest - hand).ToRotation();
+            float angle = stabStartBlade + MathHelper.WrapAngle(aimAngle - stabStartBlade) * s;
+            worldBlade = owner.gravDir == -1f ? -angle : angle;
+            stabLastBlade = worldBlade;
+
+            // The tip: the full sword at first, then (during the turn) shrinking to the aim distance, then the plunge to the depth.
+            float full = TotalLength;
+            float reach = Vector2.Distance(hand, chest);
+            float tipAim = Math.Max(2f, reach - LightsBaneTuning.StabAimDistance);
+            float tipEnd = reach + LightsBaneTuning.StabDepth;
+            float tipNow = tipAim;
+            if (stabTimer >= aimEnd)
+            {
+                float u = MathHelper.Clamp((stabTimer - aimEnd) / (plungeEnd - aimEnd), 0f, 1f);
+                tipNow = MathHelper.Lerp(tipAim, tipEnd, 1f - (1f - u) * (1f - u));
+            }
+
+            stabBlend = s;
+            stabGripPx = Math.Max(0f, stabDaggerLength - tipNow);
+            float spriteLength = MathHelper.Lerp(full, stabDaggerLength, s);
+            stabTipDist = spriteLength - stabGripPx * s;
+
+            stabShake = stabTimer >= turn ? Main.rand.NextVector2Circular(1f, 1f) * LightsBaneTuning.StabShake * (stabTimer >= plungeEnd ? 1f : 0.5f) : Vector2.Zero;
+        }
+
+        // Runs after the pose of this tick: the impact (once, when the plunge ends) and the end of the stab.
+        void TickStab(Player owner)
+        {
+            float plungeEnd = LightsBaneTuning.StabTurnTicks + LightsBaneTuning.StabAimTicks + Math.Max(1, LightsBaneTuning.StabPlungeTicks);
+            if (!stabImpacted && stabTimer >= plungeEnd)
+                StabImpact(owner);
+            stabTimer++;
+            if (stabTimer >= plungeEnd + LightsBaneTuning.StabHoldTicks)
+                EndStab(owner);
+        }
+
+        // The blade is buried: the burst on every machine; on the owner's machine also the charge drops to 0 and the imbue begins.
+        void StabImpact(Player owner)
+        {
+            stabImpacted = true;
+            Vector2 chest = owner.Center + new Vector2(0f, LightsBaneTuning.StabChestOffsetY);
+            flash = 1f;
+            LightsBaneFx.StabImpact(chest);
+            CameraShake.Punch(chest, LightsBaneTuning.StabHitShake, 12);
+            if (!IsOwner)
+                return;
+            LightsBanePlayer state = owner.GetModPlayer<LightsBanePlayer>();
+            state.Charge = 0f;
+            state.ImbueTicks = LightsBaneTuning.ImbueTicks;
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), owner.Center, Vector2.Zero, ModContent.ProjectileType<LightsBaneImbueProjectile>(), 0, 0f, owner.whoAmI, LightsBaneTuning.ImbueTicks);
+        }
+
+        // The stab is over: the arm and blade angles it ended in become the resting angles the ready pose eases away from, and the dagger form
+        // fades out (StabBlendOut) while the sword regrows.
+        void EndStab(Player owner)
+        {
+            stabbing = false;
+            stabShake = Vector2.Zero;
+            armLocal = Rad(LightsBaneTuning.StabArmDeg);
+            tiltRad = MathHelper.WrapAngle(HeldSwordPose.ToWorld(facing, stabLastBlade) - armLocal);
+            owner.itemAnimation = 0;
+            owner.itemTime = 0;
+        }
+
         // The swing speed the owner starts a swing with: the charge's speed-up times the player's melee speed (the result travels to everyone).
         float ComputeSpeed()
         {
@@ -315,6 +508,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         // still striking is never interrupted; one that has finished its strike (even if it is already recovering) is flowed out of.
         void TryStartSwing()
         {
+            if (stabbing)
+                return; // the stab runs its own timeline; a held left click resumes swinging right after it
             bool afterStrike = swinging && timer >= StrikeEnd;
             if (swinging && !afterStrike)
                 return;
@@ -532,6 +727,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             Vector2 position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, LightsBaneTuning.GripOffset, Projectile.scale) - Main.screenPosition;
             float rotation = Projectile.rotation + rotationOffset;
             float scale = Projectile.scale;
+            if (stabBlend > 0f)
+            {
+                // The stab's dagger form: the sprite shrinks and slides back through the fist (draw only), so the tip can stop at the chest.
+                scale *= MathHelper.Lerp(1f, stabSpriteScale, stabBlend);
+                position += stabShake - Projectile.rotation.ToRotationVector2() * (stabGripPx * stabBlend);
+            }
 
             // The charge: a soft glow behind the sword that grows with it (drawn around the CENTER of the blade sprite, so it swells outward
             // evenly), and at full charge the pulsing pixel outline (which brings its own glow, so this one steps aside).

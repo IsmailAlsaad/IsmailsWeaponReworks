@@ -89,6 +89,41 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
                 Mote(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Unit() * Main.rand.NextFloat(1.5f, 4.5f), Main.rand.NextFloat(1.2f, 1.9f), DustID.PurpleTorch);
         }
 
+        // ---- the stab and the imbue ----
+
+        // The blade starts to turn on the player: a rising shimmer.
+        public static void PlayStabWindup(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.55f, Pitch = 0.55f }, position);
+        }
+
+        // The blade is buried in the chest: a thump, a chime, a purple ring and a column of motes shooting up.
+        public static void StabImpact(Vector2 chest)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.9f, Pitch = -0.5f }, chest);
+            SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.7f, Pitch = -0.1f }, chest);
+            SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.5f, Pitch = 0.3f }, chest);
+            for (int i = 0; i < 24; i++)
+                Mote(chest, (MathHelper.TwoPi * i / 24f).ToRotationVector2() * 6.5f, 1.7f, i % 2 == 0 ? DustID.PurpleTorch : DustID.Shadowflame);
+            for (int i = 0; i < 14; i++)
+                Mote(chest + new Vector2(Main.rand.NextFloat(-6f, 6f), 0f), new Vector2(Main.rand.NextFloat(-1f, 1f), -Main.rand.NextFloat(2f, 7f)), Main.rand.NextFloat(1.3f, 1.9f), DustID.PurpleTorch);
+        }
+
+        // The imbue: purple dust kicked up at the feet while the player moves ('fade' goes 1 to 0 over the last ticks of the imbue).
+        public static void ImbueTrail(Player player, float fade)
+        {
+            if (Main.dedServ)
+                return;
+            if (player.velocity.Length() < LightsBaneTuning.ImbueDustMinSpeed || Main.rand.NextFloat() > LightsBaneTuning.ImbueDustChance * fade)
+                return;
+            Vector2 feet = new Vector2(player.Center.X + Main.rand.NextFloat(-7f, 7f), player.Bottom.Y - 3f);
+            Mote(feet, -player.velocity * 0.12f + Main.rand.NextVector2Circular(0.8f, 0.8f) + new Vector2(0f, -0.6f), Main.rand.NextFloat(1f, 1.7f), Main.rand.NextBool(3) ? DustID.Shadowflame : DustID.PurpleTorch);
+        }
+
         // A mote somewhere along a fully charged blade.
         public static void Sparkle(Vector2 hand, Vector2 tip)
         {
