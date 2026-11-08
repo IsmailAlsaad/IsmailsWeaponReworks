@@ -69,16 +69,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             LightsBaneFx.ImbueTrail(owner, fade);
             Lighting.AddLight(owner.Center, 0.45f * fade, 0.15f * fade, 0.9f * fade);
 
-            // The look: the Phase dye on the player (LightsBanePlayer.ModifyDrawInfo), blinking faster and faster over the last ImbueFadeTicks.
-            // Every machine runs this projectile, so everyone sees it on everyone.
-            float left = Projectile.timeLeft;
-            bool look = true;
-            if (left < LightsBaneTuning.ImbueFadeTicks)
-            {
-                float t = 1f - left / Math.Max(1, LightsBaneTuning.ImbueFadeTicks);
-                look = (int)(t * t * LightsBaneTuning.ImbueFlickerCycles * 2f) % 2 == 0;
-            }
-            owner.GetModPlayer<LightsBanePlayer>().ImbueLook = look;
+            owner.GetModPlayer<LightsBanePlayer>().ImbueLook = true;
 
             if (!Main.dedServ)
             {
