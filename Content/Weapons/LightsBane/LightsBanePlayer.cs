@@ -12,6 +12,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
     /// <summary>
     /// The Light's Bane's charge (0 to 1) lives here, on the owner's machine: true melee hits fill it, it cools on its own while it is not
     /// full (a FULL charge stays), and it is lost when the player swaps to another item or dies (the Starfury's rule); it is never saved.
+    /// While the player has LightsBaneImbueBuff (from any source) the charge is held at full, whatever item is held; when the buff ends it is lost.
     /// It also keeps the held blade alive: whenever the sword is held and no LightsBaneBladeProjectile exists, it spawns one. The other
     /// machines learn the charge from the blade projectile (SendExtraAI), nothing here is synced.
     /// </summary>
@@ -29,6 +30,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             }
         }
         int sinceHit;
+        bool hadImbue; // the buff was on last tick (the owner's machine)
 
         public static Projectile Find(int owner, int type)
         {
@@ -111,7 +113,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             if (Player.whoAmI != Main.myPlayer)
                 return;
 
-            if (Player.dead || Player.HeldItem.type != ItemID.LightsBane)
+            // The buff drives the whole imbue, whoever gave it: the sword stays fully charged (max swing speed) for as long as it lasts and
+            // loses its charge when it ends; the imbue projectile (dust, light, afterimages, the Phase dye look) is kept alive for every machine.
+            bool imbued = !Player.dead && ImbueTicks > 0;
+            if (imbued)
+            {
+                Charge = 1f;
+                sinceHit = 0;
+                hadImbue = true;
+                int imbueType = ModContent.ProjectileType<LightsBaneImbueProjectile>();
+                if (Find(Player.whoAmI, imbueType) == null)
+                    Projectile.NewProjectile(Player.GetSource_Misc("LightsBaneImbue"), Player.Center, Vector2.Zero, imbueType, 0, 0f, Player.whoAmI);
+            }
+            else if (hadImbue)
+            {
+                hadImbue = false;
+                Charge = 0f;
+                sinceHit = 0;
+            }
+
+            if (Player.dead || (!imbued && Player.HeldItem.type != ItemID.LightsBane))
             {
                 Charge = 0f;
                 sinceHit = 0;

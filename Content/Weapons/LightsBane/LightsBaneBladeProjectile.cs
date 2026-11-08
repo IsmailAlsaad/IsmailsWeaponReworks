@@ -360,7 +360,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         // One timeline inside the held blade (the sprite never leaves): TURN (the arm goes up, the blade turns to point at the chest and slides back
         // through the fist until the fist holds it by its sharp end, hilt sticking out behind the hand; the sword keeps its full size), AIM (it
         // trembles), PLUNGE (fast, the tip is driven into the chest, the fist slides up the blade), HOLD (it stays
-        // buried while the burst plays). At the impact the owner drops the charge to 0, starts the imbue and spawns the imbue projectile.
+        // buried while the burst plays). At the impact the owner only adds the imbue buff: everything else (the look, the afterimages, the speed, the full charge) follows the buff.
 
         // The owner starts a stab on a fresh right press (not over the inventory, not on a chest or a door) while the sword is fully charged and the
         // player is not imbued; a press during a strike is remembered a few ticks and fires as soon as the strike is over. The other machines start
@@ -472,10 +472,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             CameraShake.Punch(chest, LightsBaneTuning.StabHitShake, 12);
             if (!IsOwner)
                 return;
-            LightsBanePlayer state = owner.GetModPlayer<LightsBanePlayer>();
-            state.Charge = 0f;
-            owner.AddBuff(ModContent.BuffType<LightsBaneImbueBuff>(), LightsBaneTuning.ImbueTicks); // vanilla syncs the buff list to the others
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), owner.Center, Vector2.Zero, ModContent.ProjectileType<LightsBaneImbueProjectile>(), 0, 0f, owner.whoAmI, LightsBaneTuning.ImbueTicks);
+            // The buff is the whole imbue (LightsBanePlayer reacts to it from any source): vanilla syncs the buff list to the others.
+            owner.AddBuff(ModContent.BuffType<LightsBaneImbueBuff>(), LightsBaneTuning.ImbueTicks);
         }
 
         // The stab is over: the arm and blade angles it ended in become the resting angles the ready pose eases away from, and the reversed grip

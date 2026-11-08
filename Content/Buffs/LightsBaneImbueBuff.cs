@@ -6,11 +6,11 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Buffs
 {
     /// <summary>
-    /// The Light's Bane's imbue as a real buff (given by the owner's stab: LightsBaneBladeProjectile.StabImpact). The buff only marks and
-    /// times the imbue: the run speed boost is applied in LightsBanePlayer.PostUpdateRunSpeeds while the buff exists, and the dust and
-    /// the light are LightsBaneImbueProjectile (which ends with the buff). Vanilla syncs the buff list, so every machine sees it.
-    /// Icon: Ismail's art goes to Content/Weapons/LightsBane/LightsBaneImbueBuff.png (vanilla buffs are 32x32); until it exists the
-    /// vanilla Swiftness icon is used.
+    /// The Light's Bane's imbue as a real buff. The stab (LightsBaneBladeProjectile.StabImpact) only adds it; EVERYTHING else follows the
+    /// buff, whoever gave it: the run speed boost (LightsBanePlayer.PostUpdateRunSpeeds), the sword held at full charge until the buff ends
+    /// (LightsBanePlayer.PostUpdate), and the dust, light, afterimages and Phase dye look (LightsBaneImbueProjectile, which the owner's
+    /// LightsBanePlayer keeps alive while the buff exists). Vanilla syncs the buff list, so every machine sees it.
+    /// Icon: Content/Buffs/LightsBaneImbueBuff.png (32x32, like vanilla buff icons).
     /// </summary>
     public class LightsBaneImbueBuff : ModBuff
     {
