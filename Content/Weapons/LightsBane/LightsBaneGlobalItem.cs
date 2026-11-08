@@ -1,4 +1,5 @@
-﻿using Terraria;
+﻿using System.Collections.Generic;
+using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -29,6 +30,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         public override bool CanUseItem(Item item, Player player)
         {
             return false;
+        }
+        public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
+        {
+            tooltips.Add(new TooltipLine(Mod, "Light'sBane1", "Right click at max speed to stab yourself"));
         }
     }
 }
