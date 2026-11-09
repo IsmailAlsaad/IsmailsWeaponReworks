@@ -7,7 +7,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
     /// Every tunable number of the Enchanted Sword rework in one place (ticks: 60 = 1 second). Properties instead of fields, so hot reload
     /// can tweak them. Arm angles are for a player facing right and RELATIVE TO THE AIM (the direction to the cursor when the swing
     /// starts): 0 = at the cursor, negative = above it, positive = below it; the ready pose is relative to the player instead (0 = forward,
-    /// positive = down). The blade angle is arm + tilt. The sword swings UP and DOWN (kinds 0 and 1) and does a THRUST (kind 2) only after a down swing and an up swing have both hit an enemy, one after the other.
+    /// positive = down). The blade angle is arm + tilt. The sword swings UP and DOWN (kinds 0 and 1) and does a THRUST (kind 2) only after a down swing and an up swing have both hit an enemy, one after the other. When the thrusts have made the sword FULL, a right click does a THROW (kind 3, the thrust's pose without a hit) that sends the ethereal beam out of the tip.
     /// </summary>
     public static class EnchantedSwordTuning
     {
@@ -26,13 +26,34 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float HitWidth => 18f;                  // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
         public static int SweepHitSteps => 6;                 // the hit test is checked at this many poses between two ticks (a fast strike needs more)
 
-        // ---- the hits: true melee hits give the blade a stronger outline, the last one discharges ----
+        // ---- the hits: thrust hits give the blade a stronger outline; at HitsToDischarge (3) the sword is FULL (outline stage 3) and a right click throws the beam ----
+        // NOTE: HitsToDischarge keeps its old name and now means "hits to FULL"; hits at full add nothing, a partial count is lost HitHoldTicks after the last
+        // hit, a FULL sword never decays (it keeps the charge until the throw, a swap of items or death). DischargeShake and DischargeBurstRadius are no longer used.
         public static int HitsToDischarge => 3;         // ONLY THE THRUST charges the sword: the first enemy each thrust touches counts as one hit (up and down hits only count toward the thrust, see SwingHitsToThrust)
         public static int HitHoldTicks => 300;          // the count is lost this long after the last counted hit
         public static float StageShowEase => 0.2f;      // how fast the DRAWN outline follows the real count (per tick, 0..1)
         public static float HitShake => 0.6f;           // camera punch on a hit (grows with the stage)
         public static float DischargeShake => 2f;       // camera punch of the discharge
         public static float DischargeBurstRadius => 72f; // size of the stardust burst (the Enchanted Boomerang's burst, 72 = its default)
+
+        // ---- the throw (right click at full charge: the thrust's pose, nothing is hit, the ethereal beam leaves the tip and the charge is spent) ----
+        public static int ThrowBufferTicks => 12;       // a right click while a strike is still going is remembered until that strike ends plus this many ticks, and starts the throw the moment the strike ends
+        public static int ThrowAnticipateTicks => 7;    // the pull-back before the throw, from the ready pose ...
+        public static int ThrowChainAnticipateTicks => 7; // ... and when it flows out of a swing
+        public static int ThrowTicks => 6;              // the forward drive (the thrust's pull-back, reach and ease are used)
+        public static float ThrowReleaseFraction => 0.15f; // the beam leaves the tip this far into the drive (0 = at the start, 1 = at the end)
+        public static float ThrowShake => 1.2f;         // camera punch when the beam leaves (owner)
+
+        // ---- the thrown beam (the Enchanted Beam sprite, stretched to GhostBladeLength; it stops at the first enemy and the ghost takes over there) ----
+        public static float BeamSpeed => 24f;           // px per tick
+        public static float BeamRangeTiles => 36f;      // it fizzles after flying this far (a miss is NOT refunded)
+        public static float BeamHitWidth => 22f;        // how thick the hit line is around the tip's path
+        public static float BeamDamageMultiplier => 0.5f;    // of the sword's damage, for the beam's own hit (the ghost's strikes come on top)
+        public static float BeamKnockbackMultiplier => 0.5f;
+        public static int BeamTrailLifeTicks => 14;
+        public static float BeamTrailWidth => 10f;      // px at the start of the trail
+        public static int BeamTrailSamples => 4;        // trail points laid per tick
+        public static float BeamDustChance => 0.7f;     // per tick: a stardust mote off the tip
 
         // ---- the cycle: up, down, thrust, up, down, thrust ... ----
         public static int StartKind => 1;               // the first swing after the sword was at rest: 0 = up, 1 = down (the swings alternate from there; see SwingHitsToThrust for when a thrust comes)
@@ -89,7 +110,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float TrailOpacityLow => 0.3f;    // how strong the fan is with no hits ...
         public static float TrailOpacityHigh => 0.8f;   // ... and at the highest stage
 
-        // ---- the outline: stage 0 = none, stage 1 = after the first hit, stage 2 = after the second ----
+        // ---- the outline: stage 0 = none, stage 1 = after the first hit, stage 2 = after the second, stage 3 = FULL (the third) ----
+        public static float Stage3Strength => 1f;
+        public static float Stage3Width => 3.2f;
+        public static int Stage3PulseTicks => 18;       // full: the fastest pulse
+        public static float FullSparkleChance => 0.7f;  // per tick while the sword is FULL: a mote somewhere along the blade
+        public static int FullPulseTicks => 36;         // while FULL, a small ring of stardust at the tip this often (the ready cue)
         public static float Stage1Strength => 0.4f;
         public static float Stage2Strength => 0.85f;
         public static float Stage1Width => 1.5f;        // screen pixels
@@ -102,10 +128,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float SparkleChance => 0.3f;      // per tick, at the highest stage: a mote somewhere along the blade (less at stage 1)
         public static int FlashTicks => 12;             // the white flash when a strike starts and when the sword discharges
 
-        // ---- the ghost sword (the 3rd thrust hit conjures it: it floats around the enemy, slashes 4 times, backs away and drives itself in) ----
+        // ---- the ghost sword (the thrown beam conjures it where it hits an enemy: it floats around the enemy, slashes 4 times, backs away and drives itself in) ----
         public static int GhostSlashes => 4;                // quick slashes before the stab
         public static int GhostSlashTicks => 8;             // one slash (quick). The ghost's blade fans across the enemy one way, then back the other way
-        public static int GhostFadeInTicks => 10;           // the ghost fades in beside the enemy (it cannot hit yet)
+        public static int GhostFadeInTicks => 10;           // the ghost starts where the beam hit (the blade pointing at the enemy) and eases onto its orbit this long (it cannot hit yet)
         public static int GhostBackoffTicks => 14;          // the 5th swing: it backs away from the enemy this long (trembling, stardust drawn into the tip) ...
         public static float GhostBackoffPx => 70f;          // ... this far
         public static int GhostHoldTicks => 6;              // a held beat before the drive
@@ -113,7 +139,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float GhostDriveEasePower => 2.5f;    // 1 = even speed; higher = it accelerates harder into the enemy
         public static float GhostEmbedFraction => 0.6f;     // where the blade explodes: the hilt stops this fraction of the blade length from the enemy's middle (0.6 = the tip is past the middle)
         public static int GhostFadeOutTicks => 10;
-        public static float GhostBladeLength => 64f;        // hilt to tip in px (the beam sprite is stretched to it)
+        public static float GhostBladeLength => 64f;        // hilt to tip in px (the beam sprite is stretched to it; the thrown beam is drawn at this size too)
         public static float GhostHoldDistance => 56f;       // the hilt keeps this far from the enemy's middle while it slashes ...
         public static float GhostHoldPerSize => 0.8f;       // ... plus this fraction of the enemy's half size (so a big enemy is still reached)
         public static float GhostSlashArcDeg => 65f;        // each slash fans the blade this far to each side of the enemy
@@ -141,26 +167,37 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static Color BlueColor => new Color(120, 190, 255, 0);
         public static Color PinkColor => new Color(235, 140, 220, 0);
 
-        // The outline's strength, width and pulse length for a (smoothly changing) stage between 0 and 2.
+        // A value that runs through the four stages (0 = none, 1, 2, 3 = full) and is eased between them while the drawn stage changes.
+        static float Through(float stage, float at0, float at1, float at2, float at3)
+        {
+            stage = Math.Max(0f, stage);
+            if (stage <= 1f)
+                return MathHelper.Lerp(at0, at1, stage);
+            if (stage <= 2f)
+                return MathHelper.Lerp(at1, at2, stage - 1f);
+            return MathHelper.Lerp(at2, at3, Math.Min(1f, stage - 2f));
+        }
+
+        // The outline's strength, width and pulse length for a (smoothly changing) stage between 0 and 3.
         public static float OutlineStrengthAt(float stage)
         {
-            return stage <= 1f ? MathHelper.Lerp(0f, Stage1Strength, Math.Max(0f, stage)) : MathHelper.Lerp(Stage1Strength, Stage2Strength, Math.Min(1f, stage - 1f));
+            return Through(stage, 0f, Stage1Strength, Stage2Strength, Stage3Strength);
         }
 
         public static float OutlineWidthAt(float stage)
         {
-            return stage <= 1f ? MathHelper.Lerp(0f, Stage1Width, Math.Max(0f, stage)) : MathHelper.Lerp(Stage1Width, Stage2Width, Math.Min(1f, stage - 1f));
+            return Through(stage, 0f, Stage1Width, Stage2Width, Stage3Width);
         }
 
         public static int PulseTicksAt(float stage)
         {
-            return (int)MathHelper.Lerp(Stage1PulseTicks, Stage2PulseTicks, MathHelper.Clamp(stage - 1f, 0f, 1f));
+            return (int)Through(stage, Stage1PulseTicks, Stage1PulseTicks, Stage2PulseTicks, Stage3PulseTicks);
         }
 
-        // The stage as 0..1 (0 = none, 1 = the highest stage): drives the trail and the glow.
+        // The stage as 0..1 (0 = none, 1 = full): drives the trail and the glow.
         public static float Stage01(float stage)
         {
-            return MathHelper.Clamp(stage / Math.Max(1f, HitsToDischarge - 1f), 0f, 1f);
+            return MathHelper.Clamp(stage / Math.Max(1f, HitsToDischarge), 0f, 1f);
         }
     }
 }

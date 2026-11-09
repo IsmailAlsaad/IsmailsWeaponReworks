@@ -12,7 +12,7 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 {
     /// <summary>
-    /// The ghost sword the Enchanted Sword conjures when its 3rd thrust hit discharges (patch 2). A ghost holds the sword (the vanilla
+    /// The ghost sword the thrown ethereal beam (EtherealBeamProjectile) conjures where it hits an enemy (patch 2, the beam since patch 3). A ghost holds the sword (the vanilla
     /// Enchanted Beam sprite) and floats around the enemy; the sword does 4 quick slashes across it (the ghost drifts around the enemy while
     /// it slashes), then on the 5th swing it backs away a little (trembling, stardust drawn into the tip), holds a beat and drives itself
     /// point-first into the enemy's middle; the moment it lands it explodes into a stardust burst (the Enchanted Boomerang's) and is gone.
@@ -79,9 +79,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             Projectile.localNPCHitCooldown = -1; // every enemy once per slash and once for the stab (the owner clears it at each start)
         }
 
-        // The owner's client spawns the ghost at the enemy that took the discharging hit. At most MaxGhosts exist per player: a 4th makes the
-        // oldest one leave.
-        public static void Spawn(Player owner, NPC target, int damage, float knockback, IEntitySource source)
+        // The owner's client spawns the ghost at the enemy the thrown beam hit; 'approach' is the angle from the enemy back toward where the beam
+        // came from (the ghost starts on that side). At most MaxGhosts exist per player: a 4th makes the oldest one leave.
+        public static void Spawn(Player owner, NPC target, int damage, float knockback, IEntitySource source, float approach)
         {
             int type = ModContent.ProjectileType<EtherealSwordProjectile>();
             int count = 0;
@@ -98,7 +98,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             if (count >= EnchantedSwordTuning.MaxGhosts && oldest != null)
                 oldest.Kill();
 
-            float approach = (owner.Center - target.Center).ToRotation();
             float direction = Main.rand.NextBool() ? 1f : -1f;
             Projectile.NewProjectile(source, target.Center, Vector2.Zero, type, damage, knockback, owner.whoAmI, target.whoAmI, approach, direction);
         }
@@ -162,8 +161,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             if (tremble > 0f)
                 hiltAt += new Vector2(-away.Y, away.X) * (float)Math.Sin(ageNow * 2.3f) * tremble;
 
-            alphaAt = ageNow < SlashStart ? ageNow / Math.Max(1f, SlashStart) : 1f;
-            alphaAt = MathHelper.Clamp(alphaAt, 0f, 1f);
+            // From the beam: the sword starts where the thrown beam ended (the tip at the enemy's edge, the blade pointing straight at the
+            // enemy) and eases onto its orbit during the fade-in, so the beam and the ghost look like one sword.
+            if (ageNow < SlashStart)
+            {
+                float enter = 1f - MathHelper.SmoothStep(0f, 1f, ageNow / Math.Max(1f, SlashStart));
+                Vector2 entryHilt = focus + away * (halfSize + length);
+                float entryAngle = phi + MathHelper.Pi;
+                hiltAt = Vector2.Lerp(hiltAt, entryHilt, enter);
+                angleAt += MathHelper.WrapAngle(entryAngle - angleAt) * enter;
+            }
+
+            alphaAt = 1f; // the beam was fully visible
         }
 
         // The blade does damage during the slashes and from the start of the drive until it is buried.

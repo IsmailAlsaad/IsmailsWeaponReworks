@@ -20,11 +20,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
     /// moves with it). Only when the button is let go does the arm settle back and rest in the ready pose.
     /// Up and down swings that hit an enemy only count toward the thrust (two in a row, a down and an up, make the NEXT swing a thrust). The first enemy each THRUST touches (a true melee hit)
     /// adds one hit (EnchantedSwordPlayer.Hits): only the thrust charges the sword. Each hit gives the blade a stronger ethereal outline (a
-    /// pixel outline, Common/PixelOutline); the 3rd discharges: a stardust burst and the ghost sword (EtherealSwordProjectile).
+    /// pixel outline, Common/PixelOutline); the 3rd makes the sword FULL (the brightest outline). At full charge a RIGHT CLICK throws: a swing
+    /// of kind 3 in the thrust's pose that hits nothing; at its release the owner spends the charge and the ethereal beam
+    /// (EtherealBeamProjectile) leaves the tip, and where the beam hits an enemy the ghost sword (EtherealSwordProjectile) is conjured.
     /// MULTIPLAYER: the owner's client decides everything (the click, the aim, the kind of swing, the hits). What the other machines need
-    /// travels in SendExtraAI: the hit count (the outline stage), a swing serial with the swing's aim, speed, kind and whether it flows out
-    /// of the previous one, and a discharge serial with the enemy it hit; they start the same swing when the serial changes and run the same
-    /// timers for pose, trail, sound and sparks. Hits and damage are the owner's alone (RemoteHitTracker gives the others their hit
+    /// travels in SendExtraAI: the charge (the outline stage, full = HitsToDischarge) and a swing serial with the swing's aim, speed, kind
+    /// (a throw is kind 3) and whether it flows out of the previous one; they start the same swing when the serial changes and run the same
+    /// timers for pose, trail, sound and sparks (the throw's cue too). Hits and damage are the owner's alone (RemoteHitTracker gives the others their hit
     /// sparks). No custom packets.
     /// </summary>
     public class EnchantedSwordBladeProjectile : ModProjectile
@@ -40,10 +42,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         float swingAim;           // the swing's aim (radians, the player's own frame)
         float swingSpeed = 1f;    // the swing's speed (the owner's melee speed), decided at the click
         bool swingChained;        // the swing flows out of the previous one (no ready pose in between)
-        int swingKind;            // 0 = up, 1 = down, 2 = thrust
-        int stageTarget;          // the real hit count (0 .. HitsToDischarge - 1): the outline stage
-        int dischargeSerial;      // changes with every discharge
-        int dischargeTarget = -1; // the enemy the discharging hit touched
+        int swingKind;            // 0 = up, 1 = down, 2 = thrust, 3 = throw (the beam)
+        int stageTarget;          // the real charge (0 .. HitsToDischarge, HitsToDischarge = full): the outline stage
 
         // ---- per machine: counters and visuals, never synced ----
         bool pendingSwing;        // a swing the owner started that this machine has not begun yet
@@ -51,9 +51,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         float pendingSpeed = 1f;
         bool pendingChained;
         int pendingKind;
-        bool pendingDischarge;    // a discharge this machine has not played yet
-        int pendingDischargeTarget = -1;
-        bool syncedOnce;          // the first packet only tells where the counters are (a late joiner must not replay an old discharge)
+        bool syncedOnce;          // the first packet only tells where the counters are (a late joiner must not replay an old cue)
         int stageSeen;            // the stage the stage-up effects were last played for
         int lastSentStage = -1;
         int ticks;
@@ -80,6 +78,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         float slideRest;          // the resting slide (eases to 0 in the ready pose)
         float stageShown;         // the stage that is drawn (0..2): eases toward the real one
         bool strikeStarted;
+        bool thrown;              // this throw has already released its beam
+        int throwQueued;          // owner: ticks left on a right click that is waiting for the current strike to end
+        bool rightWasDown;        // owner: the right button on the previous tick (only a fresh press throws)
         bool swingGaveHit;        // owner: this swing already counted a hit (a swing counts at most one)
         float flash;
         Vector2 lastOwnerCenter;
@@ -116,7 +117,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
         float TotalLength => EnchantedSwordTuning.BladeLength * Projectile.scale;
 
-        bool IsThrust => kind == 2;
+        bool IsThrow => kind == 3;               // the throw: the thrust's pose, but nothing is hit and the beam leaves the tip
+        bool IsThrust => kind == 2 || kind == 3; // the jab pose (a throw uses it too)
         bool IsUp => kind == 0;
         float Travel => IsUp ? -1f : 1f; // the swing's direction along the arc: up = toward negative angles
 
@@ -130,19 +132,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         {
             get
             {
+                if (IsThrow)
+                    return isChained ? EnchantedSwordTuning.ThrowChainAnticipateTicks : EnchantedSwordTuning.ThrowAnticipateTicks;
                 if (IsThrust)
                     return isChained ? EnchantedSwordTuning.ThrustChainAnticipateTicks : EnchantedSwordTuning.ThrustAnticipateTicks;
                 return isChained ? EnchantedSwordTuning.ChainAnticipateTicks : EnchantedSwordTuning.AnticipateTicks;
             }
         }
         float AnticipateRadNow => Rad(isChained ? EnchantedSwordTuning.ChainAnticipateDeg : EnchantedSwordTuning.AnticipateDeg);
-        float StrikeTicksNow => IsThrust ? EnchantedSwordTuning.ThrustTicks : EnchantedSwordTuning.SwingTicks;
+        float StrikeTicksNow => IsThrow ? EnchantedSwordTuning.ThrowTicks : IsThrust ? EnchantedSwordTuning.ThrustTicks : EnchantedSwordTuning.SwingTicks;
 
         float StrikeStart => AnticipateTicksNow * timeScale;
         float StrikeEnd => StrikeStart + StrikeTicksNow * timeScale;
         float TotalTicks => StrikeEnd + EnchantedSwordTuning.RecoverTicks * timeScale;
 
-        bool Damaging => swinging && timer >= StrikeStart && timer <= StrikeEnd;
+        bool Damaging => swinging && !IsThrow && timer >= StrikeStart && timer <= StrikeEnd;
 
         // The arm and the blade as world angles: relative to the aim and mirrored by the facing.
         float WorldArm(float arm)
@@ -224,8 +228,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             writer.Write(swingSpeed);
             writer.Write(swingChained);
             writer.Write((byte)swingKind);
-            writer.Write((byte)(dischargeSerial & 255));
-            writer.Write((short)dischargeTarget);
         }
 
         public override void ReceiveExtraAI(BinaryReader reader)
@@ -236,15 +238,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             float readSpeed = reader.ReadSingle();
             bool readChained = reader.ReadBoolean();
             int readKind = reader.ReadByte();
-            int readDischarge = reader.ReadByte();
-            int readTarget = reader.ReadInt16();
             if (!syncedOnce)
-                dischargeSerial = readDischarge;
-            else if (readDischarge != dischargeSerial)
             {
-                dischargeSerial = readDischarge;
-                pendingDischarge = true;
-                pendingDischargeTarget = readTarget;
+                stageSeen = stageTarget; // a late joiner starts at the charge the sword has: no stage-up or full cue is replayed
+                stageShown = stageTarget;
             }
             syncedOnce = true;
             if (serial != swingSerial)
@@ -282,6 +279,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
                     stageTarget = owner.GetModPlayer<EnchantedSwordPlayer>().Hits;
                 stageShown = stageTarget;
                 stageSeen = stageTarget;
+                if (IsOwner)
+                    rightWasDown = owner.controlUseTile; // a button already held when the blade forms is not a fresh press
             }
 
             if (IsOwner)
@@ -302,6 +301,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             stageShown += (stageTarget - stageShown) * MathHelper.Clamp(EnchantedSwordTuning.StageShowEase, 0.01f, 1f);
             if (Math.Abs(stageTarget - stageShown) < 0.01f)
                 stageShown = stageTarget;
+
+            // Right click: the throw. A fresh press only, and not while the click is used on a chest, a door or the inventory. At full charge the
+            // press is remembered for a few ticks, so the throw starts the moment the current strike ends; below full it only fizzles (a dull
+            // chime and a few motes, nothing is spent).
+            if (IsOwner)
+            {
+                bool rightDown = owner.controlUseTile && !owner.mouseInterface && !owner.tileInteractionHappened;
+                bool pressed = rightDown && !rightWasDown;
+                rightWasDown = rightDown;
+                if (throwQueued > 0)
+                    throwQueued--;
+                if (pressed)
+                {
+                    if (!EnchantedSwordPlayer.IsFull(owner))
+                        EnchantedSwordFx.NotReady(tipPosition);
+                    else if (!(swinging && IsThrow && !thrown)) // a throw that has not released yet is already on its way
+                        throwQueued = Math.Max(1, EnchantedSwordTuning.ThrowBufferTicks) + (swinging ? (int)Math.Ceiling(Math.Max(0f, StrikeEnd - timer)) : 0); // waits for the strike that is going on, then ThrowBufferTicks more
+                }
+            }
 
             // A swing starts: from the ready pose, or flowing out of the one that just finished its strike.
             TryStartSwing();
@@ -352,24 +370,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             if (!Main.dedServ)
             {
                 // The outline just got stronger (on every machine: the owner sees its own count, the others the synced one).
+                bool full = stageTarget >= Math.Max(1, EnchantedSwordTuning.HitsToDischarge);
                 if (stageTarget > stageSeen)
                 {
-                    flash = Math.Max(flash, 0.7f);
-                    EnchantedSwordFx.StageUp(Projectile.Center, tipPosition, stageTarget);
+                    flash = Math.Max(flash, full ? 1f : 0.7f);
+                    if (full)
+                        EnchantedSwordFx.Full(Projectile.Center, tipPosition); // the sword is ready: the throw is open
+                    else
+                        EnchantedSwordFx.StageUp(Projectile.Center, tipPosition, stageTarget);
                 }
                 float stage01 = EnchantedSwordTuning.Stage01(stageShown);
-                if (stageShown > 0.3f && Main.rand.NextFloat() < EnchantedSwordTuning.SparkleChance * stage01)
+                float sparkleChance = full ? EnchantedSwordTuning.FullSparkleChance : EnchantedSwordTuning.SparkleChance * stage01;
+                if (stageShown > 0.3f && Main.rand.NextFloat() < sparkleChance)
                     EnchantedSwordFx.Sparkle(Projectile.Center, tipPosition);
+                if (full && ticks % Math.Max(1, EnchantedSwordTuning.FullPulseTicks) == 0)
+                    EnchantedSwordFx.FullPulse(tipPosition);
                 if (stageShown > 0.05f)
                     Lighting.AddLight(tipPosition, 0.25f * stage01 + 0.1f, 0.4f * stage01 + 0.1f, 0.6f * stage01 + 0.2f);
             }
             stageSeen = stageTarget;
-
-            if (pendingDischarge)
-            {
-                pendingDischarge = false;
-                Discharge();
-            }
 
             flash = Math.Max(0f, flash - 1f / Math.Max(1, EnchantedSwordTuning.FlashTicks));
 
@@ -389,18 +408,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             ticks++;
         }
 
-        // The 3rd hit: the stardust burst where the enemy is (or at the tip if it is gone), a flash, a camera punch for the owner. The ghost sword
-        // itself is spawned by OnHitNPC (owner only; every machine gets it as a normal projectile).
-        void Discharge()
+        // The throw lets go of the beam. Every machine plays the cue (a swoosh, a chime, stardust sprayed from the tip, a flash along the blade);
+        // the owner also spends the charge and spawns the beam (a normal synced projectile), which flies on the line of the blade (the
+        // thrust keeps the blade parallel to the aim). The ghost is spawned by the beam when it hits an enemy.
+        void Release()
         {
+            thrown = true;
             flash = 1f;
-            Vector2 center = tipPosition;
-            int target = IsOwner ? dischargeTarget : pendingDischargeTarget;
-            if (target >= 0 && target < Main.maxNPCs && Main.npc[target].active)
-                center = Main.npc[target].Center;
-            EnchantedSwordFx.Discharge(center, Projectile.Center, tipPosition, EnchantedSwordTuning.DischargeBurstRadius);
-            if (IsOwner)
-                CameraShake.Punch(center, EnchantedSwordTuning.DischargeShake, 10);
+            Vector2 direction = Projectile.rotation.ToRotationVector2();
+            EnchantedSwordFx.Throw(tipPosition, direction);
+            if (!IsOwner || !EnchantedSwordPlayer.IsFull(Owner))
+                return;
+            EnchantedSwordPlayer.Spend(Owner); // spent whatever the beam hits: a miss is not refunded
+            CameraShake.Punch(tipPosition, EnchantedSwordTuning.ThrowShake, 8);
+            EtherealBeamProjectile.Spawn(Owner, tipPosition, direction, Projectile.damage, Projectile.knockBack, Projectile.CritChance, Projectile.GetSource_FromThis());
+            Projectile.netUpdate = true; // the other machines hear the spent charge through SendExtraAI
         }
 
         // The swings alternate up, down, up, down ... A THRUST only comes after SwingHitsToThrust swings in a row that each hit an enemy (2 =
@@ -414,7 +436,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
                 hitStreak = 0;
                 return Math.Clamp(EnchantedSwordTuning.StartKind, 0, 1);
             }
-            if (lastKind == 2)
+            if (lastKind >= 2)
             {
                 hitStreak = 0;
                 return 1 - lastSwingDir;
@@ -445,13 +467,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
             if (IsOwner)
             {
-                if (Owner.controlUseItem && !Owner.mouseInterface)
+                if (throwQueued > 0 && EnchantedSwordPlayer.IsFull(Owner))
+                {
+                    throwQueued = 0; // a right click at full charge: the throw comes before the next swing
+                    BeginSwing(HeldAim.Capture(Owner), ComputeSpeed(), swinging, 3);
+                }
+                else if (Owner.controlUseItem && !Owner.mouseInterface)
                     BeginSwing(HeldAim.Capture(Owner), ComputeSpeed(), swinging, NextKind());
             }
             else if (pendingSwing)
             {
                 pendingSwing = false;
-                BeginSwing(pendingAim, MathHelper.Clamp(pendingSpeed, EnchantedSwordTuning.MinSpeed, EnchantedSwordTuning.MaxSpeed), pendingChained, Math.Clamp(pendingKind, 0, 2));
+                BeginSwing(pendingAim, MathHelper.Clamp(pendingSpeed, EnchantedSwordTuning.MinSpeed, EnchantedSwordTuning.MaxSpeed), pendingChained, Math.Clamp(pendingKind, 0, 3));
             }
         }
 
@@ -469,13 +496,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
             kind = newKind;
             lastKind = newKind;
-            if (newKind != 2)
+            if (newKind < 2)
                 lastSwingDir = newKind;
             hasSwung = true;
             sinceSwing = 0;
             swinging = true;
             timer = 0f;
             strikeStarted = false;
+            thrown = false;
             isChained = chain;
             aim = swingAimAngle;
             facing = HeldAim.Facing(aim);
@@ -528,10 +556,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             {
                 strikeStarted = true;
                 flash = Math.Max(flash, 0.5f);
-                EnchantedSwordFx.PlaySwing(tipPosition, IsThrust);
+                if (!IsThrow)
+                    EnchantedSwordFx.PlaySwing(tipPosition, IsThrust); // the throw plays its own cue at the release
             }
 
-            if (timer >= StrikeStart && timer < StrikeEnd)
+            if (IsThrow && !thrown && timer >= StrikeStart + EnchantedSwordTuning.ThrowReleaseFraction * StrikeTicksNow * timeScale)
+                Release();
+
+            if (!IsThrow && timer >= StrikeStart && timer < StrikeEnd)
             {
                 // Many points per tick, laid between the previous tick's pose and this one, so the pixel line follows a smooth arc.
                 int samples = Math.Max(1, EnchantedSwordTuning.TrailSamplesPerTick);
@@ -635,7 +667,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             modifiers.Knockback *= EnchantedSwordTuning.KnockbackMultiplier * (IsThrust ? EnchantedSwordTuning.ThrustKnockbackMultiplier : 1f);
         }
 
-        // Owner's client only. A true melee hit: sparks, a sound, a camera punch, and (for the first hit of the swing) one hit toward the discharge.
+        // Owner's client only. A true melee hit: sparks, a sound, a camera punch, and (for the first hit of the swing) one hit toward the full charge.
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             EnchantedSwordFx.HitSpark(target.Center, stageShown);
@@ -645,13 +677,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             swingGaveHit = true; // only the first hit of a swing matters: an up or down swing that hit counts toward the thrust (NextKind)
             if (!IsThrust)
                 return;
-            if (EnchantedSwordPlayer.AddHit(Owner)) // only the thrust charges the sword
-            {
-                dischargeSerial = (dischargeSerial + 1) & 255;
-                dischargeTarget = target.whoAmI;
-                pendingDischarge = true; // played by AI on this machine; the others get it through SendExtraAI
-                EtherealSwordProjectile.Spawn(Owner, target, Projectile.damage, Projectile.knockBack, Projectile.GetSource_FromThis());
-            }
+            EnchantedSwordPlayer.AddHit(Owner); // only the thrust charges the sword; the count stops at full (the cue plays when AI sees the new stage)
             Projectile.netUpdate = true; // the other machines hear the new count through SendExtraAI
         }
 

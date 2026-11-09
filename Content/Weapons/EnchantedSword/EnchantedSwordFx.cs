@@ -9,7 +9,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
     /// <summary>
     /// Every dust and sound of the Enchanted Sword rework (vanilla dust and sounds only), in the Enchanted Boomerang's stardust style: gold,
     /// white, blue and pink sparkles that drift without gravity. Every machine calls these for the same event; all of it is visual, nothing
-    /// here is synced. 'stage' is 0..2 (the drawn outline stage).
+    /// here is synced. 'stage' is 0..3 (the drawn outline stage, 3 = full).
     /// </summary>
     public static class EnchantedSwordFx
     {
@@ -84,14 +84,69 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
                 Mote(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Unit() * Main.rand.NextFloat(1f, 3f), Main.rand.NextFloat(1f, 1.6f));
         }
 
-        // The 3rd hit: the Enchanted Boomerang's stardust burst where the enemy is, and a flash along the blade.
-        public static void Discharge(Vector2 center, Vector2 hand, Vector2 tip, float radius)
+        // ---- full charge, the throw and the beam ----
+
+        // The sword just became FULL: stardust along the blade, a ring round its middle and a bright rising chime.
+        public static void Full(Vector2 hand, Vector2 tip)
         {
             if (Main.dedServ)
                 return;
-            EnchantedBoomerangFx.Burst(center, radius);
+            Vector2 middle = Vector2.Lerp(hand, tip, 0.5f);
+            SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.8f, Pitch = 0.45f }, middle);
+            SoundEngine.PlaySound(SoundID.Item105 with { Volume = 0.45f, Pitch = 0.35f }, middle);
             for (int i = 0; i < 20; i++)
-                Mote(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Unit() * Main.rand.NextFloat(2f, 6f), Main.rand.NextFloat(1.2f, 1.9f), 60);
+                Mote(middle, (MathHelper.TwoPi * i / 20f).ToRotationVector2() * 4.5f, 1.5f, 50);
+            for (int i = 0; i < 18; i++)
+                Mote(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Unit() * Main.rand.NextFloat(1.5f, 4.5f), Main.rand.NextFloat(1.2f, 1.8f), 60);
+        }
+
+        // While the sword stays full: a small ring of stardust at the tip now and then, so it is plain that it is ready.
+        public static void FullPulse(Vector2 tip)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 8; i++)
+                Mote(tip, (MathHelper.TwoPi * i / 8f).ToRotationVector2() * 1.8f, 1.1f, 80);
+        }
+
+        // Right click without a full charge: a dull little chime and a few motes. Nothing is spent. The owner's machine only.
+        public static void NotReady(Vector2 tip)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item4 with { Volume = 0.25f, Pitch = -0.6f }, tip);
+            for (int i = 0; i < 4; i++)
+                Mote(tip, Main.rand.NextVector2Circular(1.2f, 1.2f), 0.9f, 110);
+        }
+
+        // The throw: a swoosh, a chime and stardust sprayed forward from the tip.
+        public static void Throw(Vector2 tip, Vector2 direction)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.9f, Pitch = 0.5f }, tip);
+            SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.6f, Pitch = 0.6f }, tip);
+            for (int i = 0; i < 16; i++)
+                Mote(tip + Main.rand.NextVector2Circular(6f, 6f), direction * Main.rand.NextFloat(3f, 9f) + Main.rand.NextVector2Circular(1.5f, 1.5f), Main.rand.NextFloat(1.1f, 1.7f), 60);
+        }
+
+        // Stardust the thrown beam sheds as it flies.
+        public static void BeamDust(Vector2 position, Vector2 velocity)
+        {
+            if (Main.dedServ)
+                return;
+            Mote(position + Main.rand.NextVector2Circular(6f, 6f), -velocity * Main.rand.NextFloat(0.05f, 0.15f) + Main.rand.NextVector2Circular(0.8f, 0.8f), Main.rand.NextFloat(1f, 1.4f));
+        }
+
+        // The beam ends: a small puff of stardust (an enemy, a wall or the end of its range). 'sound' is the soft fizzle of a miss.
+        public static void BeamEnd(Vector2 position, bool sound)
+        {
+            if (Main.dedServ)
+                return;
+            if (sound)
+                SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.35f, Pitch = -0.4f }, position);
+            for (int i = 0; i < 10; i++)
+                Mote(position, Main.rand.NextVector2Unit() * Main.rand.NextFloat(1f, 3.5f), Main.rand.NextFloat(1f, 1.5f), 70);
         }
 
         // A mote somewhere along an outlined blade.
