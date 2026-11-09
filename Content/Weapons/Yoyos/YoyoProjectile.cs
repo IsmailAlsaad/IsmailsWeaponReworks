@@ -29,7 +29,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
     /// <summary>
     /// The held yoyo (patch 1): ONE projectile that lives for as long as a reworked yoyo is held (YoyoPlayer spawns it). It is the yoyo
-    /// itself: Projectile.Center is the yoyo, the verlet YoyoRope runs from the player's hand to it, and it poses the arm.
+    /// itself: Projectile.Center is the yoyo, the YoyoRope runs from the player's hand to it (a straight line while idle, a verlet rope while out or returning), and it poses the arm.
     /// IDLE: nothing pressed: the arm hangs down, the yoyo is let down gently, spins a little and is pulled back up, over and over.
     /// OUT: the left button runs the yoyo's trick (YoyoTrick; the Wooden Yoyo's is Walk the Dog). The throw side is the side of the screen
     /// the cursor is on, locked at the throw. It retracts after the trick's hits, when the string is at full length, or when the button
@@ -70,6 +70,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         YoyoTrick trick;
         readonly YoyoRope rope = new YoyoRope();
         int idleClock;
+        float idleFree;                // the free space below the hand the idle drop may use (px)
+        bool idleFreeReady;
         int catchCooldown;
         float returnSpeed;
         float spin;
@@ -165,7 +167,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 YoyoState next = (YoyoState)pendingState;
                 pendingState = -1;
                 if (next == YoyoState.Out)
+                {
+                    LaunchFromHand(owner);
                     trick.Begin(this, false);
+                }
                 EnterState(next);
             }
             if (pendingHitFx)
@@ -201,7 +206,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                     history[i] = Projectile.Center;
             }
 
-            rope.Update(hand, Projectile.Center);
+            if (State == YoyoState.Idle)
+                rope.Straight(hand, Projectile.Center);
+            else
+                rope.Update(hand, Projectile.Center, YoyoTuning.WalkRopeSlackFactor, YoyoTuning.WalkRopeExtraSlack, YoyoTuning.WalkRopeGravity);
         }
 
         // ---- states ----
@@ -223,6 +231,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                     break;
                 default:
                     idleClock = 0;
+                    idleFreeReady = false;
                     catchCooldown = YoyoTuning.RethrowDelayTicks;
                     Vel = Vector2.Zero;
                     YoyoFx.Catch(Projectile.Center);
@@ -235,6 +244,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             Side = Main.MouseWorld.X >= owner.Center.X ? 1 : -1;
             throwSerial++;
+            LaunchFromHand(owner);
             trick.Begin(this, true);
             EnterState(YoyoState.Out);
             Projectile.netUpdate = true;
@@ -259,7 +269,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             ApplyArm(owner, HeldSwordPose.ToWorld(facing, armLocal));
 
             float ropeMax = YoyoTuning.RopeLength(owner.HeldItem);
-            float drop = Math.Min(YoyoTuning.IdleDropPx, ropeMax) * extension;
+            // The drop never goes into the ground: it shrinks at once when the free space below the hand does, and recovers gradually.
+            float freeNow = FreeDropBelow(Math.Min(YoyoTuning.IdleDropPx, ropeMax));
+            if (!idleFreeReady || freeNow < idleFree)
+                idleFree = freeNow;
+            else
+                idleFree = Math.Min(freeNow, idleFree + Math.Max(0.1f, YoyoTuning.IdleDropRecoverPx));
+            idleFreeReady = true;
+            float drop = idleFree * extension;
             float sway = (float)Math.Sin(idleClock * 0.12f) * YoyoTuning.IdleSwayPx * extension;
             Projectile.Center = hand + new Vector2(sway, drop);
 
@@ -273,6 +290,42 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 else if (owner.controlUseItem && !owner.mouseInterface)
                     BeginTrick(owner);
             }
+        }
+
+        // A throw starts at the hand (the string's holding point), never at the idle position below it, which can be inside the floor.
+        // If the hand itself is inside a block, the yoyo starts at the first free spot on the way to the player's center. Runs on every
+        // machine; the owner's position then travels with the normal sync.
+        void LaunchFromHand(Player owner)
+        {
+            Vector2 start = armReady ? hand : owner.MountedCenter;
+            Projectile.Center = start;
+            if (!Collision.SolidCollision(Projectile.position, Projectile.width, Projectile.height))
+                return;
+            Vector2 safe = owner.MountedCenter;
+            int steps = 8;
+            for (int i = 1; i <= steps; i++)
+            {
+                Projectile.Center = Vector2.Lerp(start, safe, i / (float)steps);
+                if (!Collision.SolidCollision(Projectile.position, Projectile.width, Projectile.height))
+                    return;
+            }
+            Projectile.Center = safe;
+        }
+
+        // How far the idle yoyo may be let down from the hand before it would touch a block (0 to want), checked in small steps.
+        float FreeDropBelow(float want)
+        {
+            int width = (int)Math.Max(2f, YoyoTuning.IdleGroundCheckWidth);
+            float d = 0f;
+            while (d < want)
+            {
+                float next = Math.Min(want, d + 2f);
+                Vector2 topLeft = hand + new Vector2(-width * 0.5f, next - Projectile.height * 0.5f);
+                if (Collision.SolidCollision(topLeft, width, Projectile.height))
+                    break;
+                d = next;
+            }
+            return d;
         }
 
         // 0 = in the hand, 1 = let all the way down; one full cycle repeats.

@@ -7,8 +7,11 @@ using Terraria;
 namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 {
     /// <summary>
-    /// The yoyo's string: a verlet rope pinned to the hand at one end and the yoyo at the other. Its length follows the distance between
-    /// the two (a little slack, so it sags), it hangs under gravity and lies on the ground instead of going through it. Drawn SMOOTH, not
+    /// The yoyo's string. IDLE: a plain straight line from the hand to the yoyo (Straight, no simulation). OUT and RETURN: a verlet rope
+    /// pinned to the hand at one end and the yoyo at the other (Update), starting from the straight line. Its length follows the distance
+    /// between the two every tick (the caller gives how much slack and gravity), it lies on the ground instead of going through it, and it
+    /// is simulated in the hand's frame: every tick all points shift by how far the hand moved, so the player's own movement (running,
+    /// jumping, knockback, the arm turning) adds no inertia while the yoyo's motion still shapes the string. Drawn SMOOTH, not
     /// pixelated: a Catmull-Rom curve through the rope points, laid down as thin rotated quads at sub-pixel positions (outline, then a
     /// twisted body), lit by the world light. Visual only: every machine simulates and draws its own from the hand and the yoyo
     /// positions, nothing is synced. Client only.
@@ -18,10 +21,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         Vector2[] pos;
         Vector2[] prev;
         Vector2[] last;
-        bool ready;
+        bool ready;                    // the verlet rope is running (false = the straight line is drawn)
+        bool hasLine;
+        Vector2 lineA;
+        Vector2 lineB;
         readonly List<Vector2> curve = new List<Vector2>();
 
-        public void Update(Vector2 anchor, Vector2 end)
+        // Idle: no simulation, just a straight line. The next Update starts the rope from this line.
+        public void Straight(Vector2 anchor, Vector2 end)
+        {
+            if (Main.dedServ)
+                return;
+            ready = false;
+            hasLine = true;
+            lineA = anchor;
+            lineB = end;
+        }
+
+        // Out and Returning: one tick of the simulated rope. slackFactor and extraSlack set how much longer the string is than the
+        // distance (1.01 and 0 = tight), gravity how much it sags.
+        public void Update(Vector2 anchor, Vector2 end, float slackFactor, float extraSlack, float ropeGravity)
         {
             if (Main.dedServ)
                 return;
@@ -35,7 +54,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             }
 
             float distance = Vector2.Distance(anchor, end);
-            float length = Math.Max(YoyoTuning.RopeMinLength, distance * YoyoTuning.RopeSlackFactor + YoyoTuning.RopeExtraSlack);
+            float length = Math.Max(YoyoTuning.RopeMinLength, distance * slackFactor + extraSlack);
             float piece = length / (n - 1);
 
             // First tick, or the player teleported: lay the string straight between the two ends.
@@ -50,8 +69,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 }
                 ready = true;
             }
+            else
+            {
+                // The hand's frame: pos[0] is where the hand was last tick (the ends are pinned only AFTER the integration below), so the
+                // shift is how far the hand moved. Moving every point, its previous position and its last position by it keeps the
+                // velocities, so the hand's movement whips nothing.
+                Vector2 shift = anchor - pos[0];
+                if (shift != Vector2.Zero)
+                {
+                    for (int i = 0; i < n; i++)
+                    {
+                        pos[i] += shift;
+                        prev[i] += shift;
+                        last[i] += shift;
+                    }
+                }
+            }
 
-            Vector2 gravity = new Vector2(0f, YoyoTuning.RopeGravity);
+            Vector2 gravity = new Vector2(0f, ropeGravity);
             for (int i = 1; i < n - 1; i++)
             {
                 last[i] = pos[i];
@@ -117,23 +152,32 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         public void Draw(Texture2D pixel)
         {
-            if (Main.dedServ || !ready || pos == null)
+            if (Main.dedServ || (!ready && !hasLine))
                 return;
-            int n = pos.Length;
             int subdivisions = Math.Max(1, YoyoTuning.RopeSubdivisions);
-
-            // The smooth curve: Catmull-Rom between every two rope points.
             curve.Clear();
-            for (int i = 0; i < n - 1; i++)
+            if (!ready)
             {
-                Vector2 p0 = pos[Math.Max(i - 1, 0)];
-                Vector2 p1 = pos[i];
-                Vector2 p2 = pos[i + 1];
-                Vector2 p3 = pos[Math.Min(i + 2, n - 1)];
-                for (int s = 0; s < subdivisions; s++)
-                    curve.Add(Vector2.CatmullRom(p0, p1, p2, p3, s / (float)subdivisions));
+                // Idle: the straight line, cut into as many pieces as the rope curve so the twist looks the same.
+                int count = (Math.Max(4, YoyoTuning.RopePoints) - 1) * subdivisions;
+                for (int j = 0; j <= count; j++)
+                    curve.Add(Vector2.Lerp(lineA, lineB, j / (float)count));
             }
-            curve.Add(pos[n - 1]);
+            else
+            {
+                // The smooth curve: Catmull-Rom between every two rope points.
+                int n = pos.Length;
+                for (int i = 0; i < n - 1; i++)
+                {
+                    Vector2 p0 = pos[Math.Max(i - 1, 0)];
+                    Vector2 p1 = pos[i];
+                    Vector2 p2 = pos[i + 1];
+                    Vector2 p3 = pos[Math.Min(i + 2, n - 1)];
+                    for (int s = 0; s < subdivisions; s++)
+                        curve.Add(Vector2.CatmullRom(p0, p1, p2, p3, s / (float)subdivisions));
+                }
+                curve.Add(pos[n - 1]);
+            }
 
             for (int pass = 0; pass < 2; pass++)
             {

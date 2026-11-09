@@ -24,16 +24,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public static float RopeLength(Item item)
         {
             float[] ranges = ProjectileID.Sets.YoyosMaximumRange;
-            float range = item.shoot > 0 && item.shoot < ranges.Length ? ranges[item.shoot] : 130f;
+            float range = item.shoot > ProjectileID.None && item.shoot < ranges.Length ? ranges[item.shoot] : 130f;
             return Math.Max(48f, range * RopeLengthScale);
         }
 
         // ---- rope (verlet, visual only: every machine simulates its own) ----
         public static int RopePoints => 16;               // points along the string (more = smoother and a bit slower)
-        public static float RopeSlackFactor => 1.05f;     // the string is this much longer than the distance hand to yoyo (a little sag)
-        public static float RopeExtraSlack => 4f;         // plus this many pixels
+        public static float WalkRopeSlackFactor => 1.015f; // while Out or Returning: the string is this much longer than the distance hand to yoyo (1.01 to 1.02 = a very slight bend)
+        public static float WalkRopeExtraSlack => 0f;     // plus this many pixels (0 = never slack)
+        public static float WalkRopeGravity => 0.08f;     // px per tick per tick: a small sag only
         public static float RopeMinLength => 10f;
-        public static float RopeGravity => 0.32f;         // px per tick per tick
         public static float RopeDamping => 0.985f;        // velocity kept per tick
         public static int RopeIterations => 10;           // constraint passes per tick (more = stiffer string)
         public static bool RopeCollides => true;          // the string lies on the ground instead of going through it
@@ -56,6 +56,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public static int IdleSpinTicks => 38;            // it spins at the bottom
         public static int IdleRaiseTicks => 26;           // it is pulled back up
         public static float IdleDropPx => 28f;
+        public static float IdleGroundCheckWidth => 4f;   // the idle yoyo's drop stops above the ground: a block check down from the hand, this wide (px)
+        public static float IdleDropRecoverPx => 2f;      // when the free space below the hand grows again, the drop recovers by this many px per tick (it shrinks at once)
         public static float IdleSwayPx => 2f;
         public static float IdleSpinRestSpeed => 0.1f;    // radians per tick at the hand
         public static float IdleSpinSpeed => 0.55f;       // radians per tick at the bottom
