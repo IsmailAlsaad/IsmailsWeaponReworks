@@ -16,7 +16,8 @@ namespace IsmailsWeaponReworks.Common
         public virtual int LifeTicks => 30;
         public virtual int Rails => 7;   // parallel pixel lines that fill the area between the outer and the inner edge
         public virtual float TaperFraction => 0f; // 0 = even width; otherwise the oldest samples narrow to a point, widening to full width this far (0 to 1) along the trail
-        public virtual bool Smoothing => true;    // the fan's rails are smooth curves (PixelLine smoothing, like the Dark Lance strike); false = straight pieces
+        public virtual bool Smoothing => true;    // the fan's edges are smooth curves (like the Dark Lance strike); false = straight pieces
+        public virtual bool Filled => true;       // the fan is one solid pixel-filled ribbon with a gradient (PixelFan); false = the old look, Rails separate lines
 
         // How the trail fades (see SweepFade). Uniform = the whole trail fades together (the Ice Blade); TailFirst = the tail fades out
         // first and the fade travels up to the tip (the Starfury). Override it in the weapon's style; nothing else has to change.
@@ -154,7 +155,7 @@ namespace IsmailsWeaponReworks.Common
                 ages[i] = MathHelper.Clamp((clock - births[i]) / Math.Max(1f, Style.LifeTicks * scales[i]), 0f, 1f);
             }
 
-            PixelFan.Draw(outerArray, innerArray, expands, ages, count, Style.Grid, Style.Rails, Style.GetColor, Style.Smoothing);
+            PixelFan.Draw(outerArray, innerArray, expands, ages, count, Style.Grid, Style.Rails, Style.GetColor, Style.Smoothing, Style.Filled);
         }
     }
 }

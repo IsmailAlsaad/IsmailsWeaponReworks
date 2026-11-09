@@ -119,7 +119,7 @@ tModLoader/other bases -> project types:
     +Angle(float,int,int,float)[s] +Position(Vector2,float,float)[s] +Rank(Projectile,out int,Func<Projectile, bool>)[s]
 **PixelFan.cs** uses: PixelLine
   static class PixelFan
-    +Expand(float,float,float,float)[s] +Draw(Vector2,Vector2,float,float,int,float,int,Func<float, float, Color>,bool)[s]
+    +Expand(float,float,float,float)[s] +Draw(Vector2,Vector2,float,float,int,float,int,Func<float, float, Color>,bool,bool)[s]
 **PixelLine.cs**
   static class PixelLine
     +Draw(Vector2,float,int,float,Func<float, float>,Func<float, Color>,bool)[s]
@@ -154,7 +154,7 @@ tModLoader/other bases -> project types:
     +Arm(Player,float)[s] +Hand(Player,float)[s] +DrawSprite(Texture2D,Vector2,float,int,float,Color,float,Vector2,float)[s]
 **SweepTrail.cs** uses: PixelFan
   abstract class SweepTrailStyle
-    +Grid:float[v] +LifeTicks:int[v] +Rails:int[v] +TaperFraction:float[v] +Smoothing:bool[v] +Fade:SweepFade[v] +TailLifeScale:float[v] +GetColor(float,float)[ab] #Falloff(float)[s] #ThreeStop(float,Color,Color,Color)[s]
+    +Grid:float[v] +LifeTicks:int[v] +Rails:int[v] +TaperFraction:float[v] +Smoothing:bool[v] +Filled:bool[v] +Fade:SweepFade[v] +TailLifeScale:float[v] +GetColor(float,float)[ab] #Falloff(float)[s] #ThreeStop(float,Color,Color,Color)[s]
   enum SweepFade
     {Uniform, TailFirst}
   class SweepTrail
