@@ -15,7 +15,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         // Which vanilla items this rework takes over. Add a yoyo here (and give it a trick in YoyoTricks) to rework it.
         public static bool IsReworked(int itemType)
         {
-            return itemType == ItemID.WoodYoyo;
+            return itemType == ItemID.WoodYoyo || itemType == ItemID.Code1;
         }
 
         // ---- rope length: each yoyo's own vanilla range (ProjectileID.Sets.YoyosMaximumRange of the yoyo the item shoots) x this ----
@@ -92,12 +92,44 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public static int WalkHopCooldownTicks => 10;
         public static float WalkHitRecoil => 3.5f;        // pushed back from an enemy ...
         public static float WalkHitHop => 3.5f;           // ... and up
-        public static float HitShake => 1.5f;
+
         public static bool UseSlopes => true;             // false: only plain block collision (try it if the roll behaves oddly on slopes)
+
+        // ---- Forward Pass (Code 1, left click) ----
+        public static int ForwardPassTicks => 36;         // one whole pass (out along the ellipse and back to the hand)
+        public static float ForwardPassWidthRatio => 0.42f; // the ellipse's half width as a fraction of its half length (0.42 = a slim ellipse)
+        public static float ForwardPassMinReach => 64f;   // the far end is at least this far from the player, even with the cursor on top of them
+        public static float ForwardPassReachMargin => 30f; // the far end stops this far short of the string's full length
+        public static float ForwardPassEase => 0.35f;     // 0 = constant speed along the ellipse, 1 = slow at both ends
+        public static float ForwardPassHitShake => 0.5f;  // very subtle camera punch per enemy hit (0 = none)
+
+        // ---- afterimages (the shared helper YoyoAfterimages in YoyoJuice.cs; a trick opts in with YoyoTrick.Afterimages) ----
+        public static int AfterimageTicks => 10;          // how long one afterimage lives
+        public static float AfterimageMinScale => 0.7f;   // it shrinks to this fraction of the yoyo's size while it fades
+        public static float AfterimageAlpha => 0.6f;      // brightness of a fresh afterimage
+        public static float AfterimageMinSpeed => 3f;     // none are laid while the yoyo is slower than this (px per tick)
 
         // ---- look ----
         public static int WoodDust => 7;                  // vanilla wood chip dust
         // His own art, when it exists: Content/Weapons/Yoyos/WoodenYoyoProjectile.png (about 16x16). Until then the vanilla sprite is used.
         public static string WoodenTexturePath => "IsmailsWeaponReworks/Content/Weapons/Yoyos/WoodenYoyoProjectile";
+        // Code 1: Content/Weapons/Yoyos/Code1Projectile.png (same size as the vanilla sprite).
+        public static string Code1TexturePath => "IsmailsWeaponReworks/Content/Weapons/Yoyos/Code1Projectile";
+
+        // The art path of a yoyo's own sprite (null = it has none planned and always uses the vanilla one).
+        public static string CustomTexturePath(int itemType)
+        {
+            if (itemType == ItemID.WoodYoyo)
+                return WoodenTexturePath;
+            if (itemType == ItemID.Code1)
+                return Code1TexturePath;
+            return null;
+        }
+
+        // The vanilla projectile whose sprite a yoyo uses until its own art exists (the yoyo projectile the item shoots).
+        public static int VisualProjectile(int itemType)
+        {
+            return ContentSamples.ItemsByType[itemType].shoot;
+        }
     }
 }

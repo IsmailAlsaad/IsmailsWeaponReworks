@@ -22,21 +22,27 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             if (Main.dedServ)
                 return;
             SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.55f, Pitch = 0.25f, PitchVariance = 0.1f }, position);
-            for (int i = 0; i < 3; i++)
-                Chip(position, new Vector2(side * Main.rand.NextFloat(0.5f, 2f), Main.rand.NextFloat(-1.5f, 0.5f)), Main.rand.NextFloat(0.7f, 1f));
         }
 
         // The yoyo hits the ground: a thump and a puff of chips and dust, more for a harder landing.
         public static void Land(Vector2 position, float impact, int gravDir)
         {
+            Impact(position, new Vector2(0f, -gravDir), impact);
+        }
+
+        // The yoyo hits any block (floor, wall or ceiling): 'normal' points away from the block, the chips fly that way.
+        public static void Impact(Vector2 position, Vector2 normal, float impact)
+        {
             if (Main.dedServ)
                 return;
+            normal = normal.LengthSquared() < 0.01f ? new Vector2(0f, -1f) : Vector2.Normalize(normal);
+            Vector2 along = new Vector2(-normal.Y, normal.X);
             float strength = MathHelper.Clamp(impact / 8f, 0.3f, 1.2f);
             SoundEngine.PlaySound(SoundID.Dig with { Volume = 0.3f + 0.3f * strength, Pitch = 0.3f, PitchVariance = 0.15f }, position);
             int count = 2 + (int)(5f * strength);
             for (int i = 0; i < count; i++)
             {
-                Vector2 velocity = new Vector2(Main.rand.NextFloat(-2f, 2f), -gravDir * Main.rand.NextFloat(0.5f, 2.5f) * strength);
+                Vector2 velocity = along * Main.rand.NextFloat(-2f, 2f) + normal * (Main.rand.NextFloat(0.5f, 2.5f) * strength);
                 Chip(position, velocity, Main.rand.NextFloat(0.7f, 1.1f));
                 if (i % 2 == 0)
                 {
@@ -51,7 +57,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.5f, Pitch = 0.1f + 0.2f * hitNumber, PitchVariance = 0.1f }, position);
+            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.5f, Pitch = MathHelper.Clamp(0.1f + 0.2f * hitNumber, -1f, 0.9f), PitchVariance = 0.1f }, position);
             SoundEngine.PlaySound(SoundID.Dig with { Volume = 0.45f, Pitch = 0.5f, PitchVariance = 0.1f }, position);
             for (int i = 0; i < 8; i++)
                 Chip(position, Main.rand.NextVector2Circular(3.5f, 3.5f), Main.rand.NextFloat(0.8f, 1.2f));
@@ -71,8 +77,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             if (Main.dedServ)
                 return;
             SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.5f, Pitch = 0.7f }, position);
-            for (int i = 0; i < 4; i++)
-                Chip(position, Main.rand.NextVector2Circular(1.5f, 1.5f), 0.8f);
         }
     }
 }
