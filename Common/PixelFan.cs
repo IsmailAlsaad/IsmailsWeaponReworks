@@ -20,6 +20,7 @@ namespace IsmailsWeaponReworks.Common
     /// </summary>
     public enum FanLook
     {
+        Soft,     // a triangle mesh: straight clean edges and a feathered falloff just past both of them (the default)
         Ribbon,   // nested smoothed PixelLine layers, the Dark Lance strike's look
         Filled,   // one solid area, a color per grid cell
         Rails,    // a few parallel thin PixelLines
@@ -66,9 +67,11 @@ namespace IsmailsWeaponReworks.Common
         /// blade) and ribbonGain (the layers add up, so each one is dimmed) only matter for Ribbon.
         /// </summary>
         public static void Draw(Vector2[] outers, Vector2[] inners, float[] expands, float[] ages, int count, float grid, int rails, Func<float, float, Color> color, bool smooth = true,
-            FanLook look = FanLook.Ribbon, int ribbonLayers = 3, float ribbonShrink = 1f, float ribbonWidthScale = 0.85f, float ribbonGain = 0.6f)
+            FanLook look = FanLook.Soft, int ribbonLayers = 3, float ribbonShrink = 1f, float ribbonWidthScale = 0.85f, float ribbonGain = 0.6f, float softFeatherPx = 5f)
         {
-            if (look == FanLook.Ribbon)
+            if (look == FanLook.Soft)
+                DrawSoft(outers, inners, expands, ages, count, color, smooth, ribbonShrink, softFeatherPx);
+            else if (look == FanLook.Ribbon)
                 DrawRibbon(outers, inners, expands, ages, count, grid, color, smooth, ribbonLayers, ribbonShrink, ribbonWidthScale, ribbonGain);
             else if (look == FanLook.Filled)
                 DrawFilled(outers, inners, expands, ages, count, grid, color, smooth);
@@ -122,6 +125,177 @@ namespace IsmailsWeaponReworks.Common
                     t => color(far, Sample(ageValues, count, t)) * gain,
                     smooth);
             }
+        }
+
+        static BasicEffect softEffect;
+        static VertexPositionColor[] softVertices = new VertexPositionColor[0];
+        static short[] softIndices = new short[0];
+        static Vector2[] softDirection = new Vector2[0];
+        static readonly float[] softAcross = { 0f, 0.25f, 0.5f, 0.75f, 1f }; // where the style is asked for a color across the fan; the mesh blends between them
+        const int SoftColumn = 7; // vertices across the fan at every sample: feather, 5 color stops, feather
+
+        /// <summary>
+        /// The soft look: the fan is a triangle mesh, not a pile of square cells, so both edges are clean straight lines (cut finely and bent
+        /// along a Catmull-Rom curve when smoothing) and the color is blended across it. Just past each edge the color keeps going for
+        /// 'featherPx' pixels and fades to nothing, so there is no hard cut line. 'shrink' pulls the inner edge toward the tip as a sample
+        /// ages (1 = the old end narrows to a line, like the Dark Lance strike line). Colors with alpha 0 add up as glow, like everywhere else.
+        /// The sprite batch is paused for the mesh and restarted afterwards with the usual world-space settings (same as BladeOfGrassVineDraw).
+        /// </summary>
+        static void DrawSoft(Vector2[] outers, Vector2[] inners, float[] expands, float[] ages, int count, Func<float, float, Color> color, bool smooth, float shrink, float featherPx)
+        {
+            if (Main.dedServ || count < 2 || color == null)
+                return;
+
+            if (fanEdge.Length < count)
+                fanEdge = new Vector2[count + 16];
+            for (int i = 0; i < count; i++)
+            {
+                float keep = Math.Max(0f, 1f - shrink * ages[i]);
+                fanEdge[i] = Vector2.Lerp(outers[i], inners[i], (expands == null ? 1f : expands[i]) * keep);
+            }
+
+            // Cut both edges into fine pieces (the same cut for both).
+            float step = 4f;
+            int needed = 1;
+            for (int i = 0; i < count - 1; i++)
+                needed += Math.Min(12, Pieces(outers, fanEdge, i, step));
+            if (needed * SoftColumn > 30000)
+                return;
+            if (fillOuter.Length < needed)
+            {
+                fillOuter = new Vector2[needed + 64];
+                fillInner = new Vector2[needed + 64];
+                fillAge = new float[needed + 64];
+            }
+            if (softDirection.Length < needed)
+                softDirection = new Vector2[needed + 64];
+
+            int n = 0;
+            for (int i = 0; i < count - 1; i++)
+            {
+                int pieces = Math.Min(12, Pieces(outers, fanEdge, i, step));
+                int i0 = Math.Max(i - 1, 0);
+                int i3 = Math.Min(i + 2, count - 1);
+                for (int s = 0; s < pieces; s++)
+                {
+                    float u = s / (float)pieces;
+                    if (smooth && count >= 3)
+                    {
+                        fillOuter[n] = Vector2.CatmullRom(outers[i0], outers[i], outers[i + 1], outers[i3], u);
+                        fillInner[n] = Vector2.CatmullRom(fanEdge[i0], fanEdge[i], fanEdge[i + 1], fanEdge[i3], u);
+                    }
+                    else
+                    {
+                        fillOuter[n] = Vector2.Lerp(outers[i], outers[i + 1], u);
+                        fillInner[n] = Vector2.Lerp(fanEdge[i], fanEdge[i + 1], u);
+                    }
+                    fillAge[n] = MathHelper.Lerp(ages[i], ages[i + 1], u);
+                    n++;
+                }
+            }
+            fillOuter[n] = outers[count - 1];
+            fillInner[n] = fanEdge[count - 1];
+            fillAge[n] = ages[count - 1];
+            n++;
+
+            // Which way is "outward" (from the inner edge toward the tip edge) at every sample: that is the way the feather grows. Where the fan
+            // is closed (no width) it takes the nearest sample that has one; with none at all it is the side of the path.
+            bool any = false;
+            for (int k = 0; k < n; k++)
+            {
+                Vector2 across = fillOuter[k] - fillInner[k];
+                float length = across.Length();
+                if (length > 0.5f)
+                {
+                    softDirection[k] = across / length;
+                    any = true;
+                }
+                else
+                    softDirection[k] = Vector2.Zero;
+            }
+            if (any)
+            {
+                Vector2 last = Vector2.Zero;
+                for (int k = 0; k < n; k++)
+                {
+                    if (softDirection[k] == Vector2.Zero)
+                        softDirection[k] = last;
+                    else
+                        last = softDirection[k];
+                }
+                last = Vector2.Zero;
+                for (int k = n - 1; k >= 0; k--)
+                {
+                    if (softDirection[k] == Vector2.Zero)
+                        softDirection[k] = last;
+                    else
+                        last = softDirection[k];
+                }
+            }
+            else
+            {
+                for (int k = 0; k < n; k++)
+                {
+                    Vector2 tangent = fillOuter[Math.Min(k + 1, n - 1)] - fillOuter[Math.Max(k - 1, 0)];
+                    tangent = tangent.LengthSquared() > 0.0001f ? Vector2.Normalize(tangent) : Vector2.UnitX;
+                    softDirection[k] = new Vector2(-tangent.Y, tangent.X);
+                }
+            }
+
+            int vertexCount = n * SoftColumn;
+            int triangleCount = (n - 1) * (SoftColumn - 1) * 2;
+            if (softVertices.Length < vertexCount)
+                softVertices = new VertexPositionColor[vertexCount + 64];
+            if (softIndices.Length < triangleCount * 3)
+                softIndices = new short[triangleCount * 3 + 192];
+
+            featherPx = Math.Max(0f, featherPx);
+            for (int k = 0; k < n; k++)
+            {
+                int v = k * SoftColumn;
+                Vector2 outward = softDirection[k] * featherPx;
+                softVertices[v] = new VertexPositionColor(new Vector3(fillOuter[k] + outward - Main.screenPosition, 0f), Color.Transparent);
+                for (int s = 0; s < softAcross.Length; s++)
+                {
+                    Vector2 position = Vector2.Lerp(fillOuter[k], fillInner[k], softAcross[s]);
+                    softVertices[v + 1 + s] = new VertexPositionColor(new Vector3(position - Main.screenPosition, 0f), color(softAcross[s], fillAge[k]));
+                }
+                softVertices[v + SoftColumn - 1] = new VertexPositionColor(new Vector3(fillInner[k] - outward - Main.screenPosition, 0f), Color.Transparent);
+            }
+
+            int index = 0;
+            for (int k = 0; k < n - 1; k++)
+            {
+                for (int b = 0; b < SoftColumn - 1; b++)
+                {
+                    int a = k * SoftColumn + b;
+                    int c = (k + 1) * SoftColumn + b;
+                    softIndices[index++] = (short)a;
+                    softIndices[index++] = (short)c;
+                    softIndices[index++] = (short)(a + 1);
+                    softIndices[index++] = (short)(a + 1);
+                    softIndices[index++] = (short)c;
+                    softIndices[index++] = (short)(c + 1);
+                }
+            }
+
+            GraphicsDevice device = Main.graphics.GraphicsDevice;
+            if (softEffect == null || softEffect.IsDisposed)
+                softEffect = new BasicEffect(device) { TextureEnabled = false, VertexColorEnabled = true };
+
+            Main.spriteBatch.End();
+            softEffect.World = Matrix.Identity;
+            softEffect.View = Main.GameViewMatrix.TransformationMatrix;
+            softEffect.Projection = Matrix.CreateOrthographicOffCenter(0f, Main.screenWidth, Main.screenHeight, 0f, -1f, 1f);
+            device.BlendState = BlendState.AlphaBlend;
+            device.DepthStencilState = DepthStencilState.None;
+            device.RasterizerState = RasterizerState.CullNone;
+            foreach (EffectPass pass in softEffect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, softVertices, 0, vertexCount, softIndices, 0, triangleCount);
+            }
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
         }
 
         static int Pieces(Vector2[] a, Vector2[] b, int i, float step)

@@ -17,7 +17,8 @@ namespace IsmailsWeaponReworks.Common
         public virtual int Rails => 7;   // parallel pixel lines that fill the area between the outer and the inner edge
         public virtual float TaperFraction => 0f; // 0 = even width; otherwise the oldest samples narrow to a point, widening to full width this far (0 to 1) along the trail
         public virtual bool Smoothing => true;    // the fan's edges are smooth curves (like the Dark Lance strike); false = straight pieces
-        public virtual FanLook Look => FanLook.Ribbon;  // Ribbon = nested smoothed PixelLine layers like the Dark Lance strike; Filled = one solid area; Rails = parallel thin lines
+        public virtual FanLook Look => FanLook.Soft;    // Soft = a smooth mesh with straight edges and a feathered falloff past them; Ribbon = nested PixelLine layers like the Dark Lance strike; Filled; Rails
+        public virtual float SoftFeatherPx => 5f;      // Soft: how far past each edge the color keeps going while it fades to nothing (0 = a hard edge)
         public virtual int RibbonLayers => 3;           // Ribbon: 1 to 3 nested layers (halo, body, hot core)
         public virtual float RibbonShrink => 1f;        // Ribbon: 1 = narrows to a point as it ages (the Dark Lance line), 0 = keeps its width and only fades
         public virtual float RibbonWidthScale => 0.85f; // Ribbon: the layer's width as a fraction of its band (a square-stamped line is wider on a diagonal)
@@ -159,7 +160,7 @@ namespace IsmailsWeaponReworks.Common
                 ages[i] = MathHelper.Clamp((clock - births[i]) / Math.Max(1f, Style.LifeTicks * scales[i]), 0f, 1f);
             }
 
-            PixelFan.Draw(outerArray, innerArray, expands, ages, count, Style.Grid, Style.Rails, Style.GetColor, Style.Smoothing, Style.Look, Style.RibbonLayers, Style.RibbonShrink, Style.RibbonWidthScale, Style.RibbonGain);
+            PixelFan.Draw(outerArray, innerArray, expands, ages, count, Style.Grid, Style.Rails, Style.GetColor, Style.Smoothing, Style.Look, Style.RibbonLayers, Style.RibbonShrink, Style.RibbonWidthScale, Style.RibbonGain, Style.SoftFeatherPx);
         }
     }
 }
