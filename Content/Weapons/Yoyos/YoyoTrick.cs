@@ -16,6 +16,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         // Enemy hits before the yoyo retracts.
         public abstract int MaxHits { get; }
 
+        // True: while the yoyo is out the owner's cursor side keeps deciding the yoyo's side (the trick can be turned around mid-way).
+        public virtual bool FollowsCursorSide => false;
+
         // The throw starts. authoritative = the owner's client, which sets the launch velocity; the others get it from the sync.
         public abstract void Begin(YoyoProjectile yoyo, bool authoritative);
 
@@ -49,13 +52,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         public override string Name => "Walk the Dog";
         public override int MaxHits => YoyoTuning.WalkHitsPerThrow;
+        public override bool FollowsCursorSide => true;
 
         public override void Begin(YoyoProjectile yoyo, bool authoritative)
         {
             grounded = false;
             hopCooldown = 0;
             if (authoritative)
-                yoyo.Vel = new Vector2(yoyo.Side * YoyoTuning.WalkThrowForwardSpeed, YoyoTuning.WalkThrowDownSpeed);
+                yoyo.Vel = new Vector2(yoyo.Side * YoyoTuning.WalkThrowForwardSpeed, yoyo.GravDir * YoyoTuning.WalkThrowDownSpeed);
         }
 
         public override void Tick(YoyoProjectile yoyo)
@@ -72,13 +76,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             {
                 if (!grounded && contact.Impact > YoyoTuning.WalkBounceMinImpact)
                 {
-                    yoyo.Vel.Y = -contact.Impact * YoyoTuning.WalkLandBounce;
-                    YoyoFx.Land(yoyo.Projectile.Bottom, contact.Impact);
+                    yoyo.Vel.Y = -yoyo.GravDir * contact.Impact * YoyoTuning.WalkLandBounce;
+                    YoyoFx.Land(yoyo.GravDir > 0 ? yoyo.Projectile.Bottom : yoyo.Projectile.Top, contact.Impact, yoyo.GravDir);
                 }
                 grounded = true;
                 if (contact.BlockedX && hopCooldown <= 0)
                 {
-                    yoyo.Vel.Y = -YoyoTuning.WalkHopSpeed;
+                    yoyo.Vel.Y = -yoyo.GravDir * YoyoTuning.WalkHopSpeed;
                     hopCooldown = YoyoTuning.WalkHopCooldownTicks;
                 }
             }
@@ -89,7 +93,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public override void OnHit(YoyoProjectile yoyo, NPC target)
         {
             // Bounced off the enemy: back and up, then it rolls on toward it again.
-            yoyo.Vel = new Vector2(-yoyo.Side * YoyoTuning.WalkHitRecoil, -YoyoTuning.WalkHitHop);
+            yoyo.Vel = new Vector2(-yoyo.Side * YoyoTuning.WalkHitRecoil, -yoyo.GravDir * YoyoTuning.WalkHitHop);
             grounded = false;
         }
 

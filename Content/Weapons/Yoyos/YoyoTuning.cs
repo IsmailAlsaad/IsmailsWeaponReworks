@@ -56,8 +56,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public static int IdleSpinTicks => 38;            // it spins at the bottom
         public static int IdleRaiseTicks => 26;           // it is pulled back up
         public static float IdleDropPx => 28f;
-        public static float IdleGroundCheckWidth => 4f;   // the idle yoyo's drop stops above the ground: a block check down from the hand, this wide (px)
-        public static float IdleDropRecoverPx => 2f;      // when the free space below the hand grows again, the drop recovers by this many px per tick (it shrinks at once)
         public static float IdleSwayPx => 2f;
         public static float IdleSpinRestSpeed => 0.1f;    // radians per tick at the hand
         public static float IdleSpinSpeed => 0.55f;       // radians per tick at the bottom
@@ -82,6 +80,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public static int WalkHitsPerThrow => 3;          // enemy hits before it retracts
         public static float WalkThrowDownSpeed => 5f;     // the throw: down ...
         public static float WalkThrowForwardSpeed => 3f;  // ... and a bit toward the cursor's side
+        public static float WalkSwitchDeadzonePx => 10f;  // while it is out, the side only switches when the cursor is this far past the player's center (no flicker over the player)
         public static float WalkGravity => 0.45f;
         public static float WalkMaxFall => 14f;
         public static float WalkSpeed => 4.2f;            // rolling speed along the ground

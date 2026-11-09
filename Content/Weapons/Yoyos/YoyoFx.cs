@@ -27,7 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         }
 
         // The yoyo hits the ground: a thump and a puff of chips and dust, more for a harder landing.
-        public static void Land(Vector2 position, float impact)
+        public static void Land(Vector2 position, float impact, int gravDir)
         {
             if (Main.dedServ)
                 return;
@@ -36,7 +36,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             int count = 2 + (int)(5f * strength);
             for (int i = 0; i < count; i++)
             {
-                Vector2 velocity = new Vector2(Main.rand.NextFloat(-2f, 2f), -Main.rand.NextFloat(0.5f, 2.5f) * strength);
+                Vector2 velocity = new Vector2(Main.rand.NextFloat(-2f, 2f), -gravDir * Main.rand.NextFloat(0.5f, 2.5f) * strength);
                 Chip(position, velocity, Main.rand.NextFloat(0.7f, 1.1f));
                 if (i % 2 == 0)
                 {

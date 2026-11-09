@@ -782,7 +782,7 @@ tModLoader/other bases -> project types:
 ### Content/Weapons/Yoyos/
 **YoyoFx.cs** uses: YoyoTuning
   static class YoyoFx
-    +Throw(Vector2,int)[s] +Land(Vector2,float)[s] +Hit(Vector2,int)[s] +Retract(Vector2)[s] +Catch(Vector2)[s]
+    +Throw(Vector2,int)[s] +Land(Vector2,float,int)[s] +Hit(Vector2,int)[s] +Retract(Vector2)[s] +Catch(Vector2)[s]
 **YoyoGlobalItem.cs** uses: YoyoTuning
   class YoyoGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
@@ -795,20 +795,20 @@ tModLoader/other bases -> project types:
   struct YoyoContact
     +Grounded:bool +BlockedX:bool +Ceiling:bool +Impact:float
   class YoyoProjectile : ModProjectile
-    +Texture:string[ov] +Vel:Vector2 +Side:int +OutTicks:int +Hits:int +State:YoyoState +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +BeginReturn() +Step(float,float) +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +GravDir:int +Vel:Vector2 +Side:int +OutTicks:int +Hits:int +State:YoyoState +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +BeginReturn() +Step(float,float) +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
 **YoyoRope.cs** uses: YoyoTuning
   class YoyoRope
     +Straight(Vector2,Vector2) +Update(Vector2,Vector2,float,float,float) +Draw(Texture2D)
 **YoyoTrick.cs** uses: YoyoContact, YoyoFx, YoyoProjectile, YoyoTuning
   abstract class YoyoTrick
-    +Name:string[ab] +MaxHits:int[ab] +Begin(YoyoProjectile,bool)[ab] +Tick(YoyoProjectile)[ab] +OnHit(YoyoProjectile,NPC)[v]
+    +Name:string[ab] +MaxHits:int[ab] +FollowsCursorSide:bool[v] +Begin(YoyoProjectile,bool)[ab] +Tick(YoyoProjectile)[ab] +OnHit(YoyoProjectile,NPC)[v]
   static class YoyoTricks
     +Create(int)[s]
   class WalkTheDogTrick : YoyoTrick
-    +Name:string[ov] +MaxHits:int[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] +OnHit(YoyoProjectile,NPC)[ov]
+    +Name:string[ov] +MaxHits:int[ov] +FollowsCursorSide:bool[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] +OnHit(YoyoProjectile,NPC)[ov]
 **YoyoTuning.cs**
   static class YoyoTuning
-    +IsReworked(int)[s] +RopeLengthScale:float[s] +RopeLength(Item)[s] +RopePoints:int[s] +WalkRopeSlackFactor:float[s] +WalkRopeExtraSlack:float[s] +WalkRopeGravity:float[s] +RopeMinLength:float[s] +RopeDamping:float[s] +RopeIterations:int[s] +RopeCollides:bool[s] +RopeSubdivisions:int[s] +RopeWidth:float[s] +RopeOutlineWidth:float[s] +RopeColor:Color[s] +RopeAltColor:Color[s] +RopeOutlineColor:Color[s] +HitboxSize:int[s] +HitCooldownTicks:int[s] +ArmFollow:float[s] +SyncEveryTicks:int[s] +IdleRestTicks:int[s] +IdleDropTicks:int[s] +IdleSpinTicks:int[s] +IdleRaiseTicks:int[s] +IdleDropPx:float[s] +IdleGroundCheckWidth:float[s] +IdleDropRecoverPx:float[s] +IdleSwayPx:float[s] +IdleSpinRestSpeed:float[s] +IdleSpinSpeed:float[s] +IdleArmRestDeg:float[s] +IdleArmDropDeg:float[s] +ThrowArmStartDeg:float[s] +ThrowArmBlendTicks:int[s] +CatchArmDeg:float[s] +CatchArmBlendDistance:float[s] +ReleaseGraceTicks:int[s] +RethrowDelayTicks:int[s] +ReturnStartSpeed:float[s] +ReturnAccel:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +ReturnSpinSpeed:float[s] +SpinPerPixel:float[s] +WalkHitsPerThrow:int[s] +WalkThrowDownSpeed:float[s] +WalkThrowForwardSpeed:float[s] +WalkGravity:float[s] +WalkMaxFall:float[s] +WalkSpeed:float[s] +WalkAccel:float[s] +WalkAirAccel:float[s] +WalkLandBounce:float[s] +WalkBounceMinImpact:float[s] +WalkHopSpeed:float[s] +WalkHopCooldownTicks:int[s] +WalkHitRecoil:float[s] +WalkHitHop:float[s] +HitShake:float[s] +UseSlopes:bool[s] +WoodDust:int[s] +WoodenTexturePath:string[s]
+    +IsReworked(int)[s] +RopeLengthScale:float[s] +RopeLength(Item)[s] +RopePoints:int[s] +WalkRopeSlackFactor:float[s] +WalkRopeExtraSlack:float[s] +WalkRopeGravity:float[s] +RopeMinLength:float[s] +RopeDamping:float[s] +RopeIterations:int[s] +RopeCollides:bool[s] +RopeSubdivisions:int[s] +RopeWidth:float[s] +RopeOutlineWidth:float[s] +RopeColor:Color[s] +RopeAltColor:Color[s] +RopeOutlineColor:Color[s] +HitboxSize:int[s] +HitCooldownTicks:int[s] +ArmFollow:float[s] +SyncEveryTicks:int[s] +IdleRestTicks:int[s] +IdleDropTicks:int[s] +IdleSpinTicks:int[s] +IdleRaiseTicks:int[s] +IdleDropPx:float[s] +IdleSwayPx:float[s] +IdleSpinRestSpeed:float[s] +IdleSpinSpeed:float[s] +IdleArmRestDeg:float[s] +IdleArmDropDeg:float[s] +ThrowArmStartDeg:float[s] +ThrowArmBlendTicks:int[s] +CatchArmDeg:float[s] +CatchArmBlendDistance:float[s] +ReleaseGraceTicks:int[s] +RethrowDelayTicks:int[s] +ReturnStartSpeed:float[s] +ReturnAccel:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +ReturnSpinSpeed:float[s] +SpinPerPixel:float[s] +WalkHitsPerThrow:int[s] +WalkThrowDownSpeed:float[s] +WalkThrowForwardSpeed:float[s] +WalkSwitchDeadzonePx:float[s] +WalkGravity:float[s] +WalkMaxFall:float[s] +WalkSpeed:float[s] +WalkAccel:float[s] +WalkAirAccel:float[s] +WalkLandBounce:float[s] +WalkBounceMinImpact:float[s] +WalkHopSpeed:float[s] +WalkHopCooldownTicks:int[s] +WalkHitRecoil:float[s] +WalkHitHop:float[s] +HitShake:float[s] +UseSlopes:bool[s] +WoodDust:int[s] +WoodenTexturePath:string[s]
 
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; build.txt, description.txt, description_workshop.txt

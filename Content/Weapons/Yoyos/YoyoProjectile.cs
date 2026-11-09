@@ -21,10 +21,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
     // What the yoyo touched during one Step.
     public struct YoyoContact
     {
-        public bool Grounded;   // blocked while moving down
+        public bool Grounded;   // blocked while moving "down" (toward the player's feet side; up in the world when gravity is flipped)
         public bool BlockedX;   // blocked sideways
-        public bool Ceiling;    // blocked while moving up
-        public float Impact;    // the downward speed it had when it landed
+        public bool Ceiling;    // blocked while moving "up" (away from the feet side)
+        public float Impact;    // the speed it had when it landed
     }
 
     /// <summary>
@@ -32,7 +32,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
     /// itself: Projectile.Center is the yoyo, the YoyoRope runs from the player's hand to it (a straight line while idle, a verlet rope while out or returning), and it poses the arm.
     /// IDLE: nothing pressed: the arm hangs down, the yoyo is let down gently, spins a little and is pulled back up, over and over.
     /// OUT: the left button runs the yoyo's trick (YoyoTrick; the Wooden Yoyo's is Walk the Dog). The throw side is the side of the screen
-    /// the cursor is on, locked at the throw. It retracts after the trick's hits, when the string is at full length, or when the button
+    /// the cursor is on (a trick may keep following the cursor's side while it is out; Walk the Dog does). It retracts after the trick's hits, when the string is at full length, or when the button
     /// is let go (not in the first ReleaseGraceTicks, so a tap still throws). RETURN: it is pulled to the hand and caught; if the button
     /// is still down it is thrown again after a short beat.
     /// MULTIPLAYER: the owner's client decides everything (the click, the side, hits, when to retract and catch). Every machine runs the
@@ -49,6 +49,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
+
+        // 1 = normal gravity, -1 = flipped (the owner's gravDir, which every machine knows): "down" for the yoyo is toward the player's feet.
+        public int GravDir => Owner.gravDir >= 0f ? 1 : -1;
 
         // ---- shared with the trick ----
         public Vector2 Vel;            // the yoyo's own velocity (px per tick); synced
@@ -70,8 +73,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         YoyoTrick trick;
         readonly YoyoRope rope = new YoyoRope();
         int idleClock;
-        float idleFree;                // the free space below the hand the idle drop may use (px)
-        bool idleFreeReady;
         int catchCooldown;
         float returnSpeed;
         float spin;
@@ -168,7 +169,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 pendingState = -1;
                 if (next == YoyoState.Out)
                 {
-                    LaunchFromHand(owner);
+                    LaunchFromCenter(owner);
                     trick.Begin(this, false);
                 }
                 EnterState(next);
@@ -209,7 +210,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             if (State == YoyoState.Idle)
                 rope.Straight(hand, Projectile.Center);
             else
-                rope.Update(hand, Projectile.Center, YoyoTuning.WalkRopeSlackFactor, YoyoTuning.WalkRopeExtraSlack, YoyoTuning.WalkRopeGravity);
+                rope.Update(hand, Projectile.Center, YoyoTuning.WalkRopeSlackFactor, YoyoTuning.WalkRopeExtraSlack, YoyoTuning.WalkRopeGravity * GravDir);
         }
 
         // ---- states ----
@@ -231,7 +232,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                     break;
                 default:
                     idleClock = 0;
-                    idleFreeReady = false;
                     catchCooldown = YoyoTuning.RethrowDelayTicks;
                     Vel = Vector2.Zero;
                     YoyoFx.Catch(Projectile.Center);
@@ -244,7 +244,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             Side = Main.MouseWorld.X >= owner.Center.X ? 1 : -1;
             throwSerial++;
-            LaunchFromHand(owner);
+            LaunchFromCenter(owner);
             trick.Begin(this, true);
             EnterState(YoyoState.Out);
             Projectile.netUpdate = true;
@@ -269,14 +269,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             ApplyArm(owner, HeldSwordPose.ToWorld(facing, armLocal));
 
             float ropeMax = YoyoTuning.RopeLength(owner.HeldItem);
-            // The drop never goes into the ground: it shrinks at once when the free space below the hand does, and recovers gradually.
-            float freeNow = FreeDropBelow(Math.Min(YoyoTuning.IdleDropPx, ropeMax));
-            if (!idleFreeReady || freeNow < idleFree)
-                idleFree = freeNow;
-            else
-                idleFree = Math.Min(freeNow, idleFree + Math.Max(0.1f, YoyoTuning.IdleDropRecoverPx));
-            idleFreeReady = true;
-            float drop = idleFree * extension;
+            float drop = Math.Min(YoyoTuning.IdleDropPx, ropeMax) * extension * GravDir; // toward the feet (up when gravity is flipped); no block check, it may go through blocks
             float sway = (float)Math.Sin(idleClock * 0.12f) * YoyoTuning.IdleSwayPx * extension;
             Projectile.Center = hand + new Vector2(sway, drop);
 
@@ -292,40 +285,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             }
         }
 
-        // A throw starts at the hand (the string's holding point), never at the idle position below it, which can be inside the floor.
-        // If the hand itself is inside a block, the yoyo starts at the first free spot on the way to the player's center. Runs on every
-        // machine; the owner's position then travels with the normal sync.
-        void LaunchFromHand(Player owner)
+        // A throw starts at the center of the player (the idle yoyo may be inside blocks, so it never starts from where it hung). Runs on
+        // every machine; the owner's position then travels with the normal sync.
+        void LaunchFromCenter(Player owner)
         {
-            Vector2 start = armReady ? hand : owner.MountedCenter;
-            Projectile.Center = start;
-            if (!Collision.SolidCollision(Projectile.position, Projectile.width, Projectile.height))
-                return;
-            Vector2 safe = owner.MountedCenter;
-            int steps = 8;
-            for (int i = 1; i <= steps; i++)
-            {
-                Projectile.Center = Vector2.Lerp(start, safe, i / (float)steps);
-                if (!Collision.SolidCollision(Projectile.position, Projectile.width, Projectile.height))
-                    return;
-            }
-            Projectile.Center = safe;
-        }
-
-        // How far the idle yoyo may be let down from the hand before it would touch a block (0 to want), checked in small steps.
-        float FreeDropBelow(float want)
-        {
-            int width = (int)Math.Max(2f, YoyoTuning.IdleGroundCheckWidth);
-            float d = 0f;
-            while (d < want)
-            {
-                float next = Math.Min(want, d + 2f);
-                Vector2 topLeft = hand + new Vector2(-width * 0.5f, next - Projectile.height * 0.5f);
-                if (Collision.SolidCollision(topLeft, width, Projectile.height))
-                    break;
-                d = next;
-            }
-            return d;
+            Projectile.Center = owner.MountedCenter;
         }
 
         // 0 = in the hand, 1 = let all the way down; one full cycle repeats.
@@ -355,6 +319,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         void TickOut(Player owner, float ropeMax)
         {
             OutTicks++;
+            if (IsOwner && trick.FollowsCursorSide)
+            {
+                // The owner's client decides: the side follows the cursor (past a small dead zone); Side travels in the existing sync.
+                float dx = Main.MouseWorld.X - owner.Center.X;
+                int wanted = dx > YoyoTuning.WalkSwitchDeadzonePx ? 1 : dx < -YoyoTuning.WalkSwitchDeadzonePx ? -1 : Side;
+                if (wanted != Side)
+                {
+                    Side = wanted;
+                    Projectile.netUpdate = true;
+                }
+            }
             owner.ChangeDir(Side); // every tick, so nothing (movement keys) can turn the player away from the throw
 
             trick.Tick(this);
@@ -405,22 +380,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             int width = Projectile.width;
             int height = Projectile.height;
-            Vel.Y = Math.Min(Vel.Y + gravity, maxFall);
+            int g = GravDir;
+            Vel.Y += gravity * g;
+            Vel.Y = g > 0 ? Math.Min(Vel.Y, maxFall) : Math.Max(Vel.Y, -maxFall);
 
             if (YoyoTuning.UseSlopes)
             {
-                Vector4 slope = Collision.SlopeCollision(Projectile.position, Vel, width, height, gravity, true);
+                Vector4 slope = Collision.SlopeCollision(Projectile.position, Vel, width, height, gravity * g, true);
                 Projectile.position = new Vector2(slope.X, slope.Y);
                 Vel = new Vector2(slope.Z, slope.W);
             }
 
             Vector2 want = Vel;
-            Vector2 moved = Collision.TileCollision(Projectile.position, want, width, height, false, false, 1);
+            Vector2 moved = Collision.TileCollision(Projectile.position, want, width, height, false, false, g);
             YoyoContact contact = default;
+            bool stoppedY = Math.Abs(moved.Y) < Math.Abs(want.Y) - 0.01f;
             contact.BlockedX = Math.Abs(moved.X - want.X) > 0.01f;
-            contact.Grounded = want.Y > 0f && moved.Y < want.Y - 0.01f;
-            contact.Ceiling = want.Y < 0f && moved.Y > want.Y + 0.01f;
-            contact.Impact = contact.Grounded ? want.Y : 0f;
+            contact.Grounded = want.Y * g > 0f && stoppedY;   // blocked while moving toward the feet side
+            contact.Ceiling = want.Y * g < 0f && stoppedY;    // blocked while moving away from it
+            contact.Impact = contact.Grounded ? Math.Abs(want.Y) : 0f;
             Projectile.position += moved;
             if (contact.BlockedX)
                 Vel.X = 0f;
