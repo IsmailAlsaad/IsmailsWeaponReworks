@@ -111,7 +111,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             modifiers.Knockback *= EnchantedSwordTuning.BeamKnockbackMultiplier;
         }
 
-        // Owner's client only: the first enemy the beam touches takes the ghost. It comes in from the side the beam came from.
+        // Owner's client only: the first enemy the beam touches takes the ghost. The ghost starts exactly where the beam is (its tip here, the same
+        // direction of flight) and keeps flying through the enemy, spinning.
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             EnchantedSwordFx.HitSpark(target.Center, 2f);
@@ -119,7 +120,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
                 return;
             hitDone = true;
             CameraShake.Punch(target.Center, EnchantedSwordTuning.HitShake, 8);
-            EtherealSwordProjectile.Spawn(Owner, target, Projectile.damage, Projectile.knockBack, Projectile.GetSource_FromThis(), (-Projectile.velocity).ToRotation());
+            EtherealSwordProjectile.Spawn(Owner, target, Projectile.Center, Projectile.damage, Projectile.knockBack, Projectile.GetSource_FromThis(), (-Projectile.velocity).ToRotation());
         }
 
         // A wall: it fizzles (every machine simulates its own copy of the flight).

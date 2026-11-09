@@ -29,8 +29,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         // ---- the hits: thrust hits give the blade a stronger outline; at HitsToDischarge (3) the sword is FULL (outline stage 3) and a right click throws the beam ----
         // NOTE: HitsToDischarge keeps its old name and now means "hits to FULL"; hits at full add nothing, a partial count is lost HitHoldTicks after the last
         // hit, a FULL sword never decays (it keeps the charge until the throw, a swap of items or death). DischargeShake and DischargeBurstRadius are no longer used.
-        public static int HitsToDischarge => 3;         // ONLY THE THRUST charges the sword: the first enemy each thrust touches counts as one hit (up and down hits only count toward the thrust, see SwingHitsToThrust)
-        public static int HitHoldTicks => 300;          // the count is lost this long after the last counted hit
+        public static int HitsToDischarge => 8;         
+        public static int HitHoldTicks => 800;          // the count is lost this long after the last counted hit
         public static float StageShowEase => 0.2f;      // how fast the DRAWN outline follows the real count (per tick, 0..1)
         public static float HitShake => 0.6f;           // camera punch on a hit (grows with the stage)
         public static float DischargeShake => 2f;       // camera punch of the discharge
@@ -46,9 +46,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
         // ---- the thrown beam (the Enchanted Beam sprite, stretched to GhostBladeLength; it stops at the first enemy and the ghost takes over there) ----
         public static float BeamSpeed => 24f;           // px per tick
-        public static float BeamRangeTiles => 36f;      // it fizzles after flying this far (a miss is NOT refunded)
+        public static float BeamRangeTiles => 80f;      // it fizzles after flying this far (a miss is NOT refunded)
         public static float BeamHitWidth => 22f;        // how thick the hit line is around the tip's path
-        public static float BeamDamageMultiplier => 0.5f;    // of the sword's damage, for the beam's own hit (the ghost's strikes come on top)
+        public static float BeamDamageMultiplier => 2f;    // of the sword's damage, for the beam's own hit (the ghost's strikes come on top)
         public static float BeamKnockbackMultiplier => 0.5f;
         public static int BeamTrailLifeTicks => 14;
         public static float BeamTrailWidth => 10f;      // px at the start of the trail
@@ -128,26 +128,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float SparkleChance => 0.3f;      // per tick, at the highest stage: a mote somewhere along the blade (less at stage 1)
         public static int FlashTicks => 12;             // the white flash when a strike starts and when the sword discharges
 
-        // ---- the ghost sword (the thrown beam conjures it where it hits an enemy: it floats around the enemy, slashes 4 times, backs away and drives itself in) ----
-        public static int GhostSlashes => 4;                // quick slashes before the stab
-        public static int GhostSlashTicks => 8;             // one slash (quick). The ghost's blade fans across the enemy one way, then back the other way
-        public static int GhostFadeInTicks => 10;           // the ghost starts where the beam hit (the blade pointing at the enemy) and eases onto its orbit this long (it cannot hit yet)
-        public static int GhostBackoffTicks => 14;          // the 5th swing: it backs away from the enemy this long (trembling, stardust drawn into the tip) ...
-        public static float GhostBackoffPx => 70f;          // ... this far
-        public static int GhostHoldTicks => 6;              // a held beat before the drive
+        // ---- the ghost sword (the thrown beam conjures it where it hits an enemy: it keeps flying THROUGH the enemy while it spins, then its tip comes round to the enemy and it stabs it from behind and explodes) ----
+        public static int GhostSpinTurns => 2;              // full turns the blade spins while it flies through the enemy
+        public static float GhostPassSpeed => 14f;          // px per tick the spinning blade moves through the enemy (the pass lasts as long as the way through takes at this speed) ...
+        public static int GhostPassMinTicks => 14;          // ... but never fewer ticks than this (the two spins stay quick) ...
+        public static int GhostPassMaxTicks => 36;          // ... and never more (a very big enemy is crossed faster than the speed above)
+        public static float GhostExitMargin => 10f;         // the blade's middle flies this far past the enemy's far edge (along the beam's direction) before the stab turn
+        public static int GhostTurnTicks => 9;              // after the pass the blade keeps spinning, slowing down, for half a turn more until its tip points back at the enemy
+        public static float GhostRunUpPx => 36f;            // during that turn the blade also drifts this much further out, so the stab has a run-up
+        public static float GhostSpinHitDeg => 360f;        // the spinning blade can hit the enemy again every this many degrees of spin (360 = once per turn, so 2 hits)
+        public static int GhostHoldTicks => 0;              // a held beat (trembling) between the tip pointing at the enemy and the drive (0 = the stab follows at once)
         public static int GhostDriveTicks => 5;             // the drive into the enemy
         public static float GhostDriveEasePower => 2.5f;    // 1 = even speed; higher = it accelerates harder into the enemy
         public static float GhostEmbedFraction => 0.6f;     // where the blade explodes: the hilt stops this fraction of the blade length from the enemy's middle (0.6 = the tip is past the middle)
         public static int GhostFadeOutTicks => 10;
         public static float GhostBladeLength => 64f;        // hilt to tip in px (the beam sprite is stretched to it; the thrown beam is drawn at this size too)
-        public static float GhostHoldDistance => 56f;       // the hilt keeps this far from the enemy's middle while it slashes ...
-        public static float GhostHoldPerSize => 0.8f;       // ... plus this fraction of the enemy's half size (so a big enemy is still reached)
-        public static float GhostSlashArcDeg => 65f;        // each slash fans the blade this far to each side of the enemy
-        public static float GhostOrbitDegPerTick => 2.5f;   // the ghost drifts around the enemy this fast while it slashes (the direction is random)
         public static float GhostTremblePx => 1.5f;
         public static int MaxGhosts => 3;                   // per player; a 4th makes the oldest leave
         public static float GhostRetargetRange => 400f;     // px: if its enemy dies first the ghost goes for the nearest enemy within this range, or leaves
-        public static float GhostSlashDamageMultiplier => 0.6f; // of the sword's damage, for each slash
+        public static float GhostSpinDamageMultiplier => 0.6f; // of the sword's damage, for each spin hit
         public static float GhostStabDamageMultiplier => 2f;    // the drive
         public static float GhostStabKnockbackMultiplier => 1.5f;
         public static float GhostStabShake => 2.5f;         // camera punch when the blade lands

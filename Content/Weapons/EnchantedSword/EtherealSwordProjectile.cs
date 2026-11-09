@@ -12,14 +12,18 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 {
     /// <summary>
-    /// The ghost sword the thrown ethereal beam (EtherealBeamProjectile) conjures where it hits an enemy (patch 2, the beam since patch 3). A ghost holds the sword (the vanilla
-    /// Enchanted Beam sprite) and floats around the enemy; the sword does 4 quick slashes across it (the ghost drifts around the enemy while
-    /// it slashes), then on the 5th swing it backs away a little (trembling, stardust drawn into the tip), holds a beat and drives itself
-    /// point-first into the enemy's middle; the moment it lands it explodes into a stardust burst (the Enchanted Boomerang's) and is gone.
-    /// THE WHOLE SEQUENCE IS ONE POSE FUNCTION OF THE PROJECTILE'S AGE (Pose): one projectile, one continuous motion, so nothing flickers
-    /// between swings (each slash ends exactly where the next begins).
-    /// MULTIPLAYER: the owner spawns it (EtherealSwordProjectile.Spawn) with ai[0] = the enemy's index, ai[1] = the approach angle and
-    /// ai[2] = the orbit direction (+1 or -1); these arrive with the spawn, so every machine plays the same sequence from the same age and the
+    /// The ghost sword the thrown ethereal beam (EtherealBeamProjectile) conjures where it hits an enemy. It is the beam's own sword (the vanilla
+    /// Enchanted Beam sprite) and it does NOT stop: it keeps flying through the enemy along the beam's line of flight while it SPINS
+    /// (GhostSpinTurns full turns, hitting the enemy as it goes), until its middle is past the enemy's far edge. The spin goes on, slowing down,
+    /// until the tip points back at the enemy, and right then the blade drives itself into the enemy from behind (the last strike of the old
+    /// 5-strike combo, the 4 slashes before it are gone), and the moment it lands it explodes into a stardust burst (the Enchanted
+    /// Boomerang's) and is gone.
+    /// THE WHOLE SEQUENCE IS ONE POSE FUNCTION OF THE PROJECTILE'S AGE (Pose, Spin): one projectile, one continuous motion, so nothing flickers
+    /// or stops between the beam, the spin and the stab (the spin starts from rest at the beam's own angle, the pass starts at the beam's own
+    /// position, the turn slows down while the drive speeds up).
+    /// MULTIPLAYER: the owner spawns it (EtherealSwordProjectile.Spawn) AT THE BEAM'S TIP with ai[0] = the enemy's index, ai[1] = the approach
+    /// angle (from the enemy back toward where the beam came from, so the flight direction is the opposite) and ai[2] = the spin direction
+    /// (+1 or -1); these and the spawn position arrive with the spawn, so every machine plays the same sequence from the same age and the
     /// enemy's synced position, and nothing is synced per tick. Only a retarget (the enemy died before the stab, the owner picks the nearest
     /// other enemy, or -1 = none, the ghost leaves) is a netUpdate of ai[0]. Damage is the owner's alone; the other machines get hit sparks
     /// through RemoteHitTracker. No custom packets.
@@ -36,10 +40,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         float Dir => Projectile.ai[2] >= 0f ? 1f : -1f;
 
         // ---- timeline (ticks of age) ----
-        int SlashStart => EnchantedSwordTuning.GhostFadeInTicks;
-        int SlashEnd => SlashStart + EnchantedSwordTuning.GhostSlashes * EnchantedSwordTuning.GhostSlashTicks;
-        int BackoffEnd => SlashEnd + EnchantedSwordTuning.GhostBackoffTicks;
-        int HoldEnd => BackoffEnd + EnchantedSwordTuning.GhostHoldTicks;
+        // pass (the spinning blade flies through the enemy; passTicks long, worked out on the first tick) -> turn (still spinning, slowing down, until
+        // the tip points back at the enemy) -> hold (none by default) -> drive (the stab from behind)
+        int PassEnd => passTicks;
+        int TurnEnd => PassEnd + EnchantedSwordTuning.GhostTurnTicks;
+        int HoldEnd => TurnEnd + EnchantedSwordTuning.GhostHoldTicks;   // the drive starts here
         int DriveEnd => HoldEnd + EnchantedSwordTuning.GhostDriveTicks;
         int TotalTicks => DriveEnd + 2; // the blade explodes on tick DriveEnd (the last tick it can hit) and the ghost is gone one tick later
 
@@ -51,6 +56,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         int leaveTicks;
         Vector2 focus;              // the enemy's center, smoothed (a retarget glides instead of jumping)
         float halfSize = 12f;       // half the enemy's size: the ghost keeps further away from a big enemy
+        Vector2 travelDir = Vector2.UnitX; // the beam's direction of flight (the blade keeps flying this way through the enemy)
+        float entryAlong;           // where the blade's MIDDLE starts, measured from the enemy's center along travelDir (negative = before it) ...
+        float entryAcross;          // ... and sideways from the line through the enemy's center
+        float exitAlong;            // where the middle is when the pass ends (just past the enemy's far edge)
+        float endAlong;             // where the middle is when the turn ends (the run-up of the stab)
+        int passTicks = 1;          // how long the pass lasts (set on the first tick, from the way through the enemy)
+        int spinHitIndex = -1;      // which spin hit the blade is on (the owner clears the hit memory when it moves on)
         Vector2 hilt;
         float angle;                // the blade's direction (world angle)
         float alpha;
@@ -79,9 +91,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             Projectile.localNPCHitCooldown = -1; // every enemy once per slash and once for the stab (the owner clears it at each start)
         }
 
-        // The owner's client spawns the ghost at the enemy the thrown beam hit; 'approach' is the angle from the enemy back toward where the beam
-        // came from (the ghost starts on that side). At most MaxGhosts exist per player: a 4th makes the oldest one leave.
-        public static void Spawn(Player owner, NPC target, int damage, float knockback, IEntitySource source, float approach)
+        // The owner's client spawns the ghost where the thrown beam hit an enemy: AT THE BEAM'S TIP ('tip'), so the ghost is the beam's sword with no jump;
+        // 'approach' is the angle from the enemy back toward where the beam came from (the beam's flight direction is the opposite). At most
+        // MaxGhosts exist per player: a 4th makes the oldest one leave.
+        public static void Spawn(Player owner, NPC target, Vector2 tip, int damage, float knockback, IEntitySource source, float approach)
         {
             int type = ModContent.ProjectileType<EtherealSwordProjectile>();
             int count = 0;
@@ -99,84 +112,89 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
                 oldest.Kill();
 
             float direction = Main.rand.NextBool() ? 1f : -1f;
-            Projectile.NewProjectile(source, target.Center, Vector2.Zero, type, damage, knockback, owner.whoAmI, target.whoAmI, approach, direction);
+            Projectile.NewProjectile(source, tip, Vector2.Zero, type, damage, knockback, owner.whoAmI, target.whoAmI, approach, direction);
         }
 
         // ---- the pose ----
+
+        // How far the blade has spun (radians, only ever grows) at 'ageNow' ticks of age: it starts from rest at the beam's own angle, makes
+        // GhostSpinTurns full turns by the end of the pass (reaching the average speed there, no jump), then half a turn more, slowing down to
+        // a stop, so that the tip points back at the enemy when the stab starts.
+        float Spin(float ageNow)
+        {
+            float total = MathHelper.TwoPi * EnchantedSwordTuning.GhostSpinTurns;
+            float pass = Math.Max(1, passTicks);
+            if (ageNow <= pass)
+            {
+                float u = MathHelper.Clamp(ageNow / pass, 0f, 1f);
+                return total * u * u * (2f - u); // starts at rest, ends at the average speed (total / pass per tick)
+            }
+            float turn = Math.Max(1, EnchantedSwordTuning.GhostTurnTicks);
+            float v = MathHelper.Clamp((ageNow - pass) / turn, 0f, 1f);
+            float speedEnd = total / pass * turn;
+            return Hermite(total, Math.Min(speedEnd, 2.9f * MathHelper.Pi), total + MathHelper.Pi, 0f, v);
+        }
+
+        // A smooth curve from p0 (leaving with slope m0) to p1 (arriving with slope m1) as u runs 0..1 (m0 and m1 are per whole run).
+        static float Hermite(float p0, float m0, float p1, float m1, float u)
+        {
+            float u2 = u * u;
+            float u3 = u2 * u;
+            return (2f * u3 - 3f * u2 + 1f) * p0 + (u3 - 2f * u2 + u) * m0 + (-2f * u3 + 3f * u2) * p1 + (u3 - u2) * m1;
+        }
 
         // Where the hilt is, which way the blade points (world angle) and how visible the ghost is, at 'ageNow' ticks of age (it may be
         // fractional: the trail asks for points between two ticks). Uses the current focus.
         void Pose(float ageNow, out Vector2 hiltAt, out float angleAt, out float alphaAt)
         {
             float length = EnchantedSwordTuning.GhostBladeLength;
-            float hold = EnchantedSwordTuning.GhostHoldDistance + EnchantedSwordTuning.GhostHoldPerSize * halfSize;
-            float arc = MathHelper.ToRadians(EnchantedSwordTuning.GhostSlashArcDeg);
-            float phi = Phi0 + Dir * MathHelper.ToRadians(EnchantedSwordTuning.GhostOrbitDegPerTick) * Math.Min(ageNow, SlashEnd);
-            Vector2 away = phi.ToRotationVector2();
+            Vector2 forward = travelDir;
+            Vector2 side = new Vector2(-forward.Y, forward.X);
+            float pass = Math.Max(1, passTicks);
+            float turn = Math.Max(1, EnchantedSwordTuning.GhostTurnTicks);
 
-            float sweep;
-            float distance = hold;
-            if (ageNow < SlashEnd)
+            // The blade spins around its own middle; the spin direction is random. After the whole spin the tip points back at the enemy.
+            angleAt = forward.ToRotation() + Dir * Spin(ageNow);
+            alphaAt = 1f; // the beam was fully visible
+
+            if (ageNow < HoldEnd)
             {
-                // The slashes alternate: the blade fans across the enemy one way, then back the other way; each slash ends where the next starts.
-                float u = Math.Max(0f, ageNow - SlashStart) / Math.Max(1, EnchantedSwordTuning.GhostSlashTicks);
-                int index = Math.Min((int)u, EnchantedSwordTuning.GhostSlashes - 1);
-                float ease = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(u - index, 0f, 1f));
-                float from = index % 2 == 0 ? -arc : arc;
-                sweep = MathHelper.Lerp(from, -from, ease);
-            }
-            else
-            {
-                float lastSweep = EnchantedSwordTuning.GhostSlashes % 2 == 0 ? -arc : arc;
-                float back = EnchantedSwordTuning.GhostBackoffPx;
-                if (ageNow < BackoffEnd)
+                float along;
+                float across;
+                if (ageNow <= pass)
                 {
-                    // Backing away: the blade swings round to point straight at the enemy while the ghost pulls back.
-                    float ease = MathHelper.SmoothStep(0f, 1f, (ageNow - SlashEnd) / Math.Max(1, EnchantedSwordTuning.GhostBackoffTicks));
-                    sweep = MathHelper.Lerp(lastSweep, 0f, ease);
-                    distance = hold + back * ease;
-                }
-                else if (ageNow < HoldEnd)
-                {
-                    sweep = 0f;
-                    distance = hold + back;
+                    // The pass: the middle keeps flying along the beam's line, straight through the enemy.
+                    along = MathHelper.Lerp(entryAlong, exitAlong, MathHelper.Clamp(ageNow / pass, 0f, 1f));
+                    across = entryAcross;
                 }
                 else
                 {
-                    // The drive: accelerating (a power ease-in) from the back-off point until the blade is buried in the enemy.
-                    float t = MathHelper.Clamp((ageNow - HoldEnd) / Math.Max(1, EnchantedSwordTuning.GhostDriveTicks), 0f, 1f);
-                    float p = (float)Math.Pow(t, Math.Max(1f, EnchantedSwordTuning.GhostDriveEasePower));
-                    sweep = 0f;
-                    distance = MathHelper.Lerp(hold + back, length * EnchantedSwordTuning.GhostEmbedFraction, p);
+                    // The turn: it carries on at the same speed and slows to a stop at the run-up point, drifting onto the line through the enemy's middle.
+                    float v = MathHelper.Clamp((ageNow - pass) / turn, 0f, 1f);
+                    float speedEnd = (exitAlong - entryAlong) / pass * turn;
+                    along = Hermite(exitAlong, MathHelper.Clamp(speedEnd, 0f, 2.9f * (endAlong - exitAlong)), endAlong, 0f, v);
+                    across = entryAcross * (1f - MathHelper.SmoothStep(0f, 1f, v));
                 }
+                Vector2 middle = focus + forward * along + side * across;
+                hiltAt = middle - angleAt.ToRotationVector2() * (length * 0.5f);
+
+                // A tremble while it holds before the drive (only if GhostHoldTicks is above 0).
+                if (ageNow >= TurnEnd)
+                    hiltAt += side * (float)Math.Sin(ageNow * 2.3f) * EnchantedSwordTuning.GhostTremblePx;
             }
-
-            hiltAt = focus + away * distance;
-            angleAt = phi + MathHelper.Pi + Dir * sweep;
-
-            // The tremble of the charge (backing away and holding) and a small quiver while buried.
-            float tremble = 0f;
-            if (ageNow >= SlashEnd && ageNow < HoldEnd)
-                tremble = EnchantedSwordTuning.GhostTremblePx * MathHelper.Clamp((ageNow - SlashEnd) / Math.Max(1, EnchantedSwordTuning.GhostBackoffTicks), 0f, 1f);
-            if (tremble > 0f)
-                hiltAt += new Vector2(-away.Y, away.X) * (float)Math.Sin(ageNow * 2.3f) * tremble;
-
-            // From the beam: the sword starts where the thrown beam ended (the tip at the enemy's edge, the blade pointing straight at the
-            // enemy) and eases onto its orbit during the fade-in, so the beam and the ghost look like one sword.
-            if (ageNow < SlashStart)
+            else
             {
-                float enter = 1f - MathHelper.SmoothStep(0f, 1f, ageNow / Math.Max(1f, SlashStart));
-                Vector2 entryHilt = focus + away * (halfSize + length);
-                float entryAngle = phi + MathHelper.Pi;
-                hiltAt = Vector2.Lerp(hiltAt, entryHilt, enter);
-                angleAt += MathHelper.WrapAngle(entryAngle - angleAt) * enter;
+                // The drive: from behind the enemy straight at its middle, accelerating (a power ease-in) until the blade is buried in it. The blade
+                // already points at the enemy (the spin ended exactly there), so it is the hilt that moves.
+                float t = MathHelper.Clamp((ageNow - HoldEnd) / Math.Max(1, EnchantedSwordTuning.GhostDriveTicks), 0f, 1f);
+                float p = (float)Math.Pow(t, Math.Max(1f, EnchantedSwordTuning.GhostDriveEasePower));
+                float hiltDistance = MathHelper.Lerp(endAlong + length * 0.5f, length * EnchantedSwordTuning.GhostEmbedFraction, p);
+                hiltAt = focus + forward * hiltDistance;
             }
-
-            alphaAt = 1f; // the beam was fully visible
         }
 
-        // The blade does damage during the slashes and from the start of the drive until it is buried.
-        bool Damaging => !leaving && ((age >= SlashStart && age < SlashEnd) || (age >= HoldEnd && age <= DriveEnd));
+        // The blade does damage while it spins through the enemy and from the start of the drive until it is buried.
+        bool Damaging => ticks > 0 && !leaving && (age < PassEnd || (age >= HoldEnd && age <= DriveEnd));
         bool Stabbing => age >= HoldEnd;
 
         // ---- AI ----
@@ -198,9 +216,28 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
             if (ticks == 0)
             {
-                focus = TargetValid() ? Main.npc[Target].Center : Projectile.Center;
-                if (TargetValid())
-                    halfSize = Math.Max(Main.npc[Target].width, Main.npc[Target].height) * 0.5f;
+                // The spawn position is the beam's tip: the blade's middle starts half a blade length behind it, flying the beam's way (the
+                // opposite of the approach angle), and has to get past the enemy's far edge (the support of its box along the flight direction).
+                Vector2 tip = Projectile.Center;
+                bool valid = TargetValid();
+                focus = valid ? Main.npc[Target].Center : tip;
+                travelDir = (-Phi0.ToRotationVector2()).SafeNormalize(Vector2.UnitX);
+                Vector2 side = new Vector2(-travelDir.Y, travelDir.X);
+                float extent = 0f;
+                if (valid)
+                {
+                    NPC npc = Main.npc[Target];
+                    halfSize = Math.Max(npc.width, npc.height) * 0.5f;
+                    extent = npc.width * 0.5f * Math.Abs(travelDir.X) + npc.height * 0.5f * Math.Abs(travelDir.Y);
+                }
+                Vector2 middle = tip - travelDir * (EnchantedSwordTuning.GhostBladeLength * 0.5f);
+                Vector2 relative = middle - focus;
+                entryAlong = Vector2.Dot(relative, travelDir);
+                entryAcross = Vector2.Dot(relative, side);
+                exitAlong = Math.Max(extent + EnchantedSwordTuning.GhostExitMargin, entryAlong + EnchantedSwordTuning.GhostExitMargin);
+                endAlong = exitAlong + EnchantedSwordTuning.GhostRunUpPx;
+                int wanted = (int)Math.Ceiling((exitAlong - entryAlong) / Math.Max(1f, EnchantedSwordTuning.GhostPassSpeed));
+                passTicks = Math.Max(1, Math.Clamp(wanted, EnchantedSwordTuning.GhostPassMinTicks, Math.Max(EnchantedSwordTuning.GhostPassMinTicks, EnchantedSwordTuning.GhostPassMaxTicks)));
             }
 
             // The enemy died (or left) before the stab: the owner picks the nearest other enemy; with none near, the ghost leaves.
@@ -289,40 +326,53 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             ticks++;
         }
 
-        // The slash number (1..), or a high number for the stab: RemoteHitTracker shows one hit spark per enemy per phase.
+        // The spin hit number (1..), or a high number for the stab: RemoteHitTracker shows one hit spark per enemy per phase.
         int PhaseSerial()
         {
             if (Stabbing)
                 return 99;
-            return 1 + (age - SlashStart) / Math.Max(1, EnchantedSwordTuning.GhostSlashTicks);
+            return 1 + (int)(Spin(age) / Math.Max(0.01f, MathHelper.ToRadians(EnchantedSwordTuning.GhostSpinHitDeg)));
         }
 
         // The things that happen at a moment of the sequence (every machine plays the same ones; the owner also clears the hit memory so the
-        // next slash or the stab can hit again).
+        // next spin hit or the stab can hit again).
         void Events()
         {
             if (leaving)
                 return;
 
             if (age == 0)
-                EnchantedSwordFx.GhostAppear(focus);
-
-            if (age >= SlashStart && age < SlashEnd && (age - SlashStart) % Math.Max(1, EnchantedSwordTuning.GhostSlashTicks) == 0)
             {
+                EnchantedSwordFx.GhostAppear(focus);
                 if (IsOwner)
                     SegmentHit.ClearLocalImmunity(Projectile);
                 NewTrail();
                 EnchantedSwordFx.PlaySwing(tipPosition, false);
             }
 
-            if (age >= SlashStart && age < SlashEnd)
-                EnchantedSwordFx.GhostDust(tipPosition, tipPosition - prevTip);
-
-            if (age >= SlashEnd && age < HoldEnd)
+            if (age < PassEnd)
             {
-                if (age == SlashEnd)
+                // The spinning blade may hit the enemy again every GhostSpinHitDeg of spin (the owner forgets who it has hit).
+                int hitIndex = (int)(Spin(age) / Math.Max(0.01f, MathHelper.ToRadians(EnchantedSwordTuning.GhostSpinHitDeg)));
+                if (hitIndex != spinHitIndex)
+                {
+                    if (spinHitIndex >= 0)
+                    {
+                        if (IsOwner)
+                            SegmentHit.ClearLocalImmunity(Projectile);
+                        EnchantedSwordFx.PlaySwing(tipPosition, false);
+                    }
+                    spinHitIndex = hitIndex;
+                }
+                EnchantedSwordFx.GhostDust(tipPosition, tipPosition - prevTip);
+            }
+
+            // The turn (and the hold): the spin slows down, the tip comes round to the enemy and stardust is drawn into it.
+            if (age >= PassEnd && age < HoldEnd)
+            {
+                if (age == PassEnd)
                     EnchantedSwordFx.StabChargeStart(hilt);
-                EnchantedSwordFx.StabCharge(tipPosition, (age - SlashEnd) / (float)Math.Max(1, HoldEnd - SlashEnd));
+                EnchantedSwordFx.StabCharge(tipPosition, (age - PassEnd) / (float)Math.Max(1, HoldEnd - PassEnd));
             }
 
             if (age == HoldEnd)
@@ -366,8 +416,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             if (trail == null)
                 return;
             int samples = Math.Max(1, EnchantedSwordTuning.TrailSamplesPerTick);
-            float phaseStart = Stabbing ? HoldEnd : SlashStart + ((age - SlashStart) / Math.Max(1, EnchantedSwordTuning.GhostSlashTicks)) * EnchantedSwordTuning.GhostSlashTicks;
-            float phaseLength = Stabbing ? Math.Max(1, EnchantedSwordTuning.GhostDriveTicks) : Math.Max(1, EnchantedSwordTuning.GhostSlashTicks);
+            float phaseStart = Stabbing ? HoldEnd : 0f;
+            float phaseLength = Stabbing ? Math.Max(1, EnchantedSwordTuning.GhostDriveTicks) : Math.Max(1, passTicks);
             for (int k = 0; k < samples; k++)
             {
                 float sampleAge = age - 1f + (k + 1f) / samples;
@@ -408,7 +458,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
         {
             modifiers.HitDirectionOverride = target.Center.X > hilt.X ? 1 : -1;
-            modifiers.SourceDamage *= Stabbing ? EnchantedSwordTuning.GhostStabDamageMultiplier : EnchantedSwordTuning.GhostSlashDamageMultiplier;
+            modifiers.SourceDamage *= Stabbing ? EnchantedSwordTuning.GhostStabDamageMultiplier : EnchantedSwordTuning.GhostSpinDamageMultiplier;
             if (Stabbing)
                 modifiers.Knockback *= EnchantedSwordTuning.GhostStabKnockbackMultiplier;
         }
