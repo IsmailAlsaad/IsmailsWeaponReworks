@@ -59,10 +59,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
         // ---- the thrust (a jab at the cursor: the arm points at it, the sword is pulled back and then driven forward through the fist) ----
         public static float ThrustWindArmDeg => 22f;    // the arm while the sword is pulled back (positive = below the aim); the blade stays parallel to the aim
-        public static int ThrustAnticipateTicks => 6;   // a thrust that starts from the ready pose: the pull-back
-        public static int ThrustChainAnticipateTicks => 8; // a thrust that flows out of the previous swing
-        public static int ThrustTicks => 6;             // the strike (the only part that damages)
-        public static float ThrustEasePower => 3f;      // higher = a harder, faster jab that eases out at the end
+        public static int ThrustAnticipateTicks => 12;   // a thrust that starts from the ready pose: the pull-back
+        public static int ThrustChainAnticipateTicks => 12; // a thrust that flows out of the previous swing
+        public static int ThrustTicks => 8;             // the strike (the only part that damages)
+        public static float ThrustEasePower => 6f;      // higher = a harder, faster jab that eases out at the end
         public static float ThrustPullPx => 16f;        // before the jab the sword slides back through the fist this far (px at scale 1): the fist slides up the blade, the hilt trails behind it
         public static float ThrustReachPx => 0f;        // at the end of the jab the sword is this far forward of its normal grip (the hilt leaves the fist by this much: keep it small or the sword looks detached)
         public static float ThrustSettle => 0.5f;       // after the jab the sword rests at this fraction of ThrustReachPx until the next swing takes over
