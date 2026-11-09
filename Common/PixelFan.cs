@@ -132,6 +132,8 @@ namespace IsmailsWeaponReworks.Common
         static VertexPositionColorTexture[] softVertices = new VertexPositionColorTexture[0];
         static short[] softIndices = new short[0];
         static Vector2[] softDirection = new Vector2[0];
+        static float[] softFade = new float[0];
+        const int SoftCapColumns = 4; // columns of the rounded, fading cap past the newest end
         static readonly float[] softAcross = { 0f, 0.25f, 0.5f, 0.75f, 1f }; // where the style is asked for a color across the fan; the mesh blends between them
         const int SoftColumn = 7; // vertices across the fan at every sample: feather, 5 color stops, feather
 
@@ -156,10 +158,11 @@ namespace IsmailsWeaponReworks.Common
             }
 
             // Cut both edges into fine pieces (the same cut for both).
-            float step = 4f;
+            float step = 3f;
             int needed = 1;
             for (int i = 0; i < count - 1; i++)
                 needed += Math.Min(12, Pieces(outers, fanEdge, i, step));
+            needed += SoftCapColumns;
             if (needed * SoftColumn > 30000)
                 return;
             if (fillOuter.Length < needed)
@@ -170,6 +173,8 @@ namespace IsmailsWeaponReworks.Common
             }
             if (softDirection.Length < needed)
                 softDirection = new Vector2[needed + 64];
+            if (softFade.Length < needed)
+                softFade = new float[needed + 64];
 
             int n = 0;
             for (int i = 0; i < count - 1; i++)
@@ -190,7 +195,10 @@ namespace IsmailsWeaponReworks.Common
                         fillOuter[n] = Vector2.Lerp(outers[i], outers[i + 1], u);
                         fillInner[n] = Vector2.Lerp(fanEdge[i], fanEdge[i + 1], u);
                     }
-                    fillAge[n] = MathHelper.Lerp(ages[i], ages[i + 1], u);
+                    // The age is bent along the same curve as the edges, so the color changes smoothly instead of kinking (a visible band) at every sample.
+                    fillAge[n] = smooth && count >= 3
+                        ? MathHelper.Clamp(MathHelper.CatmullRom(ages[i0], ages[i], ages[i + 1], ages[i3], u), 0f, 1f)
+                        : MathHelper.Lerp(ages[i], ages[i + 1], u);
                     n++;
                 }
             }
@@ -198,6 +206,35 @@ namespace IsmailsWeaponReworks.Common
             fillInner[n] = fanEdge[count - 1];
             fillAge[n] = ages[count - 1];
             n++;
+            for (int k = 0; k < n; k++)
+                softFade[k] = 1f;
+
+            // The newest end (next to the blade) used to stop in a straight cut. A short rounded cap continues past it and fades out instead.
+            float capLength = Math.Max(0f, featherPx) * 2f;
+            if (capLength > 0.5f)
+            {
+                int back = Math.Max(0, n - 1 - 4);
+                Vector2 tipMid = (fillOuter[n - 1] + fillInner[n - 1]) * 0.5f;
+                Vector2 tangent = tipMid - (fillOuter[back] + fillInner[back]) * 0.5f;
+                if (tangent.LengthSquared() > 0.01f)
+                {
+                    tangent.Normalize();
+                    Vector2 lastOuter = fillOuter[n - 1];
+                    Vector2 lastInner = fillInner[n - 1];
+                    float lastAge = fillAge[n - 1];
+                    for (int j = 1; j <= SoftCapColumns; j++)
+                    {
+                        float q = j / (float)SoftCapColumns;
+                        float round = (float)Math.Sqrt(Math.Max(0f, 1f - q * q));
+                        Vector2 shift = tangent * (capLength * q);
+                        fillOuter[n] = tipMid + (lastOuter - tipMid) * round + shift;
+                        fillInner[n] = tipMid + (lastInner - tipMid) * round + shift;
+                        fillAge[n] = lastAge;
+                        softFade[n] = 1f - MathHelper.SmoothStep(0f, 1f, q);
+                        n++;
+                    }
+                }
+            }
 
             // Which way is "outward" (from the inner edge toward the tip edge) at every sample: that is the way the feather grows. Where the fan
             // is closed (no width) it takes the nearest sample that has one; with none at all it is the side of the path.
@@ -254,12 +291,15 @@ namespace IsmailsWeaponReworks.Common
             for (int k = 0; k < n; k++)
             {
                 int v = k * SoftColumn;
-                Vector2 outward = softDirection[k] * featherPx;
+                // The feather shrinks with the width of the fan, so a closed end is a true point (width 0), not a blob as wide as the feather.
+                float width = (fillOuter[k] - fillInner[k]).Length();
+                float pointy = MathHelper.SmoothStep(0f, 1f, Math.Min(1f, width / Math.Max(1f, featherPx * 2f)));
+                Vector2 outward = softDirection[k] * (featherPx * pointy);
                 softVertices[v] = new VertexPositionColorTexture(new Vector3(fillOuter[k] + outward - Main.screenPosition, 0f), Color.Transparent, softUv);
                 for (int s = 0; s < softAcross.Length; s++)
                 {
                     Vector2 position = Vector2.Lerp(fillOuter[k], fillInner[k], softAcross[s]);
-                    softVertices[v + 1 + s] = new VertexPositionColorTexture(new Vector3(position - Main.screenPosition, 0f), color(softAcross[s], fillAge[k]), softUv);
+                    softVertices[v + 1 + s] = new VertexPositionColorTexture(new Vector3(position - Main.screenPosition, 0f), color(softAcross[s], fillAge[k]) * softFade[k], softUv);
                 }
                 softVertices[v + SoftColumn - 1] = new VertexPositionColorTexture(new Vector3(fillInner[k] - outward - Main.screenPosition, 0f), Color.Transparent, softUv);
             }
