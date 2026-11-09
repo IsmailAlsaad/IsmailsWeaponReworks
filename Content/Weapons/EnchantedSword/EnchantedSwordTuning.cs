@@ -29,7 +29,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         // ---- the hits: thrust hits give the blade a stronger outline; at HitsToDischarge (3) the sword is FULL (outline stage 3) and a right click throws the beam ----
         // NOTE: HitsToDischarge keeps its old name and now means "hits to FULL"; hits at full add nothing, a partial count is lost HitHoldTicks after the last
         // hit, a FULL sword never decays (it keeps the charge until the throw, a swap of items or death). DischargeShake and DischargeBurstRadius are no longer used.
-        public static int HitsToDischarge => 8;         
+        public static int HitsToDischarge => 4;         
         public static int HitsPerStage => 2;            // counted swing hits (one per swing that hit) for each outline stage: 3 stages x 2 = 6 hit swings to FULL. Keep HitsToDischarge at 3 (it is the number of stages)
         public static int HitHoldTicks => 800;          // the count is lost this long after the last counted hit
         public static float StageShowEase => 0.2f;      // how fast the DRAWN outline follows the real count (per tick, 0..1)

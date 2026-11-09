@@ -206,7 +206,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         float SwingSlideAt(float time)
         {
             float anticipate = MathHelper.SmoothStep(0f, 1f, time / Math.Max(0.01f, StrikeStart));
-            EnchantedSwordPlayer.AddHit(Owner); // every strike charges the sword; the count stops at full (the cue plays when AI sees the new stage)
+            if (!IsThrust)
+                return time < StrikeStart ? MathHelper.Lerp(startSlide, 0f, anticipate) : 0f;
             float pull = -EnchantedSwordTuning.ThrustPullPx * Projectile.scale;
             float reach = EnchantedSwordTuning.ThrustReachPx * Projectile.scale;
             if (time < StrikeStart)
@@ -665,9 +666,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             if (swingGaveHit)
                 return;
             swingGaveHit = true; // only the first hit of a swing matters: an up or down swing that hit counts toward the thrust (NextKind)
-            if (!IsThrust)
-                return;
-            EnchantedSwordPlayer.AddHit(Owner); // only the thrust charges the sword; the count stops at full (the cue plays when AI sees the new stage)
+            EnchantedSwordPlayer.AddHit(Owner); // every strike charges the sword; the count stops at full (the cue plays when AI sees the new stage)
             Projectile.netUpdate = true; // the other machines hear the new count through SendExtraAI
         }
 
