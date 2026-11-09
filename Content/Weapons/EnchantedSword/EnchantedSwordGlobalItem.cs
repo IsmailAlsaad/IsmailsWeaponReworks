@@ -1,4 +1,5 @@
-﻿using Terraria;
+﻿using System.Collections.Generic;
+using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -32,6 +33,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public override bool CanUseItem(Item item, Player player)
         {
             return false;
+        }
+
+        public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
+        {
+            tooltips.RemoveAll(line => line.Mod == "Terraria" && line.Name.StartsWith("Tooltip"));
+            tooltips.Add(new TooltipLine(Mod, "EnchantedSword0", "Right click at full charge to shoot an enchanted sword"));
         }
     }
 }
