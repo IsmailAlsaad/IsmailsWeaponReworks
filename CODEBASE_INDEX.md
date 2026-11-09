@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-09 | 201 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-09 | 202 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-DetachedTrails(32) RemoteHitTracker(26) CameraShake(25) ThrustPalette(24) HeldSwordPose(18) AfterimageTrail(18) HeldAim(17) SweepTrail(13) ThrustPlayer(12) IceFx(11) PixelTrail(10) PixelLine(10) DarkLanceTuning(10) ThrustChain(9) SweepTrailStyle(9) MuramasaTuning(9) VolcanoTuning(8) SweepFade(8) BoomerangFlight(8) SegmentHit(7)
+DetachedTrails(32) RemoteHitTracker(26) CameraShake(25) ThrustPalette(24) HeldSwordPose(18) AfterimageTrail(18) HeldAim(17) SweepTrail(13) ThrustPlayer(12) PixelLine(11) IceFx(11) PixelTrail(10) DarkLanceTuning(10) ThrustChain(9) SweepTrailStyle(9) MuramasaTuning(9) VolcanoTuning(8) SweepFade(8) BoomerangFlight(8) SegmentHit(7)
 
 ## Inheritance
 Project bases -> derived:
@@ -43,7 +43,7 @@ tModLoader/other bases -> project types:
     +Offset(int,int,float)[s]
 **ArcBolt.cs** uses: DetachedTrails, PixelTrail, PixelTrailStyle
   class ArcBoltStyle : PixelTrailStyle
-    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Smoothing:bool[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
   static class ArcBolt
     +Spawn(Vector2,Vector2,ArcBoltStyle,float,int)[s]
 **AreaEffect.cs**
@@ -117,6 +117,9 @@ tModLoader/other bases -> project types:
 **OrbitRing.cs**
   static class OrbitRing
     +Angle(float,int,int,float)[s] +Position(Vector2,float,float)[s] +Rank(Projectile,out int,Func<Projectile, bool>)[s]
+**PixelFan.cs** uses: PixelLine
+  static class PixelFan
+    +Expand(float,float,float)[s] +Draw(Vector2,Vector2,float,float,int,float,int,Func<float, float, Color>,bool)[s]
 **PixelLine.cs**
   static class PixelLine
     +Draw(Vector2,float,int,float,Func<float, float>,Func<float, Color>,bool)[s]
@@ -149,13 +152,13 @@ tModLoader/other bases -> project types:
 **SpearPose.cs** uses: HeldSwordPose
   static class SpearPose
     +Arm(Player,float)[s] +Hand(Player,float)[s] +DrawSprite(Texture2D,Vector2,float,int,float,Color,float,Vector2,float)[s]
-**SweepTrail.cs** uses: PixelLine
+**SweepTrail.cs** uses: PixelFan
   abstract class SweepTrailStyle
-    +Grid:float[v] +LifeTicks:int[v] +Rails:int[v] +TaperFraction:float[v] +Fade:SweepFade[v] +TailLifeScale:float[v] +GetColor(float,float)[ab] #Falloff(float)[s] #ThreeStop(float,Color,Color,Color)[s]
+    +Grid:float[v] +LifeTicks:int[v] +Rails:int[v] +TaperFraction:float[v] +Smoothing:bool[v] +Fade:SweepFade[v] +TailLifeScale:float[v] +GetColor(float,float)[ab] #Falloff(float)[s] #ThreeStop(float,Color,Color,Color)[s]
   enum SweepFade
     {Uniform, TailFirst}
   class SweepTrail
-    +Style:SweepTrailStyle +IsOwner:bool +Count:int +IsEmpty:bool +Add(Vector2,Vector2,float) +Tick() +Draw()
+    +Style:SweepTrailStyle +IsOwner:bool +Count:int +IsEmpty:bool +Add(Vector2,Vector2,float) +AddBlade(Vector2,Vector2,float,float,float,float) +Tick() +Draw()
 **ThrustChain.cs** uses: ThrustTimeline
   struct ThrustChain
     +Timeline:ThrustTimeline +Count:int +GapTicks:int +SpreadDeg:float +CooldownTicks:int +Endless:bool +PeriodTicks:int +FiniteTotalTicks:int +IsFinished(int) +Locate(int,out int,out int) +EndOfThrust(int)
@@ -345,7 +348,7 @@ tModLoader/other bases -> project types:
     +PlaySwing(Vector2,bool)[s] +PlayHit(Vector2,float)[s] +SwingDust(Vector2,Vector2,float)[s] +HitSpark(Vector2,float)[s] +StageUp(Vector2,Vector2,int)[s] +Full(Vector2,Vector2)[s] +FullPulse(Vector2)[s] +NotReady(Vector2)[s] +Throw(Vector2,Vector2)[s] +BeamDust(Vector2,Vector2)[s] +BeamEnd(Vector2,bool)[s] +Sparkle(Vector2,Vector2)[s] +GhostAppear(Vector2)[s] +GhostDust(Vector2,Vector2)[s] +StabChargeStart(Vector2)[s] +StabCharge(Vector2,float)[s] +StabImpact(Vector2)[s] +GhostVanish(Vector2,float)[s]
 **EnchantedSwordGlobalItem.cs**
   class EnchantedSwordGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov]
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **EnchantedSwordPlayer.cs** uses: EnchantedSwordBladeProjectile, EnchantedSwordTuning
   class EnchantedSwordPlayer : ModPlayer
     +Hits:int +Find(int,int)[s] +AddHit(Player)[s] +IsFull(Player)[s] +Spend(Player)[s] +OnRespawn()[ov] +PostUpdate()[ov]
@@ -413,7 +416,7 @@ tModLoader/other bases -> project types:
 **IceBladeTuning.cs**
   static class IceBladeTuning
     +Click1Ticks:int[s] +Click2Ticks:int[s] +Click3Ticks:int[s] +FreezeClickTicks:int[s] +ReleaseGraceTicks:int[s] +ClickTicks(int)[s] +FreezeDebuffTicks:int[s] +FrozenAnimTicks:int[s] +ArmStartDeg:float[s] +ArmEndDeg:float[s] +LiftTicks:int[s] +BladeTiltDeg:float[s] +BladeLength:float[s] +SwordScale:float[s] +ShakeStartTicks:int[s] +ShakeDeg:float[s] +ClickFlashTicks:int[s] +TapWindupTicks:int[s] +TapSwingTicks:int[s] +TapRecoverTicks:int[s] +TapStartDeg:float[s] +TapEndDeg:float[s] +SlashWaveTick:int[s] +TrailLifeTicks:int[s] +WaveSpawnFraction:float[s] +TrailOpacity(int)[s] +TrailInnerFraction(int)[s] +TrailExpandBy:float[s] +TrailRails:int[s] +WaveDamageMultiplier(int)[s] +WaveKnockbackMultiplier(int)[s] +WaveSpeed(int)[s] +WaveLifeTicks(int)[s] +WaveRadius(int)[s] +WaveThickness(int)[s] +WaveArcHalfDeg:float[s] +WaveDrag:float[s] +WaveGrowth:float[s] +PixelSize:float[s] +AfterimageCount:int[s] +HaloColor:Color[s] +MidColor:Color[s] +CoreColor:Color[s]
-**IceBladeWaveProjectile.cs** uses: Afterimage, AfterimageTrail, DetachedTrails, IceBladeFx, IceBladeTuning, IceFx
+**IceBladeWaveProjectile.cs** uses: Afterimage, AfterimageTrail, DetachedTrails, IceBladeFx, IceBladeTuning, IceFx, PixelLine
   class IceBladeWaveProjectile : ModProjectile
     +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 

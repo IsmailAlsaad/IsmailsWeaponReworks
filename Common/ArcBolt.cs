@@ -23,6 +23,7 @@ namespace IsmailsWeaponReworks.Common
         public override float Grid => 2f;
         public override int LifeTicks => life;
         public override int Layers => 2;
+        public override bool Smoothing => false;   // lightning is jagged on purpose
 
         public override float GetWidth(int layer, float age)
         {

@@ -156,25 +156,31 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         // ---- drawing ----
 
-        // One crescent made of pixel squares: the line follows the circle, the squares are thickest in the middle and shrink to a
-        // single pixel at both tips. Each square sits on the pixel grid, so the shape looks like pixel art and crawls as it moves.
+        static Vector2[] crescentPoints = new Vector2[0];
+        static float[] crescentTs = new float[0];
+
+        // One crescent drawn by the shared pixel line renderer (smoothed): the line follows the circle, thickest in the middle and shrinking
+        // to a single pixel at both tips. It sits on the pixel grid, so the shape looks like pixel art and crawls as it moves.
         static void DrawCrescent(Vector2 center, float angle, float radius, float thickness, float half, Color color)
         {
             float grid = IceBladeTuning.PixelSize;
             Vector2 origin = center - angle.ToRotationVector2() * radius;
-            float arcLength = radius * 2f * half;
-            float distance = 0f;
-            int guard = 0;
-            while (distance < arcLength && guard++ < 400)
+            int count = Math.Min(64, Math.Max(5, (int)Math.Ceiling(radius * 2f * half / (grid * 4f)) + 1));
+            if (crescentPoints.Length < count)
             {
-                float f = distance / arcLength;
-                float phi = MathHelper.Lerp(-half, half, f);
-                float profile = (float)Math.Pow(Math.Max(0.0, Math.Cos((f - 0.5f) * MathHelper.Pi)), 0.75); // 1 in the middle, 0 at the tips
-                float size = Math.Max(grid, thickness * profile);
-                Vector2 spot = origin + (angle + phi).ToRotationVector2() * radius;
-                IceFx.DrawPixel(spot, size, color, grid);
-                distance += Math.Max(grid, (float)Math.Round(size / grid) * grid); // squares sit side by side, so they never stack up
+                crescentPoints = new Vector2[count];
+                crescentTs = new float[count];
             }
+            for (int i = 0; i < count; i++)
+            {
+                float f = i / (float)(count - 1);
+                crescentTs[i] = f;
+                crescentPoints[i] = origin + (angle + MathHelper.Lerp(-half, half, f)).ToRotationVector2() * radius;
+            }
+            PixelLine.Draw(crescentPoints, crescentTs, count, grid,
+                f => Math.Max(grid, thickness * (float)Math.Pow(Math.Max(0.0, Math.Cos((f - 0.5f) * MathHelper.Pi)), 0.75)), // 1 in the middle, 0 at the tips
+                f => color,
+                true);
         }
 
         public override bool PreDraw(ref Color lightColor)

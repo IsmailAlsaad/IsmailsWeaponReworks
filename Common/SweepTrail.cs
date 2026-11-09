@@ -16,6 +16,7 @@ namespace IsmailsWeaponReworks.Common
         public virtual int LifeTicks => 30;
         public virtual int Rails => 7;   // parallel pixel lines that fill the area between the outer and the inner edge
         public virtual float TaperFraction => 0f; // 0 = even width; otherwise the oldest samples narrow to a point, widening to full width this far (0 to 1) along the trail
+        public virtual bool Smoothing => true;    // the fan's rails are smooth curves (PixelLine smoothing, like the Dark Lance strike); false = straight pieces
 
         // How the trail fades (see SweepFade). Uniform = the whole trail fades together (the Ice Blade); TailFirst = the tail fades out
         // first and the fade travels up to the tip (the Starfury). Override it in the weapon's style; nothing else has to change.
@@ -68,11 +69,10 @@ namespace IsmailsWeaponReworks.Common
         readonly List<Vector2> inners = new List<Vector2>();
         readonly List<int> births = new List<int>();
         readonly List<float> scales = new List<float>(); // per sample: how long it lives, as a fraction of Style.LifeTicks
-        Vector2[] points = new Vector2[0];
-        float[] ts = new float[0];
-        float[] gaps = new float[0];
+        Vector2[] outerArray = new Vector2[0];
+        Vector2[] innerArray = new Vector2[0];
+        float[] expands = new float[0];
         float[] ages = new float[0];
-        float[] tapers = new float[0];
         int clock;
 
         public SweepTrail(SweepTrailStyle style, bool isOwner)
@@ -98,6 +98,14 @@ namespace IsmailsWeaponReworks.Common
             scales.Add(MathHelper.Clamp(life, 0.05f, 1f));
         }
 
+        // The usual swing sample, so a weapon does not write the same line again: 'length' is the blade (or streak) length; 'outer' and
+        // 'inner' say where the two edges sit along it as fractions of that length (1 = the tip, 0 = the hand; outer above 1 reaches past
+        // the tip). For a fan that opens up during the swing pass PixelFan.Expand(...) as 'inner'. 'along' as in Add.
+        public void AddBlade(Vector2 hand, Vector2 direction, float length, float outer, float inner, float along = 1f)
+        {
+            Add(hand + direction * length * outer, hand + direction * length * inner, along);
+        }
+
         public void Tick()
         {
             clock++;
@@ -113,14 +121,6 @@ namespace IsmailsWeaponReworks.Common
             }
         }
 
-        // Linear lookup in a per-point array at t (0 = first point, 1 = last point).
-        static float Sample(float[] values, int count, float t)
-        {
-            float x = MathHelper.Clamp(t, 0f, 1f) * (count - 1);
-            int i = Math.Min((int)x, count - 2);
-            return MathHelper.Lerp(values[i], values[i + 1], x - i);
-        }
-
         public void Draw()
         {
             if (Main.dedServ || outers.Count < 2)
@@ -128,38 +128,24 @@ namespace IsmailsWeaponReworks.Common
 
             int count = outers.Count;
             float taperFraction = Style.TaperFraction;
-            if (points.Length < count)
+            if (outerArray.Length < count)
             {
-                points = new Vector2[count + 16];
-                ts = new float[count + 16];
-                gaps = new float[count + 16];
+                outerArray = new Vector2[count + 16];
+                innerArray = new Vector2[count + 16];
+                expands = new float[count + 16];
                 ages = new float[count + 16];
-                tapers = new float[count + 16];
             }
 
             for (int i = 0; i < count; i++)
             {
-                ts[i] = i / (float)(count - 1);
-                tapers[i] = taperFraction > 0f ? MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(ts[i] / taperFraction, 0f, 1f)) : 1f; // 0 at the oldest sample
-                gaps[i] = (outers[i] - inners[i]).Length() * tapers[i];
+                float along = i / (float)(count - 1);
+                outerArray[i] = outers[i];
+                innerArray[i] = inners[i];
+                expands[i] = taperFraction > 0f ? MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(along / taperFraction, 0f, 1f)) : 1f; // 0 at the oldest sample
                 ages[i] = MathHelper.Clamp((clock - births[i]) / Math.Max(1f, Style.LifeTicks * scales[i]), 0f, 1f);
             }
 
-            float grid = Style.Grid;
-            int rails = Math.Max(2, Style.Rails);
-            float[] gapValues = gaps;
-            float[] ageValues = ages;
-
-            // The inner rails first and the outer edge last, so the bright tip edge sits on top.
-            for (int rail = rails - 1; rail >= 0; rail--)
-            {
-                float across = rail / (float)(rails - 1);
-                for (int i = 0; i < count; i++)
-                    points[i] = Vector2.Lerp(outers[i], Vector2.Lerp(outers[i], inners[i], tapers[i]), across);
-                PixelLine.Draw(points, ts, count, grid,
-                    t => Math.Max(grid, Sample(gapValues, count, t) / (rails - 1) * 1.25f),
-                    t => Style.GetColor(across, Sample(ageValues, count, t)));
-            }
+            PixelFan.Draw(outerArray, innerArray, expands, ages, count, Style.Grid, Style.Rails, Style.GetColor, Style.Smoothing);
         }
     }
 }

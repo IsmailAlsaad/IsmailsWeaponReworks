@@ -16,7 +16,7 @@ namespace IsmailsWeaponReworks.Common
         public virtual int LifeTicks => 40;
         public virtual int Layers => 1;
         public virtual float Jitter => 0f;   // pixels of fixed random offset per point, for a ragged edge
-        public virtual bool Smoothing => false;   // true = a curve through the points (PixelLine smoothing) instead of straight pieces
+        public virtual bool Smoothing => true;    // a curve through the points (PixelLine smoothing, the Dark Lance look); override with false for a jagged line such as lightning
 
         public abstract float GetWidth(int layer, float age);
         public abstract Color GetColor(int layer, float age);
