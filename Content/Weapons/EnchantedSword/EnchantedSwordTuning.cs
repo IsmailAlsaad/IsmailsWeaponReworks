@@ -28,7 +28,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
         // ---- the hits: true melee hits give the blade a stronger outline, the last one discharges ----
         public static int HitsToDischarge => 3;         // ONLY THE THRUST charges the sword: the first enemy each thrust touches counts as one hit (up and down hits only count toward the thrust, see SwingHitsToThrust)
-        public static int HitHoldTicks => 150;          // the count is lost this long after the last counted hit
+        public static int HitHoldTicks => 300;          // the count is lost this long after the last counted hit
         public static float StageShowEase => 0.2f;      // how fast the DRAWN outline follows the real count (per tick, 0..1)
         public static float HitShake => 0.6f;           // camera punch on a hit (grows with the stage)
         public static float DischargeShake => 2f;       // camera punch of the discharge
@@ -111,8 +111,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static int GhostHoldTicks => 6;              // a held beat before the drive
         public static int GhostDriveTicks => 5;             // the drive into the enemy
         public static float GhostDriveEasePower => 2.5f;    // 1 = even speed; higher = it accelerates harder into the enemy
-        public static float GhostEmbedFraction => 0.6f;     // buried: the hilt stops this fraction of the blade length from the enemy's middle (0.6 = the tip is past the middle)
-        public static int GhostBuriedTicks => 14;           // it stays buried this long, then bursts into stardust
+        public static float GhostEmbedFraction => 0.6f;     // where the blade explodes: the hilt stops this fraction of the blade length from the enemy's middle (0.6 = the tip is past the middle)
         public static int GhostFadeOutTicks => 10;
         public static float GhostBladeLength => 64f;        // hilt to tip in px (the beam sprite is stretched to it)
         public static float GhostHoldDistance => 56f;       // the hilt keeps this far from the enemy's middle while it slashes ...
@@ -127,6 +126,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float GhostStabKnockbackMultiplier => 1.5f;
         public static float GhostStabShake => 2.5f;         // camera punch when the blade lands
         public static float GhostSpriteOffsetDeg => 45f;    // the beam sprite points UP: it is drawn turned this much from the blade's direction (tune it if the sprite looks sideways or backward)
+        public static float GhostSpritePivotX => 0f;      // where the sprite is pinned to the hilt and turns around, as a fraction of its width (0 = left edge, 1 = right edge): raise it to move the drawn sword LEFT of the blade line, lower it to move it RIGHT (the sprite is turned by GhostSpriteOffsetDeg first, so left and right are the sprite's own)
+        public static float GhostSpritePivotY => 1f;        // the same for the height (0 = top edge, 1 = bottom edge): lower it to push the sword further OUT along the blade, raise it above 1 to pull it back toward the hilt
+        public static float GhostExplosionDamageMultiplier => 1f; // of the sword's damage: the stardust burst the blade explodes into the moment it lands (the Enchanted Boomerang's burst)
         public static float GhostOpacity => 0.9f;
         public static float GhostGlowScale => 1.25f;        // the glow copy is this much bigger, grown from the MIDDLE of the sprite
         public static float GhostTrailInner => 0.45f;       // the slash's fan reaches down the blade to this fraction of its length

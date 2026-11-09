@@ -15,7 +15,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
     /// The ghost sword the Enchanted Sword conjures when its 3rd thrust hit discharges (patch 2). A ghost holds the sword (the vanilla
     /// Enchanted Beam sprite) and floats around the enemy; the sword does 4 quick slashes across it (the ghost drifts around the enemy while
     /// it slashes), then on the 5th swing it backs away a little (trembling, stardust drawn into the tip), holds a beat and drives itself
-    /// point-first into the enemy's middle; it stays buried a moment, then bursts into stardust and fades.
+    /// point-first into the enemy's middle; the moment it lands it explodes into a stardust burst (the Enchanted Boomerang's) and is gone.
     /// THE WHOLE SEQUENCE IS ONE POSE FUNCTION OF THE PROJECTILE'S AGE (Pose): one projectile, one continuous motion, so nothing flickers
     /// between swings (each slash ends exactly where the next begins).
     /// MULTIPLAYER: the owner spawns it (EtherealSwordProjectile.Spawn) with ai[0] = the enemy's index, ai[1] = the approach angle and
@@ -41,12 +41,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         int BackoffEnd => SlashEnd + EnchantedSwordTuning.GhostBackoffTicks;
         int HoldEnd => BackoffEnd + EnchantedSwordTuning.GhostHoldTicks;
         int DriveEnd => HoldEnd + EnchantedSwordTuning.GhostDriveTicks;
-        int BuriedEnd => DriveEnd + EnchantedSwordTuning.GhostBuriedTicks;
-        int TotalTicks => BuriedEnd + EnchantedSwordTuning.GhostFadeOutTicks;
+        int TotalTicks => DriveEnd + 2; // the blade explodes on tick DriveEnd (the last tick it can hit) and the ghost is gone one tick later
 
         // ---- per machine, never synced ----
         int ticks;
         int age;                    // the pose's age: stops while the ghost is leaving
+        bool exploded;              // the blade has exploded: it is no longer drawn
         bool leaving;               // the enemy is gone before the stab and no other enemy is near: the ghost fades out
         int leaveTicks;
         Vector2 focus;              // the enemy's center, smoothed (a retarget glides instead of jumping)
@@ -159,14 +159,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             float tremble = 0f;
             if (ageNow >= SlashEnd && ageNow < HoldEnd)
                 tremble = EnchantedSwordTuning.GhostTremblePx * MathHelper.Clamp((ageNow - SlashEnd) / Math.Max(1, EnchantedSwordTuning.GhostBackoffTicks), 0f, 1f);
-            else if (ageNow >= DriveEnd && ageNow < BuriedEnd)
-                tremble = EnchantedSwordTuning.GhostTremblePx * 0.6f;
             if (tremble > 0f)
                 hiltAt += new Vector2(-away.Y, away.X) * (float)Math.Sin(ageNow * 2.3f) * tremble;
 
             alphaAt = ageNow < SlashStart ? ageNow / Math.Max(1f, SlashStart) : 1f;
-            if (ageNow > BuriedEnd)
-                alphaAt = 1f - (ageNow - BuriedEnd) / Math.Max(1f, EnchantedSwordTuning.GhostFadeOutTicks);
             alphaAt = MathHelper.Clamp(alphaAt, 0f, 1f);
         }
 
@@ -256,14 +252,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
                     Main.instance.LoadProjectile(ProjectileID.EnchantedBeam);
                     texture = TextureAssets.Projectile[ProjectileID.EnchantedBeam].Value;
                     Texture2D art = texture;
-                    Vector2 origin = new Vector2(art.Width * 0.5f, art.Height);
                     afterimages = new AfterimageTrail(EnchantedSwordTuning.GhostAfterimageTicks, (image, ageFade) =>
                     {
-                        Main.EntitySpriteDraw(art, image.Position - Main.screenPosition, null, image.Color * (1f - ageFade), image.Rotation, origin, image.Scale, SpriteEffects.None, 0);
+                        Main.EntitySpriteDraw(art, image.Position - Main.screenPosition, null, image.Color * (1f - ageFade), image.Rotation, Pivot(art), image.Scale, SpriteEffects.None, 0);
                     });
                 }
                 afterimages.Tick();
-                if (alpha > 0.05f)
+                if (alpha > 0.05f && !exploded)
                     afterimages.Add(hilt, DrawRotation(), DrawScale(), EnchantedSwordTuning.BlueColor * (0.45f * alpha));
             }
 
@@ -334,13 +329,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
             if (age == DriveEnd)
             {
+                // The blade explodes the moment it lands: the owner spawns the Enchanted Boomerang's stardust burst (it plays the burst on every
+                // machine and hurts the enemies around the tip) and the sword itself is gone.
+                exploded = true;
                 EnchantedSwordFx.StabImpact(tipPosition);
                 if (IsOwner)
+                {
                     CameraShake.Punch(focus, EnchantedSwordTuning.GhostStabShake, 12);
+                    int damage = Math.Max(1, (int)(Projectile.damage * EnchantedSwordTuning.GhostExplosionDamageMultiplier));
+                    Projectile.NewProjectile(Projectile.GetSource_FromThis(), tipPosition, Vector2.Zero, ModContent.ProjectileType<StardustBurstProjectile>(), damage, Projectile.knockBack, Projectile.owner);
+                }
             }
-
-            if (age == BuriedEnd)
-                EnchantedSwordFx.GhostVanish(focus, EnchantedSwordTuning.DischargeBurstRadius);
         }
 
         void NewTrail()
@@ -423,6 +422,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
         // ---- drawing ----
 
+        // The point of the sprite that sits on the hilt and that the sprite turns around (EnchantedSwordTuning.GhostSpritePivotX / Y).
+        static Vector2 Pivot(Texture2D art)
+        {
+            return new Vector2(art.Width * EnchantedSwordTuning.GhostSpritePivotX, art.Height * EnchantedSwordTuning.GhostSpritePivotY);
+        }
+
         float DrawRotation()
         {
             return angle + MathHelper.ToRadians(EnchantedSwordTuning.GhostSpriteOffsetDeg);
@@ -441,14 +446,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
             trail?.Draw();
             afterimages?.Draw();
+            if (exploded)
+                return false;
 
-            Vector2 origin = new Vector2(texture.Width * 0.5f, texture.Height);
+            Vector2 origin = Pivot(texture);
             Vector2 position = hilt - Main.screenPosition;
             float rotation = DrawRotation();
             float scale = DrawScale();
             float opacity = alpha * EnchantedSwordTuning.GhostOpacity;
-            // A soft blue glow grown from the middle of the sprite, then the ghost sword itself (additive: it glows like the stardust).
-            Vector2 middle = position + angle.ToRotationVector2() * EnchantedSwordTuning.GhostBladeLength * 0.5f;
+            // A soft blue glow grown from the middle of the sprite (wherever the pivot puts it), then the ghost sword itself (additive: it
+            // glows like the stardust).
+            Vector2 middle = position + new Vector2((0.5f - EnchantedSwordTuning.GhostSpritePivotX) * texture.Width, (0.5f - EnchantedSwordTuning.GhostSpritePivotY) * texture.Height).RotatedBy(rotation) * scale;
             Vector2 glowOrigin = new Vector2(texture.Width * 0.5f, texture.Height * 0.5f);
             Main.EntitySpriteDraw(texture, middle, null, EnchantedSwordTuning.BlueColor * (0.5f * opacity), rotation, glowOrigin, scale * EnchantedSwordTuning.GhostGlowScale, SpriteEffects.None, 0);
             Main.EntitySpriteDraw(texture, position, null, new Color(255, 255, 255, 0) * opacity, rotation, origin, scale, SpriteEffects.None, 0);
