@@ -96,7 +96,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public static bool UseSlopes => true;             // false: only plain block collision (try it if the roll behaves oddly on slopes)
 
         // ---- Forward Pass (Code 1, left click) ----
-        public static int ForwardPassTicks => 36;         // one whole pass (out along the ellipse and back to the hand)
+        public static int ForwardPassTicks => 32;         // one whole pass (out along the ellipse and back to the hand)
         public static float ForwardPassWidthRatio => 0.42f; // the ellipse's half width as a fraction of its half length (0.42 = a slim ellipse)
         public static float ForwardPassMinReach => 64f;   // the far end is at least this far from the player, even with the cursor on top of them
         public static float ForwardPassReachMargin => 30f; // the far end stops this far short of the string's full length
