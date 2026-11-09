@@ -614,10 +614,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             float length = TotalLength;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the strike builds up; a
             // charged sword reaches further down.
-            float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / Math.Max(0.01f, LightsBaneTuning.TrailExpandBy), 0f, 1f));
             float outer = LightsBaneTuning.TrailOuter;
             float innerTarget = MathHelper.Lerp(LightsBaneTuning.TrailInnerLow, LightsBaneTuning.TrailInnerHigh, MathHelper.Clamp(chargeShown, 0f, 1f));
-            float inner = MathHelper.Lerp(outer, innerTarget, expand);
+            float inner = PixelFan.Expand(SwingProgress(time), LightsBaneTuning.TrailExpandBy, innerTarget, outer);
             if (trail == null)
             {
                 trailStyle = new LightsBaneSweepTrailStyle();
@@ -625,7 +624,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             }
             // 'along' = where in the strike this sample is; the style (TailFirst) makes the tail live shorter, so it fades out first.
             float along = MathHelper.Clamp((time - StrikeStart) / Math.Max(0.01f, LightsBaneTuning.SwingTicks * timeScale), 0f, 1f);
-            trail.Add(hand + direction * length * outer, hand + direction * length * inner, along);
+            trail.AddBlade(hand, direction, length, outer, inner, along);
         }
 
         // The blade is a line from the hand to the tip. The strike is fast, so the test sweeps: it checks the line at a few poses between the

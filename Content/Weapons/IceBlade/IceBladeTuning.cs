@@ -50,6 +50,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
         public static float TrailInnerFraction(int tier) { return Pick(tier, 0.55f, 0.35f, 0.12f); } // where the fan ends toward the hand, as a fraction of the blade (lower = a bigger fan)
         public static float TrailExpandBy => 0.85f;   // the fan has reached full size when this fraction of the swing is done
         public static int TrailRails => 7;            // parallel pixel lines that fill the fan
+        public static float TrailOuter => 0.8f;       // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
+        public static float TrailLagTicks => 1f;      // how many ticks the trail runs BEHIND the sprite (0 = exactly on it)
 
         // ---- the wave (tier 1, 2, 3) ----
         public static float WaveDamageMultiplier(int tier) { return Pick(tier, 0.55f, 1f, 1.8f); }

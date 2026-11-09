@@ -426,7 +426,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
                 float length = EnchantedSwordTuning.GhostBladeLength;
                 float inner = Stabbing ? EnchantedSwordTuning.TrailInnerThrust : EnchantedSwordTuning.GhostTrailInner;
                 float along = MathHelper.Clamp((sampleAge - phaseStart) / phaseLength, 0f, 1f);
-                trail.Add(sampleHilt + direction * length * EnchantedSwordTuning.TrailOuter, sampleHilt + direction * length * inner, along);
+                trail.AddBlade(sampleHilt, direction, length, EnchantedSwordTuning.TrailOuter, inner, along);
             }
         }
 

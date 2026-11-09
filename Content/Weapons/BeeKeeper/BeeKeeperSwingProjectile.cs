@@ -207,13 +207,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.BeeKeeper
             Vector2 direction = HeldSwordPose.BladeDirectionWorld(Owner, WorldBlade(arm, tilt));
             float length = BeeKeeperTuning.BladeLength * Projectile.scale * 0.9f;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
-            float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / Math.Max(0.01f, BeeKeeperTuning.TrailExpandBy), 0f, 1f));
             float outer = BeeKeeperTuning.TrailOuter;
-            float inner = MathHelper.Lerp(outer, BeeKeeperTuning.TrailInner, expand);
+            float inner = PixelFan.Expand(SwingProgress(time), BeeKeeperTuning.TrailExpandBy, BeeKeeperTuning.TrailInner, outer);
             trail ??= new SweepTrail(new BeeKeeperSweepTrailStyle(), IsOwner);
             // 'along' = where in the strike this sample is; the style (TailFirst) makes the tail live shorter, so it fades out first.
             float along = MathHelper.Clamp((time - StrikeStart) / Math.Max(1, BeeKeeperTuning.SwingTicks), 0f, 1f);
-            trail.Add(hand + direction * length * outer, hand + direction * length * inner, along);
+            trail.AddBlade(hand, direction, length, outer, inner, along);
         }
 
         // Moves the owner's arm and puts the projectile in the hand; the blade points along Projectile.rotation.

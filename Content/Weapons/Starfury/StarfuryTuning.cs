@@ -111,6 +111,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         public static float TrailInnerLow => 0.5f;
         public static float TrailInnerMid => 0.33f;
         public static float TrailInnerHigh => 0.12f;
+        public static float TrailOuter => 0.9f;          // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
+        public static float TrailLagTicks => 0.8f;       // how many ticks the trail runs BEHIND the sprite (0 = exactly on it)
         public static float TrailInnerAt(float charge) { return charge < 0.5f ? MathHelper.Lerp(TrailInnerLow, TrailInnerMid, charge * 2f) : MathHelper.Lerp(TrailInnerMid, TrailInnerHigh, (charge - 0.5f) * 2f); }
         public static int TrailSamplesPerTick => 8;       // trail points laid per tick (the strike is fast, so many keep the fan smooth)
         public static Color GoldColor => new Color(255, 215, 110, 0);

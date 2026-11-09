@@ -425,15 +425,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
             Vector2 direction = HeldSwordPose.BladeDirectionWorld(Owner, WorldBlade(arm, tilt));
             float length = TotalLength * VolcanoTuning.TrailLengthScale;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
-            float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / Math.Max(0.01f, VolcanoTuning.TrailExpandBy), 0f, 1f));
-            float inner = MathHelper.Lerp(1f, VolcanoTuning.TrailInner, expand);
+            float inner = PixelFan.Expand(SwingProgress(time), VolcanoTuning.TrailExpandBy, VolcanoTuning.TrailInner);
             if (trail == null)
             {
                 trailStyle = new VolcanoSweepTrailStyle();
                 trail = new SweepTrail(trailStyle, IsOwner);
             }
             float along = MathHelper.Clamp((time - StrikeStart) / Math.Max(0.01f, VolcanoTuning.SwingTicks * timeScale), 0f, 1f);
-            trail.Add(hand + direction * length, hand + direction * length * inner, along);
+            trail.AddBlade(hand, direction, length, 1f, inner, along);
         }
 
         // The blade is a line from the hand to the tip. The strike is fast, so the test sweeps: it checks the line at a few poses between the

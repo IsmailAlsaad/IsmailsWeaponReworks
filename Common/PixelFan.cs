@@ -26,10 +26,11 @@ namespace IsmailsWeaponReworks.Common
         /// 'innerFraction' = fully expanded). 'progress' is how far the swing is (0..1), the fan is fully open when 'expandBy' of it is done.
         /// Feed the result to SweepTrail.AddBlade as the 'inner' argument.
         /// </summary>
-        public static float Expand(float progress, float expandBy, float innerFraction)
+        public static float Expand(float progress, float expandBy, float innerFraction, float start = 1f)
         {
+            // 'start' = where the inner edge begins (1 = the tip; pass the outer edge fraction when the fan's outer edge is not at 1)
             float open = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(progress / Math.Max(0.01f, expandBy), 0f, 1f));
-            return MathHelper.Lerp(1f, innerFraction, open);
+            return MathHelper.Lerp(start, innerFraction, open);
         }
 
         // Linear lookup in a per-sample array at t (0 = first sample, 1 = last sample).

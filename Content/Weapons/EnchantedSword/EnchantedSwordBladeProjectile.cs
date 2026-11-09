@@ -587,12 +587,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             float length = TotalLength;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the strike builds up; a
             // sword with more hits reaches further down.
-            float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / Math.Max(0.01f, EnchantedSwordTuning.TrailExpandBy), 0f, 1f));
             float outer = EnchantedSwordTuning.TrailOuter;
             float innerTarget = IsThrust
                 ? EnchantedSwordTuning.TrailInnerThrust
                 : MathHelper.Lerp(EnchantedSwordTuning.TrailInnerLow, EnchantedSwordTuning.TrailInnerHigh, EnchantedSwordTuning.Stage01(stageShown));
-            float inner = MathHelper.Lerp(outer, innerTarget, expand);
+            float inner = PixelFan.Expand(SwingProgress(time), EnchantedSwordTuning.TrailExpandBy, innerTarget, outer);
             if (trail == null)
             {
                 trailStyle = new EnchantedSwordSweepTrailStyle();
@@ -600,7 +599,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             }
             // 'along' = where in the strike this sample is; the style (TailFirst) makes the tail live shorter, so it fades out first.
             float along = MathHelper.Clamp((time - StrikeStart) / Math.Max(0.01f, StrikeTicksNow * timeScale), 0f, 1f);
-            trail.Add(hand + direction * length * outer, hand + direction * length * inner, along);
+            trail.AddBlade(hand, direction, length, outer, inner, along);
         }
 
         // The blade is a line from the hand to the tip. The strike is fast, so the test sweeps: it checks the line at a few poses between the

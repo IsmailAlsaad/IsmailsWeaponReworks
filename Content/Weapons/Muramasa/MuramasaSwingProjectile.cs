@@ -212,12 +212,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             Vector2 direction = HeldSwordPose.BladeDirectionWorld(Owner, WorldBlade(arm, tilt));
             float length = MuramasaTuning.BladeLength * Projectile.scale * MuramasaTuning.TrailLengthScale;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
-            float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / Math.Max(0.01f, MuramasaTuning.TrailExpandBy), 0f, 1f));
-            float inner = MathHelper.Lerp(1f, MuramasaTuning.TrailInner, expand);
+            float inner = PixelFan.Expand(SwingProgress(time), MuramasaTuning.TrailExpandBy, MuramasaTuning.TrailInner);
             trail ??= new SweepTrail(new MuramasaSweepTrailStyle(), IsOwner);
             // 'along' = where in the strike this sample is; the style (TailFirst) makes the tail live shorter, so it fades out first.
             float along = MathHelper.Clamp((time - StrikeStart) / Math.Max(1, MuramasaTuning.SwingTicks), 0f, 1f);
-            trail.Add(hand + direction * length, hand + direction * length * inner, along);
+            trail.AddBlade(hand, direction, length, 1f, inner, along);
         }
 
         // The blade is a line from the hand to the tip. The strike is fast, so the test sweeps: it checks the line at a few poses between the

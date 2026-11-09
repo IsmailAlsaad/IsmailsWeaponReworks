@@ -340,17 +340,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         void AddTrailSample(float time, int tier)
         {
-            time -= 1f;
+            time -= IceBladeTuning.TrailLagTicks;
             float arm = SwingArmAt(time);
             float tilt = SwingTiltAt(time);
             Vector2 hand = ComputeHand(arm);
             Vector2 direction = BladeDirection(arm, tilt);
-            float length = IceBladeTuning.BladeLength * Projectile.scale * 0.8f;
+            float length = IceBladeTuning.BladeLength * Projectile.scale;
+            float outer = IceBladeTuning.TrailOuter;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
-            float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / IceBladeTuning.TrailExpandBy, 0f, 1f));
-            float inner = MathHelper.Lerp(1f, IceBladeTuning.TrailInnerFraction(tier), expand);
+            float inner = PixelFan.Expand(SwingProgress(time), IceBladeTuning.TrailExpandBy, outer * IceBladeTuning.TrailInnerFraction(tier), outer);
             trail ??= new SweepTrail(new IceBladeTrailStyle(tier), IsOwner);
-            trail.Add(hand + direction * length, hand + direction * length * inner);
+            trail.AddBlade(hand, direction, length, outer, inner);
         }
 
         // Where the wave starts: in front of the player, in the middle of the area the blade sweeps (a fraction of the blade's reach along the aim).

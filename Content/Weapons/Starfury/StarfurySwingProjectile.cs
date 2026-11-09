@@ -279,21 +279,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
             if (Main.dedServ)
                 return;
 
-            time -= 0.8f;
+            time -= StarfuryTuning.TrailLagTicks;
             float arm = SwingArmAt(time);
             float tilt = SwingTiltAt(time);
             Vector2 shift = Vector2.Lerp(lastOwnerCenter, Owner.Center, fraction) - Owner.Center;
             Vector2 hand = HeldSwordPose.HandWorld(Owner, WorldArm(arm)) + shift;
             Vector2 direction = HeldSwordPose.BladeDirectionWorld(Owner, WorldBlade(arm, tilt));
-            float length = StarfuryTuning.BladeLength * Projectile.scale * 0.9f;
+            float length = StarfuryTuning.BladeLength * Projectile.scale;
+            float outer = StarfuryTuning.TrailOuter;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
-            float expand = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(SwingProgress(time) / Math.Max(0.01f, StarfuryTuning.TrailExpandBy), 0f, 1f));
             float charge = ChargeFractionAtStart;
-            float inner = MathHelper.Lerp(1f, StarfuryTuning.TrailInnerAt(charge), expand);
+            float inner = PixelFan.Expand(SwingProgress(time), StarfuryTuning.TrailExpandBy, outer * StarfuryTuning.TrailInnerAt(charge), outer);
             trail ??= new SweepTrail(new StarfurySweepTrailStyle(charge), IsOwner);
             // 'along' = where in the strike this sample is; the style (TailFirst) makes the tail live shorter, so it fades out first.
             float along = MathHelper.Clamp((time - StrikeStart) / Math.Max(1, StarfuryTuning.SwingTicks), 0f, 1f);
-            trail.Add(hand + direction * length, hand + direction * length * inner, along);
+            trail.AddBlade(hand, direction, length, outer, inner, along);
         }
 
         void UpdateCall()
