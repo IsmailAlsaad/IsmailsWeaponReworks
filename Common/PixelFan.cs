@@ -8,8 +8,8 @@ using Terraria.GameContent;
 namespace IsmailsWeaponReworks.Common
 {
     /// <summary>
-    /// The shared FAN renderer: the area between an outer edge and an inner edge, drawn as a few parallel smoothed PixelLines (the same
-    /// pixel-snapped, Catmull-Rom smoothed renderer the Dark Lance strike uses). Where the two edges coincide the fan is a thin one-cell
+    /// The shared FAN renderer: the area between an outer edge and an inner edge, drawn the way the Dark Lance strike line is drawn: a few
+    /// nested layers (a wide halo, a body, a thin hot core), each one smoothed PixelLine laid along the middle of its band, shrinking as it ages. Where the two edges coincide the fan is a thin one-cell
     /// line; as the inner edge moves away it widens gradually and covers the area between them, so a swing can start as a line at the
     /// blade's tip and open into a fan. SweepTrail calls this for every held blade and spear; call it directly for any one-off fan.
     /// Client only; call it where a spriteBatch is already running in world space.
@@ -18,6 +18,13 @@ namespace IsmailsWeaponReworks.Common
     /// fan (null = all 1). ages: per sample 0..1, handed to 'color' (across, age) where across 0 = outer edge and 1 = inner edge; a color
     /// with alpha 0 draws additively. rails = how many parallel lines fill the fan.
     /// </summary>
+    public enum FanLook
+    {
+        Ribbon,   // nested smoothed PixelLine layers, the Dark Lance strike's look
+        Filled,   // one solid area, a color per grid cell
+        Rails,    // a few parallel thin PixelLines
+    }
+
     public static class PixelFan
     {
         static Vector2[] railPoints = new Vector2[0];
@@ -52,16 +59,69 @@ namespace IsmailsWeaponReworks.Common
         static readonly List<long> cellOrder = new List<long>();
 
         /// <summary>
-        /// Draws the fan. filled = true (the default, used by every SweepTrail): ONE solid ribbon, every grid cell of the area between the two
-        /// edges gets its own color from color(across, age), so the fan is a smooth gradient with clean curved edges and no stripes or
-        /// stamped boxes. filled = false: the old look, a few parallel PixelLine rails (rails of them).
+        /// Draws the fan. look = Ribbon (the default, used by every SweepTrail): the Dark Lance strike's way of drawing a line, see DrawRibbon.
+        /// Filled: one solid area, a color per grid cell. Rails: 'rails' parallel thin PixelLines.
+        /// ribbonLayers (1 to 3), ribbonShrink (1 = the ribbon shrinks to a point as it ages, like the Dark Lance line; 0 = keeps its width and
+        /// only fades), ribbonWidthScale (a square-stamped line is wider than its width on a diagonal, so a little under 1 keeps the edges on the
+        /// blade) and ribbonGain (the layers add up, so each one is dimmed) only matter for Ribbon.
         /// </summary>
-        public static void Draw(Vector2[] outers, Vector2[] inners, float[] expands, float[] ages, int count, float grid, int rails, Func<float, float, Color> color, bool smooth = true, bool filled = true)
+        public static void Draw(Vector2[] outers, Vector2[] inners, float[] expands, float[] ages, int count, float grid, int rails, Func<float, float, Color> color, bool smooth = true,
+            FanLook look = FanLook.Ribbon, int ribbonLayers = 3, float ribbonShrink = 1f, float ribbonWidthScale = 0.85f, float ribbonGain = 0.6f)
         {
-            if (filled)
+            if (look == FanLook.Ribbon)
+                DrawRibbon(outers, inners, expands, ages, count, grid, color, smooth, ribbonLayers, ribbonShrink, ribbonWidthScale, ribbonGain);
+            else if (look == FanLook.Filled)
                 DrawFilled(outers, inners, expands, ages, count, grid, color, smooth);
             else
                 DrawRails(outers, inners, expands, ages, count, grid, rails, color, smooth);
+        }
+
+        /// <summary>
+        /// The Dark Lance way: nested layers drawn one after the other with the shared PixelLine, the widest (the halo, reaching from the tip
+        /// edge all the way to the inner edge) first and the thinnest (the core, hugging the tip edge) last. Each layer is ONE line along the
+        /// middle of its band, as wide as its band, so the width follows the fan: a thin line while the fan is closed, widening as it opens.
+        /// The layer's color is the style's color at the far edge of its band (so the halo takes the dim hand side, the core the bright tip).
+        /// </summary>
+        static void DrawRibbon(Vector2[] outers, Vector2[] inners, float[] expands, float[] ages, int count, float grid, Func<float, float, Color> color, bool smooth, int layers, float shrink, float widthScale, float gain)
+        {
+            if (Main.dedServ || count < 2 || color == null)
+                return;
+
+            if (railPoints.Length < count)
+            {
+                railPoints = new Vector2[count + 16];
+                railTs = new float[count + 16];
+                gaps = new float[count + 16];
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                railTs[i] = i / (float)(count - 1);
+                float e = expands == null ? 1f : expands[i];
+                gaps[i] = (outers[i] - inners[i]).Length() * e;
+            }
+
+            layers = Math.Max(1, Math.Min(3, layers));
+            float[] gapValues = gaps;
+            float[] ageValues = ages;
+            for (int layer = 0; layer < layers; layer++)
+            {
+                float far = layers == 1 ? 1f : MathHelper.Lerp(1f, 0.25f, layer / (float)(layers - 1)); // how far this layer reaches from the tip edge toward the inner edge
+                for (int i = 0; i < count; i++)
+                {
+                    float e = expands == null ? 1f : expands[i];
+                    Vector2 edge = Vector2.Lerp(outers[i], inners[i], e);
+                    railPoints[i] = Vector2.Lerp(outers[i], edge, far * 0.5f);
+                }
+                PixelLine.Draw(railPoints, railTs, count, grid,
+                    t =>
+                    {
+                        float keep = 1f - shrink * Sample(ageValues, count, t);
+                        return keep <= 0.02f ? 0f : Math.Max(grid, Sample(gapValues, count, t) * far * widthScale * keep);
+                    },
+                    t => color(far, Sample(ageValues, count, t)) * gain,
+                    smooth);
+            }
         }
 
         static int Pieces(Vector2[] a, Vector2[] b, int i, float step)
