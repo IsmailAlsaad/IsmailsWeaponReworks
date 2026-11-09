@@ -17,6 +17,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
     {
         public int Hits;
         int sinceHit;
+        int pendingHits;                // counted swing hits toward the next outline stage (HitsPerStage of them make one stage)
 
         public static Projectile Find(int owner, int type)
         {
@@ -37,6 +38,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             if (state.Hits >= full)
                 return false;
             state.sinceHit = 0;
+            state.pendingHits++;
+            if (state.pendingHits < Math.Max(1, EnchantedSwordTuning.HitsPerStage))
+                return false;
+            state.pendingHits = 0;
             state.Hits++;
             return state.Hits >= full;
         }
@@ -51,12 +56,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         {
             EnchantedSwordPlayer state = player.GetModPlayer<EnchantedSwordPlayer>();
             state.Hits = 0;
+            state.pendingHits = 0;
             state.sinceHit = 0;
         }
 
         public override void OnRespawn()
         {
             Hits = 0;
+            pendingHits = 0;
         }
 
         public override void PostUpdate()
@@ -67,13 +74,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             if (Player.dead || Player.HeldItem.type != ItemID.EnchantedSword)
             {
                 Hits = 0;
+                pendingHits = 0;
                 sinceHit = 0;
             }
             else if (Hits > 0 && Hits < Math.Max(1, EnchantedSwordTuning.HitsToDischarge)) // a FULL sword keeps its charge until the throw
             {
                 sinceHit++;
                 if (sinceHit > EnchantedSwordTuning.HitHoldTicks)
+                {
                     Hits = 0;
+                    pendingHits = 0;
+                }
             }
 
             if (Player.dead || Player.noItems || Player.CCed || Player.HeldItem.type != ItemID.EnchantedSword)

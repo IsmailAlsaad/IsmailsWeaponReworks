@@ -1,4 +1,5 @@
 ﻿using IsmailsWeaponReworks.Common;
+using IsmailsWeaponReworks.Content.Weapons.EnchantedBoomerang;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -137,6 +138,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             DetachedTrails.Hand(trail);
             trail = null;
             EnchantedSwordFx.BeamEnd(Projectile.Center, timeLeft <= 0);
+
+            // No enemy was hit (the ghost takes over then): a wall or the end of the range makes the sword explode into the Enchanted Boomerang's
+            // stardust burst. The owner spawns it (a normal synced projectile, every machine plays the burst from its first tick).
+            if (IsOwner && !hitDone)
+            {
+                int damage = Math.Max(1, (int)(Projectile.damage * EnchantedSwordTuning.BeamExplosionDamageMultiplier));
+                Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, Vector2.Zero, ModContent.ProjectileType<StardustBurstProjectile>(), damage, Projectile.knockBack, Projectile.owner);
+            }
         }
 
         // ---- drawing ----

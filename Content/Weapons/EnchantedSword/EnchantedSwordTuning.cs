@@ -30,6 +30,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         // NOTE: HitsToDischarge keeps its old name and now means "hits to FULL"; hits at full add nothing, a partial count is lost HitHoldTicks after the last
         // hit, a FULL sword never decays (it keeps the charge until the throw, a swap of items or death). DischargeShake and DischargeBurstRadius are no longer used.
         public static int HitsToDischarge => 8;         
+        public static int HitsPerStage => 2;            // counted swing hits (one per swing that hit) for each outline stage: 3 stages x 2 = 6 hit swings to FULL. Keep HitsToDischarge at 3 (it is the number of stages)
         public static int HitHoldTicks => 800;          // the count is lost this long after the last counted hit
         public static float StageShowEase => 0.2f;      // how fast the DRAWN outline follows the real count (per tick, 0..1)
         public static float HitShake => 0.6f;           // camera punch on a hit (grows with the stage)
@@ -50,6 +51,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float BeamHitWidth => 22f;        // how thick the hit line is around the tip's path
         public static float BeamDamageMultiplier => 2f;    // of the sword's damage, for the beam's own hit (the ghost's strikes come on top)
         public static float BeamKnockbackMultiplier => 0.5f;
+        public static float BeamExplosionDamageMultiplier => 1f; // of the sword's damage: the stardust burst when the beam hits a wall or reaches the end of its range
         public static int BeamTrailLifeTicks => 14;
         public static float BeamTrailWidth => 10f;      // px at the start of the trail
         public static int BeamTrailSamples => 4;        // trail points laid per tick

@@ -63,7 +63,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         bool isChained;           // this swing flows out of the previous one
         int kind;                 // the current swing's kind: 0 = up, 1 = down, 2 = thrust
         int lastKind;             // owner: the kind of the last swing (the next one follows from it, see NextKind)
-        int hitStreak;            // owner: up and down swings in a row that each hit an enemy (SwingHitsToThrust of them make the next swing a thrust)
         int lastSwingDir;         // owner: the last UP or DOWN swing (0 or 1): after a thrust the swings go on with the other one
         bool hasSwung;
         int sinceSwing;           // ticks since the last swing ended (the cycle starts over after CycleResetTicks)
@@ -432,21 +431,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         {
             if (!hasSwung || sinceSwing > EnchantedSwordTuning.CycleResetTicks)
             {
-                hitStreak = 0;
                 return Math.Clamp(EnchantedSwordTuning.StartKind, 0, 1);
             }
             if (lastKind >= 2)
             {
-                hitStreak = 0;
                 return 1 - lastSwingDir;
             }
-            hitStreak = swingGaveHit ? hitStreak + 1 : 0;
-            if (hitStreak >= Math.Max(1, EnchantedSwordTuning.SwingHitsToThrust))
-            {
-                hitStreak = 0;
-                return 2;
-            }
-            return 1 - lastKind;
+            return 1 - lastKind; // no jab any more: the swings just alternate up and down (kind 2 is never chosen; the throw still uses kind 3)
         }
 
         // The swing speed the owner starts a swing with: the player's melee speed (the result travels to everyone).
