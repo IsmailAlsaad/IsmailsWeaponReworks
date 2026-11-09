@@ -55,7 +55,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public static int IdleDropTicks => 22;            // it is let down gently
         public static int IdleSpinTicks => 38;            // it spins at the bottom
         public static int IdleRaiseTicks => 26;           // it is pulled back up
-        public static float IdleDropPx => 44f;
+        public static float IdleDropPx => 28f;
         public static float IdleSwayPx => 2f;
         public static float IdleSpinRestSpeed => 0.1f;    // radians per tick at the hand
         public static float IdleSpinSpeed => 0.55f;       // radians per tick at the bottom
