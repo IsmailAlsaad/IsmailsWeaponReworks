@@ -59,6 +59,7 @@ Projectiles: {
 	EnchantedSwordBladeProjectile.DisplayName: Enchanted Sword Blade Projectile
 	EtherealSwordProjectile.DisplayName: Ethereal Sword Projectile
 	EtherealBeamProjectile.DisplayName: Ethereal Beam Projectile
+	YoyoProjectile.DisplayName: Yoyo Projectile
 }
 
 Buffs: {
