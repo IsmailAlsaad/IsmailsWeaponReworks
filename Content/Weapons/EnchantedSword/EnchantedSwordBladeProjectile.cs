@@ -207,8 +207,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         float SwingSlideAt(float time)
         {
             float anticipate = MathHelper.SmoothStep(0f, 1f, time / Math.Max(0.01f, StrikeStart));
-            if (!IsThrust)
-                return time < StrikeStart ? MathHelper.Lerp(startSlide, 0f, anticipate) : 0f;
+            EnchantedSwordPlayer.AddHit(Owner); // every strike charges the sword; the count stops at full (the cue plays when AI sees the new stage)
             float pull = -EnchantedSwordTuning.ThrustPullPx * Projectile.scale;
             float reach = EnchantedSwordTuning.ThrustReachPx * Projectile.scale;
             if (time < StrikeStart)
