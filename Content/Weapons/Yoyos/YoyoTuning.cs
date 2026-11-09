@@ -61,6 +61,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public static float IdleSpinSpeed => 0.55f;       // radians per tick at the bottom
         public static float IdleArmRestDeg => 50f;        // arm angle below the horizontal, facing-local (90 = straight down)
         public static float IdleArmDropDeg => 82f;
+        public static float ThrowArmStartDeg => 40f;      // the arm's angle when a throw starts ...
+        public static int ThrowArmBlendTicks => 10;       // ... and it turns to point at the yoyo over this many ticks
+        public static float CatchArmDeg => 10f;           // the arm's angle at the catch (50 = the idle rest pose)
+        public static float CatchArmBlendDistance => 60f; // the arm eases from "pointing at the yoyo" to CatchArmDeg over the last this-many pixels
 
         // ---- throw rhythm and return (every yoyo) ----
         public static int ReleaseGraceTicks => 10;        // a release this soon after the throw is ignored, so a tap still throws

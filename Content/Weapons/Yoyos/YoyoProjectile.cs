@@ -306,9 +306,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
             trick.Tick(this);
             spin += Vel.X * YoyoTuning.SpinPerPixel;
-
-            // The arm points at the yoyo.
-            ApplyArm(owner, HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation()));
+            // The arm starts at ThrowArmStartDeg and turns to point at the yoyo over ThrowArmBlendTicks.
+            float toYoyo = HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation());
+            float startArm = HeldSwordPose.ToWorld(Side, MathHelper.ToRadians(YoyoTuning.ThrowArmStartDeg));
+            float blend = MathHelper.Clamp(OutTicks / (float)Math.Max(1, YoyoTuning.ThrowArmBlendTicks), 0f, 1f);
+            ApplyArm(owner, startArm + MathHelper.WrapAngle(toYoyo - startArm) * blend);
 
             if (!IsOwner)
                 return;
@@ -320,8 +322,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         void TickReturn(Player owner)
         {
-            ApplyArm(owner, HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation()));
-
+            // The arm points at the yoyo, then eases to CatchArmDeg as the yoyo gets close.
+            float toYoyo = HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation());
+            float catchArm = HeldSwordPose.ToWorld(owner.direction >= 0 ? 1 : -1, MathHelper.ToRadians(YoyoTuning.CatchArmDeg));
+            float near = 1f - MathHelper.Clamp(Vector2.Distance(owner.MountedCenter, Projectile.Center) / Math.Max(1f, YoyoTuning.CatchArmBlendDistance), 0f, 1f);
+            ApplyArm(owner, toYoyo + MathHelper.WrapAngle(catchArm - toYoyo) * near);
             Vector2 toHand = hand - Projectile.Center;
             float distance = toHand.Length();
             returnSpeed = Math.Min(returnSpeed + YoyoTuning.ReturnAccel, YoyoTuning.ReturnMaxSpeed);
