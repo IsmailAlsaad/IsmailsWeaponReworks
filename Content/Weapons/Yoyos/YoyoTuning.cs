@@ -55,12 +55,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public static int IdleDropTicks => 22;            // it is let down gently
         public static int IdleSpinTicks => 38;            // it spins at the bottom
         public static int IdleRaiseTicks => 26;           // it is pulled back up
-        public static float IdleDropPx => 28f;
+        public static float IdleDropPx => 24f;
         public static float IdleSwayPx => 2f;
         public static float IdleSpinRestSpeed => 0.1f;    // radians per tick at the hand
         public static float IdleSpinSpeed => 0.55f;       // radians per tick at the bottom
-        public static float IdleArmRestDeg => 50f;        // arm angle below the horizontal, facing-local (90 = straight down)
-        public static float IdleArmDropDeg => 82f;
+        public static float IdleArmRestDeg => 20f;        // arm angle below the horizontal, facing-local (90 = straight down)
+        public static float IdleArmDropDeg => 60f;
         public static float ThrowArmStartDeg => 40f;      // the arm's angle when a throw starts ...
         public static int ThrowArmBlendTicks => 10;       // ... and it turns to point at the yoyo over this many ticks
         public static float CatchArmDeg => 10f;           // the arm's angle at the catch (50 = the idle rest pose)
