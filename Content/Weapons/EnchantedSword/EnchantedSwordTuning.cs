@@ -7,7 +7,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
     /// Every tunable number of the Enchanted Sword rework in one place (ticks: 60 = 1 second). Properties instead of fields, so hot reload
     /// can tweak them. Arm angles are for a player facing right and RELATIVE TO THE AIM (the direction to the cursor when the swing
     /// starts): 0 = at the cursor, negative = above it, positive = below it; the ready pose is relative to the player instead (0 = forward,
-    /// positive = down). The blade angle is arm + tilt. The sword swings UP and DOWN (kinds 0 and 1) and does a THRUST (kind 2) only after an up or down swing that hit an enemy.
+    /// positive = down). The blade angle is arm + tilt. The sword swings UP and DOWN (kinds 0 and 1) and does a THRUST (kind 2) only after a down swing and an up swing have both hit an enemy, one after the other.
     /// </summary>
     public static class EnchantedSwordTuning
     {
@@ -27,7 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static int SweepHitSteps => 6;                 // the hit test is checked at this many poses between two ticks (a fast strike needs more)
 
         // ---- the hits: true melee hits give the blade a stronger outline, the last one discharges ----
-        public static int HitsToDischarge => 3;         // ONLY THE THRUST charges the sword: the first enemy each thrust touches counts as one hit (an up or down swing that hits only makes the next swing a thrust)
+        public static int HitsToDischarge => 3;         // ONLY THE THRUST charges the sword: the first enemy each thrust touches counts as one hit (up and down hits only count toward the thrust, see SwingHitsToThrust)
         public static int HitHoldTicks => 150;          // the count is lost this long after the last counted hit
         public static float StageShowEase => 0.2f;      // how fast the DRAWN outline follows the real count (per tick, 0..1)
         public static float HitShake => 0.6f;           // camera punch on a hit (grows with the stage)
@@ -35,8 +35,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float DischargeBurstRadius => 72f; // size of the stardust burst (the Enchanted Boomerang's burst, 72 = its default)
 
         // ---- the cycle: up, down, thrust, up, down, thrust ... ----
-        public static int StartKind => 1;               // the first swing after the sword was at rest: 0 = up, 1 = down (the swings alternate from there; a thrust follows an up or down swing that hit an enemy)
+        public static int StartKind => 1;               // the first swing after the sword was at rest: 0 = up, 1 = down (the swings alternate from there; see SwingHitsToThrust for when a thrust comes)
         public static int CycleResetTicks => 10;        // the cycle starts over (at StartKind) when the sword rested this long
+        public static int SwingHitsToThrust => 2;       // the thrust comes after this many up and down swings IN A ROW that each hit an enemy (2 = a down swing and an up swing; a swing that hits nothing starts the count over)
         public static float AttackSpeedInfluence => 1f; // 0 = ignore the player's melee attack speed, 1 = fully applied
         public static float MinSpeed => 0.3f;           // the final speed (melee speed) is clamped to this range
         public static float MaxSpeed => 6f;
@@ -63,7 +64,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static int ThrustTicks => 6;             // the strike (the only part that damages)
         public static float ThrustEasePower => 3f;      // higher = a harder, faster jab that eases out at the end
         public static float ThrustPullPx => 16f;        // before the jab the sword slides back through the fist this far (px at scale 1): the fist slides up the blade, the hilt trails behind it
-        public static float ThrustReachPx => 8f;        // at the end of the jab the sword is this far forward of its normal grip (the hilt leaves the fist by this much: keep it small or the sword looks detached)
+        public static float ThrustReachPx => 0f;        // at the end of the jab the sword is this far forward of its normal grip (the hilt leaves the fist by this much: keep it small or the sword looks detached)
         public static float ThrustSettle => 0.5f;       // after the jab the sword rests at this fraction of ThrustReachPx until the next swing takes over
 
         // ---- the ready pose (between swings): the sword held up at the shoulder, bobbing a little ----
@@ -125,7 +126,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float GhostStabDamageMultiplier => 2f;    // the drive
         public static float GhostStabKnockbackMultiplier => 1.5f;
         public static float GhostStabShake => 2.5f;         // camera punch when the blade lands
-        public static float GhostSpriteOffsetDeg => 90f;    // the beam sprite points UP: it is drawn turned this much from the blade's direction (tune it if the sprite looks sideways or backward)
+        public static float GhostSpriteOffsetDeg => 45f;    // the beam sprite points UP: it is drawn turned this much from the blade's direction (tune it if the sprite looks sideways or backward)
         public static float GhostOpacity => 0.9f;
         public static float GhostGlowScale => 1.25f;        // the glow copy is this much bigger, grown from the MIDDLE of the sprite
         public static float GhostTrailInner => 0.45f;       // the slash's fan reaches down the blade to this fraction of its length
