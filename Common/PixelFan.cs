@@ -128,7 +128,8 @@ namespace IsmailsWeaponReworks.Common
         }
 
         static BasicEffect softEffect;
-        static VertexPositionColor[] softVertices = new VertexPositionColor[0];
+        static readonly Vector2 softUv = new Vector2(0.5f, 0.5f); // the middle of the 1x1 white pixel; the mesh needs a texture coordinate because the effect is textured (like BladeOfGrassVineDraw, which is known to work)
+        static VertexPositionColorTexture[] softVertices = new VertexPositionColorTexture[0];
         static short[] softIndices = new short[0];
         static Vector2[] softDirection = new Vector2[0];
         static readonly float[] softAcross = { 0f, 0.25f, 0.5f, 0.75f, 1f }; // where the style is asked for a color across the fan; the mesh blends between them
@@ -245,7 +246,7 @@ namespace IsmailsWeaponReworks.Common
             int vertexCount = n * SoftColumn;
             int triangleCount = (n - 1) * (SoftColumn - 1) * 2;
             if (softVertices.Length < vertexCount)
-                softVertices = new VertexPositionColor[vertexCount + 64];
+                softVertices = new VertexPositionColorTexture[vertexCount + 64];
             if (softIndices.Length < triangleCount * 3)
                 softIndices = new short[triangleCount * 3 + 192];
 
@@ -254,13 +255,13 @@ namespace IsmailsWeaponReworks.Common
             {
                 int v = k * SoftColumn;
                 Vector2 outward = softDirection[k] * featherPx;
-                softVertices[v] = new VertexPositionColor(new Vector3(fillOuter[k] + outward - Main.screenPosition, 0f), Color.Transparent);
+                softVertices[v] = new VertexPositionColorTexture(new Vector3(fillOuter[k] + outward - Main.screenPosition, 0f), Color.Transparent, softUv);
                 for (int s = 0; s < softAcross.Length; s++)
                 {
                     Vector2 position = Vector2.Lerp(fillOuter[k], fillInner[k], softAcross[s]);
-                    softVertices[v + 1 + s] = new VertexPositionColor(new Vector3(position - Main.screenPosition, 0f), color(softAcross[s], fillAge[k]));
+                    softVertices[v + 1 + s] = new VertexPositionColorTexture(new Vector3(position - Main.screenPosition, 0f), color(softAcross[s], fillAge[k]), softUv);
                 }
-                softVertices[v + SoftColumn - 1] = new VertexPositionColor(new Vector3(fillInner[k] - outward - Main.screenPosition, 0f), Color.Transparent);
+                softVertices[v + SoftColumn - 1] = new VertexPositionColorTexture(new Vector3(fillInner[k] - outward - Main.screenPosition, 0f), Color.Transparent, softUv);
             }
 
             int index = 0;
@@ -281,10 +282,12 @@ namespace IsmailsWeaponReworks.Common
 
             GraphicsDevice device = Main.graphics.GraphicsDevice;
             if (softEffect == null || softEffect.IsDisposed)
-                softEffect = new BasicEffect(device) { TextureEnabled = false, VertexColorEnabled = true };
+                softEffect = new BasicEffect(device) { TextureEnabled = true, VertexColorEnabled = true };
 
             Main.spriteBatch.End();
             softEffect.World = Matrix.Identity;
+            softEffect.Texture = TextureAssets.MagicPixel.Value;
+            device.SamplerStates[0] = SamplerState.PointClamp;
             softEffect.View = Main.GameViewMatrix.TransformationMatrix;
             softEffect.Projection = Matrix.CreateOrthographicOffCenter(0f, Main.screenWidth, Main.screenHeight, 0f, -1f, 1f);
             device.BlendState = BlendState.AlphaBlend;
