@@ -79,6 +79,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         public static int SpinTrailRails => 7;
         public static float SpinTrailOpacity => 0.9f;
         public static int SpinTrailSamplesPerTick => 5;
+        public static float TrailOuter => 1f;         // the outer edge of the spin fan, as a fraction of the blade length (1 = the tip)
+        public static float TrailLagTicks => 0f;      // how many ticks the spin fan runs BEHIND the blade (0 = exactly on it)
 
         // ---- blood tether (patch 2): a crimson strand from the player's real hand to the handle of the blade ----
         public static float TetherRestLength => ThrustDistance + BiteLungeDistance + 1f; // closer than this and the strand droops

@@ -106,6 +106,15 @@ namespace IsmailsWeaponReworks.Common
             Add(hand + direction * length * outer, hand + direction * length * inner, along);
         }
 
+        // Same idea as AddBlade for a shaft given by its two end points instead of a hand and a direction (a javelin, a spear, a spinning
+        // fork): 'outer' and 'inner' are fractions of the way from 'from' (the butt) to 'to' (the tip). No direction is computed, so a
+        // shaft of length zero is harmless.
+        public void AddSegment(Vector2 from, Vector2 to, float outer, float inner, float along = 1f)
+        {
+            Vector2 shaft = to - from;
+            Add(from + shaft * outer, from + shaft * inner, along);
+        }
+
         public void Tick()
         {
             clock++;

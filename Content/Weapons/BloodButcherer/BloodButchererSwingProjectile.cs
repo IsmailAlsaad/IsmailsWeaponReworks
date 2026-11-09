@@ -938,16 +938,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         // Ice Blade's higher tiers covering more width) and back up again as it slows down. It works the same when the enemy died mid-spin.
         void AddSpinSample(float time, float fraction)
         {
+            time -= BloodButchererTuning.TrailLagTicks;
             float aim = AngleAt(time);
             Vector2 direction = WorldDir(aim);
             Vector2 shift = Vector2.Lerp(lastOwnerCenter, Owner.Center, fraction) - Owner.Center;
             Vector2 hand = HeldSwordPose.HandWorld(Owner, aim) + shift + direction * OffsetAt(time);
             float length = BloodButchererTuning.BladeLength * Projectile.scale;
-            float fill = MathHelper.Clamp(Math.Abs(RealOmegaAt(time)) / Math.Max(0.01f, BloodButchererTuning.TrailFullSpeed), 0f, 1f);
-            float inner = MathHelper.Lerp(1f, BloodButchererTuning.TrailFillTo, MathHelper.SmoothStep(0f, 1f, fill));
+            float outer = BloodButchererTuning.TrailOuter;
+            // The fan opens with the blade's angular speed (the speed is the "progress": full at TrailFullSpeed) and closes again as it slows down.
+            float inner = outer * PixelFan.Expand(Math.Abs(RealOmegaAt(time)), BloodButchererTuning.TrailFullSpeed, BloodButchererTuning.TrailFillTo);
 
             spinTrail ??= new SweepTrail(new BloodButchererSpinTrailStyle(), IsOwner);
-            spinTrail.Add(hand + direction * length, hand + direction * length * inner);
+            spinTrail.AddBlade(hand, direction, length, outer, inner);
         }
 
         void AddJawSample(float time, float fraction)

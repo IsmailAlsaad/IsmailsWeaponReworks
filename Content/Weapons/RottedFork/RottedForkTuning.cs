@@ -52,6 +52,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
         public static int TrailRails => 6;
         public static float TrailOpacity => 0.8f;
         public static float TrailInnerFraction => 0.6f;  // how far down the shaft (from the tip toward the butt) the fan reaches
+        public static float TrailOuter => 1f;            // the outer edge of the fan, as a fraction of the shaft from the butt (1 = the tip)
+        public static float TrailLagTicks => 0f;         // how many ticks the trail runs BEHIND the fork (0 = exactly on it; the pose between two ticks is extended linearly)
         public static float PixelSize => 2f;
         public static float JavelinTrailTaper => 1f;   // the oldest part of the javelin streak is a point that widens to full width this far (0 to 1) along it
         public static ThrustPalette Palette => new ThrustPalette(new Color(255, 200, 185), new Color(205, 50, 60) * 0.6f, new Color(110, 15, 35) * 0.3f, DustID.Blood, DustID.RedTorch);

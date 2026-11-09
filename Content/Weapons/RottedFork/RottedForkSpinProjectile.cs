@@ -172,12 +172,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             {
                 for (int i = 1; i <= 2; i++)
                 {
-                    float f = i / 2f;
+                    float f = i / 2f - RottedForkTuning.TrailLagTicks;
                     Vector2 root = Vector2.Lerp(prevButt, butt, f);
-                    Vector2 outer = Vector2.Lerp(prevTip, tip, f);
-                    trail.Add(outer, Vector2.Lerp(outer, root, RottedForkTuning.TrailInnerFraction));
-                    Vector2 outer2 = Vector2.Lerp(prevTip2, tip2, f);
-                    trail2.Add(outer2, Vector2.Lerp(outer2, root, RottedForkTuning.TrailInnerFraction));
+                    float outer = RottedForkTuning.TrailOuter;
+                    float inner = outer * (1f - RottedForkTuning.TrailInnerFraction);
+                    trail.AddSegment(root, Vector2.Lerp(prevTip, tip, f), outer, inner);
+                    trail2.AddSegment(root, Vector2.Lerp(prevTip2, tip2, f), outer, inner);
                 }
             }
             trail.Tick();

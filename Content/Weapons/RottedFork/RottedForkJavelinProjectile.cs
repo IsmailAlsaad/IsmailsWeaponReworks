@@ -149,10 +149,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.RottedFork
             trail ??= new SweepTrail(new ThrustTrailStyle(palette, RottedForkTuning.TrailLifeTicks, RottedForkTuning.TrailRails, RottedForkTuning.PixelSize, RottedForkTuning.TrailOpacity, RottedForkTuning.JavelinTrailTaper), IsOwner);
             for (int i = 1; i <= 2; i++)
             {
-                float f = i / 2f;
-                Vector2 outer = Vector2.Lerp(prevTip, tip, f);
+                float f = i / 2f - RottedForkTuning.TrailLagTicks;
+                Vector2 tipPoint = Vector2.Lerp(prevTip, tip, f);
                 Vector2 root = Vector2.Lerp(prevButt, butt, f);
-                trail.Add(outer, Vector2.Lerp(outer, root, RottedForkTuning.TrailInnerFraction));
+                float outer = RottedForkTuning.TrailOuter;
+                trail.AddSegment(root, tipPoint, outer, outer * (1f - RottedForkTuning.TrailInnerFraction));
             }
             trail.Tick();
         }
