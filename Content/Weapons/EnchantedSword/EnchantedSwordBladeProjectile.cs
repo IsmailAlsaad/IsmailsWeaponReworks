@@ -12,15 +12,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 {
     /// <summary>
     /// The held Enchanted Sword (patch 1): ONE projectile that lives for as long as the sword is held (EnchantedSwordPlayer spawns it). It
-    /// poses the arm, draws the sword and runs the left click: swings centered on the cursor that CYCLE up, down, thrust, up, down, thrust ...
-    /// while the button stays down. THE SWINGS FLOW: the projectile never ends between two swings (so the sprite never blinks out for a
+    /// poses the arm, draws the sword and runs the left click: swings centered on the cursor: up, down, up, down ... and a THRUST after an up or
+    /// down swing that hit an enemy (then up or down again), while the button stays down. THE SWINGS FLOW: the projectile never ends between two swings (so the sprite never blinks out for a
     /// frame), and while the button is held a swing does not recover and restart: the moment a strike finishes, the next swing starts from
     /// the exact pose the old one is in, with a wind-up that carries the previous motion on. A thrust is the arm pointing at the cursor
     /// while the sword slides back through the fist and is then driven forward past it (the sprite is slid along the blade, so the hit line
     /// moves with it). Only when the button is let go does the arm settle back and rest in the ready pose.
-    /// The first enemy each swing or thrust touches (a true melee hit) adds one hit (EnchantedSwordPlayer.Hits): each hit gives the blade a
-    /// stronger ethereal outline (a pixel outline, Common/PixelOutline); the last one discharges (a stardust burst; the ghost sword is the
-    /// next patch).
+    /// The first enemy an up or down swing touches only makes the NEXT swing a thrust. The first enemy each THRUST touches (a true melee hit)
+    /// adds one hit (EnchantedSwordPlayer.Hits): only the thrust charges the sword. Each hit gives the blade a stronger ethereal outline (a
+    /// pixel outline, Common/PixelOutline); the 3rd discharges: a stardust burst and the ghost sword (EtherealSwordProjectile).
     /// MULTIPLAYER: the owner's client decides everything (the click, the aim, the kind of swing, the hits). What the other machines need
     /// travels in SendExtraAI: the hit count (the outline stage), a swing serial with the swing's aim, speed, kind and whether it flows out
     /// of the previous one, and a discharge serial with the enemy it hit; they start the same swing when the serial changes and run the same
@@ -64,7 +64,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         float timeScale = 1f;     // 1 / the swing's speed
         bool isChained;           // this swing flows out of the previous one
         int kind;                 // the current swing's kind: 0 = up, 1 = down, 2 = thrust
-        int lastKind;             // owner: the kind of the last swing (the next one follows it in the cycle)
+        int lastKind;             // owner: the kind of the last swing (the next one follows from it, see NextKind)
+        int lastSwingDir;         // owner: the last UP or DOWN swing (0 or 1): after a thrust the swings go on with the other one
         bool hasSwung;
         int sinceSwing;           // ticks since the last swing ended (the cycle starts over after CycleResetTicks)
         float startArmRel;        // the swing's start pose: arm relative to the aim (mirrored by the facing, positive = below) ...
@@ -388,7 +389,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         }
 
         // The 3rd hit: the stardust burst where the enemy is (or at the tip if it is gone), a flash, a camera punch for the owner. The ghost sword
-        // that follows comes in the next patch.
+        // itself is spawned by OnHitNPC (owner only; every machine gets it as a normal projectile).
         void Discharge()
         {
             flash = 1f;
@@ -401,12 +402,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
                 CameraShake.Punch(center, EnchantedSwordTuning.DischargeShake, 10);
         }
 
-        // The cycle: up, down, thrust, up ... After the sword rested a while (or the first time) it starts at StartKind.
+        // The swings alternate up, down, up, down ... A THRUST only follows an up or down swing that hit an enemy (swingGaveHit still holds the
+        // last swing's result here: BeginSwing clears it afterwards); after the thrust the swings go on with the other direction. After the sword
+        // rested a while (or the first time) it starts at StartKind.
         int NextKind()
         {
             if (!hasSwung || sinceSwing > EnchantedSwordTuning.CycleResetTicks)
-                return Math.Clamp(EnchantedSwordTuning.StartKind, 0, 2);
-            return (lastKind + 1) % 3;
+                return Math.Clamp(EnchantedSwordTuning.StartKind, 0, 1);
+            if (lastKind != 2 && swingGaveHit)
+                return 2;
+            if (lastKind == 2)
+                return 1 - lastSwingDir;
+            return 1 - lastKind;
         }
 
         // The swing speed the owner starts a swing with: the player's melee speed (the result travels to everyone).
@@ -450,6 +457,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
 
             kind = newKind;
             lastKind = newKind;
+            if (newKind != 2)
+                lastSwingDir = newKind;
             hasSwung = true;
             sinceSwing = 0;
             swinging = true;
@@ -621,12 +630,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
             CameraShake.Punch(target.Center, EnchantedSwordTuning.HitShake * (0.6f + 0.2f * stageShown), 8);
             if (swingGaveHit)
                 return;
-            swingGaveHit = true; // only the first hit of a swing counts
-            if (EnchantedSwordPlayer.AddHit(Owner))
+            swingGaveHit = true; // only the first hit of a swing matters: an up or down swing that hit makes the NEXT swing a thrust (NextKind)
+            if (!IsThrust)
+                return;
+            if (EnchantedSwordPlayer.AddHit(Owner)) // only the thrust charges the sword
             {
                 dischargeSerial = (dischargeSerial + 1) & 255;
                 dischargeTarget = target.whoAmI;
                 pendingDischarge = true; // played by AI on this machine; the others get it through SendExtraAI
+                EtherealSwordProjectile.Spawn(Owner, target, Projectile.damage, Projectile.knockBack, Projectile.GetSource_FromThis());
             }
             Projectile.netUpdate = true; // the other machines hear the new count through SendExtraAI
         }

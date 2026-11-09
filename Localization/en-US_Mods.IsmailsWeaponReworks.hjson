@@ -57,6 +57,7 @@ Projectiles: {
 	LightsBaneBladeProjectile.DisplayName: Light's Bane Blade Projectile
 	LightsBaneImbueProjectile.DisplayName: Light's Bane Imbue Projectile
 	EnchantedSwordBladeProjectile.DisplayName: Enchanted Sword Blade Projectile
+	EtherealSwordProjectile.DisplayName: Ethereal Sword Projectile
 }
 
 Buffs: {

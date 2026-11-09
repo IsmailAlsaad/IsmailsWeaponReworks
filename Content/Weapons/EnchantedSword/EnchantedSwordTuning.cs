@@ -7,7 +7,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
     /// Every tunable number of the Enchanted Sword rework in one place (ticks: 60 = 1 second). Properties instead of fields, so hot reload
     /// can tweak them. Arm angles are for a player facing right and RELATIVE TO THE AIM (the direction to the cursor when the swing
     /// starts): 0 = at the cursor, negative = above it, positive = below it; the ready pose is relative to the player instead (0 = forward,
-    /// positive = down). The blade angle is arm + tilt. The sword cycles UP, DOWN, THRUST (kinds 0, 1, 2).
+    /// positive = down). The blade angle is arm + tilt. The sword swings UP and DOWN (kinds 0 and 1) and does a THRUST (kind 2) only after an up or down swing that hit an enemy.
     /// </summary>
     public static class EnchantedSwordTuning
     {
@@ -27,7 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static int SweepHitSteps => 6;                 // the hit test is checked at this many poses between two ticks (a fast strike needs more)
 
         // ---- the hits: true melee hits give the blade a stronger outline, the last one discharges ----
-        public static int HitsToDischarge => 3;         // the FIRST enemy each swing or thrust touches counts as one hit (a swing through a crowd = 1)
+        public static int HitsToDischarge => 3;         // ONLY THE THRUST charges the sword: the first enemy each thrust touches counts as one hit (an up or down swing that hits only makes the next swing a thrust)
         public static int HitHoldTicks => 150;          // the count is lost this long after the last counted hit
         public static float StageShowEase => 0.2f;      // how fast the DRAWN outline follows the real count (per tick, 0..1)
         public static float HitShake => 0.6f;           // camera punch on a hit (grows with the stage)
@@ -35,7 +35,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float DischargeBurstRadius => 72f; // size of the stardust burst (the Enchanted Boomerang's burst, 72 = its default)
 
         // ---- the cycle: up, down, thrust, up, down, thrust ... ----
-        public static int StartKind => 1;               // the first swing after the sword was at rest: 0 = up, 1 = down, 2 = thrust
+        public static int StartKind => 1;               // the first swing after the sword was at rest: 0 = up, 1 = down (the swings alternate from there; a thrust follows an up or down swing that hit an enemy)
         public static int CycleResetTicks => 10;        // the cycle starts over (at StartKind) when the sword rested this long
         public static float AttackSpeedInfluence => 1f; // 0 = ignore the player's melee attack speed, 1 = fully applied
         public static float MinSpeed => 0.3f;           // the final speed (melee speed) is clamped to this range
@@ -100,6 +100,36 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float GlowScale => 1.18f;         // the glow copy is this much bigger than the sword, grown from the MIDDLE of the sprite
         public static float SparkleChance => 0.3f;      // per tick, at the highest stage: a mote somewhere along the blade (less at stage 1)
         public static int FlashTicks => 12;             // the white flash when a strike starts and when the sword discharges
+
+        // ---- the ghost sword (the 3rd thrust hit conjures it: it floats around the enemy, slashes 4 times, backs away and drives itself in) ----
+        public static int GhostSlashes => 4;                // quick slashes before the stab
+        public static int GhostSlashTicks => 8;             // one slash (quick). The ghost's blade fans across the enemy one way, then back the other way
+        public static int GhostFadeInTicks => 10;           // the ghost fades in beside the enemy (it cannot hit yet)
+        public static int GhostBackoffTicks => 14;          // the 5th swing: it backs away from the enemy this long (trembling, stardust drawn into the tip) ...
+        public static float GhostBackoffPx => 70f;          // ... this far
+        public static int GhostHoldTicks => 6;              // a held beat before the drive
+        public static int GhostDriveTicks => 5;             // the drive into the enemy
+        public static float GhostDriveEasePower => 2.5f;    // 1 = even speed; higher = it accelerates harder into the enemy
+        public static float GhostEmbedFraction => 0.6f;     // buried: the hilt stops this fraction of the blade length from the enemy's middle (0.6 = the tip is past the middle)
+        public static int GhostBuriedTicks => 14;           // it stays buried this long, then bursts into stardust
+        public static int GhostFadeOutTicks => 10;
+        public static float GhostBladeLength => 64f;        // hilt to tip in px (the beam sprite is stretched to it)
+        public static float GhostHoldDistance => 56f;       // the hilt keeps this far from the enemy's middle while it slashes ...
+        public static float GhostHoldPerSize => 0.8f;       // ... plus this fraction of the enemy's half size (so a big enemy is still reached)
+        public static float GhostSlashArcDeg => 65f;        // each slash fans the blade this far to each side of the enemy
+        public static float GhostOrbitDegPerTick => 2.5f;   // the ghost drifts around the enemy this fast while it slashes (the direction is random)
+        public static float GhostTremblePx => 1.5f;
+        public static int MaxGhosts => 3;                   // per player; a 4th makes the oldest leave
+        public static float GhostRetargetRange => 400f;     // px: if its enemy dies first the ghost goes for the nearest enemy within this range, or leaves
+        public static float GhostSlashDamageMultiplier => 0.6f; // of the sword's damage, for each slash
+        public static float GhostStabDamageMultiplier => 2f;    // the drive
+        public static float GhostStabKnockbackMultiplier => 1.5f;
+        public static float GhostStabShake => 2.5f;         // camera punch when the blade lands
+        public static float GhostSpriteOffsetDeg => 90f;    // the beam sprite points UP: it is drawn turned this much from the blade's direction (tune it if the sprite looks sideways or backward)
+        public static float GhostOpacity => 0.9f;
+        public static float GhostGlowScale => 1.25f;        // the glow copy is this much bigger, grown from the MIDDLE of the sprite
+        public static float GhostTrailInner => 0.45f;       // the slash's fan reaches down the blade to this fraction of its length
+        public static int GhostAfterimageTicks => 9;
 
         // ---- colors (alpha 0 = additive): the Enchanted Boomerang's stardust, gold and white into blue and pink ----
         public static Color OutlineColor => new Color(110, 190, 255, 0);

@@ -101,5 +101,65 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
                 return;
             Mote(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Circular(0.6f, 0.6f) + new Vector2(0f, -0.3f), 0.9f, 100);
         }
+
+        // ---- the ghost sword ----
+
+        // The ghost fades in: a ring of stardust and a high chime.
+        public static void GhostAppear(Vector2 center)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.6f, Pitch = 0.5f }, center);
+            for (int i = 0; i < 16; i++)
+                Mote(center, (MathHelper.TwoPi * i / 16f).ToRotationVector2() * Main.rand.NextFloat(2f, 4f), Main.rand.NextFloat(1.1f, 1.6f), 60);
+        }
+
+        // Stardust the ghost's blade sheds while it slashes and drives.
+        public static void GhostDust(Vector2 tip, Vector2 motion)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 2; i++)
+                Mote(tip + Main.rand.NextVector2Circular(6f, 6f), motion * Main.rand.NextFloat(0.1f, 0.25f) + Main.rand.NextVector2Circular(1f, 1f), Main.rand.NextFloat(1f, 1.5f));
+        }
+
+        // The back-off begins: a rising chime.
+        public static void StabChargeStart(Vector2 hilt)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item4 with { Volume = 0.6f, Pitch = 0.2f }, hilt);
+        }
+
+        // While it backs away and holds: stardust drawn into the tip from all around ('t' runs 0..1 over the charge).
+        public static void StabCharge(Vector2 tip, float t)
+        {
+            if (Main.dedServ)
+                return;
+            int count = 1 + (int)(t * 2.5f);
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 start = tip + Main.rand.NextVector2Unit() * Main.rand.NextFloat(28f, 60f);
+                Mote(start, (tip - start) * 0.12f, Main.rand.NextFloat(1f, 1.5f), 80);
+            }
+        }
+
+        // The blade lands: a hard ring of stardust and a sound.
+        public static void StabImpact(Vector2 tip)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item105 with { Volume = 0.8f, Pitch = 0.1f }, tip);
+            for (int i = 0; i < 22; i++)
+                Mote(tip, (MathHelper.TwoPi * i / 22f).ToRotationVector2() * Main.rand.NextFloat(3f, 7f), Main.rand.NextFloat(1.2f, 1.9f), 60);
+        }
+
+        // The ghost bursts into stardust at the end.
+        public static void GhostVanish(Vector2 center, float radius)
+        {
+            if (Main.dedServ)
+                return;
+            EnchantedBoomerangFx.Burst(center, radius);
+        }
     }
 }
