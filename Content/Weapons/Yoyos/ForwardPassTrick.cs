@@ -56,7 +56,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             {
                 Player owner = yoyo.Owner;
                 Vector2 toCursor = Main.MouseWorld - owner.MountedCenter;
-                float reach = System.Math.Max(48f, T.RopeLength(owner.HeldItem) - P.ForwardPassReachMargin);   // always the full distance
+                float reach = System.Math.Max(48f, T.RopeLength() - P.ForwardPassReachMargin);   // always the full distance
                 Vector2 direction = toCursor.LengthSquared() > 1f ? Vector2.Normalize(toCursor) : new Vector2(yoyo.Side, 0f);
                 yoyo.Aim = direction * reach;
             }

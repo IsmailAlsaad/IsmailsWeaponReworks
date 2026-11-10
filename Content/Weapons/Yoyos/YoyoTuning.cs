@@ -17,14 +17,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         // a missing file = the vanilla sprite.
         public virtual string TexturePath => null;
 
-        // ---- rope length: each yoyo's own vanilla range (ProjectileID.Sets.YoyosMaximumRange of the yoyo the item shoots) x this ----
-        public virtual float RopeLengthScale => 1f;
+        // ---- rope length ----
+        // The string's maximum length in pixels (16 px = 1 tile). It is also how far a throw can reach: the Forward Pass goes this far
+        // minus its margin, and a yoyo that is out comes back when it is this far from the hand. Every yoyo lists its own value.
+        public virtual float RopeLengthPx => 130f;
 
-        public float RopeLength(Item item)
+        public float RopeLength()
         {
-            float[] ranges = ProjectileID.Sets.YoyosMaximumRange;
-            float range = item.shoot > ProjectileID.None && item.shoot < ranges.Length ? ranges[item.shoot] : 130f;
-            return Math.Max(48f, range * RopeLengthScale);
+            return Math.Max(48f, RopeLengthPx);
         }
 
         // ---- rope (verlet, visual only: every machine simulates its own) ----
@@ -32,9 +32,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public virtual float RopeSlackFactor => 1.015f;    // while Out: the string is this much longer than the distance hand to yoyo (1.01 to 1.02 = a very slight bend)
         public virtual float RopeExtraSlack => 0f;         // plus this many pixels (0 = never slack)
         public virtual float RopeGravity => 0.08f;         // px per tick per tick: a small sag only
-        public virtual float ReturnRopeSlackFactor => 1f;  // while Returning: pulled taut (1 = exactly as long as the distance, a straight line)
-        public virtual float ReturnRopeExtraSlack => 0f;
-        public virtual float ReturnRopeGravity => 0f;      // no sag on the way back
+        public virtual float RopeTightenSpeed => 0.35f;    // pulled taut (the way back): how far toward the straight line the string goes every tick (0.35 = about 6 ticks, 1 = at once)
         public virtual float RopeMinLength => 10f;
         public virtual float RopeDamping => 0.985f;        // velocity kept per tick
         public virtual int RopeIterations => 10;           // constraint passes per tick (more = stiffer string)

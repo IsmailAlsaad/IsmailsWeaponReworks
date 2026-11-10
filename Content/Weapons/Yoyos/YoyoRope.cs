@@ -152,6 +152,51 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             }
         }
 
+        // Pulled taut (the way back, the Return): no simulation. Every tick each rope point moves a fraction ('speed') of the way to the
+        // straight line from the hand to the yoyo, so a sagging or bent string visibly pulls tight over a few ticks and then stays a
+        // straight line while the hand and the yoyo move. It keeps the hand's frame like Update, and the next Update continues from here.
+        public void Tighten(Vector2 anchor, Vector2 end, float speed)
+        {
+            if (Main.dedServ)
+                return;
+            int n = Math.Max(4, tuning.RopePoints);
+            if (pos == null || pos.Length != n)
+            {
+                pos = new Vector2[n];
+                prev = new Vector2[n];
+                last = new Vector2[n];
+                ready = false;
+            }
+            if (!ready || Vector2.DistanceSquared(pos[0], anchor) > 600f * 600f)
+            {
+                // No rope yet (or the player teleported): the straight line at once.
+                for (int i = 0; i < n; i++)
+                {
+                    Vector2 p = Vector2.Lerp(anchor, end, i / (float)(n - 1));
+                    pos[i] = p;
+                    prev[i] = p;
+                    last[i] = p;
+                }
+                ready = true;
+                return;
+            }
+
+            Vector2 shift = anchor - pos[0];   // the hand's frame, like Update
+            float amount = MathHelper.Clamp(speed, 0.01f, 1f);
+            for (int i = 0; i < n; i++)
+            {
+                Vector2 line = Vector2.Lerp(anchor, end, i / (float)(n - 1));
+                Vector2 p = Vector2.Lerp(pos[i] + shift, line, amount);
+                pos[i] = p;
+                prev[i] = p;   // no leftover speed: the next Update starts from rest
+                last[i] = p;
+            }
+            pos[0] = anchor;
+            prev[0] = anchor;
+            pos[n - 1] = end;
+            prev[n - 1] = end;
+        }
+
         static bool Solid(Vector2 point)
         {
             return Collision.SolidCollision(point - new Vector2(1.5f), 3, 3);

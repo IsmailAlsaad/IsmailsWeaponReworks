@@ -173,7 +173,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
             Projectile.timeLeft = 10000;
             Projectile.localNPCHitCooldown = Tuning.HitCooldownTicks;
-            float ropeMax = Tuning.RopeLength(owner.HeldItem);
+            float ropeMax = Tuning.RopeLength();
 
             if (ticks == 0)
             {
@@ -221,7 +221,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             if (State == YoyoState.Idle)
                 rope.Straight(hand, Projectile.Center);
             else if (State == YoyoState.Return || (State == YoyoState.Out && trick.RopeTaut(this)))
-                rope.Update(hand, Projectile.Center, Tuning.ReturnRopeSlackFactor, Tuning.ReturnRopeExtraSlack, Tuning.ReturnRopeGravity * GravDir);   // pulled taut on the way back
+                rope.Tighten(hand, Projectile.Center, Tuning.RopeTightenSpeed);   // pulled taut on the way back: the string straightens over a few ticks
             else
                 rope.Update(hand, Projectile.Center, Tuning.RopeSlackFactor, Tuning.RopeExtraSlack, Tuning.RopeGravity * GravDir);
         }
@@ -281,7 +281,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             float armLocal = MathHelper.Lerp(MathHelper.ToRadians(Tuning.IdleArmRestDeg), MathHelper.ToRadians(Tuning.IdleArmDropDeg), extension);
             ApplyArm(owner, HeldSwordPose.ToWorld(facing, armLocal));
 
-            float ropeMax = Tuning.RopeLength(owner.HeldItem);
+            float ropeMax = Tuning.RopeLength();
             float drop = Math.Min(Tuning.IdleDropPx, ropeMax) * extension * GravDir; // toward the feet (up when gravity is flipped); no block check, it may go through blocks
             float sway = (float)Math.Sin(idleClock * 0.12f) * Tuning.IdleSwayPx * extension;
             Projectile.Center = hand + new Vector2(sway, drop);
