@@ -97,12 +97,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
 
         // ---- the latched vines (the coil around an enemy, the Blade of Grass style) ----
         public int LatchVineCount => 2;                           // sections released onto the enemy by the last hit
-        public float LatchSectionPx => 70f;                       // length of one section
-        public float EnemyCapPx => 140f;                          // ALL latched sections of this player on ONE enemy together are at most this long
+        public float LatchSectionPx => 30f;                       // length of one section
+        public float EnemyCapPx => 30f;                          // ALL latched sections of this player on ONE enemy together are at most this long
         public float MinEnemyRoomPx => 30f;                       // less room than this left on the enemy: nothing is released, the barbs wait for the next hit
         public int LatchLifeTicks => 300;                         // how long the vines stay latched
         public int LatchFadeTicks => 24;                          // they unwind over the last this-many ticks
-        public int LatchPrickTicks => 12;                         // damage tick of one section
+        public int LatchPrickTicks => 20;                         // damage tick of one section
         public float LatchDamageFactor => 0.2f;                   // damage of one tick as a fraction of the yoyo's damage
         public int LatchPoisonTicks => 30;                        // Poisoned is topped up to this on the damage ticks, so it lasts as long as a vine is latched
         public int CoilGrowTicks => 14;                           // the coil winds around the enemy over this time
