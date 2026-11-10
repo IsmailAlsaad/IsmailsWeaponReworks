@@ -33,6 +33,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         // False: letting go of the button does not cut the trick short (it runs to its end by itself).
         public virtual bool RetractsOnRelease => true;
 
+        // True while the string should be pulled taut and straight even though the yoyo is still out (Forward Pass: its way back). Visual only.
+        public virtual bool RopeTaut(YoyoProjectile yoyo)
+        {
+            return false;
+        }
+
         // The throw starts. authoritative = the owner's client, which sets the launch velocity; the others get it from the sync.
         public abstract void Begin(YoyoProjectile yoyo, bool authoritative);
 

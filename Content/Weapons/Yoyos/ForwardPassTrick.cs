@@ -37,6 +37,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         protected Vector2 bulge;      // unit vector across the axis: the side the outward half swings to
         protected float halfReach;    // half the length of the ellipse
         protected bool stopped;       // a block stopped it on this machine; it waits for the owner's return
+        protected bool comingBack;    // the second half of the ellipse: the string is pulled taut
 
         public ForwardPassTrick(YoyoTuning tuning) : base(tuning)
         {
@@ -50,6 +51,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public override void Begin(YoyoProjectile yoyo, bool authoritative)
         {
             stopped = false;
+            comingBack = false;
             if (authoritative)
             {
                 Player owner = yoyo.Owner;
@@ -81,6 +83,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             float t = MathHelper.Clamp(yoyo.OutTicks / (float)System.Math.Max(1, P.ForwardPassTicks), 0f, 1f);
             float eased = MathHelper.Lerp(t, t * t * (3f - 2f * t), P.ForwardPassEase);
             float theta = eased * MathHelper.TwoPi;
+            comingBack = eased > 0.5f;
             Vector2 offset = axis * (halfReach * (1f - (float)System.Math.Cos(theta)))
                            + bulge * (halfReach * P.ForwardPassWidthRatio * (float)System.Math.Sin(theta));
             Vector2 target = yoyo.Owner.MountedCenter + offset;
@@ -97,6 +100,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             }
             if (t >= 1f && yoyo.IsOwner)
                 yoyo.BeginReturn();   // the loop is done: a short pull to the hand and the catch
+        }
+
+        public override bool RopeTaut(YoyoProjectile yoyo)
+        {
+            return comingBack;   // the way back along the ellipse: straight and tight, like the return
         }
 
         public override float SpinStep(YoyoProjectile yoyo)

@@ -793,7 +793,7 @@ tModLoader/other bases -> project types:
     +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool
   class ForwardPassDefaults : IForwardPassTuning
   class ForwardPassTrick : YoyoTrick
-    #P:IForwardPassTuning #axis:Vector2 #bulge:Vector2 #halfReach:float #stopped:bool +Name:string[ov] +MaxHits:int[ov] +RetractsOnRelease:bool[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] +SpinStep(YoyoProjectile)[ov]
+    #P:IForwardPassTuning #axis:Vector2 #bulge:Vector2 #halfReach:float #stopped:bool #comingBack:bool +Name:string[ov] +MaxHits:int[ov] +RetractsOnRelease:bool[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] +RopeTaut(YoyoProjectile)[ov] +SpinStep(YoyoProjectile)[ov]
 **WalkTheDogTrick.cs** uses: YoyoContact, YoyoProjectile, YoyoTrick, YoyoTuning
   interface IWalkTheDogTuning
     +WalkHitsPerThrow:int +WalkThrowDownSpeed:float +WalkThrowForwardSpeed:float +WalkSwitchDeadzonePx:float +WalkGravity:float +WalkMaxFall:float +WalkSpeed:float +WalkAccel:float +WalkAirAccel:float +WalkLandBounce:float +WalkBounceMinImpact:float +WalkHopSpeed:float +WalkHopCooldownTicks:int +WalkHitRecoil:float +WalkHitHop:float
@@ -829,7 +829,7 @@ tModLoader/other bases -> project types:
     +Straight(Vector2,Vector2) +Update(Vector2,Vector2,float,float,float) +Draw(Texture2D)
 **YoyoTrick.cs** uses: YoyoProjectile, YoyoTuning
   abstract class YoyoTrick
-    #T:YoyoTuning +Name:string[ab] +MaxHits:int[ab] +FollowsCursorSide:bool[v] +CursorSideDeadzonePx:float[v] +RetractsOnRelease:bool[v] +Begin(YoyoProjectile,bool)[ab] +Tick(YoyoProjectile)[ab] +OnHit(YoyoProjectile,NPC)[v] +SpinStep(YoyoProjectile)[v]
+    #T:YoyoTuning +Name:string[ab] +MaxHits:int[ab] +FollowsCursorSide:bool[v] +CursorSideDeadzonePx:float[v] +RetractsOnRelease:bool[v] +RopeTaut(YoyoProjectile)[v] +Begin(YoyoProjectile,bool)[ab] +Tick(YoyoProjectile)[ab] +OnHit(YoyoProjectile,NPC)[v] +SpinStep(YoyoProjectile)[v]
 **YoyoTuning.cs**
   class YoyoTuning
     +TexturePath:string[v] +RopeLengthScale:float[v] +RopeLength(Item) +RopePoints:int[v] +RopeSlackFactor:float[v] +RopeExtraSlack:float[v] +RopeGravity:float[v] +ReturnRopeSlackFactor:float[v] +ReturnRopeExtraSlack:float[v] +ReturnRopeGravity:float[v] +RopeMinLength:float[v] +RopeDamping:float[v] +RopeIterations:int[v] +RopeCollides:bool[v] +RopeSubdivisions:int[v] +RopeWidth:float[v] +RopeOutlineWidth:float[v] +RopeColor:Color[v] +RopeAltColor:Color[v] +RopeOutlineColor:Color[v] +HitboxSize:int[v] +HitCooldownTicks:int[v] +ArmFollow:float[v] +SyncEveryTicks:int[v] +UseSlopes:bool[v] +IdleRestTicks:int[v] +IdleDropTicks:int[v] +IdleSpinTicks:int[v] +IdleRaiseTicks:int[v] +IdleDropPx:float[v] +IdleSwayPx:float[v] +IdleSpinRestSpeed:float[v] +IdleSpinSpeed:float[v] +IdleArmRestDeg:float[v] +IdleArmDropDeg:float[v] +ThrowArmStartDeg:float[v] +ThrowArmBlendTicks:int[v] +CatchArmDeg:float[v] +CatchArmBlendDistance:float[v] +ReleaseGraceTicks:int[v] +RethrowDelayTicks:int[v] +ReturnStartSpeed:float[v] +ReturnAccel:float[v] +ReturnMaxSpeed:float[v] +CatchDistance:float[v] +ReturnSpinSpeed:float[v] +SpinPerPixel:float[v] +HitShake:float[v] +Afterimages:bool[v] +AfterimageTicks:int[v] +AfterimageMinScale:float[v] +AfterimageMinSpeed:float[v] +AfterimageColor:Color[v]
@@ -848,7 +848,7 @@ tModLoader/other bases -> project types:
   class Code1Trick : ForwardPassTrick
 **Code1Tuning.cs** uses: IForwardPassTuning, YoyoTuning
   class Code1Tuning : YoyoTuning, IForwardPassTuning
-    +TexturePath:string[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool
+    +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool
 
 ### Content/Weapons/Yoyos/WoodenYoyo/
 **WoodenYoyoFx.cs** uses: YoyoFx

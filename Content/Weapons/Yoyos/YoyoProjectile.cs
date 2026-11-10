@@ -219,7 +219,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
             if (State == YoyoState.Idle)
                 rope.Straight(hand, Projectile.Center);
-            else if (State == YoyoState.Return)
+            else if (State == YoyoState.Return || (State == YoyoState.Out && trick.RopeTaut(this)))
                 rope.Update(hand, Projectile.Center, Tuning.ReturnRopeSlackFactor, Tuning.ReturnRopeExtraSlack, Tuning.ReturnRopeGravity * GravDir);   // pulled taut on the way back
             else
                 rope.Update(hand, Projectile.Center, Tuning.RopeSlackFactor, Tuning.RopeExtraSlack, Tuning.RopeGravity * GravDir);
