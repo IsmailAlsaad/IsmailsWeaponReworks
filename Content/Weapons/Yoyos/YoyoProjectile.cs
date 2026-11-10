@@ -70,6 +70,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public int OutTicks;           // ticks since the throw
         public int Hits;               // enemy hits since the throw (owner)
         public YoyoState State { get; private set; }
+        public float SpinAngle => spin;   // how far the sprite is turned (a yoyo that draws on top of its sprite follows it)
 
         // ---- synced (SendExtraAI / ReceiveExtraAI) ----
         int throwSerial;
@@ -503,7 +504,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         }
 
         // The yoyo's own art when it exists (Tuning.TexturePath), else the vanilla sprite.
-        Texture2D GetTexture()
+        protected virtual Texture2D GetTexture()
         {
             if (!customChecked)
             {

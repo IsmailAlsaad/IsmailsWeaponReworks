@@ -61,6 +61,8 @@ Projectiles: {
 	EtherealBeamProjectile.DisplayName: Ethereal Beam Projectile
 	WoodenYoyoProjectile.DisplayName: Wooden Yoyo Projectile
 	Code1Projectile.DisplayName: Code 1 Projectile
+	RallyProjectile.DisplayName: Rally Projectile
+	RallyShellShardProjectile.DisplayName: Rally Shell Shard Projectile
 }
 
 Buffs: {

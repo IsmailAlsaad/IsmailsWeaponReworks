@@ -1,32 +1,32 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-10 | 223 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-10 | 229 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-DetachedTrails(33) RemoteHitTracker(26) CameraShake(26) ThrustPalette(24) HeldSwordPose(19) AfterimageTrail(19) HeldAim(18) SweepTrail(13) YoyoTuning(12) ThrustPlayer(12) PixelLine(11) IceFx(11) PixelTrail(10) DarkLanceTuning(10) ThrustChain(9) SweepTrailStyle(9) PixelFan(9) MuramasaTuning(9) VolcanoTuning(8) SweepFade(8)
+DetachedTrails(33) RemoteHitTracker(27) CameraShake(26) ThrustPalette(24) HeldSwordPose(19) AfterimageTrail(19) HeldAim(18) YoyoTuning(15) SweepTrail(13) ThrustPlayer(12) PixelLine(12) IceFx(11) PixelTrail(10) DarkLanceTuning(10) ThrustChain(9) SweepTrailStyle(9) PixelFan(9) MuramasaTuning(9) VolcanoTuning(8) SweepFade(8)
 
 ## Inheritance
 Project bases -> derived:
 - BeeKeeperBeeProjectile: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
-- ForwardPassTrick: Code1Trick
+- ForwardPassTrick: Code1Trick, RallyTrick
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
-- IForwardPassTuning: Code1Tuning, ForwardPassDefaults
+- IForwardPassTuning: Code1Tuning, ForwardPassDefaults, RallyTuning
 - IWalkTheDogTuning: WalkTheDogDefaults, WoodenYoyoTuning
 - MetaballStyle: BeeKeeperHoneyStyle, DarkLanceBlobStyle, VolcanoBlobStyle, VolcanoDripStyle
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, EtherealBeamTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, EnchantedSwordSweepTrailStyle, IceBladeTrailStyle, LightsBaneSweepTrailStyle, MuramasaSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
 - VolcanoDripStyle: VolcanoBurstStyle
 - WalkTheDogTrick: WoodenYoyoTrick
-- YoyoFx: Code1Fx, WoodenYoyoFx
-- YoyoGlobalItem: Code1GlobalItem, WoodenYoyoGlobalItem
-- YoyoProjectile: Code1Projectile, WoodenYoyoProjectile
+- YoyoFx: Code1Fx, RallyFx, WoodenYoyoFx
+- YoyoGlobalItem: Code1GlobalItem, RallyGlobalItem, WoodenYoyoGlobalItem
+- YoyoProjectile: Code1Projectile, RallyProjectile, WoodenYoyoProjectile
 - YoyoTrick: ForwardPassTrick, WalkTheDogTrick
-- YoyoTuning: Code1Tuning, WoodenYoyoTuning
+- YoyoTuning: Code1Tuning, RallyTuning, WoodenYoyoTuning
 tModLoader/other bases -> project types:
-- ModProjectile (55): BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassHoldProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneBladeProjectile, LightsBaneImbueProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
+- ModProjectile (56): BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassHoldProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneBladeProjectile, LightsBaneImbueProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
 - GlobalItem (25): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, YoyoGlobalItem
 - ModPlayer (14): BeeKeeperPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MuramasaPlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, YoyoPlayer
 - GlobalNPC (3): BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC
@@ -820,7 +820,7 @@ tModLoader/other bases -> project types:
   struct YoyoContact
     +Grounded:bool +BlockedX:bool +Ceiling:bool +Impact:float +Blocked:bool +Normal:Vector2
   abstract class YoyoProjectile : ModProjectile
-    +YoyoItemType:int[ab] #CreateTuning()[ab] #CreateFx()[ab] #CreateTrick(YoyoTuning)[ab] +Tuning:YoyoTuning +Fx:YoyoFx +Owner:Player +IsOwner:bool +GravDir:int +Vel:Vector2 +Aim:Vector2 +Side:int +OutTicks:int +Hits:int +State:YoyoState +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +BeginReturn() +Step(float,float) +Move(Vector2,bool) +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    +YoyoItemType:int[ab] #CreateTuning()[ab] #CreateFx()[ab] #CreateTrick(YoyoTuning)[ab] +Tuning:YoyoTuning +Fx:YoyoFx +Owner:Player +IsOwner:bool +GravDir:int +Vel:Vector2 +Aim:Vector2 +Side:int +OutTicks:int +Hits:int +State:YoyoState +SpinAngle:float +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +BeginReturn() +Step(float,float) +Move(Vector2,bool) +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] #GetTexture()[v] +PreDraw(ref Color)[ov]
 **YoyoRegistry.cs**
   class YoyoRegistry : ModSystem
     +Register(int,int)[s] +ProjectileFor(int)[s] +Load()[ov] +Unload()[ov]
@@ -849,6 +849,26 @@ tModLoader/other bases -> project types:
 **Code1Tuning.cs** uses: IForwardPassTuning, YoyoTuning
   class Code1Tuning : YoyoTuning, IForwardPassTuning
     +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool
+
+### Content/Weapons/Yoyos/Rally/
+**RallyFx.cs** uses: YoyoFx
+  class RallyFx : YoyoFx
+    #ChipDust:int[ov] +Throw(Vector2,int)[ov] +Crack(Vector2,int)[v] +Break(Vector2)[v] +ShardTrail(Vector2,Vector2)[v] +ShardBounce(Vector2,float)[v] +ShardHit(Vector2)[v] +ShardBreak(Vector2)[v]
+**RallyGlobalItem.cs** uses: YoyoGlobalItem
+  class RallyGlobalItem : YoyoGlobalItem
+    #YoyoItemType:int[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**RallyProjectile.cs** uses: PixelLine, RallyFx, RallyShellShardProjectile, RallyTrick, RallyTuning, YoyoFx, YoyoProjectile, YoyoShake, YoyoTrick, YoyoTuning
+  class RallyProjectile : YoyoProjectile
+    +Texture:string[ov] +YoyoItemType:int[ov] +Cracks:int #CreateTuning()[ov] #CreateFx()[ov] #CreateTrick(YoyoTuning)[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +Crack() +AI()[ov] #GetTexture()[ov] +PostDraw(Color)[ov]
+**RallyShellShardProjectile.cs** uses: RallyFx, RallyTuning, RemoteHitTracker
+  class RallyShellShardProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**RallyTrick.cs** uses: ForwardPassTrick, RallyProjectile, YoyoProjectile, YoyoTuning
+  class RallyTrick : ForwardPassTrick
+    +OnHit(YoyoProjectile,NPC)[ov]
+**RallyTuning.cs** uses: IForwardPassTuning, YoyoTuning
+  class RallyTuning : YoyoTuning, IForwardPassTuning
+    +TexturePath:string[ov] +Crack1TexturePath:string +Crack2TexturePath:string +ShardTexturePath:string +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +CrackHitsToBreak:int +BreakShake:float +ShellShardCount:int +ShardDamageFactor:float +ShardMaxHits:int +ShardLaunchSpeedMin:float +ShardLaunchSpeedMax:float +ShardLaunchUp:float +ShardInheritVelocity:float +ShardGravity:float +ShardMaxFallSpeed:float +ShardAirDrag:float +ShardBounceDamp:float +ShardRestSpeed:float +ShardGroundFriction:float +ShardSpin:float +ShardLifeTicks:int +ShardFadeTicks:int +ShardSize:int
 
 ### Content/Weapons/Yoyos/WoodenYoyo/
 **WoodenYoyoFx.cs** uses: YoyoFx
