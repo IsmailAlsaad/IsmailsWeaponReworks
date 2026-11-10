@@ -553,7 +553,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, armWorld - MathHelper.PiOver2);
             hand = HeldSwordPose.HandWorld(owner, armWorld);
             if (Tilt != 0f)
-                hand = owner.RotatedRelativePoint(hand, false, false);   // HandWorld does not know the tilt (a minecart, a mount): turn the hand with the player
+            {
+                // HandWorld does not know the tilt (a minecart, a mount): turn the hand with the player, about the player's own rotation point.
+                // Player.RotatedRelativePoint is not used: on the Cosmic Car it turned the hand about a point ~17 px below fullRotationOrigin and
+                // swung it ~6 px forward at 0.37 rad. HandWorld already holds gfxOffY, so the pivot gets it too.
+                Vector2 pivot = owner.position + owner.fullRotationOrigin + new Vector2(0f, owner.gfxOffY);
+                hand = pivot + (hand - pivot).RotatedBy(Tilt);
+            }
+            if (owner.mount.Active && Main.GameUpdateCount % 30 == 0)
+                Main.NewText($"rot {owner.fullRotation:0.00} off {owner.mount.PlayerOffset} offHb {owner.mount.PlayerOffsetHitbox} gfxY {owner.gfxOffY} arm {armWorld:0.00} hand0 {HeldSwordPose.HandWorld(owner, armWorld) - owner.position} hand {hand - owner.position}");
             owner.heldProj = Projectile.whoAmI; // also ends the projectile when the player swaps items
         }
 
