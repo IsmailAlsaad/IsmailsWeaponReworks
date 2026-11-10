@@ -168,7 +168,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public int WrapTicks => 14;                               // the vine grows into the hoop over the enemy over this time
         public float HoopFootPadPx => 6f;                         // the hoop comes down this far beside the enemy (half its width plus this), on both sides
         public float HoopHeightPadPx => 8f;                       // the top of the hoop is this far above the enemy's head
-        public float HoopMaxHeightPx => 120f;                     // the enemy's height counted for the hoop is at most this
+        public float HoopMaxHeightPx => 16f;                     // the enemy's height counted for the hoop is at most this
         public int HoopPoints => 24;                              // points along the hoop (the drawing is one smooth strip)
         public float AnchorSinkPx => 3f;                          // the tip digs this far into the ground
         public bool SnareStopsAI => true;                         // a held enemy runs no AI at all (no walking, jumping, flying, falling or attacks); false = only its movement is zeroed
