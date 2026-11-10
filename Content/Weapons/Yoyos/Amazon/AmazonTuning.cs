@@ -163,7 +163,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public float VineBaseScale => 1f;                         // width of the chain at the root ...
         public float VineTipScale => 0.8f;                        // ... and at the tip
         public float VineHeadScale => 0.8f;                       // the Thorn Hook head on the tip
-        public int SnareTicks => 300;                             // how long a snared enemy is held (5 s)
+        public int SnareTicks => 500;                             // how long a snared enemy is held (5 s)
         public int ResnareCooldownTicks => 120;                   // after a release the same enemy cannot be snared again for this long
         public int WrapTicks => 14;                               // the vine grows into the hoop over the enemy over this time
         public float HoopFootPadPx => 6f;                         // the hoop comes down this far beside the enemy (half its width plus this), on both sides
