@@ -98,23 +98,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
 
         // ---- Man on Trapeze (left click): the lasso ----
         // The string (the line from the hand to the yoyo) or the yoyo itself touches an enemy that can be damaged while the pass is out
-        // and the loop begins: the yoyo leaves the ellipse and swings round the enemy on one smooth path back to the string line (the string
-        // follows that flight path, so the loop forms from it), then walks along the line toward the player while the loop shrinks until it closes.
+        // and the loop begins: the yoyo leaves the ellipse on a smooth curve around the enemy back to the string line, then walks along that
+        // line toward the player while the noose around the enemy shrinks until it closes.
         public float LassoMinReachPx => 48f;                      // the yoyo must be at least this far from the hand before the string can catch anything (no loop on an enemy right at the player)
         public float LassoTouchPaddingPx => 6f;                   // how thick the string counts when it touches an enemy
-        public int LoopCatchTicks => 14;                          // the swing round the enemy, from where the string caught it back to the string line: shorter = quicker
+        public int LoopCatchTicks => 14;                          // the curve from where the string caught the enemy to the string line: shorter = quicker
         public int LoopConstrictTicks => 50;                      // the walk back along the string line while the noose shrinks
         public float LoopWalkSpeedPx => 1.4f;                     // px per tick the yoyo walks toward the player while it constricts
-        public float LoopGapPx => 14f;                            // where the swing ends on the string line: this far outside the loop, on the player's side of the enemy
+        public float LoopGapPx => 14f;                            // where the yoyo arrives on the string line: this far outside the noose, on the player's side of the enemy
         public float LoopMinHandDistancePx => 40f;                // the yoyo never walks closer to the hand than this
-        public float LoopRadiusPadPx => 10f;                      // the swing goes round the enemy at least half its size plus this ...
+        public float LoopRadiusPadPx => 10f;                      // the noose starts this much wider than half the enemy's size ...
         public float LoopMinRadiusPx => 14f;                      // ... but never smaller than this ...
         public float LoopMaxRadiusPx => 90f;                      // ... nor bigger than this (a huge boss is looped by a loop this big)
-        public float LoopCloseScale => 0.1f;                      // the loop shrinks to this fraction of its size when it has closed
+        public float LoopCloseRadiusPx => 4f;                     // the noose is this big when it has closed
         public float LoopSpinSpeed => 0.5f;                       // radians per tick the yoyo spins while it walks
         public float LoopStringStepPx => 5f;                      // the string is drawn in pieces about this long
-        public int LoopSplineSteps => 4;                          // smoothing: pieces drawn between two points of the loop's path
-        public float LoopMinSweepDeg => 90f;                      // the swing round the enemy turns at least this far (less than that and it goes a whole circle instead)
+        public int LoopArcSamples => 28;                          // points around the noose
         public float SnareMaxSizePx => 120f;                      // an enemy bigger than this is looped but not held (with bosses, immovable enemies and worm segments)
     }
 }
