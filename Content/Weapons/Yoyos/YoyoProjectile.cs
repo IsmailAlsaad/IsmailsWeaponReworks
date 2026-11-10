@@ -560,8 +560,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 Vector2 pivot = owner.position + owner.fullRotationOrigin + new Vector2(0f, owner.gfxOffY);
                 hand = pivot + (hand - pivot).RotatedBy(Tilt);
             }
-            if (owner.mount.Active && Main.GameUpdateCount % 30 == 0)
-                Main.NewText($"rot {owner.fullRotation:0.00} off {owner.mount.PlayerOffset} offHb {owner.mount.PlayerOffsetHitbox} gfxY {owner.gfxOffY} arm {armWorld:0.00} hand0 {HeldSwordPose.HandWorld(owner, armWorld) - owner.position} hand {hand - owner.position}");
+            //if (owner.mount.Active && Main.GameUpdateCount % 30 == 0)
+            //    Main.NewText($"rot {owner.fullRotation:0.00} off {owner.mount.PlayerOffset} offHb {owner.mount.PlayerOffsetHitbox} gfxY {owner.gfxOffY} arm {armWorld:0.00} hand0 {HeldSwordPose.HandWorld(owner, armWorld) - owner.position} hand {hand - owner.position}");
             owner.heldProj = Projectile.whoAmI; // also ends the projectile when the player swaps items
         }
 
