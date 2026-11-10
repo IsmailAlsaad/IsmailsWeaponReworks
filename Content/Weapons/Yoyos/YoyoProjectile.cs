@@ -95,6 +95,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         YoyoRopeWrap wrap;             // where the string bends around blocks (visual only)
         Vector2 prevCenter;            // the yoyo's center at the start of this tick (the swept hitbox runs from here)
         int idleClock;
+        readonly System.Collections.Generic.List<Vector2> ropePath = new System.Collections.Generic.List<Vector2>();   // a trick's own string path (YoyoTrick.RopePath)
         int catchCooldown;
         float returnSpeed;
         float spin;
@@ -240,13 +241,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
             // The wrap: while out, the string bends around block corners (corner points fixed to the tiles). None while idle (a straight line)
             // or returning (the yoyo is pulled straight through blocks, a wrap there would only flicker).
-            if (State == YoyoState.Out && Tuning.RopeWraps)
+            bool trickPath = State == YoyoState.Out && trick.RopePath(this, ropePath);
+            if (State == YoyoState.Out && Tuning.RopeWraps && !trickPath)
                 wrap.Update(hand, Projectile.Center, Tuning.RopeWrapMaxPivots, Tuning.RopeWrapClearancePx);
             else
                 wrap.Clear();
 
             if (State == YoyoState.Idle)
                 rope.Straight(hand, Projectile.Center);
+            else if (trickPath)
+                rope.TightenAlong(hand, ropePath, Projectile.Center, Tuning.RopeWrapSnapSpeed);   // the trick's own path (the Artery's loop)
             else if (wrap.Active)
                 rope.TightenAlong(hand, wrap.Pivots, Projectile.Center, Tuning.RopeWrapSnapSpeed);   // wrapped: the string follows its path around the corners
             else if (State == YoyoState.Return || (State == YoyoState.Out && trick.RopeTaut(this)))
