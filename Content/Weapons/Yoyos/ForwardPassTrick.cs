@@ -13,6 +13,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         float ForwardPassReachMargin => 30f;      // the far end is the string's full length minus this
         float ForwardPassEase => 0.35f;           // 0 = constant speed along the ellipse, 1 = slow at both ends
         bool ForwardPassThroughPlatforms => true; // platforms and other top-solid blocks do not stop it
+        bool ForwardPassBlockedReturnHurts => true; // a block that stops it on the way back (the second half) does not make it harmless: it keeps hurting while it is pulled to the hand
     }
 
     class ForwardPassDefaults : IForwardPassTuning
@@ -38,6 +39,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         protected float halfReach;    // half the length of the ellipse
         protected bool stopped;       // a block stopped it on this machine; it waits for the owner's return
         protected bool comingBack;    // the second half of the ellipse: the string is pulled taut
+        protected bool blockedComingBack; // a block stopped it on the way back: it keeps its damage hitbox while it is pulled to the hand
 
         public ForwardPassTrick(YoyoTuning tuning) : base(tuning)
         {
@@ -52,6 +54,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             stopped = false;
             comingBack = false;
+            blockedComingBack = false;
             if (authoritative)
             {
                 Player owner = yoyo.Owner;
@@ -93,6 +96,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             {
                 // A solid block in the way: it does not pass through. Impact dust, then the owner pulls it back.
                 stopped = true;
+                blockedComingBack = comingBack && P.ForwardPassBlockedReturnHurts;
                 yoyo.Fx.Impact(yoyo.Projectile.Center, contact.Normal, contact.Impact);
                 if (yoyo.IsOwner)
                     yoyo.BeginReturn();
@@ -105,6 +109,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public override bool RopeTaut(YoyoProjectile yoyo)
         {
             return comingBack;   // the way back along the ellipse: straight and tight, like the return
+        }
+
+        public override bool HurtsWhileReturning(YoyoProjectile yoyo)
+        {
+            return blockedComingBack;   // stopped by a block on the way back: still dangerous until it is caught
         }
 
         public override float SpinStep(YoyoProjectile yoyo)

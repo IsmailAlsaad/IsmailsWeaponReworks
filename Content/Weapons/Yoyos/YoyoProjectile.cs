@@ -467,7 +467,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         public override bool? CanDamage()
         {
-            return State == YoyoState.Out ? (bool?)null : false;
+            if (State == YoyoState.Out)
+                return null;
+            return State == YoyoState.Return && trick != null && trick.HurtsWhileReturning(this) ? (bool?)null : false;
         }
 
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)

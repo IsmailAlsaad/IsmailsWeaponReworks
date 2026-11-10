@@ -15,7 +15,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public override void OnHit(YoyoProjectile yoyo, NPC target)
         {
             base.OnHit(yoyo, target);
-            (yoyo as AmazonProjectile)?.Barb(target);
+            if (yoyo.Hits <= ((AmazonTuning)T).MaxCountedHitsPerSwing)   // hits past the limit in one swing still hurt but add no barbs
+                (yoyo as AmazonProjectile)?.Barb(target);
         }
     }
 }

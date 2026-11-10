@@ -86,5 +86,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Code1
         public float ForwardPassReachMargin => 30f;               // the far end is the string's full length minus this
         public float ForwardPassEase => 0.35f;                    // 0 = constant speed, 1 = slow at both ends
         public bool ForwardPassThroughPlatforms => true;          // platforms and other top-solid blocks do not stop it
+        public bool ForwardPassBlockedReturnHurts => true;        // a block that stops it on the way back does not make it harmless: it keeps hurting while it is pulled to the hand
     }
 }

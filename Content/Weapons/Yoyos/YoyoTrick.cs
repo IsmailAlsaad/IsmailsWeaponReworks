@@ -39,6 +39,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             return false;
         }
 
+        // True: the yoyo keeps its damage hitbox while it is pulled back to the hand (the Return state), until it is caught. Read by
+        // YoyoProjectile.CanDamage on the owner's client; the Forward Pass answers true after a block stopped it on its way back.
+        public virtual bool HurtsWhileReturning(YoyoProjectile yoyo)
+        {
+            return false;
+        }
+
         // The throw starts. authoritative = the owner's client, which sets the launch velocity; the others get it from the sync.
         public abstract void Begin(YoyoProjectile yoyo, bool authoritative);
 

@@ -90,9 +90,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public float ForwardPassReachMargin => 30f;               // the far end is the string's full length minus this
         public float ForwardPassEase => 0.35f;                    // 0 = constant speed, 1 = slow at both ends
         public bool ForwardPassThroughPlatforms => true;          // platforms and other top-solid blocks do not stop it
+        public bool ForwardPassBlockedReturnHurts => true;        // a block that stops it on the way back does not make it harmless: it keeps hurting while it is pulled to the hand
 
         // ---- the barbs ----
         public int BarbHitsToRelease => 3;                        // hits per cycle: the last one releases the barbs onto the enemy, the ones before make the yoyo more barbed
+        public int MaxCountedHitsPerSwing => 2;                   // at most this many hits of ONE swing (pass) count toward the stage; later hits of the same swing still hurt but add nothing
         public float ReleaseShake => 0.8f;                        // the camera punch when the barbs are released (0 = none)
 
         // ---- the latched vines (the coil around an enemy, the Blade of Grass style) ----

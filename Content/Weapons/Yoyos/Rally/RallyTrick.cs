@@ -15,7 +15,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Rally
         public override void OnHit(YoyoProjectile yoyo, NPC target)
         {
             base.OnHit(yoyo, target);
-            (yoyo as RallyProjectile)?.Crack();
+            if (yoyo.Hits <= ((RallyTuning)T).MaxCountedHitsPerSwing)   // hits past the limit in one swing still hurt but do not crack it
+                (yoyo as RallyProjectile)?.Crack();
         }
     }
 }
