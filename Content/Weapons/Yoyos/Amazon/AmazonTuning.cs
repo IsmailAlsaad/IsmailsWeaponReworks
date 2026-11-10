@@ -165,10 +165,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public float VineHeadScale => 0.8f;                       // the Thorn Hook head on the tip
         public int SnareTicks => 300;                             // how long a snared enemy is held (5 s)
         public int ResnareCooldownTicks => 120;                   // after a release the same enemy cannot be snared again for this long
-        public int WrapTicks => 14;                               // the vine wraps the enemy's feet over this time
-        public float WrapLoops => 1.25f;                          // turns of the wrap
-        public float WrapRadiusPad => 3f;                         // the wrap's radius: half the enemy's width plus this
-        public float WrapHeightFraction => 0.3f;                  // how high up the enemy the wrap climbs (fraction of its height)
+        public int WrapTicks => 14;                               // the vine grows into the hoop over the enemy over this time
+        public float HoopFootPadPx => 6f;                         // the hoop comes down this far beside the enemy (half its width plus this), on both sides
+        public float HoopHeightPadPx => 8f;                       // the top of the hoop is this far above the enemy's head
+        public float HoopMaxHeightPx => 120f;                     // the enemy's height counted for the hoop is at most this
+        public int HoopPoints => 24;                              // points along the hoop (the drawing is one smooth strip)
+        public float AnchorSinkPx => 3f;                          // the tip digs this far into the ground
+        public bool SnareStopsAI => true;                         // a held enemy runs no AI at all (no walking, jumping, flying, falling or attacks); false = only its movement is zeroed
         public int SnareDustTicks => 14;                          // a few leaves near the held enemy this often
         public float SnareShake => 0.5f;                          // a small camera punch when an enemy is snared (0 = none)
     }

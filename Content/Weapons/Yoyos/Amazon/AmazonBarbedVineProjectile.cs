@@ -13,7 +13,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
     /// A tiny barbed vine the Amazon plants in the ground while it rolls (right click). It is the end portion of a Blade of Grass vine: the
     /// spiny chain tapering to the Thorn Hook head, only VineLengthPx long, standing up from the surface against gravity (it hangs down
     /// from a ceiling when gravity is flipped) and swaying a little. An enemy that walks into it is held in place for SnareTicks (the vine
-    /// wraps its feet); then the vine digs back into the ground. It does no damage. At most MaxVines of a player exist at once: planting
+    /// arches over it and digs its tip into the ground on the far side); then the vine digs back into the ground. It does no damage. At most MaxVines of a player exist at once: planting
     /// one more makes the oldest dig away. A vine nobody touches digs away after VineLifeTicks, and a boss is never held.
     /// ai[0] = the sway seed (negative when gravity was flipped at the planting), ai[1] = the held enemy's index plus 1 (0 = none),
     /// ai[2] = 0 standing, 1 digging.
@@ -34,7 +34,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public int Age;                    // ticks since this machine saw the vine (on the owner's client: since it was planted)
         int digAge;                        // ticks since the dig began
         int snareAge;                      // owner only: ticks since an enemy was snared
-        int wrapNpc = -1;                  // the enemy the wrap is drawn on (kept while the wrap unwinds)
+        bool hoopReady;                    // the hoop below is worked out for the current snare (visual only)
+        bool anchored;                     // the tip has dug into the ground (its puff played)
+        Vector2 hoopNear, hoopFar, hoopAnchor;   // the hoop's two high points (beside the enemy, above its head) and where the tip digs in
         float wrap;                        // 0..1, how far the vine has wrapped the enemy
         bool popped;
         bool wasDigging;
@@ -148,7 +150,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
             int index = SnaredIndex;
             if (index >= 0)
             {
-                wrapNpc = index;
                 NPC held = index < Main.maxNPCs ? Main.npc[index] : null;
                 if (held != null && held.active && held.life > 0)
                 {
@@ -157,9 +158,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
                     if (!wasSnared)
                     {
                         wasSnared = true;
+                        BuildHoop(held);
                         fx.Snare(held.Center, held.width, held.height);
                     }
                     wrap = Math.Min(1f, wrap + 1f / Math.Max(1, tune.WrapTicks));
+                    if (!anchored && wrap >= 0.95f)
+                    {
+                        anchored = true;   // the tip reaches the ground: a puff of dirt there
+                        fx.VinePop(hoopAnchor, new Vector2(0f, -GravDir));
+                    }
                     if (Age % Math.Max(1, tune.SnareDustTicks) == 0)
                         fx.SnareTick(held.Center, held.width, held.height);
                     if (IsOwner)
@@ -175,6 +182,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
             else
             {
                 wasSnared = false;
+                anchored = false;
                 wrap = Math.Max(0f, wrap - 1f / Math.Max(1, tune.WrapTicks));
                 if (IsOwner)
                 {
@@ -216,6 +224,56 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
             }
         }
 
+        // ---------------------------------------------------------------- the hoop over a held enemy
+
+        // Works out the hoop for the enemy that was just snared (visual only, every machine does it on its own copy of the enemy). It leaves the
+        // root, rises just outside the enemy on the planted side, goes over its head and comes down just outside it on the far side, where the
+        // tip digs into the ground. Like the top of a question mark that pins the enemy down.
+        void BuildHoop(NPC npc)
+        {
+            int g = GravDir;
+            float groundY = Projectile.Center.Y;
+            float centerX = npc.Center.X;
+            float far = Projectile.Center.X <= centerX ? 1f : -1f;   // the tip lands on the side away from the root
+            if (Math.Abs(Projectile.Center.X - centerX) < 3f)
+                far = (int)Seed % 2 == 0 ? 1f : -1f;                 // the root is right under the enemy: either side, by the vine's own seed
+            float half = npc.width * 0.5f + tune.HoopFootPadPx;
+            float nearX = centerX - far * half;
+            float farX = centerX + far * half;
+            float headY = g > 0 ? npc.Top.Y : npc.Bottom.Y;
+            float height = MathHelper.Clamp(Math.Abs(groundY - headY), 16f, tune.HoopMaxHeightPx) + tune.HoopHeightPadPx;
+            float ctrl = height / 0.75f;                             // a cubic curve with both middle points at ctrl peaks at 0.75 of it
+            hoopNear = new Vector2(nearX, groundY - g * ctrl);
+            hoopFar = new Vector2(farX, groundY - g * ctrl);
+            hoopAnchor = new Vector2(farX, GroundAt(farX, groundY, g) + g * tune.AnchorSinkPx);
+            hoopReady = true;
+        }
+
+        // A point on the hoop, t from 0 (the root) to 1 (the anchor in the ground): a cubic curve through the root, two points high above the
+        // enemy's sides and the anchor.
+        Vector2 Hoop(Vector2 start, float t)
+        {
+            float s = 1f - t;
+            return start * (s * s * s) + hoopNear * (3f * s * s * t) + hoopFar * (3f * s * t * t) + hoopAnchor * (t * t * t);
+        }
+
+        // The surface of the ground at this x, found near the height of the planted vine (a floor, or a ceiling when gravity is flipped).
+        static float GroundAt(float x, float fromY, int g)
+        {
+            int tx = (int)(x / 16f);
+            int start = (int)(fromY / 16f) - g * 2;
+            for (int i = 0; i < 10; i++)
+            {
+                int ty = start + g * i;
+                if (!WorldGen.InWorld(tx, ty, 2))
+                    break;
+                Tile tile = Framing.GetTileSafely(tx, ty);
+                if (tile.HasUnactuatedTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType])
+                    return g > 0 ? ty * 16f : (ty + 1) * 16f;
+            }
+            return fromY;
+        }
+
         // ---------------------------------------------------------------- drawing
 
         public override bool PreDraw(ref Color lightColor)
@@ -233,7 +291,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
             if (visible <= 0.02f)
                 return false;
 
-            int count = Math.Max(4, tune.VinePoints);
+            bool hooped = wrap > 0.001f && hoopReady;
+            int count = Math.Max(4, hooped ? Math.Max(tune.VinePoints, tune.HoopPoints) : tune.VinePoints);
             if (points == null || points.Length != count)
                 points = new Vector2[count];
 
@@ -241,11 +300,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
             Vector2 up = new Vector2(0f, -g);
             Vector2 root = Projectile.Center - up * tune.VineRootSinkPx;   // the foot of the vine is a little inside the surface
             float seed = Seed;
-
-            NPC wrapped = null;
-            int wrapIndex = SnaredIndex >= 0 ? SnaredIndex : wrapNpc;
-            if (wrap > 0.001f && wrapIndex >= 0 && wrapIndex < Main.maxNPCs && Main.npc[wrapIndex].active)
-                wrapped = Main.npc[wrapIndex];
+            float reach = MathHelper.SmoothStep(0f, 1f, wrap);   // how far along the hoop the tip has got, and how much of the standing shape has bent into it
 
             for (int k = 0; k < count; k++)
             {
@@ -255,17 +310,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
                 float sway = (float)Math.Sin(Age * tune.VineSwaySpeed + seed + u * 3.2f) * tune.VineSwayPx * u;
                 Vector2 point = root + up * (tune.VineLengthPx * visible * u) + new Vector2(sway, 0f);
 
-                // Snaring: the vine curls around the enemy's feet, the root staying where it is.
-                if (wrapped != null)
-                {
-                    float radius = MathHelper.Clamp(wrapped.width * 0.5f + tune.WrapRadiusPad, 8f, 40f);
-                    float climb = MathHelper.Clamp(wrapped.height * tune.WrapHeightFraction, 8f, 28f);
-                    float angle = seed + u * tune.WrapLoops * MathHelper.TwoPi;
-                    float feetY = g > 0 ? wrapped.Bottom.Y : wrapped.Top.Y;
-                    Vector2 coil = new Vector2(wrapped.Center.X + (float)Math.Cos(angle) * radius, feetY - g * (2f + u * climb) + (float)Math.Sin(angle) * radius * 0.3f);
-                    float weight = wrap * MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(u / 0.35f, 0f, 1f));
-                    point = Vector2.Lerp(point, coil, weight);
-                }
+                // Snaring: the vine grows into the hoop over the enemy, the root staying where it is and the tip reaching for the ground.
+                if (hooped)
+                    point = Vector2.Lerp(point, Hoop(root, u * reach), reach);
                 points[k] = point;
             }
 
