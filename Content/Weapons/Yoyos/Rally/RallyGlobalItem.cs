@@ -15,7 +15,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Rally
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
             tooltips.Add(new TooltipLine(Mod, "Rally1", "Left click to perform a Forward Pass"));
-            tooltips.Add(new TooltipLine(Mod, "Rally2", "Every hit cracks the yoyo; the third hit breaks its shell into falling shards"));
+            //tooltips.Add(new TooltipLine(Mod, "Rally2", "Every hit cracks the yoyo; the third hit breaks its shell into falling shards"));
         }
     }
 }
