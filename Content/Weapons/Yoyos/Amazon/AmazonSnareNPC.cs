@@ -23,6 +23,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
 
         public bool Held => Main.GameUpdateCount - HoldTick <= 2;
 
+        public long PendingTick = -1000;   // owner's client: refreshed by a vine whose enemy touched it in the air and is still falling
+        public bool Pending => Main.GameUpdateCount - PendingTick <= 2;
+
         readonly AmazonTuning tune = new AmazonTuning();
 
         // A held enemy runs no AI: nothing moves it, and nothing it would do (walk, jump, fly, shoot) happens.

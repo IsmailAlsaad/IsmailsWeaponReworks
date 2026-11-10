@@ -165,12 +165,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public float VineHeadScale => 0.8f;                       // the Thorn Hook head on the tip
         public int SnareTicks => 500;                             // how long a snared enemy is held (5 s)
         public int ResnareCooldownTicks => 120;                   // after a release the same enemy cannot be snared again for this long
-        public int WrapTicks => 14;                               // the vine grows into the hoop over the enemy over this time
-        public float HoopFootPadPx => 6f;                         // the hoop comes down this far beside the enemy (half its width plus this), on both sides
-        public float HoopHeightPadPx => 8f;                       // the top of the hoop is this far above the enemy's head
-        public float HoopMaxHeightPx => 16f;                     // the enemy's height counted for the hoop is at most this
-        public int HoopPoints => 24;                              // points along the hoop (the drawing is one smooth strip)
-        public float AnchorSinkPx => 3f;                          // the tip digs this far into the ground
+        public int WrapTicks => 14;                               // the vine reaches out and loops around the enemy over this time
+        public float LoopRadiusScale => 0.5f;                         // the loop's radius: the enemy's larger side times this ...
+        public float LoopRadiusPad => 6f;                       // ... plus this (at least 12, at most 60)
+        public float LoopTurns => 1.25f;                     // how many turns the vine makes around the enemy
+        public float LoopSpiral => 0.15f;                              // the first turn is this much wider than the last (the loop tapers)
+        public float StemArcPx => 40f;                          // how high the vine arches on its way from the root to the enemy (at most)
+        public int LoopPoints => 34;                              // points along the vine while it loops (the drawing is one smooth strip)
+        public float LoopWigglePx => 1.2f;                        // how far the loop wiggles in and out
+        public float LoopWiggleSpeed => 0.22f;                    // radians per tick
+        public float SnareReachPx => 160f;                        // an enemy that lands farther than this from the vine (10 tiles) is not held
+        public int PendingMaxTicks => 300;                        // an enemy that touched the vine in the air is given up after falling this long
         public bool SnareStopsAI => true;                         // a held enemy runs no AI at all (no walking, jumping, flying, falling or attacks); false = only its movement is zeroed
         public int SnareDustTicks => 14;                          // a few leaves near the held enemy this often
         public float SnareShake => 0.5f;                          // a small camera punch when an enemy is snared (0 = none)

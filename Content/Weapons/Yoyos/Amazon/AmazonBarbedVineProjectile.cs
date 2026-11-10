@@ -13,7 +13,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
     /// A tiny barbed vine the Amazon plants in the ground while it rolls (right click). It is the end portion of a Blade of Grass vine: the
     /// spiny chain tapering to the Thorn Hook head, only VineLengthPx long, standing up from the surface against gravity (it hangs down
     /// from a ceiling when gravity is flipped) and swaying a little. An enemy that walks into it is held in place for SnareTicks (the vine
-    /// arches over it and digs its tip into the ground on the far side); then the vine digs back into the ground. It does no damage. At most MaxVines of a player exist at once: planting
+    /// reaches out and loops around it); then the vine digs back into the ground. It does no damage. An enemy that touches it in the air
+    /// keeps falling until it lands, and is held then (not when it lands more than SnareReachPx from the vine). At most MaxVines of a player exist at once: planting
     /// one more makes the oldest dig away. A vine nobody touches digs away after VineLifeTicks, and a boss is never held.
     /// ai[0] = the sway seed (negative when gravity was flipped at the planting), ai[1] = the held enemy's index plus 1 (0 = none),
     /// ai[2] = 0 standing, 1 digging.
@@ -34,9 +35,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public int Age;                    // ticks since this machine saw the vine (on the owner's client: since it was planted)
         int digAge;                        // ticks since the dig began
         int snareAge;                      // owner only: ticks since an enemy was snared
-        bool hoopReady;                    // the hoop below is worked out for the current snare (visual only)
-        bool anchored;                     // the tip has dug into the ground (its puff played)
-        Vector2 hoopNear, hoopFar, hoopAnchor;   // the hoop's two high points (beside the enemy, above its head) and where the tip digs in
+        int pendingNpc = -1;               // owner only: an enemy that touched the vine in the air and is still falling (held when it lands)
+        int pendingAge;                    // owner only: ticks it has been falling
+        Vector2 loopCenter;                // the held enemy's center and the loop's radius around it, refreshed while it is held (visual only)
+        float loopRadius = 20f;
+        Vector2 loopEntry, loopControl;    // the stem from the root to the ring: where it meets the ring and how it bends
+        float loopStemFrac, loopA0, loopSpan, loopR0;
         float wrap;                        // 0..1, how far the vine has wrapped the enemy
         bool popped;
         bool wasDigging;
@@ -50,6 +54,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         float Seed => Math.Abs(Projectile.ai[0]);
         int SnaredIndex => (int)Projectile.ai[1] - 1;
         public bool Digging => Projectile.ai[2] >= 1f;
+        float LoopDir => (int)Seed % 2 == 0 ? 1f : -1f;   // which way the tip circles (from the vine's own seed)
 
         public override void SetDefaults()
         {
@@ -155,18 +160,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
                 {
                     // Every machine keeps the hold alive on its own copy of the enemy (AmazonSnareNPC ends it a moment after the vine stops).
                     held.GetGlobalNPC<AmazonSnareNPC>().HoldTick = (long)Main.GameUpdateCount;
+                    loopCenter = held.Center;
+                    loopRadius = MathHelper.Clamp(Math.Max(held.width, held.height) * tune.LoopRadiusScale + tune.LoopRadiusPad, 12f, 60f);
                     if (!wasSnared)
                     {
                         wasSnared = true;
-                        BuildHoop(held);
                         fx.Snare(held.Center, held.width, held.height);
                     }
                     wrap = Math.Min(1f, wrap + 1f / Math.Max(1, tune.WrapTicks));
-                    if (!anchored && wrap >= 0.95f)
-                    {
-                        anchored = true;   // the tip reaches the ground: a puff of dirt there
-                        fx.VinePop(hoopAnchor, new Vector2(0f, -GravDir));
-                    }
+
                     if (Age % Math.Max(1, tune.SnareDustTicks) == 0)
                         fx.SnareTick(held.Center, held.width, held.height);
                     if (IsOwner)
@@ -182,11 +184,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
             else
             {
                 wasSnared = false;
-                anchored = false;
                 wrap = Math.Max(0f, wrap - 1f / Math.Max(1, tune.WrapTicks));
                 if (IsOwner)
                 {
-                    if (Age >= tune.VineGrowTicks)
+                    if (pendingNpc >= 0)
+                        TickPending();   // an enemy is still falling toward the ground: held when it lands
+                    else if (Age >= tune.VineGrowTicks)
                         TrySnare();
                     if (Age >= tune.VineLifeTicks)
                         StartDig();       // nobody touched it for a long time
@@ -214,64 +217,93 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
                 if (!CanSnare(npc) || !npc.Hitbox.Intersects(box))
                     continue;
                 AmazonSnareNPC snare = npc.GetGlobalNPC<AmazonSnareNPC>();
-                if (snare.ResnareTicks > 0 || snare.Held)
-                    continue;   // snared a moment ago, or another vine of ours already holds it
-                Projectile.ai[1] = npc.whoAmI + 1;
-                snareAge = 0;
-                Projectile.netUpdate = true;
-                YoyoShake.Hit(npc.Center, tune.SnareShake);
+                if (snare.ResnareTicks > 0 || snare.Held || snare.Pending)
+                    continue;   // snared a moment ago, or another vine of ours already holds it or is waiting for it to land
+                if (!npc.noGravity && !OnGround(npc))
+                {
+                    pendingNpc = npc.whoAmI;   // in the air: it keeps falling and is held when it lands
+                    pendingAge = 0;
+                    snare.PendingTick = (long)Main.GameUpdateCount;
+                    return;
+                }
+                Hold(npc);
                 return;
             }
         }
 
-        // ---------------------------------------------------------------- the hoop over a held enemy
+        // ---------------------------------------------------------------- the enemy that touched the vine (owner's client)
 
-        // Works out the hoop for the enemy that was just snared (visual only, every machine does it on its own copy of the enemy). It leaves the
-        // root, rises just outside the enemy on the planted side, goes over its head and comes down just outside it on the far side, where the
-        // tip digs into the ground. Like the top of a question mark that pins the enemy down.
-        void BuildHoop(NPC npc)
+        // The enemy is held: the owner publishes it through ai[1] and every machine takes it from there.
+        void Hold(NPC npc)
         {
-            int g = GravDir;
-            float groundY = Projectile.Center.Y;
-            float centerX = npc.Center.X;
-            float far = Projectile.Center.X <= centerX ? 1f : -1f;   // the tip lands on the side away from the root
-            if (Math.Abs(Projectile.Center.X - centerX) < 3f)
-                far = (int)Seed % 2 == 0 ? 1f : -1f;                 // the root is right under the enemy: either side, by the vine's own seed
-            float half = npc.width * 0.5f + tune.HoopFootPadPx;
-            float nearX = centerX - far * half;
-            float farX = centerX + far * half;
-            float headY = g > 0 ? npc.Top.Y : npc.Bottom.Y;
-            float height = MathHelper.Clamp(Math.Abs(groundY - headY), 16f, tune.HoopMaxHeightPx) + tune.HoopHeightPadPx;
-            float ctrl = height / 0.75f;                             // a cubic curve with both middle points at ctrl peaks at 0.75 of it
-            hoopNear = new Vector2(nearX, groundY - g * ctrl);
-            hoopFar = new Vector2(farX, groundY - g * ctrl);
-            hoopAnchor = new Vector2(farX, GroundAt(farX, groundY, g) + g * tune.AnchorSinkPx);
-            hoopReady = true;
+            Projectile.ai[1] = npc.whoAmI + 1;
+            snareAge = 0;
+            Projectile.netUpdate = true;
+            YoyoShake.Hit(npc.Center, tune.SnareShake);
         }
 
-        // A point on the hoop, t from 0 (the root) to 1 (the anchor in the ground): a cubic curve through the root, two points high above the
-        // enemy's sides and the anchor.
-        Vector2 Hoop(Vector2 start, float t)
+        // An enemy that touched the vine in the air keeps falling (and moving) as usual. When it lands near enough it is held; landing too far
+        // away (SnareReachPx), dying, getting held by another vine or falling for too long (PendingMaxTicks) cancels the snare.
+        void TickPending()
         {
-            float s = 1f - t;
-            return start * (s * s * s) + hoopNear * (3f * s * s * t) + hoopFar * (3f * s * t * t) + hoopAnchor * (t * t * t);
-        }
-
-        // The surface of the ground at this x, found near the height of the planted vine (a floor, or a ceiling when gravity is flipped).
-        static float GroundAt(float x, float fromY, int g)
-        {
-            int tx = (int)(x / 16f);
-            int start = (int)(fromY / 16f) - g * 2;
-            for (int i = 0; i < 10; i++)
+            pendingAge++;
+            NPC npc = pendingNpc >= 0 && pendingNpc < Main.maxNPCs ? Main.npc[pendingNpc] : null;
+            if (npc == null || !CanSnare(npc) || npc.life <= 0 || pendingAge > tune.PendingMaxTicks)
             {
-                int ty = start + g * i;
-                if (!WorldGen.InWorld(tx, ty, 2))
-                    break;
-                Tile tile = Framing.GetTileSafely(tx, ty);
-                if (tile.HasUnactuatedTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType])
-                    return g > 0 ? ty * 16f : (ty + 1) * 16f;
+                pendingNpc = -1;
+                return;
             }
-            return fromY;
+            AmazonSnareNPC snare = npc.GetGlobalNPC<AmazonSnareNPC>();
+            if (snare.Held)
+            {
+                pendingNpc = -1;
+                return;
+            }
+            snare.PendingTick = (long)Main.GameUpdateCount;
+            if (!OnGround(npc))
+                return;
+            pendingNpc = -1;
+            if (Vector2.Distance(npc.Bottom, Projectile.Center) <= tune.SnareReachPx)
+                Hold(npc);
+        }
+
+        // Standing on a block or a platform (and not on its way up): false while it is in the air.
+        static bool OnGround(NPC npc)
+        {
+            return npc.velocity.Y > -0.5f && Collision.SolidCollision(new Vector2(npc.position.X, npc.Bottom.Y), npc.width, 2, true);
+        }
+
+        // ---------------------------------------------------------------- the loop around a held enemy
+
+        // Works out the loop for this frame (visual only): a stem that arches from the root to a ring around the enemy, and the vine circling
+        // the enemy about LoopTurns times on that ring (a little wider where it starts, like the Blade of Grass vine that latches on).
+        void LoopGeometry(Vector2 root)
+        {
+            loopA0 = (root - loopCenter).ToRotation();
+            loopR0 = loopRadius * (1f + tune.LoopSpiral);
+            loopEntry = loopCenter + loopA0.ToRotationVector2() * loopR0;
+            float stemLength = Vector2.Distance(root, loopEntry);
+            loopControl = (root + loopEntry) * 0.5f + new Vector2(0f, -GravDir) * Math.Min(tune.StemArcPx, stemLength * 0.4f);
+            loopSpan = MathHelper.TwoPi * tune.LoopTurns;
+            float arcLength = loopRadius * loopSpan * (1f + tune.LoopSpiral * 0.5f);
+            loopStemFrac = stemLength / Math.Max(1f, stemLength + arcLength);
+        }
+
+        // A point on the loop, f from 0 (the root) to 1 (the tip), with a tiny wiggle.
+        Vector2 LoopAt(Vector2 start, float f)
+        {
+            float clock = Age * tune.LoopWiggleSpeed + Seed;
+            if (f < loopStemFrac)
+            {
+                float t = f / Math.Max(0.0001f, loopStemFrac);
+                float s = 1f - t;
+                Vector2 stem = start * (s * s) + loopControl * (2f * s * t) + loopEntry * (t * t);
+                return stem + new Vector2((float)Math.Sin(clock + t * 5f) * tune.LoopWigglePx * 0.5f * (float)Math.Sin(t * MathHelper.Pi), 0f);
+            }
+            float q = (f - loopStemFrac) / Math.Max(0.0001f, 1f - loopStemFrac);
+            float angle = loopA0 + LoopDir * loopSpan * q;
+            float radius = MathHelper.Lerp(loopR0, loopRadius, q) + (float)Math.Sin(clock + q * 9f) * tune.LoopWigglePx;
+            return loopCenter + angle.ToRotationVector2() * radius;
         }
 
         // ---------------------------------------------------------------- drawing
@@ -291,8 +323,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
             if (visible <= 0.02f)
                 return false;
 
-            bool hooped = wrap > 0.001f && hoopReady;
-            int count = Math.Max(4, hooped ? Math.Max(tune.VinePoints, tune.HoopPoints) : tune.VinePoints);
+            bool looped = wrap > 0.001f;
+            int count = Math.Max(4, looped ? Math.Max(tune.VinePoints, tune.LoopPoints) : tune.VinePoints);
             if (points == null || points.Length != count)
                 points = new Vector2[count];
 
@@ -300,7 +332,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
             Vector2 up = new Vector2(0f, -g);
             Vector2 root = Projectile.Center - up * tune.VineRootSinkPx;   // the foot of the vine is a little inside the surface
             float seed = Seed;
-            float reach = MathHelper.SmoothStep(0f, 1f, wrap);   // how far along the hoop the tip has got, and how much of the standing shape has bent into it
+            float reach = MathHelper.SmoothStep(0f, 1f, wrap);   // how far along the loop the tip has got, and how much of the standing shape has bent into it
+            if (looped)
+                LoopGeometry(root);
 
             for (int k = 0; k < count; k++)
             {
@@ -310,9 +344,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
                 float sway = (float)Math.Sin(Age * tune.VineSwaySpeed + seed + u * 3.2f) * tune.VineSwayPx * u;
                 Vector2 point = root + up * (tune.VineLengthPx * visible * u) + new Vector2(sway, 0f);
 
-                // Snaring: the vine grows into the hoop over the enemy, the root staying where it is and the tip reaching for the ground.
-                if (hooped)
-                    point = Vector2.Lerp(point, Hoop(root, u * reach), reach);
+                // Snaring: the vine reaches out to the enemy and loops around it, the root staying where it is.
+                if (looped)
+                    point = Vector2.Lerp(point, LoopAt(root, u * reach), reach);
                 points[k] = point;
             }
 
