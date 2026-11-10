@@ -30,6 +30,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         Vector2[] last;
         bool ready;                    // the verlet rope is running (false = the straight line is drawn)
         bool hasLine;
+        Vector2[] offset;              // Tighten: how far each point still is from the straight line (shrinks every tick)
+        bool tightening;               // the last call was Tighten (the offsets are running)
         Vector2 lineA;
         Vector2 lineB;
         readonly List<Vector2> curve = new List<Vector2>();
@@ -40,6 +42,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             if (Main.dedServ)
                 return;
             ready = false;
+            tightening = false;
             hasLine = true;
             lineA = anchor;
             lineB = end;
@@ -60,6 +63,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 ready = false;
             }
 
+            tightening = false;
             float distance = Vector2.Distance(anchor, end);
             float length = Math.Max(tuning.RopeMinLength, distance * slackFactor + extraSlack);
             float piece = length / (n - 1);
@@ -181,16 +185,27 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 return;
             }
 
+            // Every point sits on TODAY's straight line plus an offset that shrinks every tick (moving each point a fraction toward the
+            // line lagged behind a swinging yoyo: the string pointed at the yoyo's last position and then jerked toward the new one).
             Vector2 shift = anchor - pos[0];   // the hand's frame, like Update
-            float amount = MathHelper.Clamp(speed, 0.01f, 1f);
+            float keep = 1f - MathHelper.Clamp(speed, 0.01f, 1f);
+            if (offset == null || offset.Length != n)
+            {
+                offset = new Vector2[n];
+                tightening = false;
+            }
             for (int i = 0; i < n; i++)
             {
                 Vector2 line = Vector2.Lerp(anchor, end, i / (float)(n - 1));
-                Vector2 p = Vector2.Lerp(pos[i] + shift, line, amount);
+                if (!tightening)
+                    offset[i] = pos[i] + shift - line;   // the first tick: how far the bent string is from the straight line
+                offset[i] *= keep;
+                Vector2 p = line + offset[i];
                 pos[i] = p;
                 prev[i] = p;   // no leftover speed: the next Update starts from rest
                 last[i] = p;
             }
+            tightening = true;
             pos[0] = anchor;
             prev[0] = anchor;
             pos[n - 1] = end;
