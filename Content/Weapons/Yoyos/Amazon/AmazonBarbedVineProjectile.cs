@@ -17,7 +17,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
     /// keeps falling until it lands, and is held then (not when it lands more than SnareReachPx from the vine). At most MaxVines of a player exist at once: planting
     /// one more makes the oldest dig away. A vine nobody touches digs away after VineLifeTicks, and a boss is never held.
     /// ai[0] = the sway seed (negative when gravity was flipped at the planting), ai[1] = the held enemy's index plus 1 (0 = none),
-    /// ai[2] = 0 standing, 1 digging.
+    /// ai[2] = minus the plant order while standing (-1 for the first vine, -2 for the next ... the oldest standing vine of a player has the
+    /// lowest order and wins an enemy that several vines hold), 1 digging.
     /// MULTIPLAYER: planted by the owner's client (normal spawn sync, the seed is the spawn data). The owner's client alone decides the
     /// snare (the overlap with an enemy), its end, the eviction and the dig, and publishes them through ai[1], ai[2] and netUpdate.
     /// Every machine animates the pop, the sway, the wrap and the dig from those values, and refreshes the hold lease on its copy of the
@@ -50,6 +51,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         Asset<Texture2D> headAsset;
 
         bool IsOwner => Projectile.owner == Main.myPlayer;
+        // Names this vine on every machine and ranks it: the plant order (synced in ai[2]) comes first, so the OLDEST vine has the lowest key
+        // and keeps an enemy that several vines hold; the owner and the identity only break a tie between two players' vines.
+        long HolderKey => (long)Math.Max(1, (int)-Projectile.ai[2]) * 1000000L + Projectile.owner * Main.maxProjectiles + Projectile.identity;
         int GravDir => Projectile.ai[0] < 0f ? -1 : 1;
         float Seed => Math.Abs(Projectile.ai[0]);
         int SnaredIndex => (int)Projectile.ai[1] - 1;
@@ -84,7 +88,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         {
             MakeRoom(yoyo.owner, tune.MaxVines);
             float seed = Main.rand.NextFloat(1f, 100f) * gravDir;
-            Projectile.NewProjectile(yoyo.GetSource_FromThis(), surface, Vector2.Zero, ModContent.ProjectileType<AmazonBarbedVineProjectile>(), 0, 0f, yoyo.owner, seed, 0f, 0f);
+            Projectile.NewProjectile(yoyo.GetSource_FromThis(), surface, Vector2.Zero, ModContent.ProjectileType<AmazonBarbedVineProjectile>(), 0, 0f, yoyo.owner, seed, 0f, -NextOrder(yoyo.owner));
+        }
+
+        // The plant order of the next vine of this player: one more than the newest standing vine (1 when none stands). It travels in ai[2],
+        // so every machine ranks the vines the same way (older = lower).
+        static int NextOrder(int owner)
+        {
+            int type = ModContent.ProjectileType<AmazonBarbedVineProjectile>();
+            int newest = 0;
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile other = Main.projectile[i];
+                if (!other.active || other.type != type || other.owner != owner || other.ai[2] >= 0f)
+                    continue;   // a digging vine (ai[2] = 1) has no order any more
+                newest = Math.Max(newest, (int)-other.ai[2]);
+            }
+            return newest + 1;
         }
 
         // Makes the oldest standing vines of this player dig away until there is room for one more (fewer than 'max' are left standing).
@@ -126,6 +146,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
 
         // ---------------------------------------------------------------- AI
 
+        // Owner's client: the vine lets go of its enemy WITHOUT digging (another vine holds it): it stands again and can target other enemies.
+        void LetGo()
+        {
+            Projectile.ai[1] = 0f;
+            snareAge = 0;
+            pendingNpc = -1;
+            Projectile.netUpdate = true;
+        }
+
         public override void AI()
         {
             Age++;
@@ -159,7 +188,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
                 if (held != null && held.active && held.life > 0)
                 {
                     // Every machine keeps the hold alive on its own copy of the enemy (AmazonSnareNPC ends it a moment after the vine stops).
-                    held.GetGlobalNPC<AmazonSnareNPC>().HoldTick = (long)Main.GameUpdateCount;
+                    // If another vine with a lower key holds this enemy too, this vine is the loser on every machine: it lets go at once.
+                    AmazonSnareNPC snare = held.GetGlobalNPC<AmazonSnareNPC>();
+                    if (!snare.Claim(HolderKey))
+                    {
+                        wasSnared = false;
+                        wrap = Math.Max(0f, wrap - 1f / Math.Max(1, tune.WrapTicks));
+                        if (IsOwner)
+                            LetGo();
+                        return;
+                    }
                     loopCenter = held.Center;
                     loopRadius = MathHelper.Clamp(Math.Max(held.width, held.height) * tune.LoopRadiusScale + tune.LoopRadiusPad, 12f, 60f);
                     if (!wasSnared)
@@ -223,7 +261,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
                 {
                     pendingNpc = npc.whoAmI;   // in the air: it keeps falling and is held when it lands
                     pendingAge = 0;
-                    snare.PendingTick = (long)Main.GameUpdateCount;
+                    snare.Pend(HolderKey);
                     return;
                 }
                 Hold(npc);
@@ -236,6 +274,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         // The enemy is held: the owner publishes it through ai[1] and every machine takes it from there.
         void Hold(NPC npc)
         {
+            npc.GetGlobalNPC<AmazonSnareNPC>().Claim(HolderKey);   // claimed NOW (not on the next tick), so a vine checked later this tick skips it
             Projectile.ai[1] = npc.whoAmI + 1;
             snareAge = 0;
             Projectile.netUpdate = true;
@@ -250,20 +289,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
             NPC npc = pendingNpc >= 0 && pendingNpc < Main.maxNPCs ? Main.npc[pendingNpc] : null;
             if (npc == null || !CanSnare(npc) || npc.life <= 0 || pendingAge > tune.PendingMaxTicks)
             {
+                if (npc != null)
+                    npc.GetGlobalNPC<AmazonSnareNPC>().EndPend(HolderKey);
                 pendingNpc = -1;
                 return;
             }
             AmazonSnareNPC snare = npc.GetGlobalNPC<AmazonSnareNPC>();
             if (snare.Held)
             {
+                snare.EndPend(HolderKey);   // another vine got it first: this one is free again
                 pendingNpc = -1;
                 return;
             }
-            snare.PendingTick = (long)Main.GameUpdateCount;
+            snare.Pend(HolderKey);
             if (!OnGround(npc))
                 return;
             pendingNpc = -1;
-            if (Vector2.Distance(npc.Bottom, Projectile.Center) <= tune.SnareReachPx)
+            snare.EndPend(HolderKey);
+            // Held and ResnareTicks were checked above and nothing changed since, so Hold claims the enemy for this vine alone.
+            if (snare.ResnareTicks <= 0 && Vector2.Distance(npc.Bottom, Projectile.Center) <= tune.SnareReachPx)
                 Hold(npc);
         }
 

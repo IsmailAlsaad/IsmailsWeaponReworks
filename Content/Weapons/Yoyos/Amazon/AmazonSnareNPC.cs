@@ -19,12 +19,40 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public override bool InstancePerEntity => true;
 
         public long HoldTick = -1000;   // Main.GameUpdateCount stamp refreshed by the vine while it holds the enemy
+        public long HolderKey = -1;     // the vine that holds it (AmazonBarbedVineProjectile.HolderKey, the same number on every machine)
         public int ResnareTicks;        // ticks left before a vine may snare this enemy again
 
         public bool Held => Main.GameUpdateCount - HoldTick <= 2;
 
         public long PendingTick = -1000;   // owner's client: refreshed by a vine whose enemy touched it in the air and is still falling
+        public long PendingKey = -1;       // the vine that waits for it to land
         public bool Pending => Main.GameUpdateCount - PendingTick <= 2;
+
+        // A vine holds the enemy: stamps the lease at once, so a vine checked later in the same tick already sees the enemy as held.
+        // Returns false when another vine with a LOWER key holds it too: the caller (the higher key) is the loser and lets go. A lower key is an
+        // OLDER vine (the plant order comes first in the key). The keys are the same on every machine, so every machine picks the same winner.
+        public bool Claim(long key)
+        {
+            if (Held && HolderKey != key && HolderKey < key)
+                return false;
+            HolderKey = key;
+            HoldTick = (long)Main.GameUpdateCount;
+            return true;
+        }
+
+        // A vine waits for this enemy to land (owner's client): stamped at once so no other vine starts a snare or a wait on it.
+        public void Pend(long key)
+        {
+            PendingKey = key;
+            PendingTick = (long)Main.GameUpdateCount;
+        }
+
+        // The wait is over (landed, cancelled or the enemy got held): the enemy is free for other vines at once, not after the lease runs out.
+        public void EndPend(long key)
+        {
+            if (PendingKey == key)
+                PendingTick = -1000;
+        }
 
         readonly AmazonTuning tune = new AmazonTuning();
 

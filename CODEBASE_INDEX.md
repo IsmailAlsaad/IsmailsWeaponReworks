@@ -860,7 +860,7 @@ tModLoader/other bases -> project types:
     +Texture:string[ov] +YoyoItemType:int[ov] +Barbs:int #CreateTuning()[ov] #CreateFx()[ov] #CreateTrick(YoyoTuning)[ov] #CreateRightTrick(YoyoTuning)[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +Barb(NPC) +AI()[ov] #GetTexture()[ov] +PostDraw(Color)[ov]
 **AmazonSnareNPC.cs** uses: AmazonTuning
   class AmazonSnareNPC : GlobalNPC
-    +InstancePerEntity:bool[ov] +HoldTick:long +ResnareTicks:int +Held:bool +PendingTick:long +Pending:bool +PreAI(NPC)[ov] +PostAI(NPC)[ov]
+    +InstancePerEntity:bool[ov] +HoldTick:long +HolderKey:long +ResnareTicks:int +Held:bool +PendingTick:long +PendingKey:long +Pending:bool +Claim(long) +Pend(long) +EndPend(long) +PreAI(NPC)[ov] +PostAI(NPC)[ov]
 **AmazonTrick.cs** uses: AmazonProjectile, AmazonTuning, ForwardPassTrick, YoyoProjectile, YoyoTuning
   class AmazonTrick : ForwardPassTrick
     +OnHit(YoyoProjectile,NPC)[ov]
