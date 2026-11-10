@@ -64,6 +64,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         // 1 = normal gravity, -1 = flipped (the owner's gravDir, which every machine knows): "down" for the yoyo is toward the player's feet.
         public int GravDir => Owner.gravDir >= 0f ? 1 : -1;
 
+        // How far the player is tilted (a minecart on a slope, some mounts): the hand, the arm and the idle yoyo turn with it. Not with flipped gravity.
+        float Tilt => GravDir > 0 ? Owner.fullRotation : 0f;
+
         // ---- shared with the trick ----
         public Vector2 Vel;            // the yoyo's own velocity (px per tick); synced
         public Vector2 Aim;            // a trick's throw target, relative to the player (Forward Pass); set by the owner at the throw; synced
@@ -89,6 +92,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         bool rightBlocked;             // the right button went down on the interface or a tile interaction: it does not count until it is let go
         YoyoTrick ActiveTrick => UsingRight && rightTrick != null ? rightTrick : leftTrick;
         YoyoRope rope;
+        YoyoRopeWrap wrap;             // where the string bends around blocks (visual only)
+        Vector2 prevCenter;            // the yoyo's center at the start of this tick (the swept hitbox runs from here)
         int idleClock;
         int catchCooldown;
         float returnSpeed;
@@ -189,8 +194,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 rightTrick = CreateRightTrick(Tuning);
                 trick = leftTrick;
                 rope = new YoyoRope(Tuning);
+                wrap = new YoyoRopeWrap();
                 afterimages = new YoyoAfterimages(Tuning);
                 Projectile.Center = owner.MountedCenter;
+                prevCenter = Projectile.Center;
             }
             ticks++;
             trick = ActiveTrick;   // the trick of the button that started the throw (the other machines learn it from the sync)
@@ -213,6 +220,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 Fx.Hit(Projectile.Center, 1 + hitSerial % Math.Max(1, Math.Min(trick.MaxHits, 6)));
             }
 
+            prevCenter = Projectile.Center;
+
             switch (State)
             {
                 case YoyoState.Idle:
@@ -229,8 +238,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             if (State != YoyoState.Idle && IsOwner && ticks % Math.Max(1, Tuning.SyncEveryTicks) == 0)
                 Projectile.netUpdate = true;
 
+            // The wrap: while out, the string bends around block corners (corner points fixed to the tiles). None while idle (a straight line)
+            // or returning (the yoyo is pulled straight through blocks, a wrap there would only flicker).
+            if (State == YoyoState.Out && Tuning.RopeWraps)
+                wrap.Update(hand, Projectile.Center, Tuning.RopeWrapMaxPivots, Tuning.RopeWrapClearancePx);
+            else
+                wrap.Clear();
+
             if (State == YoyoState.Idle)
                 rope.Straight(hand, Projectile.Center);
+            else if (wrap.Active)
+                rope.TightenAlong(hand, wrap.Pivots, Projectile.Center, Tuning.RopeWrapSnapSpeed);   // wrapped: the string follows its path around the corners
             else if (State == YoyoState.Return || (State == YoyoState.Out && trick.RopeTaut(this)))
                 rope.Tighten(hand, Projectile.Center, Tuning.RopeTightenSpeed);   // pulled taut on the way back: the string straightens over a few ticks
             else
@@ -297,7 +315,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             float ropeMax = Tuning.RopeLength();
             float drop = Math.Min(Tuning.IdleDropPx, ropeMax) * extension * GravDir; // toward the feet (up when gravity is flipped); no block check, it may go through blocks
             float sway = (float)Math.Sin(idleClock * 0.12f) * Tuning.IdleSwayPx * extension;
-            Projectile.Center = hand + new Vector2(sway, drop);
+            Projectile.Center = hand + new Vector2(sway, drop).RotatedBy(Tilt);   // "down" is down for the (tilted) player
 
             spinRate = MathHelper.Lerp(Tuning.IdleSpinRestSpeed, Tuning.IdleSpinSpeed, extension * extension);
             spin += spinRate * facing;
@@ -319,6 +337,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         void LaunchFromCenter(Player owner)
         {
             Projectile.Center = owner.MountedCenter;
+            prevCenter = Projectile.Center;   // a teleport, not a flight: nothing is swept
         }
 
         // The owner's client: is the right button asking for a throw? Only when this yoyo has a right click trick. A press that the
@@ -385,7 +404,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             trick.Tick(this);
             spin += trick.SpinStep(this);
             // The arm starts at ThrowArmStartDeg and turns to point at the yoyo over ThrowArmBlendTicks.
-            float toYoyo = HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation());
+            float toYoyo = HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation()) - Tilt;   // the arm is drawn turned with the player
             float startArm = HeldSwordPose.ToWorld(Side, MathHelper.ToRadians(Tuning.ThrowArmStartDeg));
             float blend = MathHelper.Clamp(OutTicks / (float)Math.Max(1, Tuning.ThrowArmBlendTicks), 0f, 1f);
             ApplyArm(owner, startArm + MathHelper.WrapAngle(toYoyo - startArm) * blend);
@@ -401,7 +420,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         void TickReturn(Player owner)
         {
             // The arm points at the yoyo, then eases to CatchArmDeg as the yoyo gets close.
-            float toYoyo = HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation());
+            float toYoyo = HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation()) - Tilt;   // the arm is drawn turned with the player
             float catchArm = HeldSwordPose.ToWorld(owner.direction >= 0 ? 1 : -1, MathHelper.ToRadians(Tuning.CatchArmDeg));
             float near = 1f - MathHelper.Clamp(Vector2.Distance(owner.MountedCenter, Projectile.Center) / Math.Max(1f, Tuning.CatchArmBlendDistance), 0f, 1f);
             ApplyArm(owner, toYoyo + MathHelper.WrapAngle(catchArm - toYoyo) * near);
@@ -442,14 +461,29 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             }
 
             Vector2 want = Vel;
-            Vector2 moved = Collision.TileCollision(Projectile.position, want, width, height, false, false, g);
+            // In pieces of at most CollisionStepPx, each checked against the blocks, and an axis that a block stopped stays stopped for the
+            // rest of the tick: a fast yoyo cannot clip a corner or jump a block (under that speed this is the single check it always was).
+            int pieces = CollisionPieces(want);
+            Vector2 piece = want / pieces;
+            bool stopX = false;
+            bool stopY = false;
+            for (int i = 0; i < pieces; i++)
+            {
+                Vector2 wantPiece = new Vector2(stopX ? 0f : piece.X, stopY ? 0f : piece.Y);
+                if (wantPiece == Vector2.Zero)
+                    break;
+                Vector2 movedPiece = Collision.TileCollision(Projectile.position, wantPiece, width, height, false, false, g);
+                if (Math.Abs(movedPiece.X - wantPiece.X) > 0.01f)
+                    stopX = true;
+                if (Math.Abs(movedPiece.Y) < Math.Abs(wantPiece.Y) - 0.01f)
+                    stopY = true;
+                Projectile.position += movedPiece;
+            }
             YoyoContact contact = default;
-            bool stoppedY = Math.Abs(moved.Y) < Math.Abs(want.Y) - 0.01f;
-            contact.BlockedX = Math.Abs(moved.X - want.X) > 0.01f;
-            contact.Grounded = want.Y * g > 0f && stoppedY;   // blocked while moving toward the feet side
-            contact.Ceiling = want.Y * g < 0f && stoppedY;    // blocked while moving away from it
+            contact.BlockedX = stopX;
+            contact.Grounded = want.Y * g > 0f && stopY;   // blocked while moving toward the feet side
+            contact.Ceiling = want.Y * g < 0f && stopY;    // blocked while moving away from it
             contact.Impact = contact.Grounded ? Math.Abs(want.Y) : 0f;
-            Projectile.position += moved;
             if (contact.BlockedX)
                 Vel.X = 0f;
             if (contact.Grounded || contact.Ceiling)
@@ -463,10 +497,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public YoyoContact Move(Vector2 delta, bool throughPlatforms = false)
         {
             int g = GravDir;
-            Vector2 moved = Collision.TileCollision(Projectile.position, delta, Projectile.width, Projectile.height, throughPlatforms, throughPlatforms, g);
+            // In pieces of at most CollisionStepPx (see Step): a fast pass (the Forward Pass flies 20+ px per tick) cannot clip a corner.
+            int pieces = CollisionPieces(delta);
+            Vector2 piece = delta / pieces;
+            bool stoppedX = false;
+            bool stoppedY = false;
+            Vector2 moved = Vector2.Zero;
+            for (int i = 0; i < pieces; i++)
+            {
+                Vector2 wantPiece = new Vector2(stoppedX ? 0f : piece.X, stoppedY ? 0f : piece.Y);
+                if (wantPiece == Vector2.Zero)
+                    break;
+                Vector2 movedPiece = Collision.TileCollision(Projectile.position, wantPiece, Projectile.width, Projectile.height, throughPlatforms, throughPlatforms, g);
+                if (Math.Abs(movedPiece.X - wantPiece.X) > 0.01f)
+                    stoppedX = true;
+                if (Math.Abs(movedPiece.Y - wantPiece.Y) > 0.01f)
+                    stoppedY = true;
+                Projectile.position += movedPiece;
+                moved += movedPiece;
+            }
             YoyoContact contact = default;
-            bool stoppedX = Math.Abs(moved.X - delta.X) > 0.01f;
-            bool stoppedY = Math.Abs(moved.Y - delta.Y) > 0.01f;
             contact.BlockedX = stoppedX;
             contact.Grounded = delta.Y * g > 0f && stoppedY;
             contact.Ceiling = delta.Y * g < 0f && stoppedY;
@@ -477,9 +527,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 Vector2 normal = new Vector2(stoppedX ? -Math.Sign(delta.X) : 0f, stoppedY ? -Math.Sign(delta.Y) : 0f);
                 contact.Normal = normal.LengthSquared() > 0f ? Vector2.Normalize(normal) : Vector2.Zero;
             }
-            Projectile.position += moved;
             Vel = moved;
             return contact;
+        }
+
+        // How many pieces a move of this length is cut into (each at most CollisionStepPx long).
+        int CollisionPieces(Vector2 move)
+        {
+            float step = Math.Max(1f, Tuning.CollisionStepPx);
+            return Math.Max(1, Math.Min(16, (int)Math.Ceiling(move.Length() / step)));
         }
 
         // ---- arm ----
@@ -496,6 +552,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 armWorld += MathHelper.WrapAngle(target - armWorld) * MathHelper.Clamp(Tuning.ArmFollow, 0.01f, 1f);
             owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, armWorld - MathHelper.PiOver2);
             hand = HeldSwordPose.HandWorld(owner, armWorld);
+            if (Tilt != 0f)
+                hand = owner.RotatedRelativePoint(hand, false, false);   // HandWorld does not know the tilt (a minecart, a mount): turn the hand with the player
             owner.heldProj = Projectile.whoAmI; // also ends the projectile when the player swaps items
         }
 
@@ -506,6 +564,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             if (State == YoyoState.Out)
                 return null;
             return State == YoyoState.Return && trick != null && trick.HurtsWhileReturning(this) ? (bool?)null : false;
+        }
+
+        // The whole path the yoyo flew since the start of this tick counts as its hitbox (a line as wide as the yoyo), so a fast yoyo, or the
+        // pull back through the ground, cannot skip over an enemy between two ticks. Only the owner's client hits.
+        public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
+        {
+            if (!Tuning.SweepHits || ticks == 0)
+                return null;
+            float travelled = Vector2.DistanceSquared(prevCenter, Projectile.Center);
+            if (travelled < 1f || travelled > 600f * 600f)
+                return null;
+            float point = 0f;
+            if (Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), prevCenter, Projectile.Center, Tuning.HitboxSize, ref point))
+                return true;
+            return null;
         }
 
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)

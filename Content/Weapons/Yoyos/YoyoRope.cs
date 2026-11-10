@@ -34,6 +34,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         bool tightening;               // the last call was Tighten (the offsets are running)
         Vector2 lineA;
         Vector2 lineB;
+        Vector2[] basePts;             // where the string would lie if it were pulled taut along its path (hand, corners, yoyo)
+        int lastPivotCount;            // the number of corners of the last Tighten: a change starts the offsets again
+        readonly List<Vector2> pathNodes = new List<Vector2>();
+        readonly float[] segLength = new float[16];
+        readonly int[] segCount = new int[16];
+        readonly float[] segFrac = new float[16];
         readonly List<Vector2> curve = new List<Vector2>();
 
         // Idle: no simulation, just a straight line. The next Update starts the rope from this line.
@@ -161,6 +167,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         // straight line while the hand and the yoyo move. It keeps the hand's frame like Update, and the next Update continues from here.
         public void Tighten(Vector2 anchor, Vector2 end, float speed)
         {
+            TightenAlong(anchor, null, end, speed);
+        }
+
+        // The same, along a path that bends around block corners: hand, the corners (YoyoRopeWrap.Pivots), yoyo. Every corner is one of
+        // the rope points, so the string bends exactly there. When the number of corners changes the string moves onto the new path at
+        // 'speed' per tick instead of jumping.
+        public void TightenAlong(Vector2 anchor, IReadOnlyList<Vector2> pivots, Vector2 end, float speed)
+        {
             if (Main.dedServ)
                 return;
             int n = Math.Max(4, tuning.RopePoints);
@@ -173,10 +187,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             }
             if (!ready || Vector2.DistanceSquared(pos[0], anchor) > 600f * 600f)
             {
-                // No rope yet (or the player teleported): the straight line at once.
+                // No rope yet (or the player teleported): the path at once.
+                BuildPath(anchor, pivots, end, n);
+                lastPivotCount = pivots == null ? 0 : pivots.Count;
                 for (int i = 0; i < n; i++)
                 {
-                    Vector2 p = Vector2.Lerp(anchor, end, i / (float)(n - 1));
+                    Vector2 p = basePts[i];
                     pos[i] = p;
                     prev[i] = p;
                     last[i] = p;
@@ -189,6 +205,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             // line lagged behind a swinging yoyo: the string pointed at the yoyo's last position and then jerked toward the new one).
             Vector2 shift = anchor - pos[0];   // the hand's frame, like Update
             float keep = 1f - MathHelper.Clamp(speed, 0.01f, 1f);
+            int pivotCount = pivots == null ? 0 : pivots.Count;
+            if (pivotCount != lastPivotCount)
+            {
+                tightening = false;   // the path changed (a wrap began or ended): the offsets start again from where the string is now
+                lastPivotCount = pivotCount;
+            }
+            BuildPath(anchor, pivots, end, n);
             if (offset == null || offset.Length != n)
             {
                 offset = new Vector2[n];
@@ -196,7 +219,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             }
             for (int i = 0; i < n; i++)
             {
-                Vector2 line = Vector2.Lerp(anchor, end, i / (float)(n - 1));
+                Vector2 line = basePts[i];
                 if (!tightening)
                     offset[i] = pos[i] + shift - line;   // the first tick: how far the bent string is from the straight line
                 offset[i] *= keep;
@@ -210,6 +233,62 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             prev[0] = anchor;
             pos[n - 1] = end;
             prev[n - 1] = end;
+        }
+
+        // The path the taut string follows, as n points: the hand, the corners, the yoyo. Every corner is one of the points; the others are
+        // shared out along the pieces by length. Without corners it is the straight line (the same points as before).
+        void BuildPath(Vector2 anchor, IReadOnlyList<Vector2> pivots, Vector2 end, int n)
+        {
+            if (basePts == null || basePts.Length != n)
+                basePts = new Vector2[n];
+            int p = pivots == null ? 0 : Math.Min(pivots.Count, Math.Min(n - 3, segLength.Length - 2));
+            if (p <= 0)
+            {
+                for (int i = 0; i < n; i++)
+                    basePts[i] = Vector2.Lerp(anchor, end, i / (float)(n - 1));
+                return;
+            }
+            pathNodes.Clear();
+            pathNodes.Add(anchor);
+            for (int i = 0; i < p; i++)
+                pathNodes.Add(pivots[i]);
+            pathNodes.Add(end);
+            int pieces = p + 1;
+            float total = 0f;
+            for (int k = 0; k < pieces; k++)
+            {
+                segLength[k] = Vector2.Distance(pathNodes[k], pathNodes[k + 1]);
+                total += segLength[k];
+            }
+            int interior = n - (p + 2);
+            int given = 0;
+            for (int k = 0; k < pieces; k++)
+            {
+                float exact = total > 0.001f ? interior * segLength[k] / total : interior / (float)pieces;
+                segCount[k] = (int)exact;
+                segFrac[k] = exact - segCount[k];
+                given += segCount[k];
+            }
+            while (given < interior)
+            {
+                int best = 0;
+                for (int k = 1; k < pieces; k++)
+                {
+                    if (segFrac[k] > segFrac[best])
+                        best = k;
+                }
+                segCount[best]++;
+                segFrac[best] = -1f;
+                given++;
+            }
+            int w = 0;
+            for (int k = 0; k < pieces; k++)
+            {
+                basePts[w++] = pathNodes[k];
+                for (int j = 1; j <= segCount[k]; j++)
+                    basePts[w++] = Vector2.Lerp(pathNodes[k], pathNodes[k + 1], j / (float)(segCount[k] + 1));
+            }
+            basePts[w] = end;
         }
 
         static bool Solid(Vector2 point)

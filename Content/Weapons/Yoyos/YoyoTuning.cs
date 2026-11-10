@@ -51,6 +51,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public virtual int SyncEveryTicks => 6;            // the owner re-sends the yoyo's position this often while it is out
         public virtual bool UseSlopes => true;             // false: only plain block collision (try it if a rolling trick behaves oddly on slopes)
 
+        // ---- collision, hits and string wrap (patch 8) ----
+        public virtual float CollisionStepPx => 6f;        // the yoyo moves in pieces of at most this many pixels, each checked against blocks, so a fast yoyo cannot clip a corner or jump a block (smaller = safer, a bit slower)
+        public virtual bool SweepHits => true;             // the damage hitbox is the whole path flown since last tick, so a fast yoyo (or a pull back through the ground) cannot skip an enemy
+        public virtual bool RopeWraps => true;             // while out, the string bends around block corners instead of passing through them
+        public virtual int RopeWrapMaxPivots => 6;         // how many corners one string can be wrapped around
+        public virtual float RopeWrapClearancePx => 2f;    // the string goes this far outside a corner
+        public virtual float RopeWrapSnapSpeed => 0.7f;    // when the wrap changes, how fast the string moves onto its new path (0..1 per tick)
+
         // ---- idle (held, nothing pressed) ----
         public virtual int IdleRestTicks => 8;             // the yoyo rests in the hand
         public virtual int IdleDropTicks => 22;            // it is let down gently

@@ -13,7 +13,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         float ForwardPassReachMargin => 30f;      // the far end is the string's full length minus this
         float ForwardPassEase => 0.35f;           // 0 = constant speed along the ellipse, 1 = slow at both ends
         bool ForwardPassThroughPlatforms => true; // platforms and other top-solid blocks do not stop it
-        bool ForwardPassBlockedReturnHurts => true; // a block that stops it on the way back (the second half) does not make it harmless: it keeps hurting while it is pulled to the hand
+        bool ForwardPassBlockedReturnHurts => true; // a block that stops it (in either half) does not make the way back harmless: it keeps hurting while it is pulled to the hand
     }
 
     class ForwardPassDefaults : IForwardPassTuning
@@ -96,7 +96,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             {
                 // A solid block in the way: it does not pass through. Impact dust, then the owner pulls it back.
                 stopped = true;
-                blockedComingBack = comingBack && P.ForwardPassBlockedReturnHurts;
+                blockedComingBack = P.ForwardPassBlockedReturnHurts;   // a block in either half: the pull back to the hand still hurts
                 yoyo.Fx.Impact(yoyo.Projectile.Center, contact.Normal, contact.Impact);
                 if (yoyo.IsOwner)
                     yoyo.BeginReturn();

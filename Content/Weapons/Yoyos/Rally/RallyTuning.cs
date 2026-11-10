@@ -49,6 +49,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Rally
         public override int SyncEveryTicks => 6;            // the owner re-sends the yoyo's position this often while it is out
         public override bool UseSlopes => true;             // false: only plain block collision (try it if a rolling trick behaves oddly on slopes)
 
+        // ---- collision, hits and string wrap (patch 8) ----
+        public override float CollisionStepPx => 6f;        // the yoyo moves in pieces of at most this many pixels, each checked against blocks, so a fast yoyo cannot clip a corner or jump a block (smaller = safer, a bit slower)
+        public override bool SweepHits => true;             // the damage hitbox is the whole path flown since last tick, so a fast yoyo (or a pull back through the ground) cannot skip an enemy
+        public override bool RopeWraps => true;             // while out, the string bends around block corners instead of passing through them
+        public override int RopeWrapMaxPivots => 6;         // how many corners one string can be wrapped around
+        public override float RopeWrapClearancePx => 2f;    // the string goes this far outside a corner
+        public override float RopeWrapSnapSpeed => 0.7f;    // when the wrap changes, how fast the string moves onto its new path (0..1 per tick)
+
         // ---- idle (held, nothing pressed) ----
         public override int IdleRestTicks => 8;             // the yoyo rests in the hand
         public override int IdleDropTicks => 22;            // it is let down gently
@@ -91,7 +99,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Rally
         public float ForwardPassReachMargin => 30f;               // the far end is the string's full length minus this
         public float ForwardPassEase => 0.35f;                    // 0 = constant speed, 1 = slow at both ends
         public bool ForwardPassThroughPlatforms => true;          // platforms and other top-solid blocks do not stop it
-        public bool ForwardPassBlockedReturnHurts => true;        // a block that stops it on the way back does not make it harmless: it keeps hurting while it is pulled to the hand
+        public bool ForwardPassBlockedReturnHurts => true;        // a block that stops it (in either half) does not make the way back harmless: it keeps hurting while it is pulled to the hand
 
         // ---- the cracks ----
         public int CrackHitsToBreak => 3;                         // hits per cycle: the last one breaks the shell, the ones before crack it
