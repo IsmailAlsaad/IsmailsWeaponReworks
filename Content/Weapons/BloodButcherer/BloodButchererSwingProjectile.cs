@@ -167,7 +167,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         // An enemy the jaws can pin and throw: not a boss, not a worm segment, not immovable, not huge. Anything else is chomped (the jaws chew it six times).
         static bool CanGrip(NPC npc)
         {
-            return !npc.boss && npc.knockBackResist > 0f && npc.realLife < 0 && Math.Max(npc.width, npc.height) <= BloodButchererTuning.MaxGrabSize;
+            return Snarable.CanGrip(npc, BloodButchererTuning.MaxGrabSize);
         }
 
         // The world direction of an aim given in the player's own frame.
@@ -739,7 +739,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BloodButcherer
         // Any enemy that can be damaged. NOT NPC.CanBeChasedBy: it is false for the target dummy (and for critters), so those were never caught.
         static bool CanBite(NPC npc)
         {
-            return npc.active && !npc.friendly && !npc.dontTakeDamage;
+            return Snarable.CanBite(npc);
         }
 
         // At the start of the bite: the nearest enemy (to the middle of the mouth) inside the catch wedge is caught. The decision

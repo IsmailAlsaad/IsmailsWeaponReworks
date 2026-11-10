@@ -325,6 +325,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 curve.Add(pos[n - 1]);
             }
 
+            DrawCurve(pixel);
+        }
+
+        // The string along a given dense polyline (a trick that shapes the string by hand, see YoyoTrick.StringPath), drawn like the rope.
+        public void DrawPolyline(Texture2D pixel, IReadOnlyList<Vector2> points)
+        {
+            if (Main.dedServ || points == null || points.Count < 2)
+                return;
+            curve.Clear();
+            for (int i = 0; i < points.Count; i++)
+                curve.Add(points[i]);
+            DrawCurve(pixel);
+        }
+
+        // Outline, then the twisted body, along 'curve'.
+        void DrawCurve(Texture2D pixel)
+        {
             for (int pass = 0; pass < 2; pass++)
             {
                 for (int j = 0; j < curve.Count - 1; j++)

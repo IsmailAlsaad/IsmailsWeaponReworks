@@ -1,4 +1,6 @@
-﻿using Terraria;
+﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
+using Terraria;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 {
@@ -35,6 +37,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         // True while the string should be pulled taut and straight even though the yoyo is still out (Forward Pass: its way back). Visual only.
         public virtual bool RopeTaut(YoyoProjectile yoyo)
+        {
+            return false;
+        }
+
+        // A trick that draws the string by hand (the Artery's loop: the straight line plus the noose) fills 'points' with a dense polyline
+        // and returns true; the rope is then drawn along it instead of the simulated string. Visual only; never called on the server.
+        public virtual bool StringPath(YoyoProjectile yoyo, List<Vector2> points)
         {
             return false;
         }

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Terraria;
 using Terraria.GameContent;
@@ -76,6 +77,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public int Hits;               // enemy hits since the throw (owner)
         public YoyoState State { get; private set; }
         public float SpinAngle => spin;   // how far the sprite is turned (a yoyo that draws on top of its sprite follows it)
+        public Vector2 Hand => hand;      // where the string is held (a trick that shapes the string reads it)
 
         // ---- synced (SendExtraAI / ReceiveExtraAI) ----
         int throwSerial;
@@ -92,6 +94,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         bool rightBlocked;             // the right button went down on the interface or a tile interaction: it does not count until it is let go
         YoyoTrick ActiveTrick => UsingRight && rightTrick != null ? rightTrick : leftTrick;
         YoyoRope rope;
+        readonly List<Vector2> stringPath = new List<Vector2>();   // the string a trick draws by hand (YoyoTrick.StringPath)
+        bool stringPathActive;
         YoyoRopeWrap wrap;             // where the string bends around blocks (visual only)
         Vector2 prevCenter;            // the yoyo's center at the start of this tick (the swept hitbox runs from here)
         int idleClock;
@@ -245,8 +249,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             else
                 wrap.Clear();
 
-            if (State == YoyoState.Idle)
-                rope.Straight(hand, Projectile.Center);
+            stringPathActive = State == YoyoState.Out && trick.StringPath(this, stringPath);
+            if (State == YoyoState.Idle || stringPathActive)
+                rope.Straight(hand, Projectile.Center);   // (a hand-drawn string: the next simulated rope starts from a straight line)
             else if (wrap.Active)
                 rope.TightenAlong(hand, wrap.Pivots, Projectile.Center, Tuning.RopeWrapSnapSpeed);   // wrapped: the string follows its path around the corners
             else if (State == YoyoState.Return || (State == YoyoState.Out && trick.RopeTaut(this)))
@@ -642,7 +647,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             if (ticks == 0)
                 return false; // not posed yet (the first tick has not run)
 
-            rope.Draw(TextureAssets.MagicPixel.Value);
+            if (stringPathActive)
+                rope.DrawPolyline(TextureAssets.MagicPixel.Value, stringPath);
+            else
+                rope.Draw(TextureAssets.MagicPixel.Value);
 
             Texture2D texture = GetTexture();
             Vector2 origin = texture.Size() * 0.5f;
