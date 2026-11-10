@@ -49,11 +49,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             {
                 Vector2 velocity = along * Main.rand.NextFloat(-2f, 2f) + normal * (Main.rand.NextFloat(0.5f, 2.5f) * strength);
                 Chip(position, velocity, Main.rand.NextFloat(0.7f, 1.1f));
-                if (i % 2 == 0)
-                {
-                    Dust dust = Dust.NewDustPerfect(position, DustID.Smoke, velocity * 0.5f, 120, default, 0.8f);
-                    dust.noGravity = true;
-                }
+                //if (i % 2 == 0)
+                //{
+                //    Dust dust = Dust.NewDustPerfect(position, DustID.Smoke, velocity * 0.5f, 120, default, 0.8f);
+                //    dust.noGravity = true;
+                //}
             }
         }
 
