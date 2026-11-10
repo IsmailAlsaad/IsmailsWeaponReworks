@@ -6,32 +6,37 @@ using Terraria.ID;
 namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 {
     /// <summary>
-    /// Every dust and sound of the yoyo rework (vanilla dust and sounds only), so a later juice pass edits one file. Every machine calls
+    /// The dust and sounds every yoyo shares, with defaults (vanilla dust and sounds only). Every yoyo has its own subclass in its folder
+    /// (WoodenYoyoFx, Code1Fx) that changes the dust (ChipDust) or overrides a method. Only the two hits have dust: the yoyo landing or
+    /// hitting a block (Land, Impact) and an enemy hit (Hit); the throw, the retract and the catch are sounds only. Every machine calls
     /// these for the same event; all of it is visual, nothing here is synced.
     /// </summary>
-    public static class YoyoFx
+    public class YoyoFx
     {
-        static void Chip(Vector2 position, Vector2 velocity, float scale)
+        // The dust of the chips that fly off on a hit.
+        protected virtual int ChipDust => DustID.Smoke;
+
+        protected void Chip(Vector2 position, Vector2 velocity, float scale)
         {
-            Dust.NewDustPerfect(position, YoyoTuning.WoodDust, velocity, 0, default, scale);
+            Dust.NewDustPerfect(position, ChipDust, velocity, 0, default, scale);
         }
 
-        // The throw: a swish and a few chips shaken off.
-        public static void Throw(Vector2 position, int side)
+        // The throw: a swish.
+        public virtual void Throw(Vector2 position, int side)
         {
             if (Main.dedServ)
                 return;
             SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.55f, Pitch = 0.25f, PitchVariance = 0.1f }, position);
         }
 
-        // The yoyo hits the ground: a thump and a puff of chips and dust, more for a harder landing.
-        public static void Land(Vector2 position, float impact, int gravDir)
+        // The yoyo lands on the ground: a thump and a puff of chips and dust, more for a harder landing.
+        public virtual void Land(Vector2 position, float impact, int gravDir)
         {
             Impact(position, new Vector2(0f, -gravDir), impact);
         }
 
         // The yoyo hits any block (floor, wall or ceiling): 'normal' points away from the block, the chips fly that way.
-        public static void Impact(Vector2 position, Vector2 normal, float impact)
+        public virtual void Impact(Vector2 position, Vector2 normal, float impact)
         {
             if (Main.dedServ)
                 return;
@@ -53,7 +58,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         }
 
         // An enemy hit: a knock, a burst of chips, a rising pitch with every hit of the throw.
-        public static void Hit(Vector2 position, int hitNumber)
+        public virtual void Hit(Vector2 position, int hitNumber)
         {
             if (Main.dedServ)
                 return;
@@ -64,7 +69,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         }
 
         // The yoyo is let go of and starts back.
-        public static void Retract(Vector2 position)
+        public virtual void Retract(Vector2 position)
         {
             if (Main.dedServ)
                 return;
@@ -72,7 +77,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         }
 
         // Caught: a small pop.
-        public static void Catch(Vector2 position)
+        public virtual void Catch(Vector2 position)
         {
             if (Main.dedServ)
                 return;

@@ -30,7 +30,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
     }
 
     /// <summary>
-    /// The held yoyo (patch 1): ONE projectile that lives for as long as a reworked yoyo is held (YoyoPlayer spawns it). It is the yoyo
+    /// The held yoyo (patch 1; since patch 5 the shared base of every yoyo's projectile): ONE projectile that lives for as long as a reworked yoyo is held (YoyoPlayer spawns it). It is the yoyo
     /// itself: Projectile.Center is the yoyo, the YoyoRope runs from the player's hand to it (a straight line while idle, a verlet rope while out or returning), and it poses the arm.
     /// IDLE: nothing pressed: the arm hangs down, the yoyo is let down gently, spins a little and is pulled back up, over and over.
     /// OUT: the left button runs the yoyo's trick (YoyoTrick; the Wooden Yoyo's is Walk the Dog). The throw side is the side of the screen
@@ -43,11 +43,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
     /// animation, the arm and the rope are never synced: every machine plays and simulates its own. Hits and damage are the owner's alone;
     /// the others hear about a hit through the hit serial and play its effects at the yoyo. No custom packets.
     /// Projectile.velocity stays zero: the yoyo moves itself (Vel) so tile collision can be done by hand.
+    /// A yoyo is a subclass in its own folder (Content/Weapons/Yoyos/&lt;Yoyo&gt;/): it names its vanilla item, its tuning, its fx and its
+    /// trick (a pattern from this folder, with custom behavior on top if wanted), and overrides Texture with the vanilla sprite.
     /// </summary>
-    public class YoyoProjectile : ModProjectile
+    public abstract class YoyoProjectile : ModProjectile
     {
-        // The vanilla Wooden Yoyo sprite until Content/Weapons/Yoyos/WoodenYoyoProjectile.png exists.
-        public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.WoodYoyo;
+        // ---- what each yoyo supplies ----
+        public abstract int YoyoItemType { get; }                         // the vanilla item this yoyo reworks
+        protected abstract YoyoTuning CreateTuning();                     // its numbers
+        protected abstract YoyoFx CreateFx();                             // its dust and sounds
+        protected abstract YoyoTrick CreateTrick(YoyoTuning tuning);      // its trick (one per throw machine, made when the yoyo is held)
+
+        public YoyoTuning Tuning { get; private set; }
+        public YoyoFx Fx { get; private set; }
 
         public Player Owner => Main.player[Projectile.owner];
         public bool IsOwner => Projectile.owner == Main.myPlayer;
@@ -72,9 +80,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         // ---- per machine, never synced ----
         int ticks;
-        int itemType;
         YoyoTrick trick;
-        readonly YoyoRope rope = new YoyoRope();
+        YoyoRope rope;
         int idleClock;
         int catchCooldown;
         float returnSpeed;
@@ -83,14 +90,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         float armWorld;                // the arm's angle in the player's own frame (down = +90 degrees)
         bool armReady;
         Vector2 hand;                  // where the string is held
-        readonly YoyoAfterimages afterimages = new YoyoAfterimages();   // visual only; a trick opts in
+        YoyoAfterimages afterimages;   // visual only; the yoyo's tuning switches it on
         Asset<Texture2D> custom;
         bool customChecked;
 
+        public override void SetStaticDefaults()
+        {
+            YoyoRegistry.Register(YoyoItemType, Type);   // lets YoyoPlayer find this projectile for the held yoyo
+        }
+
         public override void SetDefaults()
         {
-            Projectile.width = YoyoTuning.HitboxSize;
-            Projectile.height = YoyoTuning.HitboxSize;
+            Tuning = CreateTuning();
+            Fx = CreateFx();
+            Projectile.width = Tuning.HitboxSize;
+            Projectile.height = Tuning.HitboxSize;
             Projectile.aiStyle = -1;
             Projectile.friendly = true;
             Projectile.DamageType = DamageClass.Melee;
@@ -99,7 +113,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             Projectile.ignoreWater = true;
             Projectile.timeLeft = 10000;    // refilled every tick: the yoyo lives as long as it is held
             Projectile.usesLocalNPCImmunity = true;
-            Projectile.localNPCHitCooldown = YoyoTuning.HitCooldownTicks;
+            Projectile.localNPCHitCooldown = Tuning.HitCooldownTicks;
         }
 
         // ---- net ----
@@ -150,20 +164,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             Player owner = Owner;
 
             // Gone with the player, with the yoyo out of their hand, or when they get crowd-controlled (a stun or a freeze).
-            if (!owner.active || owner.dead || owner.noItems || owner.CCed || !YoyoTuning.IsReworked(owner.HeldItem.type) || (ticks > 0 && owner.HeldItem.type != itemType))
+            if (!owner.active || owner.dead || owner.noItems || owner.CCed || owner.HeldItem.type != YoyoItemType)
             {
                 Projectile.Kill();
                 return;
             }
 
             Projectile.timeLeft = 10000;
-            Projectile.localNPCHitCooldown = YoyoTuning.HitCooldownTicks;
-            float ropeMax = YoyoTuning.RopeLength(owner.HeldItem);
+            Projectile.localNPCHitCooldown = Tuning.HitCooldownTicks;
+            float ropeMax = Tuning.RopeLength(owner.HeldItem);
 
             if (ticks == 0)
             {
-                itemType = owner.HeldItem.type;
-                trick = YoyoTricks.Create(itemType);
+                trick = CreateTrick(Tuning);
+                rope = new YoyoRope(Tuning);
+                afterimages = new YoyoAfterimages(Tuning);
                 Projectile.Center = owner.MountedCenter;
             }
             ticks++;
@@ -183,7 +198,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             if (pendingHitFx)
             {
                 pendingHitFx = false;
-                YoyoFx.Hit(Projectile.Center, 1 + hitSerial % Math.Max(1, Math.Min(trick.MaxHits, 6)));
+                Fx.Hit(Projectile.Center, 1 + hitSerial % Math.Max(1, Math.Min(trick.MaxHits, 6)));
             }
 
             switch (State)
@@ -199,13 +214,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                     break;
             }
 
-            if (State != YoyoState.Idle && IsOwner && ticks % Math.Max(1, YoyoTuning.SyncEveryTicks) == 0)
+            if (State != YoyoState.Idle && IsOwner && ticks % Math.Max(1, Tuning.SyncEveryTicks) == 0)
                 Projectile.netUpdate = true;
 
             if (State == YoyoState.Idle)
                 rope.Straight(hand, Projectile.Center);
+            else if (State == YoyoState.Return)
+                rope.Update(hand, Projectile.Center, Tuning.ReturnRopeSlackFactor, Tuning.ReturnRopeExtraSlack, Tuning.ReturnRopeGravity * GravDir);   // pulled taut on the way back
             else
-                rope.Update(hand, Projectile.Center, YoyoTuning.WalkRopeSlackFactor, YoyoTuning.WalkRopeExtraSlack, YoyoTuning.WalkRopeGravity * GravDir);
+                rope.Update(hand, Projectile.Center, Tuning.RopeSlackFactor, Tuning.RopeExtraSlack, Tuning.RopeGravity * GravDir);
         }
 
         // ---- states ----
@@ -219,17 +236,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                     OutTicks = 0;
                     Hits = 0;
                     returnSpeed = 0f;
-                    YoyoFx.Throw(Projectile.Center, Side);
+                    Fx.Throw(Projectile.Center, Side);
                     break;
                 case YoyoState.Return:
-                    returnSpeed = Math.Max(YoyoTuning.ReturnStartSpeed, Vel.Length() * 0.4f);
-                    YoyoFx.Retract(Projectile.Center);
+                    returnSpeed = Math.Max(Tuning.ReturnStartSpeed, Vel.Length() * 0.4f);
+                    Fx.Retract(Projectile.Center);
                     break;
                 default:
                     idleClock = 0;
-                    catchCooldown = YoyoTuning.RethrowDelayTicks;
+                    catchCooldown = Tuning.RethrowDelayTicks;
                     Vel = Vector2.Zero;
-                    YoyoFx.Catch(Projectile.Center);
+                    Fx.Catch(Projectile.Center);
                     break;
             }
         }
@@ -260,15 +277,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             idleClock++;
             float extension = IdleExtension(idleClock);
 
-            float armLocal = MathHelper.Lerp(MathHelper.ToRadians(YoyoTuning.IdleArmRestDeg), MathHelper.ToRadians(YoyoTuning.IdleArmDropDeg), extension);
+            float armLocal = MathHelper.Lerp(MathHelper.ToRadians(Tuning.IdleArmRestDeg), MathHelper.ToRadians(Tuning.IdleArmDropDeg), extension);
             ApplyArm(owner, HeldSwordPose.ToWorld(facing, armLocal));
 
-            float ropeMax = YoyoTuning.RopeLength(owner.HeldItem);
-            float drop = Math.Min(YoyoTuning.IdleDropPx, ropeMax) * extension * GravDir; // toward the feet (up when gravity is flipped); no block check, it may go through blocks
-            float sway = (float)Math.Sin(idleClock * 0.12f) * YoyoTuning.IdleSwayPx * extension;
+            float ropeMax = Tuning.RopeLength(owner.HeldItem);
+            float drop = Math.Min(Tuning.IdleDropPx, ropeMax) * extension * GravDir; // toward the feet (up when gravity is flipped); no block check, it may go through blocks
+            float sway = (float)Math.Sin(idleClock * 0.12f) * Tuning.IdleSwayPx * extension;
             Projectile.Center = hand + new Vector2(sway, drop);
 
-            spinRate = MathHelper.Lerp(YoyoTuning.IdleSpinRestSpeed, YoyoTuning.IdleSpinSpeed, extension * extension);
+            spinRate = MathHelper.Lerp(Tuning.IdleSpinRestSpeed, Tuning.IdleSpinSpeed, extension * extension);
             spin += spinRate * facing;
 
             if (IsOwner)
@@ -288,12 +305,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         }
 
         // 0 = in the hand, 1 = let all the way down; one full cycle repeats.
-        static float IdleExtension(int clock)
+        float IdleExtension(int clock)
         {
-            int rest = Math.Max(0, YoyoTuning.IdleRestTicks);
-            int drop = Math.Max(1, YoyoTuning.IdleDropTicks);
-            int spinning = Math.Max(0, YoyoTuning.IdleSpinTicks);
-            int raise = Math.Max(1, YoyoTuning.IdleRaiseTicks);
+            int rest = Math.Max(0, Tuning.IdleRestTicks);
+            int drop = Math.Max(1, Tuning.IdleDropTicks);
+            int spinning = Math.Max(0, Tuning.IdleSpinTicks);
+            int raise = Math.Max(1, Tuning.IdleRaiseTicks);
             int t = clock % (rest + drop + spinning + raise);
             if (t < rest)
                 return 0f;
@@ -318,7 +335,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             {
                 // The owner's client decides: the side follows the cursor (past a small dead zone); Side travels in the existing sync.
                 float dx = Main.MouseWorld.X - owner.Center.X;
-                int wanted = dx > YoyoTuning.WalkSwitchDeadzonePx ? 1 : dx < -YoyoTuning.WalkSwitchDeadzonePx ? -1 : Side;
+                float deadzone = trick.CursorSideDeadzonePx;
+                int wanted = dx > deadzone ? 1 : dx < -deadzone ? -1 : Side;
                 if (wanted != Side)
                 {
                     Side = wanted;
@@ -331,15 +349,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             spin += trick.SpinStep(this);
             // The arm starts at ThrowArmStartDeg and turns to point at the yoyo over ThrowArmBlendTicks.
             float toYoyo = HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation());
-            float startArm = HeldSwordPose.ToWorld(Side, MathHelper.ToRadians(YoyoTuning.ThrowArmStartDeg));
-            float blend = MathHelper.Clamp(OutTicks / (float)Math.Max(1, YoyoTuning.ThrowArmBlendTicks), 0f, 1f);
+            float startArm = HeldSwordPose.ToWorld(Side, MathHelper.ToRadians(Tuning.ThrowArmStartDeg));
+            float blend = MathHelper.Clamp(OutTicks / (float)Math.Max(1, Tuning.ThrowArmBlendTicks), 0f, 1f);
             ApplyArm(owner, startArm + MathHelper.WrapAngle(toYoyo - startArm) * blend);
 
             if (!IsOwner)
                 return;
             if (Vector2.Distance(hand, Projectile.Center) >= ropeMax)
                 BeginReturn();                                           // the string is at full length
-            else if (trick.RetractsOnRelease && !owner.controlUseItem && OutTicks > YoyoTuning.ReleaseGraceTicks)
+            else if (trick.RetractsOnRelease && !owner.controlUseItem && OutTicks > Tuning.ReleaseGraceTicks)
                 BeginReturn();                                           // the button was let go
         }
 
@@ -347,21 +365,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             // The arm points at the yoyo, then eases to CatchArmDeg as the yoyo gets close.
             float toYoyo = HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation());
-            float catchArm = HeldSwordPose.ToWorld(owner.direction >= 0 ? 1 : -1, MathHelper.ToRadians(YoyoTuning.CatchArmDeg));
-            float near = 1f - MathHelper.Clamp(Vector2.Distance(owner.MountedCenter, Projectile.Center) / Math.Max(1f, YoyoTuning.CatchArmBlendDistance), 0f, 1f);
+            float catchArm = HeldSwordPose.ToWorld(owner.direction >= 0 ? 1 : -1, MathHelper.ToRadians(Tuning.CatchArmDeg));
+            float near = 1f - MathHelper.Clamp(Vector2.Distance(owner.MountedCenter, Projectile.Center) / Math.Max(1f, Tuning.CatchArmBlendDistance), 0f, 1f);
             ApplyArm(owner, toYoyo + MathHelper.WrapAngle(catchArm - toYoyo) * near);
             Vector2 toHand = hand - Projectile.Center;
             float distance = toHand.Length();
-            returnSpeed = Math.Min(returnSpeed + YoyoTuning.ReturnAccel, YoyoTuning.ReturnMaxSpeed);
+            returnSpeed = Math.Min(returnSpeed + Tuning.ReturnAccel, Tuning.ReturnMaxSpeed);
             if (distance > 0.01f)
             {
                 Vector2 direction = toHand / distance;
                 Vel = direction * returnSpeed;
                 Projectile.Center += direction * Math.Min(distance, returnSpeed);
             }
-            spin += YoyoTuning.ReturnSpinSpeed * Side;
+            spin += Tuning.ReturnSpinSpeed * Side;
 
-            if (IsOwner && distance <= YoyoTuning.CatchDistance)
+            if (IsOwner && distance <= Tuning.CatchDistance)
             {
                 EnterState(YoyoState.Idle);
                 Projectile.netUpdate = true;
@@ -379,7 +397,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             Vel.Y += gravity * g;
             Vel.Y = g > 0 ? Math.Min(Vel.Y, maxFall) : Math.Max(Vel.Y, -maxFall);
 
-            if (YoyoTuning.UseSlopes)
+            if (Tuning.UseSlopes)
             {
                 Vector4 slope = Collision.SlopeCollision(Projectile.position, Vel, width, height, gravity * g, true);
                 Projectile.position = new Vector2(slope.X, slope.Y);
@@ -404,10 +422,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         // A plain move of the yoyo by 'delta' with block collision, no gravity and no slopes (a trick that steers the yoyo itself uses this).
         // Vel becomes how far it really moved. Blocked and Normal tell whether a block cut it short and which way that block faces.
-        public YoyoContact Move(Vector2 delta)
+        // throughPlatforms: platforms and other top-solid blocks do not stop it (it flies through them in every direction).
+        public YoyoContact Move(Vector2 delta, bool throughPlatforms = false)
         {
             int g = GravDir;
-            Vector2 moved = Collision.TileCollision(Projectile.position, delta, Projectile.width, Projectile.height, false, false, g);
+            Vector2 moved = Collision.TileCollision(Projectile.position, delta, Projectile.width, Projectile.height, throughPlatforms, throughPlatforms, g);
             YoyoContact contact = default;
             bool stoppedX = Math.Abs(moved.X - delta.X) > 0.01f;
             bool stoppedY = Math.Abs(moved.Y - delta.Y) > 0.01f;
@@ -437,7 +456,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 armReady = true;
             }
             else
-                armWorld += MathHelper.WrapAngle(target - armWorld) * MathHelper.Clamp(YoyoTuning.ArmFollow, 0.01f, 1f);
+                armWorld += MathHelper.WrapAngle(target - armWorld) * MathHelper.Clamp(Tuning.ArmFollow, 0.01f, 1f);
             owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, armWorld - MathHelper.PiOver2);
             hand = HeldSwordPose.HandWorld(owner, armWorld);
             owner.heldProj = Projectile.whoAmI; // also ends the projectile when the player swaps items
@@ -460,8 +479,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             Hits++;
             hitSerial++;
-            YoyoFx.Hit(Projectile.Center, Hits);
-            YoyoShake.Hit(target.Center, trick.HitShake);
+            Fx.Hit(Projectile.Center, Hits);
+            YoyoShake.Hit(target.Center, Tuning.HitShake);
             trick.OnHit(this, target);
             if (Hits >= trick.MaxHits)
                 BeginReturn();
@@ -475,29 +494,27 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             if (Main.dedServ || !Projectile.active || ticks == 0 || trick == null)
                 return;
-            afterimages.Tick(GetTexture(), trick.Afterimages && State != YoyoState.Idle, Projectile.Center, spin, Vel.Length());
+            afterimages.Tick(GetTexture(), Tuning.Afterimages && State != YoyoState.Idle, Projectile.Center, spin, Vel.Length());
         }
 
         public override void OnKill(int timeLeft)
         {
-            afterimages.Release();
+            afterimages?.Release();
         }
 
-        // The yoyo's own art when it exists, else the vanilla sprite of the yoyo projectile the item shoots.
+        // The yoyo's own art when it exists (Tuning.TexturePath), else the vanilla sprite.
         Texture2D GetTexture()
         {
             if (!customChecked)
             {
                 customChecked = true;
-                string path = YoyoTuning.CustomTexturePath(itemType);
+                string path = Tuning.TexturePath;
                 if (path != null)
                     ModContent.RequestIfExists<Texture2D>(path, out custom);
             }
             if (custom != null && custom.IsLoaded)
                 return custom.Value;
-            int visual = YoyoTuning.VisualProjectile(itemType);
-            Main.instance.LoadProjectile(visual);
-            return TextureAssets.Projectile[visual].Value;
+            return TextureAssets.Projectile[Type].Value;   // the vanilla sprite the subclass's Texture points to
         }
 
         public override bool PreDraw(ref Color lightColor)

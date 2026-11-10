@@ -18,6 +18,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
     /// </summary>
     public class YoyoRope
     {
+        readonly YoyoTuning tuning;
+
+        public YoyoRope(YoyoTuning tuning)
+        {
+            this.tuning = tuning;
+        }
+
         Vector2[] pos;
         Vector2[] prev;
         Vector2[] last;
@@ -44,7 +51,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             if (Main.dedServ)
                 return;
-            int n = Math.Max(4, YoyoTuning.RopePoints);
+            int n = Math.Max(4, tuning.RopePoints);
             if (pos == null || pos.Length != n)
             {
                 pos = new Vector2[n];
@@ -54,7 +61,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             }
 
             float distance = Vector2.Distance(anchor, end);
-            float length = Math.Max(YoyoTuning.RopeMinLength, distance * slackFactor + extraSlack);
+            float length = Math.Max(tuning.RopeMinLength, distance * slackFactor + extraSlack);
             float piece = length / (n - 1);
 
             // First tick, or the player teleported: lay the string straight between the two ends.
@@ -90,7 +97,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             for (int i = 1; i < n - 1; i++)
             {
                 last[i] = pos[i];
-                Vector2 velocity = (pos[i] - prev[i]) * YoyoTuning.RopeDamping;
+                Vector2 velocity = (pos[i] - prev[i]) * tuning.RopeDamping;
                 prev[i] = pos[i];
                 pos[i] += velocity + gravity;
             }
@@ -99,7 +106,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             pos[n - 1] = end;
             prev[n - 1] = end;
 
-            int iterations = Math.Max(1, YoyoTuning.RopeIterations);
+            int iterations = Math.Max(1, tuning.RopeIterations);
             for (int iteration = 0; iteration < iterations; iteration++)
             {
                 for (int i = 0; i < n - 1; i++)
@@ -125,7 +132,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 }
             }
 
-            if (YoyoTuning.RopeCollides)
+            if (tuning.RopeCollides)
             {
                 for (int i = 1; i < n - 1; i++)
                 {
@@ -154,12 +161,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             if (Main.dedServ || (!ready && !hasLine))
                 return;
-            int subdivisions = Math.Max(1, YoyoTuning.RopeSubdivisions);
+            int subdivisions = Math.Max(1, tuning.RopeSubdivisions);
             curve.Clear();
             if (!ready)
             {
                 // Idle: the straight line, cut into as many pieces as the rope curve so the twist looks the same.
-                int count = (Math.Max(4, YoyoTuning.RopePoints) - 1) * subdivisions;
+                int count = (Math.Max(4, tuning.RopePoints) - 1) * subdivisions;
                 for (int j = 0; j <= count; j++)
                     curve.Add(Vector2.Lerp(lineA, lineB, j / (float)count));
             }
@@ -187,11 +194,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                     Vector2 b = curve[j + 1];
                     Color light = Lighting.GetColor((int)((a.X + b.X) * 0.5f / 16f), (int)((a.Y + b.Y) * 0.5f / 16f));
                     if (pass == 0)
-                        Piece(pixel, a, b, YoyoTuning.RopeOutlineWidth, Tint(YoyoTuning.RopeOutlineColor, light));
+                        Piece(pixel, a, b, tuning.RopeOutlineWidth, Tint(tuning.RopeOutlineColor, light));
                     else
                     {
                         bool twist = (j / 2) % 2 == 1;
-                        Piece(pixel, a, b, YoyoTuning.RopeWidth, Tint(twist ? YoyoTuning.RopeAltColor : YoyoTuning.RopeColor, light));
+                        Piece(pixel, a, b, tuning.RopeWidth, Tint(twist ? tuning.RopeAltColor : tuning.RopeColor, light));
                     }
                 }
             }

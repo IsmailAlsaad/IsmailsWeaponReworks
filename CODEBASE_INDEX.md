@@ -1,28 +1,36 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-09 | 210 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-10 | 223 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-DetachedTrails(33) RemoteHitTracker(26) CameraShake(26) ThrustPalette(24) HeldSwordPose(19) AfterimageTrail(19) HeldAim(18) SweepTrail(13) ThrustPlayer(12) PixelLine(11) IceFx(11) PixelTrail(10) DarkLanceTuning(10) ThrustChain(9) SweepTrailStyle(9) PixelFan(9) MuramasaTuning(9) VolcanoTuning(8) SweepFade(8) BoomerangFlight(8)
+DetachedTrails(33) RemoteHitTracker(26) CameraShake(26) ThrustPalette(24) HeldSwordPose(19) AfterimageTrail(19) HeldAim(18) SweepTrail(13) YoyoTuning(12) ThrustPlayer(12) PixelLine(11) IceFx(11) PixelTrail(10) DarkLanceTuning(10) ThrustChain(9) SweepTrailStyle(9) PixelFan(9) MuramasaTuning(9) VolcanoTuning(8) SweepFade(8)
 
 ## Inheritance
 Project bases -> derived:
 - BeeKeeperBeeProjectile: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
+- ForwardPassTrick: Code1Trick
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
+- IForwardPassTuning: Code1Tuning, ForwardPassDefaults
+- IWalkTheDogTuning: WalkTheDogDefaults, WoodenYoyoTuning
 - MetaballStyle: BeeKeeperHoneyStyle, DarkLanceBlobStyle, VolcanoBlobStyle, VolcanoDripStyle
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, EtherealBeamTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, EnchantedSwordSweepTrailStyle, IceBladeTrailStyle, LightsBaneSweepTrailStyle, MuramasaSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
 - VolcanoDripStyle: VolcanoBurstStyle
+- WalkTheDogTrick: WoodenYoyoTrick
+- YoyoFx: Code1Fx, WoodenYoyoFx
+- YoyoGlobalItem: Code1GlobalItem, WoodenYoyoGlobalItem
+- YoyoProjectile: Code1Projectile, WoodenYoyoProjectile
 - YoyoTrick: ForwardPassTrick, WalkTheDogTrick
+- YoyoTuning: Code1Tuning, WoodenYoyoTuning
 tModLoader/other bases -> project types:
 - ModProjectile (55): BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassHoldProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneBladeProjectile, LightsBaneImbueProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
 - GlobalItem (25): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, YoyoGlobalItem
 - ModPlayer (14): BeeKeeperPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MuramasaPlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, YoyoPlayer
 - GlobalNPC (3): BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC
-- ModSystem (2): DetachedTrails, MetaballLayers
+- ModSystem (3): DetachedTrails, MetaballLayers, YoyoRegistry
 - Mod (1): IsmailsWeaponReworks
 - ModBuff (1): LightsBaneImbueBuff
 - PlayerDrawLayer (1): BladeOfGrassSwordLayer
@@ -780,42 +788,83 @@ tModLoader/other bases -> project types:
     +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +SpinSpeed:float[s] +AfterimageTicks:int[s] +ShardDamageMultiplier:float[s] +ShardMaxHits:int[s] +ShardLifeTicks:int[s] +ShardHitCooldownTicks:int[s] +ShardSpeed:float[s] +ShardSpreadAngle:float[s] +ShardHop:float[s] +ShardGravity:float[s] +ShardMaxFallSpeed:float[s] +ShardDrag:float[s] +BreakOnTilesWhileReturning:bool[s] +GlowColor:Color[s] +WoodDust:int[s]
 
 ### Content/Weapons/Yoyos/
-**YoyoFx.cs** uses: YoyoTuning
-  static class YoyoFx
-    +Throw(Vector2,int)[s] +Land(Vector2,float,int)[s] +Impact(Vector2,Vector2,float)[s] +Hit(Vector2,int)[s] +Retract(Vector2)[s] +Catch(Vector2)[s]
-**YoyoGlobalItem.cs** uses: YoyoTuning
-  class YoyoGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**ForwardPassTrick.cs** uses: YoyoContact, YoyoProjectile, YoyoTrick, YoyoTuning
+  interface IForwardPassTuning
+    +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool
+  class ForwardPassDefaults : IForwardPassTuning
+  class ForwardPassTrick : YoyoTrick
+    #P:IForwardPassTuning #axis:Vector2 #bulge:Vector2 #halfReach:float #stopped:bool +Name:string[ov] +MaxHits:int[ov] +RetractsOnRelease:bool[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] +SpinStep(YoyoProjectile)[ov]
+**WalkTheDogTrick.cs** uses: YoyoContact, YoyoProjectile, YoyoTrick, YoyoTuning
+  interface IWalkTheDogTuning
+    +WalkHitsPerThrow:int +WalkThrowDownSpeed:float +WalkThrowForwardSpeed:float +WalkSwitchDeadzonePx:float +WalkGravity:float +WalkMaxFall:float +WalkSpeed:float +WalkAccel:float +WalkAirAccel:float +WalkLandBounce:float +WalkBounceMinImpact:float +WalkHopSpeed:float +WalkHopCooldownTicks:int +WalkHitRecoil:float +WalkHitHop:float
+  class WalkTheDogDefaults : IWalkTheDogTuning
+  class WalkTheDogTrick : YoyoTrick
+    #P:IWalkTheDogTuning #grounded:bool #hopCooldown:int +Name:string[ov] +MaxHits:int[ov] +FollowsCursorSide:bool[ov] +CursorSideDeadzonePx:float[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] +OnHit(YoyoProjectile,NPC)[ov]
+**YoyoFx.cs**
+  class YoyoFx
+    #ChipDust:int[v] #Chip(Vector2,Vector2,float) +Throw(Vector2,int)[v] +Land(Vector2,float,int)[v] +Impact(Vector2,Vector2,float)[v] +Hit(Vector2,int)[v] +Retract(Vector2)[v] +Catch(Vector2)[v]
+**YoyoGlobalItem.cs**
+  abstract class YoyoGlobalItem : GlobalItem
+    #YoyoItemType:int[ab] +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov]
 **YoyoJuice.cs** uses: AfterimageTrail, CameraShake, DetachedTrails, YoyoTuning
   class YoyoAfterimages
     +Tick(Texture2D,bool,Vector2,float,float) +Draw() +Release()
   static class YoyoShake
     +Hit(Vector2,float)[s]
-**YoyoPlayer.cs** uses: YoyoProjectile, YoyoTuning
+**YoyoPlayer.cs** uses: YoyoRegistry
   class YoyoPlayer : ModPlayer
     +Find(int,int)[s] +PostUpdate()[ov]
-**YoyoProjectile.cs** uses: HeldAim, HeldSwordPose, YoyoAfterimages, YoyoFx, YoyoRope, YoyoShake, YoyoTrick, YoyoTricks, YoyoTuning
+**YoyoProjectile.cs** uses: HeldAim, HeldSwordPose, YoyoAfterimages, YoyoFx, YoyoRegistry, YoyoRope, YoyoShake, YoyoTrick, YoyoTuning
   enum YoyoState
     {Idle, Out, Return}
   struct YoyoContact
     +Grounded:bool +BlockedX:bool +Ceiling:bool +Impact:float +Blocked:bool +Normal:Vector2
-  class YoyoProjectile : ModProjectile
-    +Texture:string[ov] +Owner:Player +IsOwner:bool +GravDir:int +Vel:Vector2 +Aim:Vector2 +Side:int +OutTicks:int +Hits:int +State:YoyoState +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +BeginReturn() +Step(float,float) +Move(Vector2) +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+  abstract class YoyoProjectile : ModProjectile
+    +YoyoItemType:int[ab] #CreateTuning()[ab] #CreateFx()[ab] #CreateTrick(YoyoTuning)[ab] +Tuning:YoyoTuning +Fx:YoyoFx +Owner:Player +IsOwner:bool +GravDir:int +Vel:Vector2 +Aim:Vector2 +Side:int +OutTicks:int +Hits:int +State:YoyoState +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +BeginReturn() +Step(float,float) +Move(Vector2,bool) +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**YoyoRegistry.cs**
+  class YoyoRegistry : ModSystem
+    +Register(int,int)[s] +ProjectileFor(int)[s] +Load()[ov] +Unload()[ov]
 **YoyoRope.cs** uses: YoyoTuning
   class YoyoRope
     +Straight(Vector2,Vector2) +Update(Vector2,Vector2,float,float,float) +Draw(Texture2D)
-**YoyoTrick.cs** uses: YoyoContact, YoyoFx, YoyoProjectile, YoyoTuning
+**YoyoTrick.cs** uses: YoyoProjectile, YoyoTuning
   abstract class YoyoTrick
-    +Name:string[ab] +MaxHits:int[ab] +FollowsCursorSide:bool[v] +RetractsOnRelease:bool[v] +Afterimages:bool[v] +HitShake:float[v] +SpinStep(YoyoProjectile)[v] +Begin(YoyoProjectile,bool)[ab] +Tick(YoyoProjectile)[ab] +OnHit(YoyoProjectile,NPC)[v]
-  static class YoyoTricks
-    +Create(int)[s]
-  class ForwardPassTrick : YoyoTrick
-    +Name:string[ov] +MaxHits:int[ov] +RetractsOnRelease:bool[ov] +Afterimages:bool[ov] +HitShake:float[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] +SpinStep(YoyoProjectile)[ov]
-  class WalkTheDogTrick : YoyoTrick
-    +Name:string[ov] +MaxHits:int[ov] +FollowsCursorSide:bool[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] +OnHit(YoyoProjectile,NPC)[ov]
+    #T:YoyoTuning +Name:string[ab] +MaxHits:int[ab] +FollowsCursorSide:bool[v] +CursorSideDeadzonePx:float[v] +RetractsOnRelease:bool[v] +Begin(YoyoProjectile,bool)[ab] +Tick(YoyoProjectile)[ab] +OnHit(YoyoProjectile,NPC)[v] +SpinStep(YoyoProjectile)[v]
 **YoyoTuning.cs**
-  static class YoyoTuning
-    +IsReworked(int)[s] +RopeLengthScale:float[s] +RopeLength(Item)[s] +RopePoints:int[s] +WalkRopeSlackFactor:float[s] +WalkRopeExtraSlack:float[s] +WalkRopeGravity:float[s] +RopeMinLength:float[s] +RopeDamping:float[s] +RopeIterations:int[s] +RopeCollides:bool[s] +RopeSubdivisions:int[s] +RopeWidth:float[s] +RopeOutlineWidth:float[s] +RopeColor:Color[s] +RopeAltColor:Color[s] +RopeOutlineColor:Color[s] +HitboxSize:int[s] +HitCooldownTicks:int[s] +ArmFollow:float[s] +SyncEveryTicks:int[s] +IdleRestTicks:int[s] +IdleDropTicks:int[s] +IdleSpinTicks:int[s] +IdleRaiseTicks:int[s] +IdleDropPx:float[s] +IdleSwayPx:float[s] +IdleSpinRestSpeed:float[s] +IdleSpinSpeed:float[s] +IdleArmRestDeg:float[s] +IdleArmDropDeg:float[s] +ThrowArmStartDeg:float[s] +ThrowArmBlendTicks:int[s] +CatchArmDeg:float[s] +CatchArmBlendDistance:float[s] +ReleaseGraceTicks:int[s] +RethrowDelayTicks:int[s] +ReturnStartSpeed:float[s] +ReturnAccel:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +ReturnSpinSpeed:float[s] +SpinPerPixel:float[s] +WalkHitsPerThrow:int[s] +WalkThrowDownSpeed:float[s] +WalkThrowForwardSpeed:float[s] +WalkSwitchDeadzonePx:float[s] +WalkGravity:float[s] +WalkMaxFall:float[s] +WalkSpeed:float[s] +WalkAccel:float[s] +WalkAirAccel:float[s] +WalkLandBounce:float[s] +WalkBounceMinImpact:float[s] +WalkHopSpeed:float[s] +WalkHopCooldownTicks:int[s] +WalkHitRecoil:float[s] +WalkHitHop:float[s] +UseSlopes:bool[s] +ForwardPassTicks:int[s] +ForwardPassWidthRatio:float[s] +ForwardPassMinReach:float[s] +ForwardPassReachMargin:float[s] +ForwardPassEase:float[s] +ForwardPassHitShake:float[s] +AfterimageTicks:int[s] +AfterimageMinScale:float[s] +AfterimageAlpha:float[s] +AfterimageMinSpeed:float[s] +WoodDust:int[s] +WoodenTexturePath:string[s] +Code1TexturePath:string[s] +CustomTexturePath(int)[s] +VisualProjectile(int)[s]
+  class YoyoTuning
+    +TexturePath:string[v] +RopeLengthScale:float[v] +RopeLength(Item) +RopePoints:int[v] +RopeSlackFactor:float[v] +RopeExtraSlack:float[v] +RopeGravity:float[v] +ReturnRopeSlackFactor:float[v] +ReturnRopeExtraSlack:float[v] +ReturnRopeGravity:float[v] +RopeMinLength:float[v] +RopeDamping:float[v] +RopeIterations:int[v] +RopeCollides:bool[v] +RopeSubdivisions:int[v] +RopeWidth:float[v] +RopeOutlineWidth:float[v] +RopeColor:Color[v] +RopeAltColor:Color[v] +RopeOutlineColor:Color[v] +HitboxSize:int[v] +HitCooldownTicks:int[v] +ArmFollow:float[v] +SyncEveryTicks:int[v] +UseSlopes:bool[v] +IdleRestTicks:int[v] +IdleDropTicks:int[v] +IdleSpinTicks:int[v] +IdleRaiseTicks:int[v] +IdleDropPx:float[v] +IdleSwayPx:float[v] +IdleSpinRestSpeed:float[v] +IdleSpinSpeed:float[v] +IdleArmRestDeg:float[v] +IdleArmDropDeg:float[v] +ThrowArmStartDeg:float[v] +ThrowArmBlendTicks:int[v] +CatchArmDeg:float[v] +CatchArmBlendDistance:float[v] +ReleaseGraceTicks:int[v] +RethrowDelayTicks:int[v] +ReturnStartSpeed:float[v] +ReturnAccel:float[v] +ReturnMaxSpeed:float[v] +CatchDistance:float[v] +ReturnSpinSpeed:float[v] +SpinPerPixel:float[v] +HitShake:float[v] +Afterimages:bool[v] +AfterimageTicks:int[v] +AfterimageMinScale:float[v] +AfterimageMinSpeed:float[v] +AfterimageColor:Color[v]
+
+### Content/Weapons/Yoyos/Code1/
+**Code1Fx.cs** uses: YoyoFx
+  class Code1Fx : YoyoFx
+    #ChipDust:int[ov] +Throw(Vector2,int)[ov]
+**Code1GlobalItem.cs** uses: YoyoGlobalItem
+  class Code1GlobalItem : YoyoGlobalItem
+    #YoyoItemType:int[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**Code1Projectile.cs** uses: Code1Fx, Code1Trick, Code1Tuning, YoyoFx, YoyoProjectile, YoyoTrick, YoyoTuning
+  class Code1Projectile : YoyoProjectile
+    +Texture:string[ov] +YoyoItemType:int[ov] #CreateTuning()[ov] #CreateFx()[ov] #CreateTrick(YoyoTuning)[ov]
+**Code1Trick.cs** uses: ForwardPassTrick, YoyoTuning
+  class Code1Trick : ForwardPassTrick
+**Code1Tuning.cs** uses: IForwardPassTuning, YoyoTuning
+  class Code1Tuning : YoyoTuning, IForwardPassTuning
+    +TexturePath:string[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool
+
+### Content/Weapons/Yoyos/WoodenYoyo/
+**WoodenYoyoFx.cs** uses: YoyoFx
+  class WoodenYoyoFx : YoyoFx
+    #ChipDust:int[ov]
+**WoodenYoyoGlobalItem.cs** uses: YoyoGlobalItem
+  class WoodenYoyoGlobalItem : YoyoGlobalItem
+    #YoyoItemType:int[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**WoodenYoyoProjectile.cs** uses: WoodenYoyoFx, WoodenYoyoTrick, WoodenYoyoTuning, YoyoFx, YoyoProjectile, YoyoTrick, YoyoTuning
+  class WoodenYoyoProjectile : YoyoProjectile
+    +Texture:string[ov] +YoyoItemType:int[ov] #CreateTuning()[ov] #CreateFx()[ov] #CreateTrick(YoyoTuning)[ov]
+**WoodenYoyoTrick.cs** uses: WalkTheDogTrick, YoyoTuning
+  class WoodenYoyoTrick : WalkTheDogTrick
+**WoodenYoyoTuning.cs** uses: IWalkTheDogTuning, YoyoTuning
+  class WoodenYoyoTuning : YoyoTuning, IWalkTheDogTuning
+    +TexturePath:string[ov] +WalkHitsPerThrow:int +WalkThrowDownSpeed:float +WalkThrowForwardSpeed:float +WalkSwitchDeadzonePx:float +WalkGravity:float +WalkMaxFall:float +WalkSpeed:float +WalkAccel:float +WalkAirAccel:float +WalkLandBounce:float +WalkBounceMinImpact:float +WalkHopSpeed:float +WalkHopCooldownTicks:int +WalkHitRecoil:float +WalkHitHop:float
 
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; build.txt, description.txt, description_workshop.txt

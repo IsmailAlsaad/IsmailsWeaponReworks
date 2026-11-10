@@ -5,7 +5,7 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 {
     /// <summary>
-    /// Keeps the held yoyo alive: whenever a reworked yoyo is held and the player has no YoyoProjectile, the owner's client spawns one
+    /// Keeps the held yoyo alive: whenever a reworked yoyo is held and the player has no projectile of that yoyo, the owner's client spawns one
     /// (the projectile ends itself when the yoyo is swapped away, and is then spawned again for the next yoyo). Nothing here is synced:
     /// the projectile itself travels to the other machines.
     /// </summary>
@@ -27,9 +27,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             if (Player.whoAmI != Main.myPlayer || Player.dead || Player.noItems || Player.CCed)
                 return;
             Item item = Player.HeldItem;
-            if (!YoyoTuning.IsReworked(item.type))
+            int type = YoyoRegistry.ProjectileFor(item.type);
+            if (type <= 0)
                 return;
-            int type = ModContent.ProjectileType<YoyoProjectile>();
             if (Find(Player.whoAmI, type) != null)
                 return;
             Projectile.NewProjectile(Player.GetSource_ItemUse(item), Player.MountedCenter, Vector2.Zero, type,

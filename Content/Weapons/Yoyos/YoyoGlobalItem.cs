@@ -1,20 +1,22 @@
-﻿using System.Collections.Generic;
-using Terraria;
+﻿using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 {
     /// <summary>
-    /// Overhauls the vanilla yoyos (the ones YoyoTuning.IsReworked lists; the Wooden Yoyo first): the item itself throws nothing. While it
-    /// is held, a YoyoProjectile (spawned by YoyoPlayer) is the yoyo: it idles in the hand, and the left click runs the yoyo's trick on its
-    /// rope. Recipe, drops and base stats stay vanilla (item.shoot stays the vanilla yoyo projectile: its range sets the rope length).
+    /// The shared part of every yoyo's GlobalItem (each yoyo has its own subclass in its folder that names its vanilla item): the item
+    /// itself throws nothing. While it is held, the yoyo's projectile (spawned by YoyoPlayer) is the yoyo: it idles in the hand, and the
+    /// left click runs the yoyo's trick on its rope. Recipe, drops and base stats stay vanilla (item.shoot stays the vanilla yoyo
+    /// projectile: its range sets the rope length).
     /// </summary>
-    public class YoyoGlobalItem : GlobalItem
+    public abstract class YoyoGlobalItem : GlobalItem
     {
+        protected abstract int YoyoItemType { get; }
+
         public override bool AppliesToEntity(Item entity, bool lateInstantiation)
         {
-            return YoyoTuning.IsReworked(entity.type);
+            return entity.type == YoyoItemType;
         }
 
         public override void SetDefaults(Item item)
@@ -32,9 +34,5 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             return false;
         }
 
-        public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
-        {
-            //tooltips.Add(new TooltipLine(Mod, "Yoyo1", "Hold left click to Walk the Dog: the yoyo rolls along the ground and hits 3 times"));
-        }
     }
 }
