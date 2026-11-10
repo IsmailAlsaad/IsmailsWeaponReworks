@@ -15,9 +15,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
             tooltips.Add(new TooltipLine(Mod, "Amazon1", "Left click to perform a Forward Pass"));
-            tooltips.Add(new TooltipLine(Mod, "Amazon2", "Every hit makes the yoyo more barbed; the third hit latches barbed vines onto the enemy"));
-            tooltips.Add(new TooltipLine(Mod, "Amazon3", "Right click to perform Walk the Dog"));
-            tooltips.Add(new TooltipLine(Mod, "Amazon4", "It plants barbed vines in the ground that hold the enemies that touch them"));
+            //tooltips.Add(new TooltipLine(Mod, "Amazon2", "Every hit makes the yoyo more barbed; the third hit latches barbed vines onto the enemy"));
+            tooltips.Add(new TooltipLine(Mod, "Amazon3", "Hold right click to Walk the Dog"));
+            //tooltips.Add(new TooltipLine(Mod, "Amazon4", "It plants barbed vines in the ground that hold the enemies that touch them"));
         }
     }
 }
