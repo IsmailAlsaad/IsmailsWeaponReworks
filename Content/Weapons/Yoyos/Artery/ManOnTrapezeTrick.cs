@@ -10,17 +10,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
     /// The Artery's trick, Man on Trapeze: the ForwardPassTrick pattern, but the string tries to LOOP an enemy.
     /// ARC: the pass flies as a Forward Pass. Every tick the owner's client checks whether the string (the line hand to yoyo) or the yoyo
     /// touches an enemy that can be damaged (Snarable.CanBite); the first one found is the target (one loop at a time).
-    /// CATCH (LoopCatchTicks): the yoyo leaves the ellipse and follows a cubic curve that starts with the speed it had (no harsh turn from the
-    /// straight line to sideways), bends around the enemy and arrives on the string line, on the player's side of the enemy. The noose
-    /// (ArteryLoop.AddNoose) grows around the enemy meanwhile.
+    /// CATCH (LoopCatchTicks): the yoyo leaves the ellipse and swings AROUND the enemy on one smooth path (a spiral round the enemy,
+    /// bent so it starts with the speed and direction the yoyo already had: no harsh turn from the straight line to sideways) and comes
+    /// back to the string line on the player's side of the enemy. The string is not redrawn: it is the line hand to where the catch began
+    /// plus the yoyo's own flight path, so the loop FORMS from the flight: where the path comes back to the line, the string has a teardrop
+    /// loop over the enemy with the yoyo at its tip. The flight path is remembered relative to the enemy, so the loop rides along with it.
     /// CONSTRICT (LoopConstrictTicks): the yoyo spin-walks along the line toward the player (it follows the enemy, which keeps moving)
-    /// while the noose shrinks. The loop CLOSES when the noose is shut, or at once when the enemy dies; the yoyo then returns to the hand.
-    /// It BREAKS (no close) when the enemy gets farther from the hand than the string is long.
+    /// while the loop shrinks toward the enemy, its tip pulled along by the yoyo. The loop CLOSES when it has shrunk, or at once when the
+    /// enemy dies; the yoyo then returns to the hand. It BREAKS (no close) when the enemy gets farther from the hand than the string is long.
     /// A grippable enemy (Snarable.CanGrip: not a boss, not immovable, not a worm segment, not huge) is HELD in place for the whole loop
     /// (NpcHold); anything else is looped but keeps moving.
     /// MULTIPLAYER: the owner decides the target, the start, the close and the break; the data travels in ArteryProjectile's extra sync.
-    /// Every machine runs the curve from it, refreshes the hold on its own copy of the enemy, and draws the string and the noose
-    /// itself (visual only). Patch A1 has no damage change: the shred hits and the blood explosion come in A2.
+    /// Every machine runs the same path from it (and remembers its own flight path), refreshes the hold on its own copy of the enemy, and
+    /// draws the string itself (visual only). Patch A1 has no damage change: the shred hits and the blood explosion come in A2.
     /// </summary>
     public class ManOnTrapezeTrick : ForwardPassTrick
     {
@@ -29,14 +31,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         int targetIndex = -1;
         int targetType;
         bool snared;
-        float baseRadius;         // the noose's radius when it is fully grown
-        float radius;             // the noose's radius now
+        float baseRadius;         // how big the loop is meant to be (half the enemy's size plus a pad)
+        float shrink = 1f;        // how much of its size the loop has left (1 = just formed)
+        float startAngle;         // where the catch began, seen from the enemy
+        float startRadius;
+        float sweepSign = 1f;     // which way round the enemy the yoyo swings
         Vector2 loopStart;
         Vector2 loopStartVel;
         Vector2 lastEnemy;        // where the enemy was last (the loop closes there when the enemy is gone)
         Vector2 lastHand;
         Vector2 lastCenter;
         bool haveLast;
+        readonly List<Vector2> trail = new List<Vector2>();    // the yoyo's flight path since the catch, relative to the enemy
+        readonly List<Vector2> shape = new List<Vector2>();    // scratch: the loop's points in the world
 
         public ManOnTrapezeTrick(YoyoTuning tuning) : base(tuning)
         {
@@ -53,7 +60,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             ended = false;
             targetIndex = -1;
             haveLast = false;
-            radius = 0f;
+            shrink = 1f;
+            trail.Clear();
             if (authoritative)
                 (yoyo as ArteryProjectile)?.ClearLoop();
         }
@@ -153,11 +161,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             lastEnemy = npc.Center;
             snared = Snarable.CanGrip(npc, A.SnareMaxSizePx);
             baseRadius = MathHelper.Clamp(Math.Max(npc.width, npc.height) * 0.5f + A.LoopRadiusPadPx, A.LoopMinRadiusPx, A.LoopMaxRadiusPx);
-            radius = 0f;
+            shrink = 1f;
             loopStart = start;
             loopStartVel = startVel;
             if (!yoyo.IsOwner)
-                yoyo.Projectile.Center = start;   // the owner's position, where the curve began
+                yoyo.Projectile.Center = start;   // the owner's position, where the swing began
+
+            // The swing goes round the enemy the way the yoyo is already turning (the side its speed points to), so it does not reverse.
+            Vector2 rel = start - lastEnemy;
+            startRadius = Math.Max(1f, rel.Length());
+            startAngle = (float)Math.Atan2(rel.Y, rel.X);
+            float cross = rel.X * startVel.Y - rel.Y * startVel.X;
+            sweepSign = Math.Abs(cross) > 1f ? Math.Sign(cross) : yoyo.Side;
+            trail.Clear();
+            trail.Add(rel);
             (yoyo.Fx as ArteryFx)?.LoopCatch(start);
         }
 
@@ -205,7 +222,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             yoyo.BeginReturn();
         }
 
-        // Where the yoyo is at loop tick t, and how big the noose is. Everything follows the enemy and the hand as they move now.
+        // Where the yoyo is at loop tick t. Everything follows the enemy and the hand as they move now.
         void Place(YoyoProjectile yoyo, Vector2 hand, int t)
         {
             Vector2 toEnemy = lastEnemy - hand;
@@ -215,44 +232,93 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             Vector2 point;
             if (t <= catchTicks)
             {
-                // A cubic curve: it starts with the speed the yoyo had and ends on the string line moving toward the player.
-                float u = t / (float)catchTicks;
-                radius = baseRadius * ArteryLoop.Smooth(u);
-                float distance = LoopDistance(baseRadius + A.LoopGapPx, baseRadius, handDistance);
-                Vector2 end = lastEnemy - along * distance;
-                Vector2 c1 = loopStart + loopStartVel * (catchTicks / 3f);
-                Vector2 c2 = end + along * (A.LoopWalkSpeedPx * catchTicks / 3f);
-                point = ArteryLoop.Bezier(loopStart, c1, c2, end, u);
+                point = SwingPoint(t / (float)catchTicks, along, handDistance, catchTicks);
             }
             else
             {
                 int walked = t - catchTicks;
                 float u = MathHelper.Clamp(walked / (float)Math.Max(1, A.LoopConstrictTicks), 0f, 1f);
-                radius = MathHelper.Lerp(baseRadius, A.LoopCloseRadiusPx, u * u);   // it closes gently at first and quickly at the end
-                float distance = LoopDistance(baseRadius + A.LoopGapPx + A.LoopWalkSpeedPx * walked, radius, handDistance);
+                shrink = MathHelper.Lerp(1f, A.LoopCloseScale, u * u);   // it closes gently at first and quickly at the end
+                float distance = LoopDistance(baseRadius + A.LoopGapPx + A.LoopWalkSpeedPx * walked, baseRadius * shrink, handDistance);
                 point = lastEnemy - along * distance;
             }
             yoyo.Move(point - yoyo.Projectile.Center, true);
+            if (t <= catchTicks)
+                trail.Add(yoyo.Projectile.Center - lastEnemy);   // the flight path the string will lie on
         }
 
-        // How far from the enemy the yoyo is on the string line: not closer to the hand than allowed, not inside the noose.
-        float LoopDistance(float wanted, float noose, float handDistance)
+        // The swing round the enemy (u from 0 to 1): a spiral about the enemy from where the catch began to the string line on the player's
+        // side of it. It bulges out to at least the loop's size so the string really goes round the enemy, and a correction that is zero at
+        // both ends makes it start with the speed the yoyo had (so the turn is smooth) and end exactly on the line.
+        Vector2 SwingPoint(float u, Vector2 along, float handDistance, int catchTicks)
+        {
+            float endRadius = LoopDistance(baseRadius + A.LoopGapPx, baseRadius, handDistance);
+            float endAngle = (float)Math.Atan2(-along.Y, -along.X);   // from the enemy toward the hand
+            float sweep = SweepAngle(endAngle);
+            float bulge = Math.Max(0f, baseRadius + A.LoopRadiusPadPx - 0.5f * (startRadius + endRadius));
+
+            float radius = MathHelper.Lerp(startRadius, endRadius, u) + bulge * (float)Math.Sin(Math.PI * u);
+            float angle = startAngle + sweep * u;
+            Vector2 radial = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+            Vector2 point = lastEnemy + radial * radius;
+
+            // The speed the spiral itself starts with, per tick, against the speed the yoyo really had.
+            Vector2 radial0 = new Vector2((float)Math.Cos(startAngle), (float)Math.Sin(startAngle));
+            Vector2 around0 = new Vector2(-radial0.Y, radial0.X);
+            float radiusSpeed = (endRadius - startRadius) + bulge * (float)Math.PI;
+            Vector2 spiralStart = (radial0 * radiusSpeed + around0 * (startRadius * sweep)) / catchTicks;
+            point += (loopStartVel - spiralStart) * (catchTicks * u * (1f - u) * (1f - u));
+            return point;
+        }
+
+        // The whole angle the swing turns through (signed), the way the yoyo is already turning, never less than LoopMinSweepDeg.
+        float SweepAngle(float endAngle)
+        {
+            float raw = MathHelper.WrapAngle(endAngle - startAngle);
+            float sweep = sweepSign > 0f ? (raw >= 0f ? raw : raw + MathHelper.TwoPi) : (raw <= 0f ? raw : raw - MathHelper.TwoPi);
+            if (Math.Abs(sweep) < MathHelper.ToRadians(A.LoopMinSweepDeg))
+                sweep += sweepSign * MathHelper.TwoPi;
+            return sweep;
+        }
+
+        // How far from the enemy the yoyo is on the string line: not closer to the hand than allowed, not inside the loop.
+        float LoopDistance(float wanted, float loopRadius, float handDistance)
         {
             float distance = Math.Min(wanted, handDistance - A.LoopMinHandDistancePx);
-            return Math.Max(distance, noose + 4f);
+            return Math.Max(distance, loopRadius + 4f);
         }
 
         // ---- the string (visual) ----
 
-        // While the loop runs the string is the straight line hand to yoyo plus the noose (see YoyoTrick.StringPath).
+        // While the loop runs the string is drawn by hand (see YoyoTrick.StringPath). CATCH: the line from the hand to where the swing began,
+        // then the yoyo's own flight path. After it: the straight line from the hand to the yoyo, and the loop (the line back to where the
+        // swing began and the flight path) hanging from the yoyo, shrinking toward the enemy.
         public override bool StringPath(YoyoProjectile yoyo, List<Vector2> points)
         {
-            if (Main.dedServ || loopTick < 0 || ended)
+            if (Main.dedServ || loopTick < 0 || ended || trail.Count == 0)
                 return false;
             points.Clear();
-            Vector2 yoyoCenter = yoyo.Projectile.Center;
-            ArteryLoop.AddLine(points, yoyo.Hand, yoyoCenter, A.LoopStringStepPx);
-            ArteryLoop.AddNoose(points, yoyoCenter, lastEnemy, radius, A.LoopStringStepPx, A.LoopArcSamples);
+            Vector2 hand = yoyo.Hand;
+            float step = A.LoopStringStepPx;
+            int catchTicks = Math.Max(1, A.LoopCatchTicks);
+
+            shape.Clear();
+            if (loopTick < catchTicks)
+            {
+                for (int i = 0; i < trail.Count; i++)
+                    shape.Add(lastEnemy + trail[i]);
+                ArteryLoop.AddLine(points, hand, shape[0], step);
+                ArteryLoop.AddSpline(points, shape, A.LoopSplineSteps);
+                return true;
+            }
+
+            Vector2 apex = yoyo.Projectile.Center;
+            for (int i = 0; i < trail.Count; i++)
+                shape.Add(lastEnemy + trail[i] * shrink);
+            ArteryLoop.AddLine(points, hand, apex, step);
+            ArteryLoop.AddLine(points, apex, shape[0], step);
+            ArteryLoop.AddSpline(points, shape, A.LoopSplineSteps);
+            ArteryLoop.AddLine(points, shape[shape.Count - 1], apex, step);
             return true;
         }
 
