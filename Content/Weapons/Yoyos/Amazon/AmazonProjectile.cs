@@ -58,6 +58,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
             return new AmazonTrick(tuning);
         }
 
+        protected override YoyoTrick CreateRightTrick(YoyoTuning tuning)
+        {
+            return new AmazonWalkTheDogTrick(tuning);
+        }
+
         // ---- net ----
 
         public override void SendExtraAI(BinaryWriter writer)

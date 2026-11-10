@@ -8,7 +8,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
     /// to read and change; the part after it holds the numbers of its trick (IForwardPassTuning) and anything else only this yoyo has. A new yoyo
     /// copies this file and keeps the whole list.
     /// </summary>
-    public class AmazonTuning : YoyoTuning, IForwardPassTuning
+    public class AmazonTuning : YoyoTuning, IForwardPassTuning, IWalkTheDogTuning
     {
         // ======== general parameters (see YoyoTuning) ========
         // His own art, when it exists (for example "IsmailsWeaponReworks/Content/Weapons/Yoyos/WoodenYoyo/WoodenYoyoProjectile"); null or
@@ -121,5 +121,47 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public float HeadScale => 1f;
         public float HeadForwardPx => 2f;                         // the head sticks out this far beyond the end of the vine
         public float ChainEndTrimPx => 4f;                        // the chain stops this far before each end (the head covers the rest)
+
+        // ---- Walk the Dog (right click; the same numbers as the Wooden Yoyo's) ----
+        public int WalkHitsPerThrow => 3;          // enemy hits before it retracts
+        public float WalkThrowDownSpeed => 5f;     // the throw: down ...
+        public float WalkThrowForwardSpeed => 3f;  // ... and a bit toward the cursor's side
+        public float WalkSwitchDeadzonePx => 10f;  // while it is out, the side only switches when the cursor is this far past the player's center
+        public float WalkGravity => 0.45f;
+        public float WalkMaxFall => 14f;
+        public float WalkSpeed => 4.2f;            // rolling speed along the ground
+        public float WalkAccel => 0.35f;           // on the ground
+        public float WalkAirAccel => 0.06f;        // in the air
+        public float WalkLandBounce => 0.3f;       // fraction of the fall speed that bounces back up
+        public float WalkBounceMinImpact => 3f;    // softer landings do not bounce
+        public float WalkHopSpeed => 5.5f;         // a small hop when a block stops the roll (steps and slopes)
+        public int WalkHopCooldownTicks => 10;
+        public float WalkHitRecoil => 3.5f;        // pushed back from an enemy ...
+        public float WalkHitHop => 3.5f;           // ... and up
+
+        // ---- the barbed ground vines (right click) ----
+        public int VineIntervalTicks => 36;                       // while the yoyo rolls on the ground it plants a vine this often (never in the air)
+        public float VineMinSpacingPx => 24f;                     // and never closer than this to the last one
+        public int MaxVines => 5;                                 // vines of one player standing at once; a sixth makes the oldest dig away
+        public int VineLifeTicks => 1800;                         // an untouched vine digs away after this long (30 s)
+        public float VineLengthPx => 30f;                         // how tall a standing vine is
+        public float VineHitWidthPx => 14f;                       // an enemy whose hitbox overlaps this column above the surface is snared
+        public float VineRootSinkPx => 2f;                        // the foot of the vine is this far inside the surface
+        public int VineGrowTicks => 12;                           // it grows out of the ground over this time
+        public int DigTicks => 20;                                // it shrinks back into the ground over this time
+        public float VineSwayPx => 2.5f;                          // how far the tip sways sideways
+        public float VineSwaySpeed => 0.09f;                      // radians per tick
+        public int VinePoints => 10;                              // points along the vine (the drawing is one smooth strip)
+        public float VineBaseScale => 1f;                         // width of the chain at the root ...
+        public float VineTipScale => 0.8f;                        // ... and at the tip
+        public float VineHeadScale => 0.8f;                       // the Thorn Hook head on the tip
+        public int SnareTicks => 300;                             // how long a snared enemy is held (5 s)
+        public int ResnareCooldownTicks => 120;                   // after a release the same enemy cannot be snared again for this long
+        public int WrapTicks => 14;                               // the vine wraps the enemy's feet over this time
+        public float WrapLoops => 1.25f;                          // turns of the wrap
+        public float WrapRadiusPad => 3f;                         // the wrap's radius: half the enemy's width plus this
+        public float WrapHeightFraction => 0.3f;                  // how high up the enemy the wrap climbs (fraction of its height)
+        public int SnareDustTicks => 14;                          // a few leaves near the held enemy this often
+        public float SnareShake => 0.5f;                          // a small camera punch when an enemy is snared (0 = none)
     }
 }

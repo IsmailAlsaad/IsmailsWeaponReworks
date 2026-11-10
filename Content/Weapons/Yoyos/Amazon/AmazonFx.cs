@@ -68,6 +68,63 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
             Leaf(position, Main.rand.NextVector2Circular(2f, 2f), 1.1f, DustID.GreenTorch);
         }
 
+        // ---- the barbed ground vines (right click) ----
+
+        // A vine pops out of the surface: a rustle and a spray of dirt and leaves (up = away from the surface).
+        public virtual void VinePop(Vector2 position, Vector2 up)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item17 with { Volume = 0.4f, Pitch = 0f, PitchVariance = 0.15f }, position);
+            for (int i = 0; i < 6; i++)
+            {
+                Vector2 velocity = up * Main.rand.NextFloat(0.6f, 2.4f) + new Vector2(Main.rand.NextFloat(-1.8f, 1.8f), 0f);
+                Dust.NewDustPerfect(position, DustID.Dirt, velocity, 0, default, Main.rand.NextFloat(0.8f, 1.2f));
+            }
+            for (int i = 0; i < 3; i++)
+                Leaf(position + up * 6f, up * Main.rand.NextFloat(0.5f, 1.5f) + Main.rand.NextVector2Circular(1f, 1f), Main.rand.NextFloat(0.8f, 1.2f), DustID.Grass);
+        }
+
+        // A vine digs back into the surface: a dull dig sound and dirt thrown up where it goes in.
+        public virtual void VineDig(Vector2 position, Vector2 up)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Dig with { Volume = 0.45f, Pitch = -0.2f, PitchVariance = 0.1f }, position);
+            for (int i = 0; i < 8; i++)
+            {
+                Vector2 velocity = up * Main.rand.NextFloat(0.5f, 2.2f) + new Vector2(Main.rand.NextFloat(-2f, 2f), 0f);
+                Dust.NewDustPerfect(position, DustID.Dirt, velocity, 0, default, Main.rand.NextFloat(0.8f, 1.3f));
+            }
+            for (int i = 0; i < 4; i++)
+                Leaf(position + up * 4f, Main.rand.NextVector2Circular(1.5f, 1.5f), Main.rand.NextFloat(0.8f, 1.2f), DustID.Grass);
+        }
+
+        // An enemy runs into a vine and is wrapped: a lashing wrap sound and a burst of leaves around its feet.
+        public virtual void Snare(Vector2 center, int width, int height)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item17 with { Volume = 0.75f, Pitch = -0.4f, PitchVariance = 0.1f }, center);
+            SoundEngine.PlaySound(SoundID.Dig with { Volume = 0.35f, Pitch = 0.3f, PitchVariance = 0.1f }, center);
+            for (int i = 0; i < 14; i++)
+            {
+                Vector2 spot = center + new Vector2(Main.rand.NextFloat(-0.5f, 0.5f) * width, Main.rand.NextFloat(0.1f, 0.5f) * height);
+                Leaf(spot, Main.rand.NextVector2Circular(2.5f, 2.5f), Main.rand.NextFloat(0.9f, 1.4f), DustID.Grass);
+            }
+            for (int i = 0; i < 6; i++)
+                Leaf(center + Main.rand.NextVector2Circular(width * 0.5f, height * 0.5f), Main.rand.NextVector2Circular(2f, 2f), Main.rand.NextFloat(1f, 1.3f), DustID.GreenTorch);
+        }
+
+        // While an enemy is held: now and then a couple of leaves near its feet.
+        public virtual void SnareTick(Vector2 center, int width, int height)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 2; i++)
+                Leaf(center + new Vector2(Main.rand.NextFloat(-0.5f, 0.5f) * width, Main.rand.NextFloat(0.2f, 0.5f) * height), Main.rand.NextVector2Circular(0.8f, 0.8f), Main.rand.NextFloat(0.8f, 1.1f), DustID.Grass);
+        }
+
         // The vines unwind and are gone.
         public virtual void Unwind(Vector2 center, int width, int height)
         {

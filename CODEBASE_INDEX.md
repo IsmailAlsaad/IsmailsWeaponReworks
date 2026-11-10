@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-10 | 236 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-10 | 239 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-DetachedTrails(33) RemoteHitTracker(27) CameraShake(26) ThrustPalette(24) HeldSwordPose(19) AfterimageTrail(19) YoyoTuning(18) HeldAim(18) SweepTrail(13) PixelLine(13) ThrustPlayer(12) IceFx(11) PixelTrail(10) DarkLanceTuning(10) YoyoProjectile(9) YoyoFx(9) ThrustChain(9) SweepTrailStyle(9) PixelFan(9) MuramasaTuning(9)
+DetachedTrails(33) RemoteHitTracker(27) CameraShake(26) ThrustPalette(24) YoyoTuning(19) HeldSwordPose(19) AfterimageTrail(19) HeldAim(18) SweepTrail(13) PixelLine(13) ThrustPlayer(12) IceFx(11) YoyoProjectile(10) PixelTrail(10) DarkLanceTuning(10) YoyoFx(9) ThrustChain(9) SweepTrailStyle(9) PixelFan(9) MuramasaTuning(9)
 
 ## Inheritance
 Project bases -> derived:
@@ -14,22 +14,22 @@ Project bases -> derived:
 - ForwardPassTrick: AmazonTrick, Code1Trick, RallyTrick
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
 - IForwardPassTuning: AmazonTuning, Code1Tuning, ForwardPassDefaults, RallyTuning
-- IWalkTheDogTuning: WalkTheDogDefaults, WoodenYoyoTuning
+- IWalkTheDogTuning: AmazonTuning, WalkTheDogDefaults, WoodenYoyoTuning
 - MetaballStyle: BeeKeeperHoneyStyle, DarkLanceBlobStyle, VolcanoBlobStyle, VolcanoDripStyle
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, EtherealBeamTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, EnchantedSwordSweepTrailStyle, IceBladeTrailStyle, LightsBaneSweepTrailStyle, MuramasaSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
 - VolcanoDripStyle: VolcanoBurstStyle
-- WalkTheDogTrick: WoodenYoyoTrick
+- WalkTheDogTrick: AmazonWalkTheDogTrick, WoodenYoyoTrick
 - YoyoFx: AmazonFx, Code1Fx, RallyFx, WoodenYoyoFx
 - YoyoGlobalItem: AmazonGlobalItem, Code1GlobalItem, RallyGlobalItem, WoodenYoyoGlobalItem
 - YoyoProjectile: AmazonProjectile, Code1Projectile, RallyProjectile, WoodenYoyoProjectile
 - YoyoTrick: ForwardPassTrick, WalkTheDogTrick
 - YoyoTuning: AmazonTuning, Code1Tuning, RallyTuning, WoodenYoyoTuning
 tModLoader/other bases -> project types:
-- ModProjectile (57): AmazonBarbedCoilProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassHoldProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneBladeProjectile, LightsBaneImbueProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
+- ModProjectile (58): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassHoldProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneBladeProjectile, LightsBaneImbueProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
 - GlobalItem (25): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, YoyoGlobalItem
 - ModPlayer (14): BeeKeeperPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MuramasaPlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, YoyoPlayer
-- GlobalNPC (3): BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC
+- GlobalNPC (4): AmazonSnareNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC
 - ModSystem (3): DetachedTrails, MetaballLayers, YoyoRegistry
 - Mod (1): IsmailsWeaponReworks
 - ModBuff (1): LightsBaneImbueBuff
@@ -825,7 +825,7 @@ tModLoader/other bases -> project types:
   struct YoyoContact
     +Grounded:bool +BlockedX:bool +Ceiling:bool +Impact:float +Blocked:bool +Normal:Vector2
   abstract class YoyoProjectile : ModProjectile
-    +YoyoItemType:int[ab] #CreateTuning()[ab] #CreateFx()[ab] #CreateTrick(YoyoTuning)[ab] +Tuning:YoyoTuning +Fx:YoyoFx +Owner:Player +IsOwner:bool +GravDir:int +Vel:Vector2 +Aim:Vector2 +Side:int +OutTicks:int +Hits:int +State:YoyoState +SpinAngle:float +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +BeginReturn() +Step(float,float) +Move(Vector2,bool) +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] #GetTexture()[v] +PreDraw(ref Color)[ov]
+    +YoyoItemType:int[ab] #CreateTuning()[ab] #CreateFx()[ab] #CreateTrick(YoyoTuning)[ab] #CreateRightTrick(YoyoTuning)[v] +Tuning:YoyoTuning +Fx:YoyoFx +Owner:Player +IsOwner:bool +GravDir:int +Vel:Vector2 +Aim:Vector2 +Side:int +UsingRight:bool +OutTicks:int +Hits:int +State:YoyoState +SpinAngle:float +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +BeginReturn() +Step(float,float) +Move(Vector2,bool) +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] #GetTexture()[v] +PreDraw(ref Color)[ov]
 **YoyoRegistry.cs**
   class YoyoRegistry : ModSystem
     +Register(int,int)[s] +ProjectileFor(int)[s] +Load()[ov] +Unload()[ov]
@@ -843,21 +843,30 @@ tModLoader/other bases -> project types:
 **AmazonBarbedCoilProjectile.cs** uses: AmazonFx, AmazonTuning, VineCoil, VineCoilStyle
   class AmazonBarbedCoilProjectile : ModProjectile
     +Texture:string[ov] +CanHitNPC(NPC)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**AmazonBarbedVineProjectile.cs** uses: AmazonFx, AmazonSnareNPC, AmazonTuning, VineDraw, YoyoShake
+  class AmazonBarbedVineProjectile : ModProjectile
+    +Texture:string[ov] +Age:int +Digging:bool +ShouldUpdatePosition()[ov] +Plant(Projectile,Vector2,int,AmazonTuning)[s] +AI()[ov] +PreDraw(ref Color)[ov]
 **AmazonFx.cs** uses: YoyoFx
   class AmazonFx : YoyoFx
-    #ChipDust:int[ov] +Throw(Vector2,int)[ov] +Barb(Vector2,int)[v] +Release(Vector2)[v] +LatchTick(Vector2)[v] +LatchHit(Vector2)[v] +Unwind(Vector2,int,int)[v]
+    #ChipDust:int[ov] +Throw(Vector2,int)[ov] +Barb(Vector2,int)[v] +Release(Vector2)[v] +LatchTick(Vector2)[v] +LatchHit(Vector2)[v] +VinePop(Vector2,Vector2)[v] +VineDig(Vector2,Vector2)[v] +Snare(Vector2,int,int)[v] +SnareTick(Vector2,int,int)[v] +Unwind(Vector2,int,int)[v]
 **AmazonGlobalItem.cs** uses: YoyoGlobalItem
   class AmazonGlobalItem : YoyoGlobalItem
     #YoyoItemType:int[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**AmazonProjectile.cs** uses: AmazonBarbedCoilProjectile, AmazonFx, AmazonTrick, AmazonTuning, PixelLine, YoyoFx, YoyoProjectile, YoyoShake, YoyoTrick, YoyoTuning
+**AmazonProjectile.cs** uses: AmazonBarbedCoilProjectile, AmazonFx, AmazonTrick, AmazonTuning, AmazonWalkTheDogTrick, PixelLine, YoyoFx, YoyoProjectile, YoyoShake, YoyoTrick, YoyoTuning
   class AmazonProjectile : YoyoProjectile
-    +Texture:string[ov] +YoyoItemType:int[ov] +Barbs:int #CreateTuning()[ov] #CreateFx()[ov] #CreateTrick(YoyoTuning)[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +Barb(NPC) +AI()[ov] #GetTexture()[ov] +PostDraw(Color)[ov]
+    +Texture:string[ov] +YoyoItemType:int[ov] +Barbs:int #CreateTuning()[ov] #CreateFx()[ov] #CreateTrick(YoyoTuning)[ov] #CreateRightTrick(YoyoTuning)[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +Barb(NPC) +AI()[ov] #GetTexture()[ov] +PostDraw(Color)[ov]
+**AmazonSnareNPC.cs**
+  class AmazonSnareNPC : GlobalNPC
+    +InstancePerEntity:bool[ov] +HoldTick:long +ResnareTicks:int +Held:bool +PostAI(NPC)[ov]
 **AmazonTrick.cs** uses: AmazonProjectile, AmazonTuning, ForwardPassTrick, YoyoProjectile, YoyoTuning
   class AmazonTrick : ForwardPassTrick
     +OnHit(YoyoProjectile,NPC)[ov]
-**AmazonTuning.cs** uses: IForwardPassTuning, YoyoTuning
-  class AmazonTuning : YoyoTuning, IForwardPassTuning
-    +TexturePath:string[ov] +Barbed1TexturePath:string +Barbed2TexturePath:string +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool +BarbHitsToRelease:int +MaxCountedHitsPerSwing:int +ReleaseShake:float +LatchVineCount:int +LatchSectionPx:float +EnemyCapPx:float +MinEnemyRoomPx:float +LatchLifeTicks:int +LatchFadeTicks:int +LatchPrickTicks:int +LatchDamageFactor:float +LatchPoisonTicks:int +CoilGrowTicks:int +SpineGrowTicks:int +CoilRadiusScale:float +CoilRadiusPad:float +CoilDrift:float +MaxLoops:float +CoilSamples:int +SmoothChainName:string +SpineChainName:string +SmoothScale:float +SpineScale:float +HeadScale:float +HeadForwardPx:float +ChainEndTrimPx:float
+**AmazonTuning.cs** uses: IForwardPassTuning, IWalkTheDogTuning, YoyoTuning
+  class AmazonTuning : YoyoTuning, IForwardPassTuning, IWalkTheDogTuning
+    +TexturePath:string[ov] +Barbed1TexturePath:string +Barbed2TexturePath:string +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool +BarbHitsToRelease:int +MaxCountedHitsPerSwing:int +ReleaseShake:float +LatchVineCount:int +LatchSectionPx:float +EnemyCapPx:float +MinEnemyRoomPx:float +LatchLifeTicks:int +LatchFadeTicks:int +LatchPrickTicks:int +LatchDamageFactor:float +LatchPoisonTicks:int +CoilGrowTicks:int +SpineGrowTicks:int +CoilRadiusScale:float +CoilRadiusPad:float +CoilDrift:float +MaxLoops:float +CoilSamples:int +SmoothChainName:string +SpineChainName:string +SmoothScale:float +SpineScale:float +HeadScale:float +HeadForwardPx:float +ChainEndTrimPx:float +WalkHitsPerThrow:int +WalkThrowDownSpeed:float +WalkThrowForwardSpeed:float +WalkSwitchDeadzonePx:float +WalkGravity:float +WalkMaxFall:float +WalkSpeed:float +WalkAccel:float +WalkAirAccel:float +WalkLandBounce:float +WalkBounceMinImpact:float +WalkHopSpeed:float +WalkHopCooldownTicks:int +WalkHitRecoil:float +WalkHitHop:float +VineIntervalTicks:int +VineMinSpacingPx:float +MaxVines:int +VineLifeTicks:int +VineLengthPx:float +VineHitWidthPx:float +VineRootSinkPx:float +VineGrowTicks:int +DigTicks:int +VineSwayPx:float +VineSwaySpeed:float +VinePoints:int +VineBaseScale:float +VineTipScale:float +VineHeadScale:float +SnareTicks:int +ResnareCooldownTicks:int +WrapTicks:int +WrapLoops:float +WrapRadiusPad:float +WrapHeightFraction:float +SnareDustTicks:int +SnareShake:float
+**AmazonWalkTheDogTrick.cs** uses: AmazonBarbedVineProjectile, AmazonTuning, WalkTheDogTrick, YoyoProjectile, YoyoTuning
+  class AmazonWalkTheDogTrick : WalkTheDogTrick
+    +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov]
 
 ### Content/Weapons/Yoyos/Code1/
 **Code1Fx.cs** uses: YoyoFx

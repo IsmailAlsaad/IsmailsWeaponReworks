@@ -53,6 +53,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         protected abstract YoyoTuning CreateTuning();                     // its numbers
         protected abstract YoyoFx CreateFx();                             // its dust and sounds
         protected abstract YoyoTrick CreateTrick(YoyoTuning tuning);      // its trick (one per throw machine, made when the yoyo is held)
+        protected virtual YoyoTrick CreateRightTrick(YoyoTuning tuning) => null;   // its right click trick (null = the right button does nothing)
 
         public YoyoTuning Tuning { get; private set; }
         public YoyoFx Fx { get; private set; }
@@ -67,6 +68,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public Vector2 Vel;            // the yoyo's own velocity (px per tick); synced
         public Vector2 Aim;            // a trick's throw target, relative to the player (Forward Pass); set by the owner at the throw; synced
         public int Side = 1;           // the side it was thrown to: 1 right, -1 left; synced
+        public bool UsingRight;        // the throw was started with the right button (the right click trick); synced
         public int OutTicks;           // ticks since the throw
         public int Hits;               // enemy hits since the throw (owner)
         public YoyoState State { get; private set; }
@@ -81,7 +83,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         // ---- per machine, never synced ----
         int ticks;
-        YoyoTrick trick;
+        YoyoTrick trick;               // the trick of the throw (the left or the right one)
+        YoyoTrick leftTrick;
+        YoyoTrick rightTrick;          // null when this yoyo has no right click trick
+        bool rightBlocked;             // the right button went down on the interface or a tile interaction: it does not count until it is let go
+        YoyoTrick ActiveTrick => UsingRight && rightTrick != null ? rightTrick : leftTrick;
         YoyoRope rope;
         int idleClock;
         int catchCooldown;
@@ -129,6 +135,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             writer.Write(Vel.Y);
             writer.Write(Aim.X);
             writer.Write(Aim.Y);
+            writer.Write(UsingRight);
         }
 
         public override void ReceiveExtraAI(BinaryReader reader)
@@ -139,6 +146,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             int hits = reader.ReadByte();
             Vel = new Vector2(reader.ReadSingle(), reader.ReadSingle());
             Aim = new Vector2(reader.ReadSingle(), reader.ReadSingle());
+            UsingRight = reader.ReadBoolean();
             if (!syncedOnce)
             {
                 // A late joiner: take the state as it is, no effects, no replay.
@@ -177,12 +185,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
             if (ticks == 0)
             {
-                trick = CreateTrick(Tuning);
+                leftTrick = CreateTrick(Tuning);
+                rightTrick = CreateRightTrick(Tuning);
+                trick = leftTrick;
                 rope = new YoyoRope(Tuning);
                 afterimages = new YoyoAfterimages(Tuning);
                 Projectile.Center = owner.MountedCenter;
             }
             ticks++;
+            trick = ActiveTrick;   // the trick of the button that started the throw (the other machines learn it from the sync)
 
             // Something the owner decided that has reached this machine.
             if (pendingState >= 0)
@@ -253,8 +264,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         }
 
         // The owner's client: the button asks for a throw.
-        void BeginTrick(Player owner)
+        void BeginTrick(Player owner, bool right)
         {
+            UsingRight = right && rightTrick != null;
+            trick = ActiveTrick;
             Side = Main.MouseWorld.X >= owner.Center.X ? 1 : -1;
             throwSerial++;
             LaunchFromCenter(owner);
@@ -291,10 +304,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
             if (IsOwner)
             {
+                bool rightPressed = RightPressed(owner);
                 if (catchCooldown > 0)
                     catchCooldown--;
                 else if (owner.controlUseItem && !owner.mouseInterface)
-                    BeginTrick(owner);
+                    BeginTrick(owner, false);
+                else if (rightPressed)
+                    BeginTrick(owner, true);
             }
         }
 
@@ -303,6 +319,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         void LaunchFromCenter(Player owner)
         {
             Projectile.Center = owner.MountedCenter;
+        }
+
+        // The owner's client: is the right button asking for a throw? Only when this yoyo has a right click trick. A press that the
+        // interface or a tile interaction (a chest, a door) took does not count until the button has been let go.
+        bool RightPressed(Player owner)
+        {
+            if (rightTrick == null || !owner.controlUseTile)
+            {
+                rightBlocked = false;
+                return false;
+            }
+            if (owner.mouseInterface || owner.tileInteractionHappened)
+                rightBlocked = true;
+            return !rightBlocked;
+        }
+
+        // The owner's client: is the button that started this throw still down?
+        bool ButtonHeld(Player owner)
+        {
+            return UsingRight ? owner.controlUseTile : owner.controlUseItem;
         }
 
         // 0 = in the hand, 1 = let all the way down; one full cycle repeats.
@@ -358,7 +394,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 return;
             if (Vector2.Distance(hand, Projectile.Center) >= ropeMax)
                 BeginReturn();                                           // the string is at full length
-            else if (trick.RetractsOnRelease && !owner.controlUseItem && OutTicks > Tuning.ReleaseGraceTicks)
+            else if (trick.RetractsOnRelease && !ButtonHeld(owner) && OutTicks > Tuning.ReleaseGraceTicks)
                 BeginReturn();                                           // the button was let go
         }
 

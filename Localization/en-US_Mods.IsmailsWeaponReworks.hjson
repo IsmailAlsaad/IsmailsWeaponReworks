@@ -65,6 +65,7 @@ Projectiles: {
 	RallyShellShardProjectile.DisplayName: Rally Shell Shard Projectile
 	AmazonProjectile.DisplayName: Amazon Projectile
 	AmazonBarbedCoilProjectile.DisplayName: Amazon Barbed Coil Projectile
+	AmazonBarbedVineProjectile.DisplayName: Amazon Barbed Vine Projectile
 }
 
 Buffs: {
