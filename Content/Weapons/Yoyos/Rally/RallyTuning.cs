@@ -23,7 +23,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Rally
         // ---- rope length ----
         // The string's maximum length in pixels (16 px = 1 tile). It is also how far a throw can reach: the Forward Pass goes this far
         // minus its margin, and a yoyo that is out comes back when it is this far from the hand. Every yoyo lists its own value.
-        public override float RopeLengthPx => 170f;
+        public override float RopeLengthPx => 235f;
 
         // ---- rope (verlet, visual only: every machine simulates its own) ----
         public override int RopePoints => 16;               // points along the string (more = smoother and a bit slower)
