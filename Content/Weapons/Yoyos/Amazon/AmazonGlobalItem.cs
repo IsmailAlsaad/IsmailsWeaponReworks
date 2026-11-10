@@ -10,7 +10,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
     /// </summary>
     public class AmazonGlobalItem : YoyoGlobalItem
     {
-        protected override int YoyoItemType => ItemID.Amazon;
+        protected override int YoyoItemType => ItemID.JungleYoyo;
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {

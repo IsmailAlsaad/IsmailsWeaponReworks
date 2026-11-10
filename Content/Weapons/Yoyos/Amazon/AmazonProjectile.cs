@@ -24,9 +24,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
     /// </summary>
     public class AmazonProjectile : YoyoProjectile
     {
-        public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Amazon;
+        public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.JungleYoyo;
 
-        public override int YoyoItemType => ItemID.Amazon;
+        public override int YoyoItemType => ItemID.JungleYoyo;
 
         public int Barbs;                     // 0 = smooth, 1 and 2 = more and more barbed (synced)
 
