@@ -11,7 +11,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Rally
     /// </summary>
     public class RallyFx : YoyoFx
     {
-        protected override int ChipDust => DustID.Stone;
+        protected override int ChipDust => DustID.WhiteTorch;
 
         public override void Throw(Vector2 position, int side)
         {

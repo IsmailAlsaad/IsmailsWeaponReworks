@@ -94,10 +94,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Rally
 
         // ---- the cracks ----
         public int CrackHitsToBreak => 3;                         // hits per cycle: the last one breaks the shell, the ones before crack it
-        public float BreakShake => 1.8f;                          // the camera punch when the shell breaks (0 = none)
+        public float BreakShake => 1.2f;                          // the camera punch when the shell breaks (0 = none)
 
         // ---- the shell shards ----
-        public int ShellShardCount => 4;                          // pieces the shell breaks into
+        public int ShellShardCount => 3;                          // pieces the shell breaks into
         public float ShardDamageFactor => 0.5f;                   // a shard's damage as a fraction of the yoyo's
         public int ShardMaxHits => 3;                             // enemies one shard pierces before it breaks
         public float ShardLaunchSpeedMin => 2.5f;                 // how fast the pieces fly outward
@@ -111,8 +111,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Rally
         public float ShardRestSpeed => 1.2f;                      // a landing slower than this settles instead of bouncing
         public float ShardGroundFriction => 0.8f;                 // horizontal speed kept per landing tick while it settles
         public float ShardSpin => 0.12f;                          // radians per tick, plus a little per pixel of speed
-        public int ShardLifeTicks => 480;                         // a shard that hit nothing fades after this long
-        public int ShardFadeTicks => 40;                          // ... fading over the last this-many ticks
-        public int ShardSize => 12;                               // hitbox
+        public int ShardLifeTicks => 180;                         // a shard that hit nothing fades after this long
+        public int ShardFadeTicks => 0;                          // ... fading over the last this-many ticks
+        public int ShardSize => 8;                               // hitbox
     }
 }
