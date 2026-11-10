@@ -14,7 +14,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Code1
         public override int AfterimageTicks => 10;                // how long one afterimage lives
         public override float AfterimageMinScale => 0.7f;         // it shrinks to this fraction while it fades
         public override float AfterimageMinSpeed => 3f;           // none are laid while the yoyo is slower than this
-        public override Color AfterimageColor => Color.White * 0.6f; // Color.White = the same sprite, Color.White * 0.5f = slightly faded, a color tints it
+        public override Color AfterimageColor => Color.White * 0.2f; // Color.White = the same sprite, Color.White * 0.5f = slightly faded, a color tints it
 
         // ---- Forward Pass (left click) ----
         public int ForwardPassTicks => 32;                        // one whole pass (out along the ellipse and back to the hand)
