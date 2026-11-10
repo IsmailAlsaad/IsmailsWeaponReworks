@@ -33,6 +33,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         // False: letting go of the button does not cut the trick short (it runs to its end by itself).
         public virtual bool RetractsOnRelease => true;
 
+        // A trick that lays the string along its own shape (the Artery's loop) fills 'path' with the points between the hand and the yoyo
+        // and returns true; the string then follows that path instead of the wrap. Visual only.
+        public virtual bool RopePath(YoyoProjectile yoyo, System.Collections.Generic.List<Microsoft.Xna.Framework.Vector2> path)
+        {
+            return false;
+        }
+
         // True while the string should be pulled taut and straight even though the yoyo is still out (Forward Pass: its way back). Visual only.
         public virtual bool RopeTaut(YoyoProjectile yoyo)
         {
