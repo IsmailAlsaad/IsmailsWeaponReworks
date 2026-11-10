@@ -737,10 +737,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             Texture2D head = headAsset.Value;
 
             // The vines go behind the sword: all the chains first (as one mesh each, see DrawStrip), then the heads.
-            BladeOfGrassVineDraw.BeginMesh();
+            VineDraw.BeginMesh();
             for (int i = 0; i < vines.Length; i++)
                 DrawVineBody(vines[i], chain);
-            BladeOfGrassVineDraw.EndMesh();
+            VineDraw.EndMesh();
             for (int i = 0; i < vines.Length; i++)
                 DrawVineHead(vines[i], head);
             return false; // the sword itself is drawn by BladeOfGrassSwordLayer, so the player's front arm is drawn over its handle
@@ -773,7 +773,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
         {
             if (!vine.Init || vine.P == null || vine.Length < 2f)
                 return;
-            BladeOfGrassVineDraw.DrawStrip(chain, vine.P, vine.P.Length, BladeOfGrassTuning.VineScale, BladeOfGrassTuning.VineScale * BladeOfGrassTuning.VineTipScale, 1f, 0f, BladeOfGrassTuning.ChainEndTrimPx);
+            VineDraw.DrawStrip(chain, vine.P, vine.P.Length, BladeOfGrassTuning.VineScale, BladeOfGrassTuning.VineScale * BladeOfGrassTuning.VineTipScale, 1f, 0f, BladeOfGrassTuning.ChainEndTrimPx);
         }
 
         void DrawVineHead(Vine vine, Texture2D head)
@@ -784,7 +784,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
             // The Ivy Whip head over the end of the vine; its back covers the last links, so there is no gap.
             Vector2 end = vine.P[n - 1];
             float angle = (end - vine.P[Math.Max(0, n - 3)]).ToRotation();
-            BladeOfGrassVineDraw.DrawHead(head, end, angle, BladeOfGrassTuning.HeadScale, Lighting.GetColor(end.ToTileCoordinates()));
+            VineDraw.DrawHead(head, end, angle, BladeOfGrassTuning.HeadScale, Lighting.GetColor(end.ToTileCoordinates()), BladeOfGrassTuning.HeadForwardPx);
         }
     }
 }

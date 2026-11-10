@@ -63,6 +63,8 @@ Projectiles: {
 	Code1Projectile.DisplayName: Code 1 Projectile
 	RallyProjectile.DisplayName: Rally Projectile
 	RallyShellShardProjectile.DisplayName: Rally Shell Shard Projectile
+	AmazonProjectile.DisplayName: Amazon Projectile
+	AmazonBarbedCoilProjectile.DisplayName: Amazon Barbed Coil Projectile
 }
 
 Buffs: {

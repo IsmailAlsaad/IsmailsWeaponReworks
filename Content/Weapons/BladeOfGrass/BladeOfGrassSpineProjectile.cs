@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Common;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
@@ -127,52 +128,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.BladeOfGrass
                 return false;
             float spines = MathHelper.Clamp(age / (float)Math.Max(1, BladeOfGrassTuning.SpineGrowTicks), 0f, 1f);
 
-            int samples = Math.Max(8, BladeOfGrassTuning.CoilSamples);
-            if (coil == null || coil.Length != samples)
-                coil = new Vector2[samples];
-            float rx = npc.width * 0.5f * BladeOfGrassTuning.CoilRadiusScale + BladeOfGrassTuning.CoilRadiusPad;
-            float ry = npc.height * 0.5f * BladeOfGrassTuning.CoilRadiusScale + BladeOfGrassTuning.CoilRadiusPad;
-            float circumference = MathHelper.TwoPi * (rx + ry) * 0.5f;
-            float loops = MathHelper.Clamp(SectionLength / Math.Max(1f, circumference), 1f, Math.Max(1f, BladeOfGrassTuning.MaxLoops));
-            for (int j = 0; j < samples; j++)
+            VineCoilStyle style = new VineCoilStyle
             {
-                float u = j / (float)(samples - 1) * visible;
-                float angle = CoilSeed + u * loops * MathHelper.TwoPi;
-                float wobble = (float)Math.Sin(age * 0.2f + u * 9f) * 2f;
-                coil[j] = npc.Center + new Vector2((float)Math.Cos(angle) * (rx + wobble), (float)Math.Sin(angle) * (ry + wobble) * 0.85f + (u - 0.5f) * npc.height * BladeOfGrassTuning.CoilDrift);
-            }
-
-            // The coil has a head on EACH end: the Ivy Whip head while it is still smooth, the Thorn Hook head once it is spiny.
-            Vector2 coilStart = coil[0];
-            Vector2 coilEnd = coil[samples - 1];
-            bool hasStart = Vector2.DistanceSquared(coilStart, coil[2]) > 0.01f;
-            bool hasEnd = Vector2.DistanceSquared(coilEnd, coil[samples - 3]) > 0.01f;
-            float startAngle = (coilStart - coil[2]).ToRotation(); // pointing out of the coil at its start
-            float endAngle = (coilEnd - coil[samples - 3]).ToRotation();
-            Color startLight = Lighting.GetColor(coilStart.ToTileCoordinates());
-            Color endLight = Lighting.GetColor(coilEnd.ToTileCoordinates());
-            float trim = BladeOfGrassTuning.ChainEndTrimPx;
-
-            // The smooth vine (Ivy Whip chain) fades out while the spiny one (Thorn Hook chain) fades in; each is one mesh, see DrawStrip.
-            BladeOfGrassVineDraw.BeginMesh();
-            BladeOfGrassVineDraw.DrawStrip(chain, coil, samples, BladeOfGrassTuning.VineScale, BladeOfGrassTuning.VineScale, 1f - spines, trim, trim);
-            BladeOfGrassVineDraw.DrawStrip(thornChain, coil, samples, BladeOfGrassTuning.SpineScale, BladeOfGrassTuning.SpineScale, spines, trim, trim);
-            BladeOfGrassVineDraw.EndMesh();
-
-            if (spines < 1f)
-            {
-                if (hasStart)
-                    BladeOfGrassVineDraw.DrawHead(vineHead, coilStart, startAngle, BladeOfGrassTuning.HeadScale, startLight * (1f - spines));
-                if (hasEnd)
-                    BladeOfGrassVineDraw.DrawHead(vineHead, coilEnd, endAngle, BladeOfGrassTuning.HeadScale, endLight * (1f - spines));
-            }
-            if (spines > 0f)
-            {
-                if (hasStart)
-                    BladeOfGrassVineDraw.DrawHead(thornHead, coilStart, startAngle, BladeOfGrassTuning.HeadScale, startLight * spines);
-                if (hasEnd)
-                    BladeOfGrassVineDraw.DrawHead(thornHead, coilEnd, endAngle, BladeOfGrassTuning.HeadScale, endLight * spines);
-            }
+                SmoothChain = chain,
+                SpinyChain = thornChain,
+                SmoothHead = vineHead,
+                SpinyHead = thornHead,
+                SmoothScale = BladeOfGrassTuning.VineScale,
+                SpinyScale = BladeOfGrassTuning.SpineScale,
+                HeadScale = BladeOfGrassTuning.HeadScale,
+                HeadForwardPx = BladeOfGrassTuning.HeadForwardPx,
+                ChainEndTrimPx = BladeOfGrassTuning.ChainEndTrimPx,
+                RadiusScale = BladeOfGrassTuning.CoilRadiusScale,
+                RadiusPad = BladeOfGrassTuning.CoilRadiusPad,
+                MaxLoops = BladeOfGrassTuning.MaxLoops,
+                Drift = BladeOfGrassTuning.CoilDrift,
+                Samples = BladeOfGrassTuning.CoilSamples
+            };
+            VineCoil.Draw(npc, style, ref coil, SectionLength, CoilSeed, age, visible, spines);
             return false;
         }
     }
