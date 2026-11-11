@@ -18,7 +18,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         // ---- rope length ----
         // The string's maximum length in pixels (16 px = 1 tile). It is also how far a throw can reach: the Forward Pass goes this far
         // minus its margin, and a yoyo that is out comes back when it is this far from the hand. Every yoyo lists its own value.
-        public override float RopeLengthPx => 235f;
+        public override float RopeLengthPx => 280f;
 
         // ---- rope (verlet, visual only: every machine simulates its own) ----
         public override int RopePoints => 16;               // points along the string (more = smoother and a bit slower)
@@ -101,7 +101,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         // and the loop begins: the yoyo leaves the ellipse on a smooth curve around the enemy back to the string line, then walks along that
         // line toward the player while the noose around the enemy shrinks until it closes.
         public float LassoMinReachPx => 48f;                      // the yoyo must be at least this far from the hand before the string can catch anything (no loop on an enemy right at the player)
-        public float LassoTouchPaddingPx => 6f;                   // how thick the string counts when it touches an enemy
+        public float LassoTouchPaddingPx => 0f;                   // how thick the string counts when it touches an enemy
         public int LoopCatchTicks => 14;                          // the curve from where the string caught the enemy to the string line: shorter = quicker
         public int LoopConstrictTicks => 50;                      // the walk back along the string line while the noose shrinks
         public float LoopWalkSpeedPx => 1.4f;                     // px per tick the yoyo walks toward the player while it constricts
@@ -109,7 +109,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         public float LoopMinHandDistancePx => 40f;                // the yoyo never walks closer to the hand than this
         public float LoopRadiusPadPx => 10f;                      // the noose starts this much wider than half the enemy's size ...
         public float LoopMinRadiusPx => 14f;                      // ... but never smaller than this ...
-        public float LoopMaxRadiusPx => 90f;                      // ... nor bigger than this (a huge boss is looped by a loop this big)
+        public float LoopMaxRadiusPx => 16f;                      // ... nor bigger than this (a huge boss is looped by a loop this big)
         public float LoopCloseRadiusPx => 4f;                     // the noose is this big when it has closed
         public float LoopSpinSpeed => 0.5f;                       // radians per tick the yoyo spins while it walks
         public float LoopStringStepPx => 5f;                      // the string is drawn in pieces about this long
@@ -126,7 +126,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         public float ExplosionDamageFraction => 3f;               // the explosion's hit, as a fraction of the yoyo's damage
         public float ExplosionKnockback => 6f;                    // the explosion's knockback (away from its center)
         public float ExplosionShake => 5f;                        // camera punch of the explosion, every machine (falls off with distance)
-        public int BleedingTicks => 360;                          // how long the Bleeding debuff lasts on enemies the explosion hit
+        public int BleedingTicks => 240;                          // how long the Bleeding debuff lasts on enemies the explosion hit
         public float BleedDamagePerSecond => 10f;                 // what Bleeding does to an enemy every second (vanilla Bleeding does nothing to enemies, ArteryBleedNPC adds it)
     }
 }
