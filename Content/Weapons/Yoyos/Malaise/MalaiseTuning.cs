@@ -157,6 +157,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
         public int MaxHoldTicks => 160;                           // it ends by itself after this long (60 = 1 second)
         public float BreakStretch => 0.97f;                       // it ends when a side of the triangle is longer than this fraction of the string
         public float RockSpinSpeed => 0.5f;                       // radians per tick the yoyo spins while it is on the string
+        public float FaceDeadzonePx => 12f;                       // Rock the Baby: the player turns toward the yoyo only when it is farther than this to one side (no flicker when it passes over the head)
         public bool FliesThroughBlocks => true;                   // the yoyo ignores blocks while it homes, hooks and swings (false = blocks stop it)
         public bool HoldEnemies => false;                         // true = the enemies are held in place (not boss, not immovable) while the triangle lasts
     }

@@ -235,6 +235,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
                     return;
             }
 
+            FaceYoyo(yoyo);
+
             NPC a = FindA();
             NPC b = FindB();
             if (a != null)
@@ -293,6 +295,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
                     TickSwing(yoyo, loop, hand);
                     break;
             }
+        }
+
+        // Rock the Baby: the player always faces the side the yoyo is on, in every phase. The owner's client decides (past FaceDeadzonePx, so the
+        // player does not flicker when the yoyo swings over the head) and publishes it through Side, which is already in the yoyo's sync; every
+        // machine then turns the player (and the arm, the spin and the hit direction, which all read Side) the same way.
+        void FaceYoyo(YoyoProjectile yoyo)
+        {
+            if (yoyo.IsOwner)
+            {
+                float dx = yoyo.Projectile.Center.X - yoyo.Owner.Center.X;
+                int wanted = dx > Tune.FaceDeadzonePx ? 1 : dx < -Tune.FaceDeadzonePx ? -1 : yoyo.Side;
+                if (wanted != yoyo.Side)
+                {
+                    yoyo.Side = wanted;
+                    yoyo.Projectile.netUpdate = true;
+                }
+            }
+            yoyo.Owner.ChangeDir(yoyo.Side);   // the yoyo's TickOut already did this with the old Side this tick
         }
 
         void Hold(NPC npc)

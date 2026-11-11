@@ -312,9 +312,28 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         }
 
         // Standing on a block or a platform (and not on its way up): false while it is in the air.
+        // Top-solid blocks (platforms, tables ...) are also read straight from the tiles under the feet: SolidCollision with top surfaces only
+        // accepts some of them (it looks at the tile frame), and an enemy standing on one that it rejects counted as "in the air" forever, so the
+        // vine waited for a landing that never came.
         static bool OnGround(NPC npc)
         {
-            return npc.velocity.Y > -0.5f && Collision.SolidCollision(new Vector2(npc.position.X, npc.Bottom.Y), npc.width, 2, true);
+            if (npc.velocity.Y <= -0.5f)
+                return false;
+            if (Collision.SolidCollision(new Vector2(npc.position.X, npc.Bottom.Y), npc.width, 2, true))
+                return true;
+            int row = (int)((npc.Bottom.Y + 1f) / 16f);
+            int left = (int)(npc.position.X / 16f);
+            int right = (int)((npc.position.X + npc.width - 1f) / 16f);
+            for (int x = left; x <= right; x++)
+            {
+                Tile tile = Framing.GetTileSafely(x, row);
+                if (!tile.HasUnactuatedTile || !(Main.tileSolid[tile.TileType] || Main.tileSolidTop[tile.TileType]))
+                    continue;
+                float top = row * 16f + (tile.IsHalfBlock ? 8f : 0f);
+                if (Math.Abs(npc.Bottom.Y - top) <= 3f)
+                    return true;   // its feet are on this block's top surface
+            }
+            return false;
         }
 
         // ---------------------------------------------------------------- the loop around a held enemy
