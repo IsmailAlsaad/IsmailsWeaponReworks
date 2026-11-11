@@ -136,7 +136,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
 
         // ---- the honey buff ----
         public int HoneyPerHitTicks => 60;                        // every enemy the yoyo hits during a charged spin adds this much Honey (60 = 1 second)
-        public int HoneyBuffMaxTicks => 1800;                     // the Honey buff is never topped up beyond this (the Bee Keeper's cap)
+        public int HoneyBuffMaxTicks => 600;                     // the Honey buff is never topped up beyond this (the Bee Keeper's cap)
 
         // ---- the golden honey outline of a charged yoyo (also shown when the Sleeper hold has reached max speed) ----
         public float OutlineWidth => 1.5f;                        // pixels, at full strength
