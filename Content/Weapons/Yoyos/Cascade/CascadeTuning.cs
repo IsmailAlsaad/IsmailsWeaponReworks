@@ -150,5 +150,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Cascade
         public float LightRed => 0.6f;                            // the light it casts at full charge
         public float LightGreen => 0.2f;
         public float LightBlue => 0.05f;
+
+        // ---- the charged pop (patch C2): every enemy hit by a Pop the Clutch that STARTED charged ----
+        public int PopOnFireTicks => 300;                         // On Fire on the enemy the yoyo hit (60 = 1 second)
+        public float BlastDamageFraction => 0.4f;                 // the tiny explosion's damage as a fraction of the yoyo's (it hurts the enemies NEAR the hit one)
+        public float BlastKnockbackScale => 0.5f;                 // its knockback as a fraction of the yoyo's
+        public float BlastRadiusPx => 44f;                        // its radius (16 px = 1 tile)
+        public int BlastTicks => 8;                               // how long its area hurts
+        public int BlastOnFireTicks => 240;                       // On Fire on the other enemies it catches
+        public float BlastShake => 0.5f;                          // camera punch per explosion (0 = none)
+        public int BlastSparks => 16;                             // fire dust in the burst
+        public int BlastSmoke => 6;                               // smoke puffs in the burst
     }
 }

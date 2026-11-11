@@ -16,6 +16,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Cascade
         {
             tooltips.Add(new TooltipLine(Mod, "Cascade1", "Hold left click to Pop the Clutch"));
             tooltips.Add(new TooltipLine(Mod, "Cascade2", "Hold right click to charge the yoyo with a Sleeper hold"));
+            tooltips.Add(new TooltipLine(Mod, "Cascade3", "A charged Pop the Clutch sets enemies on fire with tiny explosions"));
         }
     }
 }
