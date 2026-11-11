@@ -16,6 +16,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public override int Bands => 5;
         public override float GlowStrength => VolcanoTuning.BlobGlow;
         public override int MaxParticles => 500;
+        public override float EdgeCool => VolcanoTuning.EdgeCool;
         public override bool DrawInProjectile => true;
         public override float Rise => VolcanoTuning.FlameRise;
         public override float Drag => VolcanoTuning.FlameDrag;
@@ -38,6 +39,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public override int Bands => 5;
         public override float GlowStrength => VolcanoTuning.BlobGlow;
         public override int MaxParticles => 300;
+        public override float EdgeCool => VolcanoTuning.EdgeCool;
         public override bool DrawInProjectile => true;   // drawn by VolcanoFx.DrawLayers, after the swing trail, so the trail is always behind it
         public override float Rise => -VolcanoTuning.DripGravity;
         public override float Drag => 0.985f;

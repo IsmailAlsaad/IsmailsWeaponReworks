@@ -186,6 +186,8 @@ namespace IsmailsWeaponReworks.Common
                 {
                     // inside: the heat of everything that overlaps here, averaged and posterized into hard bands
                     float heat = MathHelper.Clamp(heatSum[i] / f, 0f, 1f);
+                    if (Style.EdgeCool > 0f)
+                        heat *= MathHelper.Clamp((f - outline) / Style.EdgeCool, 0f, 1f);
                     heat = (float)Math.Floor(heat * bands) / (bands - 1f);
                     color = Style.GetFill(MathHelper.Clamp(heat, 0f, 1f));
                 }

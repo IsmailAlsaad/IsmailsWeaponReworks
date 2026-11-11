@@ -28,6 +28,7 @@ namespace IsmailsWeaponReworks.Common
         public virtual float OutlineWidth => 0.2f;  // thickness of the merged outline (field units: 0.1 thin, 0.4 thick)
         public virtual int Bands => 5;              // hard color bands of the fill
         public virtual float GlowStrength => 0.3f;  // faint additive glow around the blobs (0 = none)
+        public virtual float EdgeCool => 0f;        // field units over which the rim ramps from cold to full heat, so the hottest color bands only show deeper inside (0 = off)
         public virtual int MaxParticles => 400;     // the oldest are dropped first
         public virtual bool DrawInProjectile => false; // true: MetaballLayers does not draw this layer after the tiles; a held weapon draws it from its projectile's PreDraw (MetaballLayer.DrawInBatch), so it is in FRONT of enemies
 
