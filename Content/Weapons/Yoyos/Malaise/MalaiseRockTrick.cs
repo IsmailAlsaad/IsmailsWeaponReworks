@@ -115,23 +115,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
             return true;
         }
 
-        // The second corner: the enemy nearest to A that can be damaged, within SeekRadiusPx of A and close enough to the player that both
+        // The second corner: the FURTHEST enemy from A that can be damaged, at least SeekMinRadiusFraction of SeekRadiusPx and at most
+        // SeekRadiusPx away (closer than that it is no triangle: Man on Trapeze), and close enough to the player that both
         // sides of the triangle fit the string. Not another part of A's own body (a worm). 'skip' is an enemy to leave out (a lost B).
         int FindSecond(YoyoProjectile yoyo, NPC a, int skip)
         {
             float reach = T.RopeLength() - Tune.SeekReachMarginPx;
             Vector2 hand = yoyo.Hand;
             int best = -1;
-            float bestDistance = float.MaxValue;
+            float bestDistance = -1f;
+            float minimum = Tune.SeekRadiusPx * Tune.SeekMinRadiusFraction;
             for (int i = 0; i < Main.maxNPCs; i++)
             {
                 NPC npc = Main.npc[i];
                 if (i == skip || !Snarable.CanBite(npc) || npc.life <= 0 || SameBody(a, npc))
                     continue;
                 float fromA = Vector2.Distance(npc.Center, a.Center);
-                if (fromA > Tune.SeekRadiusPx || fromA > reach || Vector2.Distance(npc.Center, hand) > reach)
+                if (fromA < minimum || fromA > Tune.SeekRadiusPx || fromA > reach || Vector2.Distance(npc.Center, hand) > reach)
                     continue;
-                if (fromA < bestDistance)
+                if (fromA > bestDistance)
                 {
                     bestDistance = fromA;
                     best = i;
@@ -351,15 +353,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
             }
         }
 
-        // The pendulum: the yoyo hangs from the hand and swings along the arc from A's center to B's center, slow at both ends and fast
-        // in the middle, a little faster every swing. A pure function of the two centers, the hand and the tick count.
+        // The pendulum: the yoyo hangs from the hand and swings along the arc from A's center to B's center at a steady speed and
+        // bounces off each end (no slowing down and speeding up), a little faster every swing. A pure function of the two centers, the hand and the tick count.
         void TickSwing(YoyoProjectile yoyo, LoopYoyoProjectile loop, Vector2 hand)
         {
             swingTick++;
             float speedUp = YoyoLoop.Smooth(swingTick / (float)Math.Max(1, Tune.PendulumSpeedUpTicks));
             float period = Math.Max(4f, MathHelper.Lerp(Tune.PendulumStartTicks, Tune.PendulumEndTicks, speedUp));
             pendulumPhase += MathHelper.TwoPi / period;
-            float u = 0.5f + 0.5f * Tune.PendulumSwing * (float)Math.Sin(pendulumPhase);
+            float bounce = (float)(2.0 / Math.PI * Math.Asin(Math.Sin(pendulumPhase)));   // a triangle wave from -1 to 1: constant speed, turns round at once at the ends
+            float u = 0.5f + 0.5f * Tune.PendulumSwing * bounce;
             Vector2 toA = lastA - hand;
             Vector2 toB = lastB - hand;
             float angleA = (float)Math.Atan2(toA.Y, toA.X);
