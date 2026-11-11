@@ -409,11 +409,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
             trick.Tick(this);
             spin += trick.SpinStep(this);
-            // The arm starts at ThrowArmStartDeg and turns to point at the yoyo over ThrowArmBlendTicks.
-            float toYoyo = HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation()) - Tilt;   // the arm is drawn turned with the player
-            float startArm = HeldSwordPose.ToWorld(Side, MathHelper.ToRadians(Tuning.ThrowArmStartDeg));
-            float blend = MathHelper.Clamp(OutTicks / (float)Math.Max(1, Tuning.ThrowArmBlendTicks), 0f, 1f);
-            ApplyArm(owner, startArm + MathHelper.WrapAngle(toYoyo - startArm) * blend);
+            // A trick may pose the arm itself (Around the World tilts it up and down with the circle); otherwise the arm starts at
+            // ThrowArmStartDeg and turns to point at the yoyo over ThrowArmBlendTicks.
+            if (trick.ArmPose(this, out float trickArm))
+                ApplyArm(owner, HeldSwordPose.ToWorld(Side, trickArm));
+            else
+            {
+                float toYoyo = HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation()) - Tilt;   // the arm is drawn turned with the player
+                float startArm = HeldSwordPose.ToWorld(Side, MathHelper.ToRadians(Tuning.ThrowArmStartDeg));
+                float blend = MathHelper.Clamp(OutTicks / (float)Math.Max(1, Tuning.ThrowArmBlendTicks), 0f, 1f);
+                ApplyArm(owner, startArm + MathHelper.WrapAngle(toYoyo - startArm) * blend);
+            }
 
             if (!IsOwner)
                 return;

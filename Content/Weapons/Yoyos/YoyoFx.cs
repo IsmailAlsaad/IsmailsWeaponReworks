@@ -68,6 +68,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 Chip(position, Main.rand.NextVector2Circular(3.5f, 3.5f), Main.rand.NextFloat(0.8f, 1.2f));
         }
 
+        // Around the World: a whoosh every half turn round the player, higher the faster the yoyo goes (speed01: 0 = slow, 1 = full speed).
+        public virtual void SpinWhoosh(Vector2 position, float speed01)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.35f + 0.3f * speed01, Pitch = -0.2f + 0.7f * speed01, PitchVariance = 0.08f }, position);
+        }
+
+        // Around the World: called every tick while the yoyo circles (nothing by default; a yoyo adds its own dust here).
+        public virtual void SpinTrail(Vector2 position, Vector2 velocity, float speed01)
+        {
+        }
+
         // The yoyo is let go of and starts back.
         public virtual void Retract(Vector2 position)
         {

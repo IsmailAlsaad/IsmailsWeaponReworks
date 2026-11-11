@@ -68,6 +68,7 @@ Projectiles: {
 	AmazonBarbedVineProjectile.DisplayName: Amazon Barbed Vine Projectile
 	ArteryProjectile.DisplayName: Artery Projectile
 	MalaiseProjectile.DisplayName: Malaise Projectile
+	HiveFiveProjectile.DisplayName: Hive-Five Projectile
 }
 
 Buffs: {

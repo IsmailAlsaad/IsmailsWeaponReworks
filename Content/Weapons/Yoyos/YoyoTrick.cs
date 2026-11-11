@@ -41,6 +41,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             return false;
         }
 
+        // A trick that poses the arm itself (Around the World: it tilts up and down with the circle instead of pointing at the yoyo) returns
+        // true and the arm's angle in the player's facing-local frame (0 = forward, positive = down); the base then uses it while the yoyo
+        // is out. Called every tick after Tick, on every machine. Visual only.
+        public virtual bool ArmPose(YoyoProjectile yoyo, out float localArmRadians)
+        {
+            localArmRadians = 0f;
+            return false;
+        }
+
         // A trick that draws the string by hand (the Artery's loop: the straight line plus the noose) fills 'points' with a dense polyline
         // and returns true; the rope is then drawn along it instead of the simulated string. Visual only; never called on the server.
         public virtual bool StringPath(YoyoProjectile yoyo, List<Vector2> points)
