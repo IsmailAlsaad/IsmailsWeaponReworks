@@ -17,7 +17,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
         // A swing has three parts: a slow, heavy ANTICIPATION (the arm and wrist pull back past the start of the arc), a fast STRIKE that
         // is quickest right after the anticipation and decelerates until it ends (a little past the end of the arc), and a RECOVER that
         // settles back to the end of the arc, so the next swing chains from an exact pose.
-        public static int AnticipateTicks => 8;
+        public static int AnticipateTicks => 0;
         public static float AnticipateDeg => 20f;     // how far past the start of the arc the arm pulls back
         public static float AnticipateTiltDeg => 10f; // and the wrist (the blade tilt) the same way
         public static int SwingTicks => 7;            // the strike (the only part that damages and bats)

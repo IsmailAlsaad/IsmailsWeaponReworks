@@ -12,7 +12,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
     public static class EnchantedSwordTuning
     {
         // ---- sword ----
-        public static float BladeLength => 52f;       // hand to tip, px at scale 1: a first guess, tune it with ShowBladeDebug until the magenta square sits on the sprite's tip
+        public static float BladeLength => 44f;       // hand to tip, px at scale 1: a first guess, tune it with ShowBladeDebug until the magenta square sits on the sprite's tip
         public static float SwordScale => 1.1f;
         public static float GripOffset => 0f;         // draw only: moves the sprite this far (px at scale 1) back along the blade, so the hand holds it higher or lower
         public static bool ShowBladeDebug => false;   // true: a magenta square on the tip the hit test uses
@@ -103,10 +103,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float TailLifeScale => 0.45f;     // the first point of a swing's trail lives this fraction as long as the last one
         public static int TrailRails => 7;              // parallel pixel lines that fill the fan
         public static float TrailExpandBy => 0.8f;      // the fan has fully expanded this far into the strike (0..1)
-        public static float TrailInnerLow => 0.8f;      // fully expanded, the fan reaches down the blade to this fraction of its length: with no hits ...
-        public static float TrailInnerHigh => 0.4f;     // ... and at the highest stage
+        public static float TrailInnerLow => 0.6f;      // fully expanded, the fan reaches down the blade to this fraction of its length: with no hits ...
+        public static float TrailInnerHigh => 0.2f;     // ... and at the highest stage
         public static float TrailInnerThrust => 0.5f;   // the thrust's streak
-        public static float TrailOuter => 1.25f;        // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
+        public static float TrailOuter => 1f;        // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
         public static float TrailLagTicks => 0.4f;      // how many ticks the trail runs BEHIND the sprite (0 = exactly on it)
         public static int TrailSamplesPerTick => 8;     // trail points laid per tick (the strike is fast, so many keep the fan smooth)
         public static float TrailOpacityLow => 0.3f;    // how strong the fan is with no hits ...
@@ -144,7 +144,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.EnchantedSword
         public static float GhostDriveEasePower => 2.5f;    // 1 = even speed; higher = it accelerates harder into the enemy
         public static float GhostEmbedFraction => 0.6f;     // where the blade explodes: the hilt stops this fraction of the blade length from the enemy's middle (0.6 = the tip is past the middle)
         public static int GhostFadeOutTicks => 10;
-        public static float GhostBladeLength => 64f;        // hilt to tip in px (the beam sprite is stretched to it; the thrown beam is drawn at this size too)
+        public static float GhostBladeLength => 44f;        // hilt to tip in px (the beam sprite is stretched to it; the thrown beam is drawn at this size too)
         public static float GhostTremblePx => 1.5f;
         public static int MaxGhosts => 3;                   // per player; a 4th makes the oldest leave
         public static float GhostRetargetRange => 400f;     // px: if its enemy dies first the ghost goes for the nearest enemy within this range, or leaves

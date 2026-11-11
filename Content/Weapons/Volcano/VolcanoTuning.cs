@@ -69,8 +69,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static float BlobSpacing => 3f;       // px between the round blobs along the blade
         public static float BlobMerge => 2.7f;
         public static float BlobOutline => 0f;
-        public static float BlobGlow => 0f;//0.2f;
-        public static float EdgeCool => 0.6f;        // thickness of the cooled rim of the lava (field units; 0 = off). Higher = darker, thicker rim; the white band only shows deeper inside
+        public static float BlobGlow => 0.1f;
+        public static float EdgeCool => 0f;        // thickness of the cooled rim of the lava (field units; 0 = off). Higher = darker, thicker rim; the white band only shows deeper inside
         public static float EdgeRadiusLow => 2.4f;   // blade blob radius at heat 0 (a thin burning edge) ...
         public static float EdgeRadiusHigh => 7f;    // ... and at full heat (a fat slab of lava)
         public static float WobbleLow => 0.6f;       // sideways wobble of the blobs, px
@@ -220,8 +220,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
         public static Color CoreColor => new Color(255, 240, 170, 0);
         public static Color OrangeColor => new Color(255, 120, 25, 0);
         public static Color DeepColor => new Color(170, 30, 10, 0);
-        public static Color OutlineColor => OrangeColor;
-        public static Color GlowColor => OrangeColor;// * 0.5f;
+        public static Color OutlineColor => OrangeColor * 0f;
+        public static Color GlowColor => OrangeColor;
         public static Color HandleGlowColor => OrangeColor;//new Color(255, 120, 30, 0);
 
         // The lava fill by heat: dark crust, deep red, orange, amber, white-yellow (the five hard bands of the metaball layer).
