@@ -8,7 +8,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
     /// to read and change; the part after it holds the numbers of its trick (IAroundTheWorldTuning) and anything else only this yoyo has. A new yoyo
     /// copies this file and keeps the whole list.
     /// </summary>
-    public class HiveFiveTuning : YoyoTuning, IAroundTheWorldTuning, ISleeperTuning
+    public class HiveFiveTuning : YoyoTuning, IAroundTheWorldTuning, ISleeperTuning, IChargeOutlineTuning
     {
         // ======== general parameters (see YoyoTuning) ========
         // His own art, when it exists (for example "IsmailsWeaponReworks/Content/Weapons/Yoyos/WoodenYoyo/WoodenYoyoProjectile"); null or
@@ -33,9 +33,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
         public override int RopeSubdivisions => 4;          // smoothing: curve pieces drawn between two rope points
         public override float RopeWidth => 1.8f;
         public override float RopeOutlineWidth => 3.2f;
-        public override Color RopeColor => new Color(255, 214, 96);
-        public override Color RopeAltColor => new Color(255, 238, 168); // the twist: every other piece of the string
-        public override Color RopeOutlineColor => new Color(140, 84, 12);
+        public override Color RopeColor => new Color(245, 245, 245);          // white while not charged (honey colored when charged: ChargedRope* below)
+        public override Color RopeAltColor => new Color(204, 204, 210);       // the twist: every other piece of the string
+        public override Color RopeOutlineColor => new Color(72, 72, 80);
 
         // ---- the yoyo body ----
         public override int HitboxSize => 32;               // the yoyo's hitbox (a square, in pixels) and the width of its swept hit line. The Hive-Five only hurts while it is out (the spin), so this is the size of the spinning yoyo's hit; the sprite is not scaled. Try 28 to 36. It is read when the yoyo appears: swap the item away and back (or reload) after a change
@@ -148,5 +148,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
         public float GlowAlpha => 0.4f;                           // its opacity
         public Color OutlineColor => new Color(255, 176, 40, 0);       // alpha 0 = additive
         public Color OutlineCoreColor => new Color(255, 230, 130, 0);  // the brighter inner ring
+
+        // ---- the honey colored string of a charged yoyo (blended in with the outline's fade; the twist's two colors and the outline) ----
+        public Color ChargedRopeColor => new Color(255, 214, 96);
+        public Color ChargedRopeAltColor => new Color(255, 238, 168);
+        public Color ChargedRopeOutlineColor => new Color(140, 84, 12);
     }
 }

@@ -20,6 +20,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
     {
         readonly YoyoTuning tuning;
 
+        // A yoyo that changes its string's colors while it plays (a charge) sets these before every draw; null = the tuning's colors.
+        public Color? MainOverride;
+        public Color? AltOverride;
+        public Color? OutlineOverride;
+
         public YoyoRope(YoyoTuning tuning)
         {
             this.tuning = tuning;
@@ -350,11 +355,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                     Vector2 b = curve[j + 1];
                     Color light = Lighting.GetColor((int)((a.X + b.X) * 0.5f / 16f), (int)((a.Y + b.Y) * 0.5f / 16f));
                     if (pass == 0)
-                        Piece(pixel, a, b, tuning.RopeOutlineWidth, Tint(tuning.RopeOutlineColor, light));
+                        Piece(pixel, a, b, tuning.RopeOutlineWidth, Tint(OutlineOverride ?? tuning.RopeOutlineColor, light));
                     else
                     {
                         bool twist = (j / 2) % 2 == 1;
-                        Piece(pixel, a, b, tuning.RopeWidth, Tint(twist ? tuning.RopeAltColor : tuning.RopeColor, light));
+                        Piece(pixel, a, b, tuning.RopeWidth, Tint(twist ? (AltOverride ?? tuning.RopeAltColor) : (MainOverride ?? tuning.RopeColor), light));
                     }
                 }
             }

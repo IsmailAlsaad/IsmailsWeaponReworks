@@ -56,6 +56,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         protected abstract YoyoTrick CreateTrick(YoyoTuning tuning);      // its trick (one per throw machine, made when the yoyo is held)
         protected virtual YoyoTrick CreateRightTrick(YoyoTuning tuning) => null;   // its right click trick (null = the right button does nothing)
 
+        // The string's colors this frame (the twist's two colors and the outline). Return false = the tuning's colors; a yoyo whose string
+        // changes (a charge) returns true and fills the three colors. Visual only: every machine asks for itself, from state that is synced.
+        protected virtual bool StringColors(out Color main, out Color alt, out Color outline)
+        {
+            main = alt = outline = Color.White;
+            return false;
+        }
+
         public YoyoTuning Tuning { get; private set; }
         public YoyoFx Fx { get; private set; }
 
@@ -662,6 +670,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             if (ticks == 0)
                 return false; // not posed yet (the first tick has not run)
+
+            if (StringColors(out Color stringMain, out Color stringAlt, out Color stringOutline))
+            {
+                rope.MainOverride = stringMain;
+                rope.AltOverride = stringAlt;
+                rope.OutlineOverride = stringOutline;
+            }
+            else
+            {
+                rope.MainOverride = null;
+                rope.AltOverride = null;
+                rope.OutlineOverride = null;
+            }
 
             if (stringPathActive)
                 rope.DrawPolyline(TextureAssets.MagicPixel.Value, stringPath);
