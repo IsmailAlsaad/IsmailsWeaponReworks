@@ -45,7 +45,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public virtual Color RopeOutlineColor => new Color(92, 74, 54);
 
         // ---- the yoyo body ----
-        public virtual int HitboxSize => 16;
+        public virtual int HitboxSize => 24;
         public virtual int HitCooldownTicks => 14;         // the same enemy can be hit again after this long
         public virtual float ArmFollow => 0.3f;            // how fast the arm turns to its target pose (0..1 per tick)
         public virtual int SyncEveryTicks => 6;            // the owner re-sends the yoyo's position this often while it is out
