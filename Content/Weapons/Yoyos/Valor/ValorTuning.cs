@@ -19,7 +19,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Valor
         // The string's maximum length in pixels (16 px = 1 tile). It is also how far a throw can reach: Pop the Clutch's passes go this far
         // minus ForwardPassReachMargin, Around the World's circle has this radius minus its margin, and a yoyo that is out comes back when it
         // is this far from the hand. Every yoyo lists its own value.
-        public override float RopeLengthPx => 215f;         // A GUESS: verify ProjectileID.Sets.YoyosMaximumRange[ProjectileID.Valor] in the vanilla source and tune by feel
+        public override float RopeLengthPx => 300f;         // A GUESS: verify ProjectileID.Sets.YoyosMaximumRange[ProjectileID.Valor] in the vanilla source and tune by feel
 
         // ---- rope (verlet, visual only: every machine simulates its own) ----
         public override int RopePoints => 16;               // points along the string (more = smoother and a bit slower)
@@ -39,7 +39,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Valor
         public override Color RopeOutlineColor => new Color(58, 66, 84);
 
         // ---- the yoyo body ----
-        public override int HitboxSize => 24;               // the yoyo's hitbox (a square, in pixels) and the width of its swept hit line; the sprite is not scaled. Read when the yoyo appears: swap the item away and back after a change
+        public override int HitboxSize => 36;               // the yoyo's hitbox (a square, in pixels) and the width of its swept hit line; the sprite is not scaled. Read when the yoyo appears: swap the item away and back after a change
         public override int HitCooldownTicks => 14;         // the same enemy can be hit again after this long (Pop the Clutch also resets it at the start of every pass)
         public override float ArmFollow => 0.35f;           // how fast the arm turns to its target pose (0..1 per tick)
         public override int SyncEveryTicks => 6;            // the owner re-sends the yoyo's position this often while it is out
@@ -90,17 +90,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Valor
         public override Color AfterimageColor => Color.White * 0.25f;
 
         // ---- Pop the Clutch (left click) ----
-        public int PopWindupTicks => 26;                          // the wind-up: the yoyo dangles behind the back and spins up
+        public int PopWindupTicks => 60;                          // the wind-up: the yoyo dangles behind the back and spins up
         public float PopDangleBackPx => 12f;                      // the dangling yoyo hangs this far behind the hand ...
         public float PopDangleDownPx => 30f;                      // ... and this far below it
         public float PopDangleSwayPx => 2f;                       // a little side sway
-        public int PopDangleDropTicks => 6;                       // it drops from the player to the dangle spot over this many ticks
+        public int PopDangleDropTicks => 80;                       // it drops from the player to the dangle spot over this many ticks
         public float PopWindupArmDeg => -125f;                    // the arm's angle while winding up (0 = forward, -90 = straight up, below -90 = up and back)
         public float PopWindupSpinStart => 0.15f;                 // the sprite's spin (radians per tick) at the start of the wind-up ...
         public float PopWindupSpinMax => 1.2f;                    // ... and at its end
         public float PopWindupSpinCurve => 2f;                    // 1 = a steady speed-up, 2 = slow at first and faster and faster
         public int PopPasses => 2;                                // swings in a row: the 1st bulges up, the 2nd down
-        public int PopPassTicks => 26;                            // one pass (out along the ellipse and back to the player)
+        public int PopPassTicks => 16;                            // one pass (out along the ellipse and back to the player)
         public int PopThrowBlendTicks => 8;                       // the first pass leaves the spot behind the back and swings through the player over this many ticks
         public float PopRecallStartSpeed => 12f;                  // a pass that hits a block is pulled straight back: speed at the start ...
         public float PopRecallAccel => 1.6f;                      // ... speeding up by this much per tick ...

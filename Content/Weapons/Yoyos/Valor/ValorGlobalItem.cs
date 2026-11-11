@@ -14,7 +14,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Valor
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Valor1", "Left click to Pop the Clutch: two quick passes, one up and one down"));
+            tooltips.Add(new TooltipLine(Mod, "Valor1", "Hold left click to Pop the Clutch"));
             tooltips.Add(new TooltipLine(Mod, "Valor2", "Right click to perform Around the World"));
         }
     }
