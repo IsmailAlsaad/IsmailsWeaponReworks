@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-11 | 260 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-11 | 259 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -11,14 +11,15 @@ Project bases -> derived:
 - BeeKeeperBeeProjectile: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
-- ForwardPassTrick: AmazonTrick, Code1Trick, ManOnTrapezeTrick, ManOnTrapezeTrick, RallyTrick
+- ForwardPassTrick: AmazonTrick, Code1Trick, ManOnTrapezeTrick, RallyTrick
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
 - IForwardPassTuning: AmazonTuning, ArteryTuning, Code1Tuning, ForwardPassDefaults, MalaiseTuning, RallyTuning
 - ILoopTuning: ArteryTuning, MalaiseTuning
 - IWalkTheDogTuning: AmazonTuning, WalkTheDogDefaults, WoodenYoyoTuning
 - LoopYoyoFx: ArteryFx, MalaiseFx
 - LoopYoyoProjectile: ArteryProjectile, MalaiseProjectile
-- ManOnTrapezeTrick: ArteryTrick, MalaiseTrick
+- MalaiseRockTrick: MalaiseTrick
+- ManOnTrapezeTrick: ArteryTrick, MalaiseRockTrick
 - MetaballStyle: BeeKeeperHoneyStyle, DarkLanceBlobStyle, VolcanoBlobStyle, VolcanoDripStyle
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, EtherealBeamTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, EnchantedSwordSweepTrailStyle, IceBladeTrailStyle, LightsBaneSweepTrailStyle, MuramasaSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
@@ -817,10 +818,10 @@ tModLoader/other bases -> project types:
     +LoopCatch(Vector2)[v] +LoopShred(Vector2,float)[v] +LoopClose(Vector2)[v]
 **LoopYoyoProjectile.cs** uses: LoopYoyoFx, YoyoProjectile
   abstract class LoopYoyoProjectile : YoyoProjectile
-    +LoopTarget:int +LoopStart:Vector2 +LoopStartVel:Vector2 +LoopClosed:bool +LoopPoint:Vector2 +PendingStart:bool +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +ClearLoop() +StartLoop(int,Vector2,Vector2) +TakePendingStart() +CloseLoop(Vector2) +BreakLoop() +AI()[ov]
+    +LoopTarget:int +LoopStart:Vector2 +LoopStartVel:Vector2 +LoopClosed:bool +LoopPoint:Vector2 +LoopMode:int +LoopTarget2:int +LoopPhase:int +LoopTurn:int +PendingStart:bool +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +ClearLoop() +StartLoop(int,Vector2,Vector2,int,int,int) +TakePendingStart() +CloseLoop(Vector2) +SetPhase(int) +SetSecond(int,int) +BreakLoop() +AI()[ov]
 **ManOnTrapezeTrick.cs** uses: ForwardPassTrick, ILoopTuning, LoopYoyoFx, LoopYoyoProjectile, NpcHold, SegmentHit, Snarable, YoyoLoop, YoyoProjectile, YoyoShake, YoyoState, YoyoTuning
   class ManOnTrapezeTrick : ForwardPassTrick
-    +Name:string[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] #OnLoopStart(YoyoProjectile)[v] #OnLoopEnd(YoyoProjectile,NPC,Vector2,bool)[v] +StringPath(YoyoProjectile,List<Vector2>)[ov] +SpinStep(YoyoProjectile)[ov] +RopeTaut(YoyoProjectile)[ov]
+    +Name:string[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] #ValidNpc(int)[s] #BeginLoop(YoyoProjectile,LoopYoyoProjectile,int,Vector2)[v] #OnLoopStart(YoyoProjectile)[v] #OnLoopEnd(YoyoProjectile,NPC,Vector2,bool)[v] +StringPath(YoyoProjectile,List<Vector2>)[ov] +SpinStep(YoyoProjectile)[ov] +RopeTaut(YoyoProjectile)[ov]
 **WalkTheDogTrick.cs** uses: YoyoContact, YoyoProjectile, YoyoTrick, YoyoTuning
   interface IWalkTheDogTuning
     +WalkHitsPerThrow:int +WalkThrowDownSpeed:float +WalkThrowForwardSpeed:float +WalkSwitchDeadzonePx:float +WalkGravity:float +WalkMaxFall:float +WalkSpeed:float +WalkAccel:float +WalkAirAccel:float +WalkLandBounce:float +WalkBounceMinImpact:float +WalkHopSpeed:float +WalkHopCooldownTicks:int +WalkHitRecoil:float +WalkHitHop:float
@@ -840,7 +841,7 @@ tModLoader/other bases -> project types:
     +Hit(Vector2,float)[s]
 **YoyoLoop.cs**
   static class YoyoLoop
-    +Bezier(Vector2,Vector2,Vector2,Vector2,float)[s] +Smooth(float)[s] +AddLine(List<Vector2>,Vector2,Vector2,float)[s] +AddNoose(List<Vector2>,Vector2,Vector2,float,float,int)[s]
+    +Bezier(Vector2,Vector2,Vector2,Vector2,float)[s] +Smooth(float)[s] +AddLine(List<Vector2>,Vector2,Vector2,float)[s] +AddNoose(List<Vector2>,Vector2,Vector2,float,float,int)[s] +AddWrapped(List<Vector2>,Vector2,float,int,float,int)[s]
 **YoyoPlayer.cs** uses: YoyoRegistry
   class YoyoPlayer : ModPlayer
     +Find(int,int)[s] +PostUpdate()[ov]
@@ -862,7 +863,7 @@ tModLoader/other bases -> project types:
     +Pivots:IReadOnlyList<Vector2> +Active:bool +Clear() +Update(Vector2,Vector2,int,float)
 **YoyoTrick.cs** uses: YoyoProjectile, YoyoTuning
   abstract class YoyoTrick
-    #T:YoyoTuning +Name:string[ab] +MaxHits:int[ab] +FollowsCursorSide:bool[v] +CursorSideDeadzonePx:float[v] +RetractsOnRelease:bool[v] +RopeTaut(YoyoProjectile)[v] +StringPath(YoyoProjectile,List<Vector2>)[v] +HurtsWhileReturning(YoyoProjectile)[v] +Begin(YoyoProjectile,bool)[ab] +Tick(YoyoProjectile)[ab] +OnHit(YoyoProjectile,NPC)[v] +SpinStep(YoyoProjectile)[v]
+    #T:YoyoTuning +Name:string[ab] +MaxHits:int[ab] +FollowsCursorSide:bool[v] +CursorSideDeadzonePx:float[v] +RetractsOnRelease:bool[v] +RopeTaut(YoyoProjectile)[v] +StringPath(YoyoProjectile,List<Vector2>)[v] +HurtsWhileReturning(YoyoProjectile)[v] +Begin(YoyoProjectile,bool)[ab] +Tick(YoyoProjectile)[ab] +OnHit(YoyoProjectile,NPC)[v] +OnRetract(YoyoProjectile)[v] +SpinStep(YoyoProjectile)[v]
 **YoyoTuning.cs**
   class YoyoTuning
     +TexturePath:string[v] +RopeLengthPx:float[v] +RopeLength() +RopePoints:int[v] +RopeSlackFactor:float[v] +RopeExtraSlack:float[v] +RopeGravity:float[v] +RopeTightenSpeed:float[v] +RopeMinLength:float[v] +RopeDamping:float[v] +RopeIterations:int[v] +RopeCollides:bool[v] +RopeSubdivisions:int[v] +RopeWidth:float[v] +RopeOutlineWidth:float[v] +RopeColor:Color[v] +RopeAltColor:Color[v] +RopeOutlineColor:Color[v] +HitboxSize:int[v] +HitCooldownTicks:int[v] +ArmFollow:float[v] +SyncEveryTicks:int[v] +UseSlopes:bool[v] +CollisionStepPx:float[v] +SweepHits:bool[v] +RopeWraps:bool[v] +RopeWrapMaxPivots:int[v] +RopeWrapClearancePx:float[v] +RopeWrapSnapSpeed:float[v] +IdleRestTicks:int[v] +IdleDropTicks:int[v] +IdleSpinTicks:int[v] +IdleRaiseTicks:int[v] +IdleDropPx:float[v] +IdleSwayPx:float[v] +IdleSpinRestSpeed:float[v] +IdleSpinSpeed:float[v] +IdleArmRestDeg:float[v] +IdleArmDropDeg:float[v] +ThrowArmStartDeg:float[v] +ThrowArmBlendTicks:int[v] +CatchArmDeg:float[v] +CatchArmBlendDistance:float[v] +ReleaseGraceTicks:int[v] +RethrowDelayTicks:int[v] +ReturnStartSpeed:float[v] +ReturnAccel:float[v] +ReturnMaxSpeed:float[v] +CatchDistance:float[v] +ReturnSpinSpeed:float[v] +SpinPerPixel:float[v] +HitShake:float[v] +Afterimages:bool[v] +AfterimageTicks:int[v] +AfterimageMinScale:float[v] +AfterimageMinSpeed:float[v] +AfterimageColor:Color[v]
@@ -906,9 +907,6 @@ tModLoader/other bases -> project types:
 **ArteryGlobalItem.cs** uses: YoyoGlobalItem
   class ArteryGlobalItem : YoyoGlobalItem
     #YoyoItemType:int[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**ArteryLoop.cs**
-  static class ArteryLoop
-    +Bezier(Vector2,Vector2,Vector2,Vector2,float)[s] +Smooth(float)[s] +AddLine(List<Vector2>,Vector2,Vector2,float)[s] +AddNoose(List<Vector2>,Vector2,Vector2,float,float,int)[s]
 **ArteryProjectile.cs** uses: ArteryFx, ArteryTrick, ArteryTuning, LoopYoyoProjectile, YoyoFx, YoyoTrick, YoyoTuning
   class ArteryProjectile : LoopYoyoProjectile
     +Texture:string[ov] +YoyoItemType:int[ov] #CreateTuning()[ov] #CreateFx()[ov] #CreateTrick(YoyoTuning)[ov]
@@ -918,9 +916,6 @@ tModLoader/other bases -> project types:
 **ArteryTuning.cs** uses: IForwardPassTuning, ILoopTuning, YoyoTuning
   class ArteryTuning : YoyoTuning, IForwardPassTuning, ILoopTuning
     +TexturePath:string[ov] +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +CollisionStepPx:float[ov] +SweepHits:bool[ov] +RopeWraps:bool[ov] +RopeWrapMaxPivots:int[ov] +RopeWrapClearancePx:float[ov] +RopeWrapSnapSpeed:float[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool +LassoMinReachPx:float +LassoTouchPaddingPx:float +LoopCatchTicks:int +LoopConstrictTicks:int +LoopWalkSpeedPx:float +LoopGapPx:float +LoopMinHandDistancePx:float +LoopRadiusPadPx:float +LoopMinRadiusPx:float +LoopMaxRadiusPx:float +LoopCloseRadiusPx:float +LoopSpinSpeed:float +LoopStringStepPx:float +LoopArcSamples:int +SnareMaxSizePx:float +ShredIntervalTicks:int +ShredDamageFraction:float +ShredShake:float +ExplosionRadiusPx:float +ExplosionDamageFraction:float +ExplosionKnockback:float +ExplosionShake:float +BleedingTicks:int +BleedDamagePerSecond:float
-**ManOnTrapezeTrick.cs** uses: AreaEffect, ArteryFx, ArteryLoop, ArteryProjectile, ArteryTuning, ForwardPassTrick, NpcHold, SegmentHit, Snarable, YoyoProjectile, YoyoShake, YoyoState, YoyoTuning
-  class ManOnTrapezeTrick : ForwardPassTrick
-    +Name:string[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] +StringPath(YoyoProjectile,List<Vector2>)[ov] +SpinStep(YoyoProjectile)[ov] +RopeTaut(YoyoProjectile)[ov]
 
 ### Content/Weapons/Yoyos/Code1/
 **Code1Fx.cs** uses: YoyoFx
@@ -941,19 +936,22 @@ tModLoader/other bases -> project types:
 ### Content/Weapons/Yoyos/Malaise/
 **MalaiseFx.cs** uses: CameraShake, LoopYoyoFx
   class MalaiseFx : LoopYoyoFx
-    #ChipDust:int[ov] +Throw(Vector2,int)[ov] +LoopCatch(Vector2)[ov] +LoopShred(Vector2,float)[ov] +LoopClose(Vector2)[ov]
+    #ChipDust:int[ov] +Throw(Vector2,int)[ov] +LoopCatch(Vector2)[ov] +LoopShred(Vector2,float)[ov] +LoopClose(Vector2)[ov] +RockTriangle(Vector2,Vector2,Vector2) +RockSwingEnd(Vector2,float) +RockSwingTrail(Vector2,Vector2,float) +RockRelease(Vector2,Vector2,bool)
 **MalaiseGlobalItem.cs** uses: YoyoGlobalItem
   class MalaiseGlobalItem : YoyoGlobalItem
     #YoyoItemType:int[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **MalaiseProjectile.cs** uses: LoopYoyoProjectile, MalaiseFx, MalaiseTrick, MalaiseTuning, YoyoFx, YoyoTrick, YoyoTuning
   class MalaiseProjectile : LoopYoyoProjectile
     +Texture:string[ov] +YoyoItemType:int[ov] #CreateTuning()[ov] #CreateFx()[ov] #CreateTrick(YoyoTuning)[ov]
-**MalaiseTrick.cs** uses: MalaiseTuning, ManOnTrapezeTrick, YoyoProjectile, YoyoTuning
-  class MalaiseTrick : ManOnTrapezeTrick
+**MalaiseRockTrick.cs** uses: LoopYoyoFx, LoopYoyoProjectile, MalaiseFx, MalaiseTuning, ManOnTrapezeTrick, NpcHold, SegmentHit, Snarable, YoyoLoop, YoyoProjectile, YoyoTuning
+  class MalaiseRockTrick : ManOnTrapezeTrick
+    +Name:string[ov] +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] #BeginLoop(YoyoProjectile,LoopYoyoProjectile,int,Vector2)[ov] +OnRetract(YoyoProjectile)[ov] #Confuse(NPC) +StringPath(YoyoProjectile,List<Vector2>)[ov] +SpinStep(YoyoProjectile)[ov] +RopeTaut(YoyoProjectile)[ov]
+**MalaiseTrick.cs** uses: MalaiseRockTrick, MalaiseTuning, YoyoProjectile, YoyoTuning
+  class MalaiseTrick : MalaiseRockTrick
     #OnLoopEnd(YoyoProjectile,NPC,Vector2,bool)[ov]
 **MalaiseTuning.cs** uses: IForwardPassTuning, ILoopTuning, YoyoTuning
   class MalaiseTuning : YoyoTuning, IForwardPassTuning, ILoopTuning
-    +TexturePath:string[ov] +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +CollisionStepPx:float[ov] +SweepHits:bool[ov] +RopeWraps:bool[ov] +RopeWrapMaxPivots:int[ov] +RopeWrapClearancePx:float[ov] +RopeWrapSnapSpeed:float[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool +LassoMinReachPx:float +LassoTouchPaddingPx:float +LoopCatchTicks:int +LoopConstrictTicks:int +LoopWalkSpeedPx:float +LoopGapPx:float +LoopMinHandDistancePx:float +LoopRadiusPadPx:float +LoopMinRadiusPx:float +LoopMaxRadiusPx:float +LoopCloseRadiusPx:float +LoopSpinSpeed:float +LoopStringStepPx:float +LoopArcSamples:int +SnareMaxSizePx:float +ShredIntervalTicks:int +ShredDamageFraction:float +ShredShake:float +ConfusedTicks:int
+    +TexturePath:string[ov] +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +CollisionStepPx:float[ov] +SweepHits:bool[ov] +RopeWraps:bool[ov] +RopeWrapMaxPivots:int[ov] +RopeWrapClearancePx:float[ov] +RopeWrapSnapSpeed:float[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool +LassoMinReachPx:float +LassoTouchPaddingPx:float +LoopCatchTicks:int +LoopConstrictTicks:int +LoopWalkSpeedPx:float +LoopGapPx:float +LoopMinHandDistancePx:float +LoopRadiusPadPx:float +LoopMinRadiusPx:float +LoopMaxRadiusPx:float +LoopCloseRadiusPx:float +LoopSpinSpeed:float +LoopStringStepPx:float +LoopArcSamples:int +SnareMaxSizePx:float +ShredIntervalTicks:int +ShredDamageFraction:float +ShredShake:float +ConfusedTicks:int +SeekRadiusPx:float +SeekReachMarginPx:float +SeekTicks:int +SeekStartSpeedPx:float +SeekSpeedPx:float +SeekAccelPx:float +SeekTurnRate:float +SeekTouchPadPx:float +WrapRadiusScale:float +WrapRadiusMinPx:float +WrapRadiusMaxPx:float +WrapGrowTicks:int +HookTicks:int +HookArriveScale:float +PendulumStartTicks:int +PendulumEndTicks:int +PendulumSpeedUpTicks:int +PendulumRampInTicks:int +PendulumSwing:float +PendulumMinTicks:int +MaxHoldTicks:int +BreakStretch:float +RockSpinSpeed:float +FliesThroughBlocks:bool +HoldEnemies:bool
 
 ### Content/Weapons/Yoyos/Rally/
 **RallyFx.cs** uses: YoyoFx

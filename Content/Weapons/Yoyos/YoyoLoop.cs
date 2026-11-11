@@ -55,5 +55,67 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             }
             AddLine(points, b, apex, step);
         }
+
+        // A taut string round round poles (Rock the Baby): it runs from pole to pole along their outer common tangents and bends round
+        // every pole whose radius is above zero (the hand and the yoyo are poles of radius zero). 'turn' (+1 or -1) is the side the poles
+        // are on: the string turns that way at every corner, so the poles sit INSIDE the bends (a string round pegs). The caller clears
+        // 'points'; this adds the whole path.
+        public static void AddWrapped(List<Vector2> points, Vector2[] poles, float[] radii, int turn, float step, int arcSamples)
+        {
+            int count = poles.Length;
+            if (count < 2)
+                return;
+            turn = turn >= 0 ? 1 : -1;
+            Vector2[] leave = new Vector2[count];    // where the string leaves each pole
+            Vector2[] arrive = new Vector2[count];   // where it arrives at each pole
+            for (int i = 0; i < count; i++)
+            {
+                leave[i] = poles[i];
+                arrive[i] = poles[i];
+            }
+            for (int i = 0; i < count - 1; i++)
+            {
+                Vector2 d = poles[i + 1] - poles[i];
+                float length = d.Length();
+                if (length < 0.01f)
+                    continue;
+                d /= length;
+                Vector2 away = new Vector2(d.Y, -d.X) * turn;   // from a pole's center to where the string touches it: the side away from the turn
+                float sine = MathHelper.Clamp((radii[i] - radii[i + 1]) / length, -0.98f, 0.98f);   // poles of different sizes: the tangent leans
+                float cosine = (float)Math.Sqrt(1f - sine * sine);
+                Vector2 normal = d * sine + away * cosine;
+                leave[i] = poles[i] + normal * radii[i];
+                arrive[i + 1] = poles[i + 1] + normal * radii[i + 1];
+            }
+            points.Add(leave[0]);
+            for (int i = 1; i < count; i++)
+            {
+                AddLine(points, leave[i - 1], arrive[i], step);
+                if (i == count - 1)
+                    break;
+                if (radii[i] <= 0.5f)
+                {
+                    points.Add(leave[i]);
+                    continue;
+                }
+                Vector2 center = poles[i];
+                Vector2 from = arrive[i] - center;
+                Vector2 to = leave[i] - center;
+                float start = (float)Math.Atan2(from.Y, from.X);
+                float sweep = MathHelper.WrapAngle((float)Math.Atan2(to.Y, to.X) - start);
+                if (turn > 0 && sweep < -0.05f)
+                    sweep += MathHelper.TwoPi;       // the long way: the string turns the way the pole is on
+                else if (turn < 0 && sweep > 0.05f)
+                    sweep -= MathHelper.TwoPi;
+                else if ((turn > 0 && sweep < 0f) || (turn < 0 && sweep > 0f))
+                    sweep = 0f;                      // a straight run: no arc
+                int samples = Math.Max(2, (int)(Math.Abs(sweep) / MathHelper.TwoPi * Math.Max(6, arcSamples)));
+                for (int k = 1; k <= samples; k++)
+                {
+                    float angle = start + sweep * k / samples;
+                    points.Add(center + new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)) * radii[i]);
+                }
+            }
+        }
     }
 }

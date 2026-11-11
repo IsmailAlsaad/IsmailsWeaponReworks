@@ -303,6 +303,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             if (State != YoyoState.Out)
                 return;
+            trick?.OnRetract(this);
             EnterState(YoyoState.Return);
             Projectile.netUpdate = true;
         }

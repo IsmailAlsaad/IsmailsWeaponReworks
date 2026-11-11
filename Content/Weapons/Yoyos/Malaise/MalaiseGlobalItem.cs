@@ -14,7 +14,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Malaise1", "Left click to perform Man on Trapeze"));
+            tooltips.Add(new TooltipLine(Mod, "Malaise1", "Left click to perform Rock the Baby"));
         }
     }
 }

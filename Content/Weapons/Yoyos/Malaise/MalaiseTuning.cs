@@ -123,5 +123,40 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
         public float ShredDamageFraction => 0.25f;                // each shred hit, as a fraction of the yoyo's damage
         public float ShredShake => 0.4f;                          // camera punch per shred hit (0 = none), the owner only, like the yoyo's normal hit shake
         public int ConfusedTicks => 300;                          // how long Confused lasts on a released enemy (60 = 1 second)
+
+        // ---- Rock the Baby (left click): the second enemy ----
+        // When the string catches a first enemy (A) and another enemy (B) is near, the string bends over A and the yoyo homes on B instead of
+        // making the noose. No second enemy in range = Man on Trapeze (the numbers above).
+        public float SeekRadiusPx => 220f;                        // B must be at most this far from A ...
+        public float SeekReachMarginPx => 24f;                    // ... and each side of the triangle (hand to A, hand to B, A to B) at most the string's length minus this
+        public int SeekTicks => 45;                               // the yoyo gives up when it has not reached B after this long (the trick ends)
+        public float SeekStartSpeedPx => 8f;                      // the homing speed is at least this when it starts ...
+        public float SeekSpeedPx => 17f;                          // ... and rises to this
+        public float SeekAccelPx => 1.4f;                         // px per tick per tick
+        public float SeekTurnRate => 0.3f;                        // radians per tick the yoyo may turn toward B (up to 3 times more when it is close)
+        public float SeekTouchPadPx => 6f;                        // how much bigger than B's hitbox counts as touching it
+
+        // ---- Rock the Baby: the bends of the string ----
+        public float WrapRadiusScale => 0.5f;                     // the string bends round an enemy on a circle of this fraction of its size ...
+        public float WrapRadiusMinPx => 8f;                       // ... never smaller than this ...
+        public float WrapRadiusMaxPx => 18f;                      // ... nor bigger than this
+        public int WrapGrowTicks => 10;                           // the circle grows from nothing over this long (the string bends over the enemy)
+
+        // ---- Rock the Baby: the hook and the triangle ----
+        public int HookTicks => 18;                               // the curve from B back to the player
+        public float HookArriveScale => 0.33f;                    // how straight it arrives at the hand (fraction of the distance, 0 = a sharp turn)
+
+        // ---- Rock the Baby: the pendulum ----
+        public int PendulumStartTicks => 84;                      // one whole swing (there and back) at the beginning ...
+        public int PendulumEndTicks => 32;                        // ... and after PendulumSpeedUpTicks (half of it must stay above the 14 tick hit cooldown to hit every end)
+        public int PendulumSpeedUpTicks => 240;                   // how long the speed-up takes
+        public int PendulumRampInTicks => 16;                     // the pendulum string grows from nothing to its length over this long
+        public float PendulumSwing => 1f;                         // 1 = the yoyo swings to the center of each enemy, less = stops short, more = overshoots
+        public int PendulumMinTicks => 45;                        // letting go of the button ends it only after it has swung this long
+        public int MaxHoldTicks => 360;                           // it ends by itself after this long (60 = 1 second)
+        public float BreakStretch => 0.97f;                       // it ends when a side of the triangle is longer than this fraction of the string
+        public float RockSpinSpeed => 0.5f;                       // radians per tick the yoyo spins while it is on the string
+        public bool FliesThroughBlocks => true;                   // the yoyo ignores blocks while it homes, hooks and swings (false = blocks stop it)
+        public bool HoldEnemies => false;                         // true = the enemies are held in place (not boss, not immovable) while the triangle lasts
     }
 }

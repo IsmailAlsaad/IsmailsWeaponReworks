@@ -72,5 +72,57 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
                 Wisp(position, Main.rand.NextVector2Circular(2.5f, 2.5f), Main.rand.NextFloat(1f, 1.6f));
             CameraShake.Punch(position, 2.5f, 12, "MalaiseClose");
         }
+
+        // Rock the Baby: the triangle is complete. A pulse of wisps along the three sides and a ring at the pointy top (the hand).
+        public void RockTriangle(Vector2 hand, Vector2 a, Vector2 b)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.8f, Pitch = 0.2f, PitchVariance = 0.05f }, hand);
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.5f, Pitch = -0.4f, PitchVariance = 0.05f }, hand);
+            Vector2[] corners = { hand, a, b };
+            for (int side = 0; side < 3; side++)
+            {
+                Vector2 from = corners[side];
+                Vector2 to = corners[(side + 1) % 3];
+                for (int i = 0; i < 8; i++)
+                    Wisp(Vector2.Lerp(from, to, (i + Main.rand.NextFloat()) / 8f), Main.rand.NextVector2Circular(0.8f, 0.8f), Main.rand.NextFloat(0.9f, 1.3f));
+            }
+            for (int i = 0; i < 8; i++)
+                Wisp(hand, (MathHelper.TwoPi * i / 8f).ToRotationVector2() * Main.rand.NextFloat(1.5f, 2.5f), Main.rand.NextFloat(1f, 1.4f));
+        }
+
+        // Rock the Baby: the yoyo reached one end of its swing (speed01 = how far the speed-up has come, 0 to 1): a thump that rises in
+        // pitch, a burst of wisps and a small camera punch that grows with the speed.
+        public void RockSwingEnd(Vector2 position, float speed01)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.35f, Pitch = -0.5f + 0.7f * speed01, PitchVariance = 0.05f }, position);
+            SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.3f, Pitch = -0.2f + 0.6f * speed01, PitchVariance = 0.05f }, position);
+            for (int i = 0; i < 8; i++)
+                Wisp(position, Main.rand.NextVector2Circular(2.8f, 2.8f), Main.rand.NextFloat(0.9f, 1.4f));
+            CameraShake.Punch(position, 0.8f + 1.2f * speed01, 8, "MalaiseRock");
+        }
+
+        // Rock the Baby: a wisp or two left behind the swinging yoyo.
+        public void RockSwingTrail(Vector2 position, Vector2 velocity, float speed01)
+        {
+            if (Main.dedServ)
+                return;
+            Wisp(position, -velocity * 0.12f + Main.rand.NextVector2Circular(0.6f, 0.6f), Main.rand.NextFloat(0.8f, 1.2f) + 0.3f * speed01);
+        }
+
+        // Rock the Baby is let go: the dark ring of the loop's close at A, a plain ring at B (one sound and one punch).
+        public void RockRelease(Vector2 a, Vector2 b, bool hasB)
+        {
+            LoopClose(a);
+            if (hasB && !Main.dedServ)
+            {
+                int ring = 16;
+                for (int i = 0; i < ring; i++)
+                    Wisp(b, (MathHelper.TwoPi * i / ring).ToRotationVector2() * Main.rand.NextFloat(3f, 5f), Main.rand.NextFloat(1.2f, 1.6f));
+            }
+        }
     }
 }

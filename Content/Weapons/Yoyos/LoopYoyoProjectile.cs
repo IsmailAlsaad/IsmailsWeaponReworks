@@ -21,6 +21,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public Vector2 LoopStartVel;      // and how fast it moved (the curve starts with this speed, so it does not turn harshly)
         public bool LoopClosed;           // the loop closed on its enemy (the owner decides)
         public Vector2 LoopPoint;         // where it closed
+        public int LoopMode;              // 0 = the noose (Man on Trapeze), 1 = Rock the Baby
+        public int LoopTarget2 = -1;      // Rock the Baby: the second enemy's index, -1 = none
+        public int LoopPhase;             // Rock the Baby: 0 seek, 1 hook, 2 swing, 3 done (the owner decides)
+        public int LoopTurn = 1;          // Rock the Baby: which way the string turns round the corners, +1 or -1
 
         int loopSerial;                   // 0..255, one more for every loop that starts
         int handledSerial;                // the serial this machine has started
@@ -46,6 +50,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             writer.Write(LoopStartVel.Y);
             writer.Write(LoopPoint.X);
             writer.Write(LoopPoint.Y);
+            writer.Write((byte)LoopMode);
+            writer.Write((short)LoopTarget2);
+            writer.Write((byte)LoopPhase);
+            writer.Write((sbyte)LoopTurn);
         }
 
         public override void ReceiveExtraAI(BinaryReader reader)
@@ -57,6 +65,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             LoopStart = new Vector2(reader.ReadSingle(), reader.ReadSingle());
             LoopStartVel = new Vector2(reader.ReadSingle(), reader.ReadSingle());
             LoopPoint = new Vector2(reader.ReadSingle(), reader.ReadSingle());
+            LoopMode = reader.ReadByte();
+            LoopTarget2 = reader.ReadInt16();
+            LoopPhase = reader.ReadByte();
+            LoopTurn = reader.ReadSByte();
             if (!loopSynced)
             {
                 // A late joiner: take it as it is, no replay.
@@ -84,12 +96,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             LoopTarget = -1;
             LoopClosed = false;
             PendingStart = false;
+            LoopMode = 0;
+            LoopTarget2 = -1;
+            LoopPhase = 0;
+            LoopTurn = 1;
         }
 
         // Owner's client: the string caught an enemy.
-        public void StartLoop(int target, Vector2 start, Vector2 startVel)
+        public void StartLoop(int target, Vector2 start, Vector2 startVel, int mode = 0, int target2 = -1, int turn = 1)
         {
             LoopTarget = target;
+            LoopMode = mode;
+            LoopTarget2 = target2;
+            LoopTurn = turn;
+            LoopPhase = 0;
             LoopStart = start;
             LoopStartVel = startVel;
             LoopClosed = false;
@@ -111,6 +131,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             LoopClosed = true;
             LoopPoint = at;
             LFx.LoopClose(at);
+            Projectile.netUpdate = true;
+        }
+
+        // Owner's client: Rock the Baby moves on to a phase (the other machines follow from the sync).
+        public void SetPhase(int phase)
+        {
+            LoopPhase = phase;
+            Projectile.netUpdate = true;
+        }
+
+        // Owner's client: Rock the Baby has a new second enemy (the first was lost on the way).
+        public void SetSecond(int target2, int turn)
+        {
+            LoopTarget2 = target2;
+            LoopTurn = turn;
             Projectile.netUpdate = true;
         }
 

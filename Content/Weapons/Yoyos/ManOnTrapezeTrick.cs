@@ -120,6 +120,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 }
                 if (best >= 0)
                 {
+                    if (BeginLoop(yoyo, loop, best, center))
+                        return;   // the yoyo's own trick took the catch over (Rock the Baby)
                     loop.StartLoop(best, center, yoyo.Vel);
                     EnterLoop(yoyo, best, center, yoyo.Vel);
                     return;
@@ -132,7 +134,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         // ---- the loop ----
 
-        static NPC ValidNpc(int index)
+        protected static NPC ValidNpc(int index)
         {
             return index >= 0 && index < Main.maxNPCs && Main.npc[index].active ? Main.npc[index] : null;
         }
@@ -166,6 +168,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         }
 
         // ---- hooks for the yoyo's own subclass ----
+
+        // The string just caught enemy 'index' at 'center' (the owner's client, before anything starts). A yoyo that does something else
+        // than the noose (the Malaise's Rock the Baby) starts it here, tells the other machines through the loop's synced data and returns
+        // true; false (the default) lets the Man on Trapeze noose start.
+        protected virtual bool BeginLoop(YoyoProjectile yoyo, LoopYoyoProjectile loop, int index, Vector2 center)
+        {
+            return false;
+        }
 
         // A loop starts (every machine, before the catch fx plays): a yoyo can hand its fx numbers over here.
         protected virtual void OnLoopStart(YoyoProjectile yoyo)

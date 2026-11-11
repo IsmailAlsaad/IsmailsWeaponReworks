@@ -66,6 +66,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
         }
 
+        // The owner's client only: the yoyo is about to be pulled back (the string is at full length, the button was let go, a trick ended
+        // or a hit retracted it). A trick that has unfinished business (Rock the Baby's Confused buff) finishes it here.
+        public virtual void OnRetract(YoyoProjectile yoyo)
+        {
+        }
+
         // How much the yoyo's sprite turns this tick.
         public virtual float SpinStep(YoyoProjectile yoyo)
         {
