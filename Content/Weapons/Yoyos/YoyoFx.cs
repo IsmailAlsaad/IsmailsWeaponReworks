@@ -62,8 +62,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.5f, Pitch = MathHelper.Clamp(0.1f + 0.2f * hitNumber, -1f, 0.9f), PitchVariance = 0.1f }, position);
-            SoundEngine.PlaySound(SoundID.Dig with { Volume = 0.45f, Pitch = 0.5f, PitchVariance = 0.1f }, position);
+            //SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.5f, Pitch = MathHelper.Clamp(0.1f + 0.2f * hitNumber, -1f, 0.9f), PitchVariance = 0.1f }, position);
+            //SoundEngine.PlaySound(SoundID.Dig with { Volume = 0.45f, Pitch = 0.5f, PitchVariance = 0.1f }, position);
             for (int i = 0; i < 8; i++)
                 Chip(position, Main.rand.NextVector2Circular(3.5f, 3.5f), Main.rand.NextFloat(0.8f, 1.2f));
         }
