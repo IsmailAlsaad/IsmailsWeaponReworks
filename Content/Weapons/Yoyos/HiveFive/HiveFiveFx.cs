@@ -50,11 +50,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
             }
         }
 
-        // A charged yoyo that waits: a golden sparkle now and then (the golden outline comes in H3).
-        public void ChargedSparkle(Vector2 position)
+        // A charged yoyo that waits: a drop of honey drips off it now and then.
+        public void ChargedDrip(Vector2 position)
         {
-            Dust dust = Dust.NewDustPerfect(position + Main.rand.NextVector2Circular(8f, 8f), DustID.GoldFlame, Vector2.Zero, 0, default, 0.8f);
-            dust.noGravity = true;
+            Dust.NewDustPerfect(position + Main.rand.NextVector2Circular(6f, 6f), DustID.Honey, Main.rand.NextVector2Circular(0.4f, 0.4f), 100, default, Main.rand.NextFloat(0.7f, 1f));
+        }
+
+        // A bee leaves the spinning yoyo: a little puff of honey (the buzz of the bee itself is the vanilla bee's).
+        public void BeeBurst(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 3; i++)
+            {
+                Dust dust = Dust.NewDustPerfect(position, DustID.Honey, Main.rand.NextVector2Circular(2f, 2f), 100, default, Main.rand.NextFloat(0.8f, 1.2f));
+                dust.noGravity = true;
+            }
         }
 
         // A thin trail of honey drops thrown off the spinning yoyo, more the faster it goes.

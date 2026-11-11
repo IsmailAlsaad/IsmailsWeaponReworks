@@ -125,5 +125,28 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
         public float HoneyTrailDripChance => 0.3f;                // per tick: a honey drop falls from a random point of the trail
         public Color HoneyTrailOuterColor => new Color(235, 140, 20, 0);   // the wide outer glow (alpha 0 = additive)
         public Color HoneyTrailCoreColor => new Color(255, 226, 120, 0);   // the bright core
+
+        // ---- the bees of a charged Around the World (vanilla bees, sent out by the owner's client) ----
+        public int BeeIntervalTicks => 6;                         // a bee leaves the yoyo this often while a charged spin flies
+        public int BeeMaxPerSpin => 24;                           // at most this many bees per spin
+        public float BeeSpeed => 5f;                              // how fast a bee leaves the yoyo (it flies out and away from the player, then hunts)
+        public float BeeDamageFraction => 0.4f;                   // a bee's damage as a fraction of the yoyo's
+        public float GiantBeeChance => 0.25f;                     // the chance that a bee is a giant bee ...
+        public float GiantBeeDamageFraction => 0.7f;              // ... which hits harder
+
+        // ---- the honey buff ----
+        public int HoneyPerHitTicks => 60;                        // every enemy the yoyo hits during a charged spin adds this much Honey (60 = 1 second)
+        public int HoneyBuffMaxTicks => 1800;                     // the Honey buff is never topped up beyond this (the Bee Keeper's cap)
+
+        // ---- the golden honey outline of a charged yoyo (also shown when the Sleeper hold has reached max speed) ----
+        public float OutlineWidth => 1.5f;                        // pixels, at full strength
+        public int OutlinePulseTicks => 40;                       // one pulse
+        public float OutlineMin => 0.6f;                          // the pulse swings between these strengths
+        public float OutlineMax => 1f;
+        public float OutlineEase => 0.12f;                        // how fast it fades in and out (0..1 per tick)
+        public float GlowScale => 1.6f;                           // the soft glow copy behind the outline is this much bigger than the yoyo
+        public float GlowAlpha => 0.4f;                           // its opacity
+        public Color OutlineColor => new Color(255, 176, 40, 0);       // alpha 0 = additive
+        public Color OutlineCoreColor => new Color(255, 230, 130, 0);  // the brighter inner ring
     }
 }
