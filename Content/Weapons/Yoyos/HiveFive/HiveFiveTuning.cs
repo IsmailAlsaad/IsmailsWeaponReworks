@@ -92,7 +92,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
         public int AroundSpins => 2;                              // whole turns round the player; the last one slows down and spirals in to the hand
         public float AroundReachMargin => 36f;                    // the circle's radius is the string's full length minus this
         public float AroundStartRadiusPx => 18f;                  // the yoyo leaves the hand this far away ...
-        public int AroundFlingTicks => 12;                        // ... and is flung out to the full radius over this many ticks
+        public int AroundFlingTicks => 24;                        // ... and is flung out to the full radius over this many ticks
         public float AroundStartSpeed => 0.12f;                   // radians per tick at the throw
         public float AroundTopSpeed => 0.34f;                     // radians per tick at full speed (0.34 = one turn in about 18 ticks)
         public int AroundAccelTicks => 18;                        // speeding up from the start speed to the top speed
