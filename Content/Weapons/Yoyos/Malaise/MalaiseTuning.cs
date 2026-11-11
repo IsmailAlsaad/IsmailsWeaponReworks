@@ -18,7 +18,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
         // ---- rope length ----
         // The string's maximum length in pixels (16 px = 1 tile). It is also how far a throw can reach: the Forward Pass goes this far
         // minus its margin, and a yoyo that is out comes back when it is this far from the hand. Every yoyo lists its own value.
-        public override float RopeLengthPx => 275f;
+        public override float RopeLengthPx => 400f;
 
         // ---- rope (verlet, visual only: every machine simulates its own) ----
         public override int RopePoints => 16;               // points along the string (more = smoother and a bit slower)
@@ -127,7 +127,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
         // ---- Rock the Baby (left click): the second enemy ----
         // When the string catches a first enemy (A) and another enemy (B) is near, the string bends over A and the yoyo homes on B instead of
         // making the noose. No second enemy in range = Man on Trapeze (the numbers above).
-        public float SeekRadiusPx => 220f;                        // B (the FURTHEST enemy in range) must be at most this far from A ...
+        public float SeekRadiusPx => 280f;                        // B (the FURTHEST enemy in range) must be at most this far from A ...
         public float SeekMinRadiusFraction => 0.3f;               // ... and at least this fraction of SeekRadiusPx away (closer = Man on Trapeze) ...
         public float SeekReachMarginPx => 24f;                    // ... and each side of the triangle (hand to A, hand to B, A to B) at most the string's length minus this
         public int SeekTicks => 45;                               // the yoyo gives up when it has not reached B after this long (the trick ends)
@@ -148,11 +148,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
         public float HookArriveScale => 0.33f;                    // how straight it arrives at the hand (fraction of the distance, 0 = a sharp turn)
 
         // ---- Rock the Baby: the pendulum ----
-        public int PendulumStartTicks => 40;                      // one whole swing (there and back) at the beginning ...
+        public int PendulumStartTicks => 32;                      // one whole swing (there and back) at the beginning ...
         public int PendulumEndTicks => 20;                        // ... and after PendulumSpeedUpTicks (half of it must stay above the 14 tick hit cooldown to hit every end)
         public int PendulumSpeedUpTicks => 120;                   // how long the speed-up takes
         public int PendulumRampInTicks => 16;                     // the pendulum string grows from nothing to its length over this long
-        public float PendulumSwing => 1.2f;                         // 1 = the yoyo swings to the center of each enemy, less = stops short, more = overshoots
+        public float PendulumSwing => 1f;                         // 1 = the yoyo swings to the center of each enemy, less = stops short, more = overshoots
         public int PendulumMinTicks => 45;                        // letting go of the button ends it only after it has swung this long
         public int MaxHoldTicks => 160;                           // it ends by itself after this long (60 = 1 second)
         public float BreakStretch => 0.97f;                       // it ends when a side of the triangle is longer than this fraction of the string
