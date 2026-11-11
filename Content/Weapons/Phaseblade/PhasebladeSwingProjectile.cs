@@ -183,6 +183,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
                 owner.ChangeDir(Facing);
 
             Projectile.scale = PhasebladeTuning.SwordScale * owner.GetAdjustedItemScale(owner.HeldItem);
+            Projectile.localNPCHitCooldown = Spins ? PhasebladeTuning.SpinHitCooldownTicks : -1; // swing 1 hits once; the spinning swings re-hit
 
             if (ticks == 0)
                 lastOwnerCenter = owner.Center;
@@ -201,7 +202,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
 
             Effects();
             if (!IsOwner && Damaging)
-                remoteHits.Update(Projectile, 0, npc => PhasebladeFx.HitSpark(npc.Center, BladeColor));
+                remoteHits.Update(Projectile, Spins ? (int)(poseTime / Math.Max(1, PhasebladeTuning.SpinHitCooldownTicks)) : 0, npc => PhasebladeFx.HitSpark(npc.Center, BladeColor));
 
             flash = Math.Max(0f, flash - 1f / Math.Max(1, PhasebladeTuning.FlashTicks));
             trail?.Tick();

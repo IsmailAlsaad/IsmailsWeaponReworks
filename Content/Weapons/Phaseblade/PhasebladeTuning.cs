@@ -16,6 +16,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public static float SpinDamageMultiplier => 1.25f;       // swings 2 and 3 (the spinning ones)
         public static float SwingDownKnockbackMultiplier => 1f;
         public static float SpinKnockbackMultiplier => 1.2f;
+        public static int SpinHitCooldownTicks => 5;             // an enemy can be hit again by a spinning swing after this many ticks (strike 9 ticks: 5 = 2 hits, 3 to 4 = 3 hits)
 
         // ---- blade ----
         public static float BladeLength => 70;       // hand to tip, in pixels at scale 1
