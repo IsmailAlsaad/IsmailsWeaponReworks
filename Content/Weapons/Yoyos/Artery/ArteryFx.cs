@@ -10,7 +10,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
     /// The dust and sounds of the Artery (vanilla only): blood chips on a hit, the lasso catching an enemy and the loop closing.
     /// The defaults are in YoyoFx. Every machine calls these for the same event; all of it is visual, nothing here is synced.
     /// </summary>
-    public class ArteryFx : YoyoFx
+    public class ArteryFx : LoopYoyoFx
     {
         protected override int ChipDust => DustID.Blood;
 
@@ -20,7 +20,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         public float ExplosionShake = 5f;
 
         // One shred hit: a few drops fly off the noose and off the enemy (the hit's own sound comes with the strike).
-        public virtual void LoopShred(Vector2 center, float noose)
+        public override void LoopShred(Vector2 center, float noose)
         {
             if (Main.dedServ)
                 return;
@@ -57,7 +57,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         }
 
         // The string touched an enemy and the yoyo starts to swing around it: a sharp whip and a few drops.
-        public virtual void LoopCatch(Vector2 position)
+        public override void LoopCatch(Vector2 position)
         {
             if (Main.dedServ)
                 return;
@@ -67,7 +67,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         }
 
         // The loop closed on its enemy (patch A2 adds the blood explosion on top of this): a wet snap and a burst of drops.
-        public virtual void LoopClose(Vector2 position)
+        public override void LoopClose(Vector2 position)
         {
             if (Main.dedServ)
                 return;

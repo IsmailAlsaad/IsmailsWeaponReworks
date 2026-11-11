@@ -6,23 +6,24 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
+namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 {
     /// <summary>
-    /// The Artery's trick, Man on Trapeze: the ForwardPassTrick pattern, but the string tries to LOOP an enemy.
+    /// Man on Trapeze (pattern; the Artery's left click and the Malaise's fallback): the ForwardPassTrick pattern, but the string tries to LOOP an enemy.
     /// ARC: the pass flies as a Forward Pass. Every tick the owner's client checks whether the string (the line hand to yoyo) or the yoyo
     /// touches an enemy that can be damaged (Snarable.CanBite); the first one found is the target (one loop at a time).
     /// CATCH (LoopCatchTicks): the yoyo leaves the ellipse and follows a cubic curve that starts with the speed it had (no harsh turn from the
     /// straight line to sideways), bends around the enemy and arrives on the string line, on the player's side of the enemy. The noose
-    /// (ArteryLoop.AddNoose) grows around the enemy meanwhile.
+    /// (YoyoLoop.AddNoose) grows around the enemy meanwhile.
     /// CONSTRICT (LoopConstrictTicks): the yoyo spin-walks along the line toward the player (it follows the enemy, which keeps moving)
     /// while the noose shrinks. The loop CLOSES when the noose is shut, or at once when the enemy dies; the yoyo then returns to the hand.
     /// It BREAKS (no close) when the enemy gets farther from the hand than the string is long.
     /// A grippable enemy (Snarable.CanGrip: not a boss, not immovable, not a worm segment, not huge) is HELD in place for the whole loop
     /// (NpcHold); anything else is looped but keeps moving.
-    /// MULTIPLAYER: the owner decides the target, the start, the close and the break; the data travels in ArteryProjectile's extra sync.
+    /// MULTIPLAYER: the owner decides the target, the start, the close and the break; the data travels in LoopYoyoProjectile's extra sync.
     /// Every machine runs the curve from it, refreshes the hold on its own copy of the enemy, and draws the string and the noose
-    /// itself (visual only). Patch A1 has no damage change: the shred hits and the blood explosion come in A2.
+    /// itself (visual only). The shred hits are done here; what happens when the loop ENDS is the yoyo's own subclass (OnLoopEnd: the
+    /// Artery's blood explosion, the Malaise's confusion) and its fx.
     /// </summary>
     public class ManOnTrapezeTrick : ForwardPassTrick
     {
@@ -44,7 +45,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         {
         }
 
-        ArteryTuning A => (ArteryTuning)T;
+        ILoopTuning A => (ILoopTuning)T;
 
         public override string Name => "Man on Trapeze";
 
@@ -57,40 +58,40 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             haveLast = false;
             radius = 0f;
             if (authoritative)
-                (yoyo as ArteryProjectile)?.ClearLoop();
+                (yoyo as LoopYoyoProjectile)?.ClearLoop();
         }
 
         public override void Tick(YoyoProjectile yoyo)
         {
-            ArteryProjectile artery = yoyo as ArteryProjectile;
-            if (artery == null)
+            LoopYoyoProjectile loop = yoyo as LoopYoyoProjectile;
+            if (loop == null)
             {
                 base.Tick(yoyo);
                 return;
             }
 
             // Another machine: the owner started a loop.
-            if (loopTick < 0 && !ended && !yoyo.IsOwner && artery.PendingStart && ValidNpc(artery.LoopTarget) != null)
+            if (loopTick < 0 && !ended && !yoyo.IsOwner && loop.PendingStart && ValidNpc(loop.LoopTarget) != null)
             {
-                artery.TakePendingStart();
-                EnterLoop(yoyo, artery.LoopTarget, artery.LoopStart, artery.LoopStartVel);
+                loop.TakePendingStart();
+                EnterLoop(yoyo, loop.LoopTarget, loop.LoopStart, loop.LoopStartVel);
             }
 
             if (loopTick >= 0)
             {
                 if (!ended)
-                    TickLoop(yoyo, artery);
+                    TickLoop(yoyo, loop);
                 return;
             }
 
             base.Tick(yoyo);
             if (yoyo.IsOwner && !stopped && yoyo.State == YoyoState.Out)
-                DetectLasso(yoyo, artery);
+                DetectLasso(yoyo, loop);
         }
 
         // ---- the arc: does the string touch an enemy? (owner's client) ----
 
-        void DetectLasso(YoyoProjectile yoyo, ArteryProjectile artery)
+        void DetectLasso(YoyoProjectile yoyo, LoopYoyoProjectile loop)
         {
             Vector2 hand = yoyo.Hand;
             Vector2 center = yoyo.Projectile.Center;
@@ -119,7 +120,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
                 }
                 if (best >= 0)
                 {
-                    artery.StartLoop(best, center, yoyo.Vel);
+                    loop.StartLoop(best, center, yoyo.Vel);
                     EnterLoop(yoyo, best, center, yoyo.Vel);
                     return;
                 }
@@ -160,16 +161,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             loopStartVel = startVel;
             if (!yoyo.IsOwner)
                 yoyo.Projectile.Center = start;   // the owner's position, where the curve began
-            ArteryFx fx = yoyo.Fx as ArteryFx;
-            if (fx != null)
-            {
-                fx.ExplosionRadius = A.ExplosionRadiusPx;   // the close plays on every machine and has no tuning of its own
-                fx.ExplosionShake = A.ExplosionShake;
-                fx.LoopCatch(start);
-            }
+            OnLoopStart(yoyo);
+            (yoyo.Fx as LoopYoyoFx)?.LoopCatch(start);
         }
 
-        void TickLoop(YoyoProjectile yoyo, ArteryProjectile artery)
+        // ---- hooks for the yoyo's own subclass ----
+
+        // A loop starts (every machine, before the catch fx plays): a yoyo can hand its fx numbers over here.
+        protected virtual void OnLoopStart(YoyoProjectile yoyo)
+        {
+        }
+
+        // The loop ended (the owner's client only): 'closed' = it closed on its enemy (or the enemy died inside it), false = it broke (the
+        // enemy got out of reach). 'target' is the looped enemy when it is still alive (null when it died), 'at' where the loop was.
+        // The synced close/break flag and the fx have already been sent; this is for the yoyo's own damage and debuffs.
+        protected virtual void OnLoopEnd(YoyoProjectile yoyo, NPC target, Vector2 at, bool closed)
+        {
+        }
+
+        void TickLoop(YoyoProjectile yoyo, LoopYoyoProjectile loop)
         {
             NPC npc = FindTarget();
             if (npc != null)
@@ -180,17 +190,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             {
                 if (npc == null)
                 {
-                    Finish(yoyo, artery, true);   // the enemy died: the loop closes at once, where it was
+                    Finish(yoyo, loop, true);   // the enemy died: the loop closes at once, where it was
                     return;
                 }
                 if (Vector2.Distance(hand, lastEnemy) > T.RopeLength())
                 {
-                    Finish(yoyo, artery, false);  // out of reach: the string would be too long
+                    Finish(yoyo, loop, false);  // out of reach: the string would be too long
                     return;
                 }
                 if (loopTick >= Math.Max(1, A.LoopCatchTicks) + Math.Max(1, A.LoopConstrictTicks))
                 {
-                    Finish(yoyo, artery, true);
+                    Finish(yoyo, loop, true);
                     return;
                 }
             }
@@ -203,7 +213,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             Place(yoyo, hand, loopTick);
         }
 
-        // ---- damage (patch A2) ----
+        // ---- damage: the shred ----
 
         // While the noose shrinks: a shred hit every ShredIntervalTicks. Every machine counts the same ticks and plays the blood; only the
         // owner's client strikes (SimpleStrikeNPC syncs it). Called before loopTick goes up, so the first hit comes one interval after the catch ends.
@@ -214,7 +224,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
                 return;
             if ((loopTick - catchTicks) % Math.Max(1, A.ShredIntervalTicks) != 0)
                 return;
-            (yoyo.Fx as ArteryFx)?.LoopShred(npc.Center, radius);
+            (yoyo.Fx as LoopYoyoFx)?.LoopShred(npc.Center, radius);
             if (!yoyo.IsOwner)
                 return;
             int damage = Math.Max(1, (int)(yoyo.Projectile.damage * A.ShredDamageFraction));
@@ -222,31 +232,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             YoyoShake.Hit(npc.Center, A.ShredShake);
         }
 
-        // The loop closed (owner's client): the blood explosion hits every enemy in the circle and makes it bleed. The looped enemy is in it
-        // too unless it already died, in which case the explosion still goes off at the spot where it was. The visuals are not here: the
-        // close plays them on every machine (ArteryProjectile.CloseLoop -> ArteryFx.LoopClose).
-        void Explode(YoyoProjectile yoyo, Vector2 at)
-        {
-            int damage = Math.Max(1, (int)(yoyo.Projectile.damage * A.ExplosionDamageFraction));
-            AreaEffect.ForEachNpc(at, A.ExplosionRadiusPx, npc =>
-            {
-                npc.SimpleStrikeNPC(damage, npc.Center.X >= at.X ? 1 : -1, false, A.ExplosionKnockback, DamageClass.Melee);
-                if (npc.active)   // the hit may have killed it
-                    npc.AddBuff(BuffID.Bleeding, A.BleedingTicks);   // AddBuff syncs itself
-            });
-        }
-
         // The loop is over (owner's client): closed on its enemy, or broken. The yoyo goes back to the hand either way.
-        void Finish(YoyoProjectile yoyo, ArteryProjectile artery, bool closed)
+        void Finish(YoyoProjectile yoyo, LoopYoyoProjectile loop, bool closed)
         {
             ended = true;
+            NPC target = FindTarget();   // null when the enemy died
             if (closed)
-            {
-                artery.CloseLoop(lastEnemy);
-                Explode(yoyo, lastEnemy);
-            }
+                loop.CloseLoop(lastEnemy);
             else
-                artery.BreakLoop();
+                loop.BreakLoop();
+            OnLoopEnd(yoyo, target, lastEnemy, closed);
             yoyo.BeginReturn();
         }
 
@@ -262,12 +257,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             {
                 // A cubic curve: it starts with the speed the yoyo had and ends on the string line moving toward the player.
                 float u = t / (float)catchTicks;
-                radius = baseRadius * ArteryLoop.Smooth(u);
+                radius = baseRadius * YoyoLoop.Smooth(u);
                 float distance = LoopDistance(baseRadius + A.LoopGapPx, baseRadius, handDistance);
                 Vector2 end = lastEnemy - along * distance;
                 Vector2 c1 = loopStart + loopStartVel * (catchTicks / 3f);
                 Vector2 c2 = end + along * (A.LoopWalkSpeedPx * catchTicks / 3f);
-                point = ArteryLoop.Bezier(loopStart, c1, c2, end, u);
+                point = YoyoLoop.Bezier(loopStart, c1, c2, end, u);
             }
             else
             {
@@ -296,8 +291,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
                 return false;
             points.Clear();
             Vector2 yoyoCenter = yoyo.Projectile.Center;
-            ArteryLoop.AddLine(points, yoyo.Hand, yoyoCenter, A.LoopStringStepPx);
-            ArteryLoop.AddNoose(points, yoyoCenter, lastEnemy, radius, A.LoopStringStepPx, A.LoopArcSamples);
+            YoyoLoop.AddLine(points, yoyo.Hand, yoyoCenter, A.LoopStringStepPx);
+            YoyoLoop.AddNoose(points, yoyoCenter, lastEnemy, radius, A.LoopStringStepPx, A.LoopArcSamples);
             return true;
         }
 

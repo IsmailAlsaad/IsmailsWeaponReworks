@@ -67,6 +67,7 @@ Projectiles: {
 	AmazonBarbedCoilProjectile.DisplayName: Amazon Barbed Coil Projectile
 	AmazonBarbedVineProjectile.DisplayName: Amazon Barbed Vine Projectile
 	ArteryProjectile.DisplayName: Artery Projectile
+	MalaiseProjectile.DisplayName: Malaise Projectile
 }
 
 Buffs: {

@@ -2,15 +2,15 @@
 using System;
 using System.Collections.Generic;
 
-namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
+namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 {
     /// <summary>
-    /// The geometry of the Artery's loop (pure math, no state): the smooth curve the yoyo takes from where it caught the enemy back to the
+    /// The geometry of the Man on Trapeze loop (pure math, no state): the smooth curve the yoyo takes from where it caught the enemy back to the
     /// string line, and the noose, the taut string around the enemy.
     /// THE NOOSE: the yoyo is the apex; the string leaves it along one tangent of a circle around the enemy, follows the far side of the
     /// circle and comes back along the other tangent. That is exactly the shape of a pulled-tight loop, and shrinking the circle shrinks it.
     /// </summary>
-    public static class ArteryLoop
+    public static class YoyoLoop
     {
         // A cubic Bezier curve (u from 0 to 1).
         public static Vector2 Bezier(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float u)

@@ -8,7 +8,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
     /// to read and change; the part after it holds the numbers of its trick (IForwardPassTuning) and anything else only this yoyo has. A new yoyo
     /// copies this file and keeps the whole list.
     /// </summary>
-    public class ArteryTuning : YoyoTuning, IForwardPassTuning
+    public class ArteryTuning : YoyoTuning, IForwardPassTuning, ILoopTuning
     {
         // ======== general parameters (see YoyoTuning) ========
         // His own art, when it exists (for example "IsmailsWeaponReworks/Content/Weapons/Yoyos/WoodenYoyo/WoodenYoyoProjectile"); null or
