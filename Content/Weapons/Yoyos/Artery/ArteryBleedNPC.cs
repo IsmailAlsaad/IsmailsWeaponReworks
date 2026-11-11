@@ -14,14 +14,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
     /// </summary>
     public class ArteryBleedNPC : GlobalNPC
     {
-        readonly ArteryTuning tuning = new ArteryTuning();
-
         public override void UpdateLifeRegen(NPC npc, ref int damage)
         {
             if (!npc.HasBuff(BuffID.Bleeding))
                 return;
             if (npc.lifeRegen > 0)
                 npc.lifeRegen = 0;
+            ArteryTuning tuning = new ArteryTuning();   // only built while an enemy bleeds (a GlobalNPC is shared by every enemy, so it cannot hold fields)
             int perSecond = Math.Max(1, (int)tuning.BleedDamagePerSecond);
             npc.lifeRegen -= perSecond * 2;   // lifeRegen counts half-life per second
             if (damage < perSecond)
