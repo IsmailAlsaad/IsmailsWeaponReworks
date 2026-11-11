@@ -54,7 +54,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
             {
                 int samples = Math.Max(1, tuning.HoneyTrailSamplesPerTick);
                 for (int i = 1; i < samples; i++)
-                    trail.Add(hiveTrick.PositionAt(this, OutTicks - 1 + i / (float)samples));
+                    trail.Add(hiveTrick.PathPoint(this, i / (float)samples));
                 trail.Add(Projectile.Center);   // the newest point is exactly where the yoyo is
             }
             trail.Tick();

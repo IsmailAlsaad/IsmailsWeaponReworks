@@ -80,6 +80,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public float SpinAngle => spin;   // how far the sprite is turned (a yoyo that draws on top of its sprite follows it)
         public Vector2 Hand => hand;      // where the string is held (a trick that shapes the string reads it)
 
+        // The hand as it is NOW: 'hand' was found when the arm was last posed (before the player moved this tick), so a circle round it lags
+        // a running player by a tick; this adds how far the player has moved since. A trick that circles the hand uses this.
+        public Vector2 HandFollowed => hand + (Owner.MountedCenter - handAnchor);
+
         // ---- synced (SendExtraAI / ReceiveExtraAI) ----
         int throwSerial;
         int hitSerial;
@@ -107,6 +111,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         float armWorld;                // the arm's angle in the player's own frame (down = +90 degrees)
         bool armReady;
         Vector2 hand;                  // where the string is held
+        Vector2 handAnchor;            // where the player was when 'hand' was found (HandFollowed)
         YoyoAfterimages afterimages;   // visual only; the yoyo's tuning switches it on
         Asset<Texture2D> custom;
         bool customChecked;
@@ -577,6 +582,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             }
             //if (owner.mount.Active && Main.GameUpdateCount % 30 == 0)
             //    Main.NewText($"rot {owner.fullRotation:0.00} off {owner.mount.PlayerOffset} offHb {owner.mount.PlayerOffsetHitbox} gfxY {owner.gfxOffY} arm {armWorld:0.00} hand0 {HeldSwordPose.HandWorld(owner, armWorld) - owner.position} hand {hand - owner.position}");
+            handAnchor = owner.MountedCenter;
             owner.heldProj = Projectile.whoAmI; // also ends the projectile when the player swaps items
         }
 

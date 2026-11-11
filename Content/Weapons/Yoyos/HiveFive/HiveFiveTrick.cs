@@ -12,6 +12,9 @@
         {
         }
 
+        // A charged Around the World makes more turns (HiveFiveTuning.ChargedSpins); an uncharged one the usual AroundSpins.
+        protected override int Spins => chargedSpin ? ((HiveFiveTuning)T).ChargedSpins : base.Spins;
+
         // True while a charged spin is flying: the projectile lays the honey trail.
         public bool TrailActive => chargedSpin && !stopped && !finished;
 

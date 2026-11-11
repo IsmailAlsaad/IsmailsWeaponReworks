@@ -73,7 +73,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             float extension = Extension(yoyo);
             float drop = Math.Min(S.SleeperDropPx, T.RopeLength()) * extension * yoyo.GravDir;   // toward the feet (up when gravity is flipped)
             float sway = (float)Math.Sin(yoyo.OutTicks * 0.12f) * S.SleeperSwayPx * extension;
-            Vector2 target = yoyo.Hand + new Vector2(sway, drop).RotatedBy(yoyo.Tilt);   // "down" is down for the (tilted) player
+            Vector2 target = yoyo.HandFollowed + new Vector2(sway, drop).RotatedBy(yoyo.Tilt);   // "down" is down for the (tilted) player
             yoyo.Vel = target - yoyo.Projectile.Center;
             yoyo.Projectile.Center = target;
 

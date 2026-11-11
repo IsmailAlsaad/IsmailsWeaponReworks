@@ -38,7 +38,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
         public override Color RopeOutlineColor => new Color(140, 84, 12);
 
         // ---- the yoyo body ----
-        public override int HitboxSize => 16;
+        public override int HitboxSize => 16;               // the yoyo's hitbox (a square, in pixels) and the width of its swept hit line. The Hive-Five only hurts while it is out (the spin), so this is the size of the spinning yoyo's hit; the sprite is not scaled. Try 28 to 36. It is read when the yoyo appears: swap the item away and back (or reload) after a change
         public override int HitCooldownTicks => 14;         // the same enemy can be hit again after this long
         public override float ArmFollow => 0.4f;            // how fast the arm turns to its target pose (0..1 per tick)
         public override int SyncEveryTicks => 6;            // the owner re-sends the yoyo's position this often while it is out
@@ -104,6 +104,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
         public float AroundSpriteSpin => 0.8f;                    // how fast the yoyo's own sprite turns (radians per tick at full speed)
         public bool AroundThroughBlocks => true;                  // the yoyo passes through blocks
         public int AroundWhooshPerTurn => 2;                      // whooshes per turn
+        public int ChargedSpins => 4;                             // whole turns of a CHARGED Around the World (a charge from the Sleeper hold)
 
         // ---- Sleeper hold (right click) ----
         public float SleeperDropPx => 34f;                        // how far below the hand the yoyo hangs while it is held
@@ -119,8 +120,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
         public float HoneyTrailGrid => 2f;                        // pixel size of the trail
         public int HoneyTrailLifeTicks => 16;                     // how long a point of the trail lives (the trail's length: at top speed about 16 ticks is most of a turn)
         public float HoneyTrailWidth => 9f;                       // its widest, at the yoyo (it thins to a point at the tail)
-        public int HoneyTrailSamplesPerTick => 3;                 // points laid per tick along the circle (more = a smoother ring)
-        public float HoneyTrailJitter => 0.5f;                    // ragged edge in pixels
+        public int HoneyTrailSamplesPerTick => 4;                 // points laid per tick along the circle (more = a smoother ring)
+        public float HoneyTrailJitter => 0.25f;                   // ragged edge in pixels
         public float HoneyTrailDripChance => 0.3f;                // per tick: a honey drop falls from a random point of the trail
         public Color HoneyTrailOuterColor => new Color(235, 140, 20, 0);   // the wide outer glow (alpha 0 = additive)
         public Color HoneyTrailCoreColor => new Color(255, 226, 120, 0);   // the bright core

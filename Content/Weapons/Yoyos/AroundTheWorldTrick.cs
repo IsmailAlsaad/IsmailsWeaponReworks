@@ -53,6 +53,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         protected bool finished;    // the last spin has ended (the owner pulls the yoyo back)
         protected bool stopped;     // a block ended the spin on this machine (only when AroundThroughBlocks is false)
         int lastWhoosh;
+        Vector2 pivotPrev;          // the centre of the circle (the hand) at the last tick and at this one: a trail blends between them
+        Vector2 pivotNow;
 
         public AroundTheWorldTrick(YoyoTuning tuning) : base(tuning)
         {
@@ -66,6 +68,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public float Angle => angle;
         public float Radius => radius;
         public float Speed01 => speed01;
+
+        // How many whole turns this throw makes (a yoyo whose throw can be charged overrides it).
+        protected virtual int Spins => A.AroundSpins;
 
         // The circle's full radius: the string's length minus the margin.
         protected float FullRadius()
@@ -82,6 +87,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             finished = false;
             stopped = false;
             lastWhoosh = 0;
+            pivotNow = yoyo.HandFollowed;
+            pivotPrev = pivotNow;
             yoyo.Vel = Vector2.Zero;
         }
 
@@ -89,7 +96,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         // whole turn starts, then that turn slows down (linearly) while the radius shrinks to the catch radius.
         void Sample(float ticks, out float theta, out float r, out float w, out bool done)
         {
-            int spins = Math.Max(1, A.AroundSpins);
+            int spins = Math.Max(1, Spins);
             float top = Math.Max(0.05f, A.AroundTopSpeed);
             float start = MathHelper.Clamp(A.AroundStartSpeed, 0.02f, top);
             float end = MathHelper.Clamp(A.AroundEndSpeed, 0.02f, top);
@@ -141,7 +148,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             Sample(yoyo.OutTicks, out angle, out radius, out omega, out finished);
             speed01 = MathHelper.Clamp(omega / Math.Max(0.05f, A.AroundTopSpeed), 0f, 1f);
 
-            Vector2 target = yoyo.Hand + Offset(yoyo, angle, radius);
+            pivotPrev = pivotNow;
+            pivotNow = yoyo.HandFollowed;   // the hand as it is now, so a running player does not leave the circle a tick behind
+            Vector2 target = pivotNow + Offset(yoyo, angle, radius);
             Vector2 delta = target - yoyo.Projectile.Center;
             if (A.AroundThroughBlocks)
             {
@@ -185,11 +194,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             return new Vector2(yoyo.Side * (float)Math.Cos(theta), yoyo.GravDir * (float)Math.Sin(theta)) * r;
         }
 
-        // Where the yoyo is 'ticks' ticks after the throw (fractional ticks are fine): a trail lays points between two ticks with it.
-        public Vector2 PositionAt(YoyoProjectile yoyo, float ticks)
+        // A point of the yoyo's path inside this tick: fraction 0 = where it was at the start of the tick, 1 = where it is now. The circle's
+        // centre moves with the player, so the centre is blended between the two ticks too: the points of a trail then follow the real path
+        // (no zigzag while the player runs) and the last one is exactly the yoyo.
+        public Vector2 PathPoint(YoyoProjectile yoyo, float fraction)
         {
-            Sample(Math.Max(0f, ticks), out float theta, out float r, out _, out _);
-            return yoyo.Hand + Offset(yoyo, theta, r);
+            Sample(Math.Max(0f, yoyo.OutTicks - 1 + fraction), out float theta, out float r, out _, out _);
+            return Vector2.Lerp(pivotPrev, pivotNow, fraction) + Offset(yoyo, theta, r);
         }
 
         // The arm does not follow the yoyo round: it tilts up on the upper half of the circle and down on the lower half, and is only
