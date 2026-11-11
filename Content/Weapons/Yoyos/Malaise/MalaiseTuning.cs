@@ -147,13 +147,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
         public float HookArriveScale => 0.33f;                    // how straight it arrives at the hand (fraction of the distance, 0 = a sharp turn)
 
         // ---- Rock the Baby: the pendulum ----
-        public int PendulumStartTicks => 84;                      // one whole swing (there and back) at the beginning ...
-        public int PendulumEndTicks => 32;                        // ... and after PendulumSpeedUpTicks (half of it must stay above the 14 tick hit cooldown to hit every end)
-        public int PendulumSpeedUpTicks => 240;                   // how long the speed-up takes
+        public int PendulumStartTicks => 40;                      // one whole swing (there and back) at the beginning ...
+        public int PendulumEndTicks => 20;                        // ... and after PendulumSpeedUpTicks (half of it must stay above the 14 tick hit cooldown to hit every end)
+        public int PendulumSpeedUpTicks => 120;                   // how long the speed-up takes
         public int PendulumRampInTicks => 16;                     // the pendulum string grows from nothing to its length over this long
-        public float PendulumSwing => 1f;                         // 1 = the yoyo swings to the center of each enemy, less = stops short, more = overshoots
+        public float PendulumSwing => 1.2f;                         // 1 = the yoyo swings to the center of each enemy, less = stops short, more = overshoots
         public int PendulumMinTicks => 45;                        // letting go of the button ends it only after it has swung this long
-        public int MaxHoldTicks => 360;                           // it ends by itself after this long (60 = 1 second)
+        public int MaxHoldTicks => 160;                           // it ends by itself after this long (60 = 1 second)
         public float BreakStretch => 0.97f;                       // it ends when a side of the triangle is longer than this fraction of the string
         public float RockSpinSpeed => 0.5f;                       // radians per tick the yoyo spins while it is on the string
         public bool FliesThroughBlocks => true;                   // the yoyo ignores blocks while it homes, hooks and swings (false = blocks stop it)
