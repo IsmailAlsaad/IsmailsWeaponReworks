@@ -65,7 +65,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
 
             // The golden outline: shown while the yoyo is charged, and while the Sleeper hold has reached max speed (the same moment as the chime).
             bool holdReady = State == YoyoState.Out && UsingRight && sleeperTrick != null && sleeperTrick.Ready;
-            float want = Charged || holdReady ? 1f : 0f;
+            bool want = Charged || holdReady ? true : false;
             chargeOutline.Tick(want, tuning);
             float outlineShown = chargeOutline.Shown;
             if (outlineShown > 0.05f)

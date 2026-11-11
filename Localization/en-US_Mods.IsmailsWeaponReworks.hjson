@@ -70,6 +70,7 @@ Projectiles: {
 	MalaiseProjectile.DisplayName: Malaise Projectile
 	HiveFiveProjectile.DisplayName: Hive-Five Projectile
 	ValorProjectile.DisplayName: Valor Projectile
+	CascadeProjectile.DisplayName: Cascade Projectile
 }
 
 Buffs: {

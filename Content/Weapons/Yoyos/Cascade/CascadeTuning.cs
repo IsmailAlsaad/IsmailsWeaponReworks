@@ -19,7 +19,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Cascade
         // The string's maximum length in pixels (16 px = 1 tile). It is also how far a throw can reach: Pop the Clutch's passes go this far
         // minus ForwardPassReachMargin, Around the World's circle has this radius minus its margin, and a yoyo that is out comes back when it
         // is this far from the hand. Every yoyo lists its own value.
-        public override float RopeLengthPx => 240f;         // A GUESS: verify ProjectileID.Sets.YoyosMaximumRange[ProjectileID.Cascade] in the vanilla source and tune by feel
+        public override float RopeLengthPx => 300f;         // A GUESS: verify ProjectileID.Sets.YoyosMaximumRange[ProjectileID.Cascade] in the vanilla source and tune by feel
 
         // ---- rope (verlet, visual only: every machine simulates its own) ----
         public override int RopePoints => 16;               // points along the string (more = smoother and a bit slower)
