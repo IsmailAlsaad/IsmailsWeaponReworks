@@ -37,9 +37,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Amazon
         public override int RopeSubdivisions => 4;          // smoothing: curve pieces drawn between two rope points
         public override float RopeWidth => 1.8f;
         public override float RopeOutlineWidth => 3.2f;
-        public override Color RopeColor => new Color(238, 228, 205);
-        public override Color RopeAltColor => new Color(214, 200, 172); // the twist: every other piece of the string
-        public override Color RopeOutlineColor => new Color(92, 74, 54);
+        public override Color RopeColor => new Color(96, 148, 14);
+        public override Color RopeAltColor => new Color(71, 109, 11); // the twist: every other piece of the string
+        public override Color RopeOutlineColor => new Color(40, 65, 1);
 
         // ---- the yoyo body ----
         public override int HitboxSize => 16;

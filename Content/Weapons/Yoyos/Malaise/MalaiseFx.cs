@@ -27,7 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
             if (Main.dedServ)
                 return;
             SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.55f, Pitch = 0.1f, PitchVariance = 0.1f }, position);
-            SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.3f, Pitch = -0.4f, PitchVariance = 0.1f }, position);
+            SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.5f, Pitch = -0.4f, PitchVariance = 0.1f }, position);
             for (int i = 0; i < 4; i++)
                 Wisp(position, Main.rand.NextVector2Circular(1.5f, 1.5f), Main.rand.NextFloat(0.9f, 1.3f));
         }
@@ -61,7 +61,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Malaise
             if (Main.dedServ)
                 return;
             SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.5f, Pitch = -0.6f, PitchVariance = 0.1f }, position);
-            SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.6f, Pitch = -0.7f, PitchVariance = 0.1f }, position);
+            SoundEngine.PlaySound(SoundID.Item8 with { Volume = 1f, Pitch = -0.3f, PitchVariance = 0.1f }, position);
             int ring = 24;
             for (int i = 0; i < ring; i++)
             {
