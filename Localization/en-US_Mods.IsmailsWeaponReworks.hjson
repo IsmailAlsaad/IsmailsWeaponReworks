@@ -71,6 +71,7 @@ Projectiles: {
 	HiveFiveProjectile.DisplayName: Hive-Five Projectile
 	ValorProjectile.DisplayName: Valor Projectile
 	CascadeProjectile.DisplayName: Cascade Projectile
+	CascadeBlastProjectile.DisplayName: Cascade Blast Projectile
 }
 
 Buffs: {
