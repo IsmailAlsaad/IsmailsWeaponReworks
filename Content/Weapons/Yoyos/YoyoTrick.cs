@@ -35,6 +35,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         // False: letting go of the button does not cut the trick short (it runs to its end by itself).
         public virtual bool RetractsOnRelease => true;
 
+        // A release this soon after the throw (in ticks) is ignored, so a tap still throws. The yoyo's tuning value by default; Pop the Clutch
+        // answers 0: a tap must CANCEL the wind-up.
+        public virtual int ReleaseGraceTicks => T.ReleaseGraceTicks;
+
         // False: the yoyo does not hurt while it is out (the Sleeper hold's charging). Read by YoyoProjectile.CanDamage.
         public virtual bool HurtsWhileOut => true;
 

@@ -13,6 +13,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Valor
         // Bright chips on a hit and on a block (change ChipDust for another dust).
         protected override int ChipDust => DustID.Iron;
 
+        // How many chips fly off per enemy hit (the general YoyoFx puts out 8).
+        protected virtual int ChipsPerHit => 3;
+
+        // An enemy hit: just a few chips (the general version is a big burst).
+        public override void Hit(Vector2 position, int hitNumber)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < ChipsPerHit; i++)
+                Chip(position, Main.rand.NextVector2Circular(3.5f, 3.5f), Main.rand.NextFloat(0.8f, 1.2f));
+        }
+
         // The wind-up starts (YoyoFx.Throw is called when the throw begins): a soft, low swish as the hand goes up.
         public override void Throw(Vector2 position, int side)
         {

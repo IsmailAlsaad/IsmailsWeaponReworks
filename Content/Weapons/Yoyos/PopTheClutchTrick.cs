@@ -27,6 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         float PopRecallMaxSpeed => 26f;       // ... up to this speed (px per tick)
         float PopRecallArrivePx => 14f;       // back at the player when this close (the next pass starts there)
         bool PopResetHitsPerPass => true;     // every pass starts with fresh hit cooldowns, so the second swing can hit the same enemy again
+        bool PopHoldToWindup => true;         // the button must be held through the wind-up: letting go before it ends cancels it (the yoyo goes back to the hand); false = a tap is enough and the wind-up always finishes
     }
 
     class PopTheClutchDefaults : IPopTheClutchTuning
@@ -40,8 +41,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
     /// and bulges down (an ellipse each, out toward the aim and back to the player). The aim is taken when the wind-up ends, so the cursor
     /// can be moved while it spins. A solid block does NOT end the combo: it only cuts that swing short: the yoyo is pulled straight back to
     /// the player (still hurting on the way) and the next swing starts from there. A block in the LAST swing ends the combo like the Forward
-    /// Pass (the normal pull back, still hurting). Letting go of the button does not cut it short; a held button starts the next combo after
-    /// the catch.
+    /// Pass (the normal pull back, still hurting). The button must be HELD through the wind-up: letting go before it ends cancels the
+    /// combo (PopHoldToWindup; the yoyo just goes back to the hand), after that letting go does not cut it short. A held button starts the
+    /// next combo after the catch. The player can turn round (the cursor's side) at any time while it runs.
     /// MULTIPLAYER: the owner decides the click, the aim and the hits. The wind-up and every pass are a function of the ticks since the
     /// throw (OutTicks), the side and the aim, so every machine places the yoyo itself. The owner's aim is chosen at the end of the wind-up and
     /// travels in the existing extra sync (YoyoProjectile.Aim, zero until chosen: the other machines keep the yoyo dangling until it arrives).
@@ -60,6 +62,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         protected float windup01;       // how far the wind-up is (0..1)
         protected float recallSpeed;    // the pull back after a block
         protected Vector2 launchOffset; // where the dangling yoyo was relative to the player when the first pass started
+        protected float dangleSide;     // the side the dangle spot is behind, eased toward the player's facing so turning round swings it over smoothly (visual, local)
 
         public PopTheClutchTrick(YoyoTuning tuning) : base(tuning)
         {
@@ -68,7 +71,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         public override string Name => "Pop the Clutch";
         public override int MaxHits => int.MaxValue;
-        public override bool RetractsOnRelease => false;
+        public override bool RetractsOnRelease => Pop.PopHoldToWindup && phase == PopPhase.Windup;   // letting go during the wind-up cancels it; after that the combo runs to its end
+        public override int ReleaseGraceTicks => 0;                                                  // a tap cancels too: no grace
+        public override bool FollowsCursorSide => true;                                              // the player can turn round (the cursor's side) while winding up and swinging
         public override bool HurtsWhileOut => phase != PopPhase.Windup;   // the dangling yoyo behind the back is harmless
 
         public float Windup01 => windup01;
@@ -84,6 +89,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             windup01 = 0f;
             recallSpeed = 0f;
             launchOffset = Vector2.Zero;
+            dangleSide = yoyo.Side;
             stopped = false;
             comingBack = false;
             blockedComingBack = false;
@@ -121,7 +127,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             float lower = 1f - MathHelper.Clamp(ticks / (float)Math.Max(1, Pop.PopDangleDropTicks), 0f, 1f);
             lower = 1f - lower * lower * lower;   // eased out: it drops quickly and settles
             float sway = (float)Math.Sin(ticks * 0.35f) * Pop.PopDangleSwayPx * lower;
-            Vector2 local = new Vector2(-yoyo.Side * Pop.PopDangleBackPx + sway, yoyo.GravDir * Pop.PopDangleDownPx);   // behind and toward the feet
+            dangleSide += (yoyo.Side - dangleSide) * 0.35f;   // turning round: the dangle spot swings over to the new back instead of jumping
+            Vector2 local = new Vector2(-dangleSide * Pop.PopDangleBackPx + sway, yoyo.GravDir * Pop.PopDangleDownPx);   // behind and toward the feet
             Vector2 dangle = yoyo.HandFollowed + local.RotatedBy(yoyo.Tilt);
             Vector2 target = Vector2.Lerp(yoyo.Owner.MountedCenter, dangle, lower);
             yoyo.Vel = target - yoyo.Projectile.Center;

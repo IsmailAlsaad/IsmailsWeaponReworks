@@ -48,6 +48,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public override string Name => "Sleeper hold";
         public override int MaxHits => int.MaxValue;
         public override bool RetractsOnRelease => true;
+        public override bool FollowsCursorSide => true;   // the player can turn round (the cursor's side) while holding; the arm and the yoyo follow
         public override bool HurtsWhileOut => false;
 
         public float Charge01 => charge01;

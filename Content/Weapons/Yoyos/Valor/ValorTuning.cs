@@ -107,6 +107,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Valor
         public float PopRecallMaxSpeed => 26f;                    // ... up to this speed
         public float PopRecallArrivePx => 14f;                    // back at the player when this close (the next pass starts there)
         public bool PopResetHitsPerPass => true;                  // every pass starts with fresh hit cooldowns
+        public bool PopHoldToWindup => true;                      // the button must be held through the wind-up: letting go before it ends cancels it (the yoyo goes back to the hand)
 
         // ---- the ellipse of every pass (IForwardPassTuning; ForwardPassTicks is not used by Pop the Clutch, PopPassTicks is) ----
         public int ForwardPassTicks => 36;                        // (unused here)

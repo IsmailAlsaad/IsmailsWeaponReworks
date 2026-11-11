@@ -433,7 +433,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 return;
             if (Vector2.Distance(hand, Projectile.Center) >= ropeMax)
                 BeginReturn();                                           // the string is at full length
-            else if (trick.RetractsOnRelease && !ButtonHeld(owner) && OutTicks > Tuning.ReleaseGraceTicks)
+            else if (trick.RetractsOnRelease && !ButtonHeld(owner) && OutTicks > trick.ReleaseGraceTicks)
                 BeginReturn();                                           // the button was let go
         }
 
