@@ -63,6 +63,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 Vector2 direction = toCursor.LengthSquared() > 1f ? Vector2.Normalize(toCursor) : new Vector2(yoyo.Side, 0f);
                 yoyo.Aim = direction * reach;
             }
+            PrepareEllipse(yoyo);
+            yoyo.Vel = Vector2.Zero;
+        }
+
+        // Works out the ellipse (axis, half length, the side it bulges to) from yoyo.Aim. A pattern that throws more than one pass (Pop the Clutch) calls it itself.
+        protected void PrepareEllipse(YoyoProjectile yoyo)
+        {
             float length = System.Math.Max(1f, yoyo.Aim.Length());
             axis = yoyo.Aim / length;
             halfReach = length * 0.5f;
@@ -72,7 +79,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 lean = Vector2.Dot(bulge, new Vector2(yoyo.Side, 0f));        // aiming straight up or down: bulge toward the throwing side
             if (lean < 0f)
                 bulge = -bulge;
-            yoyo.Vel = Vector2.Zero;
+        }
+
+        // The yoyo's offset from the player's centre at 'eased' (0..1, one whole ellipse) along the prepared ellipse. bulgeSign 1 = the usual
+        // (upper) side, -1 = the mirrored (lower) side.
+        protected Vector2 EllipseOffset(float eased, float bulgeSign)
+        {
+            float theta = eased * MathHelper.TwoPi;
+            return axis * (halfReach * (1f - (float)System.Math.Cos(theta)))
+                 + bulge * (bulgeSign * halfReach * P.ForwardPassWidthRatio * (float)System.Math.Sin(theta));
         }
 
         public override void Tick(YoyoProjectile yoyo)
@@ -85,11 +100,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
             float t = MathHelper.Clamp(yoyo.OutTicks / (float)System.Math.Max(1, P.ForwardPassTicks), 0f, 1f);
             float eased = MathHelper.Lerp(t, t * t * (3f - 2f * t), P.ForwardPassEase);
-            float theta = eased * MathHelper.TwoPi;
             comingBack = eased > 0.5f;
-            Vector2 offset = axis * (halfReach * (1f - (float)System.Math.Cos(theta)))
-                           + bulge * (halfReach * P.ForwardPassWidthRatio * (float)System.Math.Sin(theta));
-            Vector2 target = yoyo.Owner.MountedCenter + offset;
+            Vector2 target = yoyo.Owner.MountedCenter + EllipseOffset(eased, 1f);
 
             YoyoContact contact = yoyo.Move(target - yoyo.Projectile.Center, P.ForwardPassThroughPlatforms);
             if (contact.Blocked)

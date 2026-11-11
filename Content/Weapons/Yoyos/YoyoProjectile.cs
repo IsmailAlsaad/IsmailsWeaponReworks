@@ -252,7 +252,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
             // The wrap: while out, the string bends around block corners (corner points fixed to the tiles). None while idle (a straight line)
             // or returning (the yoyo is pulled straight through blocks, a wrap there would only flicker).
-            if (State == YoyoState.Out && Tuning.RopeWraps)
+            if (State == YoyoState.Out && Tuning.RopeWraps && trick.WrapsString)
                 wrap.Update(hand, Projectile.Center, Tuning.RopeWrapMaxPivots, Tuning.RopeWrapClearancePx);
             else
                 wrap.Clear();

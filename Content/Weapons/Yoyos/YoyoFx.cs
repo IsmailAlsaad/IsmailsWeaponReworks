@@ -102,6 +102,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.4f, Pitch = 0.4f, PitchVariance = 0.1f }, position);
         }
 
+        // Pop the Clutch: the wind-up ends and the first pass is thrown ('direction' = the aim): a pop and a burst of chips along the throw.
+        public virtual void ClutchPop(Vector2 position, Vector2 direction)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.55f, Pitch = 0.8f }, position);
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.6f, Pitch = 0.5f, PitchVariance = 0.1f }, position);
+            Vector2 forward = direction.LengthSquared() > 0.01f ? Vector2.Normalize(direction) : Vector2.UnitX;
+            for (int i = 0; i < 8; i++)
+                Chip(position, forward * Main.rand.NextFloat(2f, 6f) + Main.rand.NextVector2Circular(1.5f, 1.5f), Main.rand.NextFloat(0.8f, 1.2f));
+        }
+
+        // Pop the Clutch: the next pass starts (passIndex 1 = the second one): a quick swish, a little higher each time.
+        public virtual void ClutchSwing(Vector2 position, int passIndex)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.5f, Pitch = 0.55f + 0.15f * passIndex, PitchVariance = 0.08f }, position);
+        }
+
         // Caught: a small pop.
         public virtual void Catch(Vector2 position)
         {

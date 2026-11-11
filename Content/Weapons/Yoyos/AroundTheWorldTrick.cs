@@ -64,6 +64,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public override string Name => "Around the World";
         public override int MaxHits => int.MaxValue;
         public override bool RetractsOnRelease => false;
+        public override bool WrapsString => !A.AroundThroughBlocks;   // the string follows the yoyo through blocks too (a yoyo whose tuning has RopeWraps on keeps wrapping for its other tricks)
 
         public float Angle => angle;
         public float Radius => radius;

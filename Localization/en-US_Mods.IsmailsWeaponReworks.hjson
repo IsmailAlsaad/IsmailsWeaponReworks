@@ -69,6 +69,7 @@ Projectiles: {
 	ArteryProjectile.DisplayName: Artery Projectile
 	MalaiseProjectile.DisplayName: Malaise Projectile
 	HiveFiveProjectile.DisplayName: Hive-Five Projectile
+	ValorProjectile.DisplayName: Valor Projectile
 }
 
 Buffs: {

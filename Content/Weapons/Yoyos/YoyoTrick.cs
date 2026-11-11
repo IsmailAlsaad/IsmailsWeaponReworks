@@ -38,6 +38,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         // False: the yoyo does not hurt while it is out (the Sleeper hold's charging). Read by YoyoProjectile.CanDamage.
         public virtual bool HurtsWhileOut => true;
 
+        // False: the string does not bend around block corners while this trick runs, even when the yoyo's tuning has RopeWraps on (Around the
+        // World passes through blocks, so its string does too; the Forward Pass family wraps).
+        public virtual bool WrapsString => true;
+
         // True while the string should be pulled taut and straight even though the yoyo is still out (Forward Pass: its way back). Visual only.
         public virtual bool RopeTaut(YoyoProjectile yoyo)
         {
