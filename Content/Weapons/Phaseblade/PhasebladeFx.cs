@@ -14,16 +14,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.7f, Pitch = up ? 0.2f : 0f, PitchVariance = 0.1f }, position);
-            if (spin)
-                SoundEngine.PlaySound(SoundID.Item15 with { Volume = 0.45f, Pitch = 0.35f, PitchVariance = 0.1f }, position);
+            //SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.7f, Pitch = up ? 0.2f : 0f, PitchVariance = 0.1f }, position);
+            //if (spin)
+                SoundEngine.PlaySound(SoundID.Item15 with { Volume = 0.45f, Pitch = 0.35f, PitchVariance = 0.2f }, position);
         }
 
         public static void PlayLoop(Vector2 position)
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.45f, Pitch = -0.2f, PitchVariance = 0.1f }, position);
+            //SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.45f, Pitch = -0.2f, PitchVariance = 0.1f }, position);
         }
 
         // ---- dust ----

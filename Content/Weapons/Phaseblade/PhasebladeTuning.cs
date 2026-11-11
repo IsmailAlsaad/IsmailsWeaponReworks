@@ -18,7 +18,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public static float SpinKnockbackMultiplier => 1.2f;
 
         // ---- blade ----
-        public static float BladeLength => 48f;       // hand to tip, in pixels at scale 1
+        public static float BladeLength => 70;       // hand to tip, in pixels at scale 1
         public static float SwordScale => 1.1f;
         public static float HitWidth => 18f;          // width of the blade's hit line at scale 1
 
@@ -31,11 +31,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public static int LoopTicks => 16;            // the windup of swing 2: the arm loops over the head
         public static float MinLoopDeg => 120f;       // the loop is at least this far round (so a short hop does not skip it)
         public static int SwingTicks => 7;            // the strike of swing 1
-        public static int SpinSwingTicks => 9;        // the strike of swings 2 and 3
+        public static int SpinSwingTicks => 14;        // the strike of swings 2 and 3
         public static float SwingEasePower => 2.5f;   // 1 = even speed; higher = faster start and a longer deceleration
         public static float OvershootDeg => 6f;       // the strike carries this far past the end of the arc ...
         public static int RecoverTicks => 5;          // ... and settles back to the end of the arc over this long
-        public static int SpinTurns => 2;             // whole turns the blade spins about the hand during the strike of swings 2 and 3
+        public static int SpinTurns => 1;             // whole turns the blade spins about the hand during the strike of swings 2 and 3
         public static int SweepHitSteps => 8;         // the blade's hit test is checked at this many poses between two ticks (a spin is fast)
         public static float RestArmDeg => 10f;        // where a fresh combo starts
         public static float SwingHighDeg => -70f;     // top of the arc
@@ -54,7 +54,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public static float TrailExpandBy => 0.9f;    // the fan has fully expanded this far into the swing (0..1)
         public static float TrailInner => 0.3f;       // fully expanded, the fan reaches down the blade to this fraction of its length
         public static float TrailOuter => 0.95f;      // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
-        public static float TrailLagTicks => 0.8f;    // how many ticks the trail runs BEHIND the sprite (0 = exactly on it)
+        public static float TrailLagTicks => 0f;    // how many ticks the trail runs BEHIND the sprite (0 = exactly on it)
         public static int TrailSamplesPerTick => 10;  // trail points laid per tick (a spin is fast, so many keep the fan smooth)
 
         // ---- colors: one per vanilla Phaseblade (alpha 0 = additive) ----
