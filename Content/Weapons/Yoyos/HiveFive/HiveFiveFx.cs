@@ -20,7 +20,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
         {
             if (Main.dedServ)
                 return;
-            Terraria.Audio.SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.35f + 0.3f * speed01, Pitch = -0.2f + 0.7f * speed01, PitchVariance = 0.08f }, position);
+
+            Terraria.Audio.SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.15f + 0.3f * speed01, Pitch = -0.2f + 0.7f * speed01, PitchVariance = 0.08f }, position);
         }
 
         // THE SOUNDS AND DUST OF THE SLEEPER HOLD: called every tick while the yoyo is held down and spinning up (charge01: 0 to 1).
@@ -33,7 +34,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
                 Dust.NewDustPerfect(position, DustID.Honey, Main.rand.NextVector2Circular(1f, 1f) * (1f + 4f * charge01), 100, default, Main.rand.NextFloat(0.7f, 1.1f));
             int interval = System.Math.Max(3, (int)(14f - 10f * charge01));
             if (Main.GameUpdateCount % (uint)interval == 0)
-                Terraria.Audio.SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.2f + 0.2f * charge01, Pitch = -0.4f + 0.9f * charge01, PitchVariance = 0.05f }, position);
+                Terraria.Audio.SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.1f + 0.2f * charge01, Pitch = -0.4f + 0.9f * charge01, PitchVariance = 0.05f }, position);
         }
 
         // Max speed reached: a chime and a burst of honey.

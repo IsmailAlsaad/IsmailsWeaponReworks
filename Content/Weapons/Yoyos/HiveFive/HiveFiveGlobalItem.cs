@@ -14,6 +14,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
+            tooltips.RemoveAll(line => line.Mod == "Terraria" && line.Name.StartsWith("Tooltip"));
             tooltips.Add(new TooltipLine(Mod, "HiveFive1", "Left click to perform Around the World"));
             tooltips.Add(new TooltipLine(Mod, "HiveFive2", "Hold right click to charge the yoyo with a Sleeper hold"));
         }
