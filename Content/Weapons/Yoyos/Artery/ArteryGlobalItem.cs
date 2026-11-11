@@ -15,6 +15,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
             tooltips.Add(new TooltipLine(Mod, "Artery1", "Left click to perform Man on Trapeze"));
+            //tooltips.Add(new TooltipLine(Mod, "Artery2", "A closed loop shreds the enemy, then explodes in blood and makes enemies bleed"));
         }
     }
 }

@@ -115,5 +115,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         public float LoopStringStepPx => 5f;                      // the string is drawn in pieces about this long
         public int LoopArcSamples => 28;                          // points around the noose
         public float SnareMaxSizePx => 120f;                      // an enemy bigger than this is looped but not held (with bosses, immovable enemies and worm segments)
+
+        // ---- Man on Trapeze (left click): the shred and the blood explosion (patch A2) ----
+        // While the noose shrinks the enemy is shredded; when the loop closes (or the enemy dies inside it) the blood explosion goes off
+        // at the enemy's position and makes everything in it bleed. A broken loop (the enemy got out of reach) does neither.
+        public int ShredIntervalTicks => 10;                      // a shred hit this often while the noose shrinks (60 = once a second)
+        public float ShredDamageFraction => 0.4f;                 // each shred hit, as a fraction of the yoyo's damage
+        public float ShredShake => 0.5f;                          // camera punch per shred hit (0 = none), the owner only, like the yoyo's normal hit shake
+        public float ExplosionRadiusPx => 90f;                    // the blood explosion's radius (an enemy's own size counts toward the reach)
+        public float ExplosionDamageFraction => 3f;               // the explosion's hit, as a fraction of the yoyo's damage
+        public float ExplosionKnockback => 6f;                    // the explosion's knockback (away from its center)
+        public float ExplosionShake => 5f;                        // camera punch of the explosion, every machine (falls off with distance)
+        public int BleedingTicks => 360;                          // how long the Bleeding debuff lasts on enemies the explosion hit
+        public float BleedDamagePerSecond => 10f;                 // what Bleeding does to an enemy every second (vanilla Bleeding does nothing to enemies, ArteryBleedNPC adds it)
     }
 }

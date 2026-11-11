@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using Terraria;
+using Terraria.ID;
+using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
 {
@@ -158,7 +160,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             loopStartVel = startVel;
             if (!yoyo.IsOwner)
                 yoyo.Projectile.Center = start;   // the owner's position, where the curve began
-            (yoyo.Fx as ArteryFx)?.LoopCatch(start);
+            ArteryFx fx = yoyo.Fx as ArteryFx;
+            if (fx != null)
+            {
+                fx.ExplosionRadius = A.ExplosionRadiusPx;   // the close plays on every machine and has no tuning of its own
+                fx.ExplosionShake = A.ExplosionShake;
+                fx.LoopCatch(start);
+            }
         }
 
         void TickLoop(YoyoProjectile yoyo, ArteryProjectile artery)
@@ -190,8 +198,42 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
             if (npc != null && snared)
                 NpcHold.Hold(npc);   // every machine renews its own copy of the hold
 
+            Shred(yoyo, npc);
             loopTick++;
             Place(yoyo, hand, loopTick);
+        }
+
+        // ---- damage (patch A2) ----
+
+        // While the noose shrinks: a shred hit every ShredIntervalTicks. Every machine counts the same ticks and plays the blood; only the
+        // owner's client strikes (SimpleStrikeNPC syncs it). Called before loopTick goes up, so the first hit comes one interval after the catch ends.
+        void Shred(YoyoProjectile yoyo, NPC npc)
+        {
+            int catchTicks = Math.Max(1, A.LoopCatchTicks);
+            if (npc == null || loopTick <= catchTicks)
+                return;
+            if ((loopTick - catchTicks) % Math.Max(1, A.ShredIntervalTicks) != 0)
+                return;
+            (yoyo.Fx as ArteryFx)?.LoopShred(npc.Center, radius);
+            if (!yoyo.IsOwner)
+                return;
+            int damage = Math.Max(1, (int)(yoyo.Projectile.damage * A.ShredDamageFraction));
+            npc.SimpleStrikeNPC(damage, npc.Center.X >= yoyo.Hand.X ? 1 : -1, false, 0f, DamageClass.Melee);
+            YoyoShake.Hit(npc.Center, A.ShredShake);
+        }
+
+        // The loop closed (owner's client): the blood explosion hits every enemy in the circle and makes it bleed. The looped enemy is in it
+        // too unless it already died, in which case the explosion still goes off at the spot where it was. The visuals are not here: the
+        // close plays them on every machine (ArteryProjectile.CloseLoop -> ArteryFx.LoopClose).
+        void Explode(YoyoProjectile yoyo, Vector2 at)
+        {
+            int damage = Math.Max(1, (int)(yoyo.Projectile.damage * A.ExplosionDamageFraction));
+            AreaEffect.ForEachNpc(at, A.ExplosionRadiusPx, npc =>
+            {
+                npc.SimpleStrikeNPC(damage, npc.Center.X >= at.X ? 1 : -1, false, A.ExplosionKnockback, DamageClass.Melee);
+                if (npc.active)   // the hit may have killed it
+                    npc.AddBuff(BuffID.Bleeding, A.BleedingTicks);   // AddBuff syncs itself
+            });
         }
 
         // The loop is over (owner's client): closed on its enemy, or broken. The yoyo goes back to the hand either way.
@@ -199,7 +241,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.Artery
         {
             ended = true;
             if (closed)
+            {
                 artery.CloseLoop(lastEnemy);
+                Explode(yoyo, lastEnemy);
+            }
             else
                 artery.BreakLoop();
             yoyo.BeginReturn();
