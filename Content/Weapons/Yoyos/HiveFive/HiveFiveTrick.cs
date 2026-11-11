@@ -6,8 +6,26 @@
     /// </summary>
     public class HiveFiveTrick : AroundTheWorldTrick
     {
+        bool chargedSpin;   // this Around the World uses the charge (read from the synced flag when the throw starts, on every machine)
+
         public HiveFiveTrick(YoyoTuning tuning) : base(tuning)
         {
+        }
+
+        // True while a charged spin is flying: the projectile lays the honey trail.
+        public bool TrailActive => chargedSpin && !stopped && !finished;
+
+        public override void Begin(YoyoProjectile yoyo, bool authoritative)
+        {
+            base.Begin(yoyo, authoritative);
+            chargedSpin = yoyo.Charged;
+        }
+
+        // The owner's client: the spin has ended, so the charge is spent (the flag travels with the sync).
+        public override void OnRetract(YoyoProjectile yoyo)
+        {
+            if (chargedSpin)
+                yoyo.Charged = false;
         }
     }
 }

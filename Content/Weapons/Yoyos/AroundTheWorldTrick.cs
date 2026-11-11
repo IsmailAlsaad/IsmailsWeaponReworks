@@ -32,7 +32,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
     /// <summary>
     /// Around the World (pattern; the Hive-Five's left click): the yoyo is flung forward from the hand on the cursor's side and swings in a big
-    /// vertical circle round the hand, forward, over the top, behind and under (counter-clockwise on screen when facing right), for AroundSpins
+    /// vertical circle round the hand, forward, down, behind and over the top (clockwise on screen when facing right), for AroundSpins
     /// turns. It speeds up for the first turn(s); the last turn slows down and spirals in until the yoyo is back at the hand and is caught.
     /// The arm does NOT turn with the yoyo like a real hand: it only tilts up while the yoyo is on the upper half and down while it is on the
     /// lower half (YoyoTrick.ArmPose). The string stays taut. The yoyo hurts everything on its path (the swept hitbox of the base), the
@@ -87,7 +87,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         // Where the yoyo is 'ticks' ticks after the throw: the angle, the radius and the speed. Speeding up (linearly), then full speed until the last
         // whole turn starts, then that turn slows down (linearly) while the radius shrinks to the catch radius.
-        void Sample(int ticks, out float theta, out float r, out float w, out bool done)
+        void Sample(float ticks, out float theta, out float r, out float w, out bool done)
         {
             int spins = Math.Max(1, A.AroundSpins);
             float top = Math.Max(0.05f, A.AroundTopSpeed);
@@ -141,9 +141,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             Sample(yoyo.OutTicks, out angle, out radius, out omega, out finished);
             speed01 = MathHelper.Clamp(omega / Math.Max(0.05f, A.AroundTopSpeed), 0f, 1f);
 
-            // The circle is in the vertical plane: forward on the throwing side, then up (down when gravity is flipped), behind, under.
-            Vector2 offset = new Vector2(yoyo.Side * (float)Math.Cos(angle), -yoyo.GravDir * (float)Math.Sin(angle)) * radius;
-            Vector2 target = yoyo.Hand + offset;
+            Vector2 target = yoyo.Hand + Offset(yoyo, angle, radius);
             Vector2 delta = target - yoyo.Projectile.Center;
             if (A.AroundThroughBlocks)
             {
@@ -180,6 +178,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             yoyo.Fx.SpinTrail(yoyo.Projectile.Center, yoyo.Vel, speed01);
         }
 
+        // The offset from the hand of the yoyo at angle 'theta' and distance 'r': the circle is in the vertical plane, forward on the throwing side,
+        // then DOWN, behind and over the top (clockwise on screen when facing right; mirrored when facing left, and for flipped gravity).
+        Vector2 Offset(YoyoProjectile yoyo, float theta, float r)
+        {
+            return new Vector2(yoyo.Side * (float)Math.Cos(theta), yoyo.GravDir * (float)Math.Sin(theta)) * r;
+        }
+
+        // Where the yoyo is 'ticks' ticks after the throw (fractional ticks are fine): a trail lays points between two ticks with it.
+        public Vector2 PositionAt(YoyoProjectile yoyo, float ticks)
+        {
+            Sample(Math.Max(0f, ticks), out float theta, out float r, out _, out _);
+            return yoyo.Hand + Offset(yoyo, theta, r);
+        }
+
         // The arm does not follow the yoyo round: it tilts up on the upper half of the circle and down on the lower half, and is only
         // raised while the yoyo is far out (it eases back to the catch pose as the yoyo spirals in).
         public override bool ArmPose(YoyoProjectile yoyo, out float localArmRadians)
@@ -188,7 +200,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             float amount = MathHelper.Clamp((radius - low) / Math.Max(1f, FullRadius() - low), 0f, 1f);
             amount = amount * amount * (3f - 2f * amount);
             float s = (float)Math.Sin(angle);
-            float tilt = -(s > 0f ? A.AroundArmUpDeg : A.AroundArmDownDeg) * s;   // up (negative) on the upper half, down on the lower half
+            float tilt = (s < 0f ? A.AroundArmUpDeg : A.AroundArmDownDeg) * s;   // the yoyo is on the upper half while sin < 0 (the circle runs clockwise): up (negative) there, down (positive) on the lower half
             float pose = MathHelper.Lerp(T.CatchArmDeg, A.AroundArmBaseDeg + tilt, amount);
             localArmRadians = MathHelper.ToRadians(pose);
             return true;
@@ -202,7 +214,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
 
         public override float SpinStep(YoyoProjectile yoyo)
         {
-            return -yoyo.Side * A.AroundSpriteSpin * (0.4f + 0.6f * speed01);
+            return yoyo.Side * A.AroundSpriteSpin * (0.4f + 0.6f * speed01);   // clockwise (positive) when facing right, like the circle
         }
     }
 }

@@ -35,6 +35,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         // False: letting go of the button does not cut the trick short (it runs to its end by itself).
         public virtual bool RetractsOnRelease => true;
 
+        // False: the yoyo does not hurt while it is out (the Sleeper hold's charging). Read by YoyoProjectile.CanDamage.
+        public virtual bool HurtsWhileOut => true;
+
         // True while the string should be pulled taut and straight even though the yoyo is still out (Forward Pass: its way back). Visual only.
         public virtual bool RopeTaut(YoyoProjectile yoyo)
         {

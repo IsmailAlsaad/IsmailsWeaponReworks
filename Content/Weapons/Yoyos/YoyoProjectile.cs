@@ -66,13 +66,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public int GravDir => Owner.gravDir >= 0f ? 1 : -1;
 
         // How far the player is tilted (a minecart on a slope, some mounts): the hand, the arm and the idle yoyo turn with it. Not with flipped gravity.
-        float Tilt => GravDir > 0 ? Owner.fullRotation : 0f;
+        public float Tilt => GravDir > 0 ? Owner.fullRotation : 0f;
 
         // ---- shared with the trick ----
         public Vector2 Vel;            // the yoyo's own velocity (px per tick); synced
         public Vector2 Aim;            // a trick's throw target, relative to the player (Forward Pass); set by the owner at the throw; synced
         public int Side = 1;           // the side it was thrown to: 1 right, -1 left; synced
         public bool UsingRight;        // the throw was started with the right button (the right click trick); synced
+        public bool Charged;           // a trick charged the yoyo (the Sleeper hold at max speed); what it does is up to the yoyo; synced
         public int OutTicks;           // ticks since the throw
         public int Hits;               // enemy hits since the throw (owner)
         public YoyoState State { get; private set; }
@@ -145,6 +146,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             writer.Write(Aim.X);
             writer.Write(Aim.Y);
             writer.Write(UsingRight);
+            writer.Write(Charged);
         }
 
         public override void ReceiveExtraAI(BinaryReader reader)
@@ -156,6 +158,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
             Vel = new Vector2(reader.ReadSingle(), reader.ReadSingle());
             Aim = new Vector2(reader.ReadSingle(), reader.ReadSingle());
             UsingRight = reader.ReadBoolean();
+            Charged = reader.ReadBoolean();
             if (!syncedOnce)
             {
                 // A late joiner: take the state as it is, no effects, no replay.
@@ -582,7 +585,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
         public override bool? CanDamage()
         {
             if (State == YoyoState.Out)
-                return null;
+                return trick == null || trick.HurtsWhileOut ? null : (bool?)false;
             return State == YoyoState.Return && trick != null && trick.HurtsWhileReturning(this) ? (bool?)null : false;
         }
 

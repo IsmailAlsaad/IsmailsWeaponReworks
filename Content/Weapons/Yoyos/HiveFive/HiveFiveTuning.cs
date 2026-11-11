@@ -8,7 +8,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
     /// to read and change; the part after it holds the numbers of its trick (IAroundTheWorldTuning) and anything else only this yoyo has. A new yoyo
     /// copies this file and keeps the whole list.
     /// </summary>
-    public class HiveFiveTuning : YoyoTuning, IAroundTheWorldTuning
+    public class HiveFiveTuning : YoyoTuning, IAroundTheWorldTuning, ISleeperTuning
     {
         // ======== general parameters (see YoyoTuning) ========
         // His own art, when it exists (for example "IsmailsWeaponReworks/Content/Weapons/Yoyos/WoodenYoyo/WoodenYoyoProjectile"); null or
@@ -104,5 +104,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
         public float AroundSpriteSpin => 0.8f;                    // how fast the yoyo's own sprite turns (radians per tick at full speed)
         public bool AroundThroughBlocks => true;                  // the yoyo passes through blocks
         public int AroundWhooshPerTurn => 2;                      // whooshes per turn
+
+        // ---- Sleeper hold (right click) ----
+        public float SleeperDropPx => 34f;                        // how far below the hand the yoyo hangs while it is held
+        public int SleeperDropTicks => 14;                        // letting it down
+        public float SleeperSwayPx => 2f;                         // a little side sway
+        public int SleeperChargeTicks => 90;                      // from the start of the hold until max speed (60 = 1 second)
+        public float SleeperStartSpin => 0.1f;                    // the yoyo's sprite turns this fast (radians per tick) at the start ...
+        public float SleeperMaxSpin => 1.3f;                      // ... and this fast at max speed
+        public float SleeperSpinCurve => 2f;                      // 1 = a steady speed-up, 2 = slow at first and faster and faster
+        public float SleeperArmDeg => 68f;                        // the arm's angle below the horizontal while holding
+
+        // ---- the honey trail of a charged Around the World (a PixelTrail: it keeps fading after the yoyo is caught) ----
+        public float HoneyTrailGrid => 2f;                        // pixel size of the trail
+        public int HoneyTrailLifeTicks => 16;                     // how long a point of the trail lives (the trail's length: at top speed about 16 ticks is most of a turn)
+        public float HoneyTrailWidth => 9f;                       // its widest, at the yoyo (it thins to a point at the tail)
+        public int HoneyTrailSamplesPerTick => 3;                 // points laid per tick along the circle (more = a smoother ring)
+        public float HoneyTrailJitter => 0.5f;                    // ragged edge in pixels
+        public float HoneyTrailDripChance => 0.3f;                // per tick: a honey drop falls from a random point of the trail
+        public Color HoneyTrailOuterColor => new Color(235, 140, 20, 0);   // the wide outer glow (alpha 0 = additive)
+        public Color HoneyTrailCoreColor => new Color(255, 226, 120, 0);   // the bright core
     }
 }

@@ -68,6 +68,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos
                 Chip(position, Main.rand.NextVector2Circular(3.5f, 3.5f), Main.rand.NextFloat(0.8f, 1.2f));
         }
 
+        // Sleeper hold: called every tick while the yoyo is held down and spinning up (charge01: 0 = just started, 1 = max speed). Nothing by default.
+        public virtual void Charging(Vector2 position, float charge01)
+        {
+        }
+
+        // Sleeper hold: max speed was just reached (the yoyo is ready to be charged): a chime.
+        public virtual void ChargeReady(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.5f, Pitch = 0.3f }, position);
+        }
+
         // Around the World: a whoosh every half turn round the player, higher the faster the yoyo goes (speed01: 0 = slow, 1 = full speed).
         public virtual void SpinWhoosh(Vector2 position, float speed01)
         {
