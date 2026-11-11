@@ -71,10 +71,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
         // A thin trail of honey drops thrown off the spinning yoyo, more the faster it goes.
         public override void SpinTrail(Vector2 position, Vector2 velocity, float speed01)
         {
-            if (Main.dedServ || speed01 < 0.25f || !Main.rand.NextBool(2))
+            if (Main.dedServ)
                 return;
-            Dust dust = Dust.NewDustPerfect(position, DustID.Honey, -velocity * 0.03f + Main.rand.NextVector2Circular(0.8f, 0.8f), 100, default, Main.rand.NextFloat(0.7f, 1.1f));
-            dust.noGravity = true;
+
+            if (speed01 < 0.4f)
+                return;
+
+            //if (!Main.rand.NextBool(2))
+            //    return;
+
+            for (int i = 0; i < 1; i++)
+            {
+                Dust dust = Dust.NewDustPerfect(position + Main.rand.NextVector2Circular(8f,8f), DustID.Honey, -velocity * 0.03f + Main.rand.NextVector2Circular(0.8f, 0.8f), 100, default, Main.rand.NextFloat(0.7f, 1.1f));
+                dust.noGravity = true;            
+            }
         }
     }
 }

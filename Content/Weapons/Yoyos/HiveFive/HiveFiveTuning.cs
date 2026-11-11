@@ -81,7 +81,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Yoyos.HiveFive
         // ---- juice (off by default; the shared helpers in YoyoJuice.cs) ----
         public override float HitShake => 0.5f;               // very subtle camera punch per enemy hit (0 = none)
         public override bool Afterimages => true;          // afterimages while the yoyo is fast and out
-        public override int AfterimageTicks => 10;          // how long one afterimage lives
+        public override int AfterimageTicks => 5;          // how long one afterimage lives
         public override float AfterimageMinScale => 0.7f;   // it shrinks to this fraction of the yoyo's size while it fades
         public override float AfterimageMinSpeed => 3f;     // none are laid while the yoyo is slower than this (px per tick)
         // The color the sprite is multiplied by: Color.White = the same sprite (lit like the yoyo), Color.White * 0.5f = half faded,
