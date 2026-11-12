@@ -37,7 +37,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BallOHurt
         public float BallReturnSpeed => 40f;             // px per tick on the straight way home
 
         // ---- the hops between enemies ----
-        public int MaxHops => 8;                         // enemies reached (the first one counts) before the ball goes home
+        public int MaxHops => 20;                         // enemies reached (the first one counts) before the ball goes home
         public float HopRangePx => 50f * 16f;            // a new target is picked among enemies this close to the ball
         public float ArriveRadiusPx => 20f;              // the ball has arrived when its path passes this close to the aim point
         public float ReboundPx => 8f * 16f;              // with one enemy only: the ball flies on through it this far, then comes back
