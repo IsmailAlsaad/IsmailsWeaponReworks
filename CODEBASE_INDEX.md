@@ -596,7 +596,7 @@ tModLoader/other bases -> project types:
     +Instance:MeatballFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +Detach(Vector2,Vector2) +BallFlight(Vector2,Vector2) +Attach(Vector2) +Beat(Vector2,float) +Drip(Vector2) +Explode(Vector2,float)
 **MeatballGlobalItem.cs** uses: FlailGlobalItem, MeatballFlailProjectile, MeatballPlayer, MeatballSwedish
   class MeatballGlobalItem : FlailGlobalItem
-    #ItemType:int[ov] #ProjectileType:int[ov] +CanUseItem(Item,Player)[ov] +PreDrawInInventory(Item,SpriteBatch,Vector2,Rectangle,Color,Color,Vector2,float)[ov] +PreDrawInWorld(Item,SpriteBatch,Color,Color,ref float,ref float,int)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+    #ItemType:int[ov] #ProjectileType:int[ov] +CanUseItem(Item,Player)[ov] +Unload()[ov] +PreDrawInInventory(Item,SpriteBatch,Vector2,Rectangle,Color,Color,Vector2,float)[ov] +PreDrawInWorld(Item,SpriteBatch,Color,Color,ref float,ref float,int)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **MeatballHeadProjectile.cs** uses: AreaEffect, Contact, DetachedTrails, FlailTrailStyle, MeatballFx, MeatballSwedish, MeatballTuning, PixelTrail, Snarable
   class MeatballHeadProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +MakeRoom(int,int)[s] +OnKill(int)[ov] +PreDraw(ref Color)[ov]

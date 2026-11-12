@@ -27,8 +27,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
 
         // ---- the getfixedboi seed (see MeatballSwedish): own item art and an extra tooltip ----
 
-        Asset<Texture2D> swedishItem;
-        bool swedishItemTried;
+        static Asset<Texture2D> swedishItem;
+        static bool swedishItemTried;
+
+        public override void Unload()
+        {
+            swedishItem = null;
+            swedishItemTried = false;
+        }
 
         // Inventory, hotbar, chests, shops: the Swedish art drawn at the same spot and scale as the vanilla icon.
         public override bool PreDrawInInventory(Item item, SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
