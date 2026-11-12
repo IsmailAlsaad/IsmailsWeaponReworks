@@ -9,9 +9,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.BlueMoon
 {
     /// <summary>
     /// The Blue Moon's flail head: the shared flail loop (Common/Flail/FlailProjectile.cs) plus the Blue Moon's own parts: its numbers and
-    /// effects, and the tier 3 special: SIX very fast throws from the hand toward the cursor, alternating above and below the aim line (up
-    /// first), each an out-and-back stab; every enemy a throw hits is hit by a water magic explosion (BlueMoonBlastProjectile). After the
-    /// last throw the head is at the hand and the loop ends, or restarts if the button is held.
+    /// effects, and the tier 3 special: SIX very fast throws, each the same elliptical arc as the regular throws (apex at the cursor); the
+    /// 1st, 3rd and 5th go the regular way (out bulging up), the 2nd, 4th and 6th are the mirrored arc (out bulging down); every enemy a
+    /// throw hits is hit by a water magic explosion (BlueMoonBlastProjectile). After the last throw the head is at the hand and the loop
+    /// ends, or restarts if the button is held.
     /// MULTIPLAYER: the owner's client decides everything (the shared loop's rules). Where the head is during the special is a pure function
     /// of the aim (ai[1] / ai[2]) and the ticks since the special began, so every machine draws the same six throws with no per-tick sync;
     /// only the owner's client spawns the water explosions (normal synced projectiles) and ends the special.
@@ -53,16 +54,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.BlueMoon
             {
                 NewTrail(3);                                 // each throw gets its own trail
                 Fx.ThrowWhoosh(Projectile.Center, 3);
+
+                // Owner: every arc after the first re-reads the cursor and syncs the new aim (other machines get it a moment later).
+                if (IsOwner && index > 0 && Blue.SpecialRetargets)
+                {
+                    Vector2 toMouse = Main.MouseWorld - owner.MountedCenter;
+                    Projectile.ai[1] = toMouse.ToRotation();
+                    Projectile.ai[2] = MathHelper.Clamp(toMouse.Length(), Tuning.SpecialMinReach, Tuning.SpecialMaxReach);
+                    Projectile.netUpdate = true;
+                }
             }
 
-            // Out and back along a line above (even throws) or below (odd throws) the aim line.
+            // The regular throw's ellipse (hand, apex at the cursor, hand), flown in SpecialThrowTicks; every second throw is mirrored.
             float u = (step + 1) / (float)ticks;
-            int upSign = AimAngle.ToRotationVector2().X >= 0f ? -1 : 1; // rotating a right-pointing aim by a negative angle turns it up, a left-pointing one by a positive angle
-            float side = index % 2 == 0 ? 1f : -1f;
-            float angle = AimAngle + upSign * side * Blue.SpecialSpread;
-            float extend = (float)Math.Sin(u * MathHelper.Pi);
+            float flip = index % 2 == 0 ? 1f : -1f;
             Vector2 oldCenter = Projectile.Center;
-            Projectile.Center = owner.MountedCenter + angle.ToRotationVector2() * AimReach * extend;
+            Projectile.Center = EllipsePoint(u * MathHelper.TwoPi, owner.MountedCenter, flip);
             trail?.Add(Projectile.Center);
             Fx.FlightDust(Projectile.Center, Projectile.Center - oldCenter, 3);
             Lighting.AddLight(Projectile.Center, 0.3f, 0.7f, 1.3f);

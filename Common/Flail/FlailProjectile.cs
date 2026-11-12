@@ -122,10 +122,11 @@ namespace IsmailsWeaponReworks.Common.Flail
             return Math.Max(Tuning.MinHalfTicks, perimeter * 0.5f / Math.Max(1f, Tuning.ThrowSpeed(tier)));
         }
 
-        Vector2 EllipsePoint(float theta, Vector2 hand)
+        // flip = 1: the regular throw (the way out bulges upward, the way back downward); flip = -1: the mirrored arc.
+        protected Vector2 EllipsePoint(float theta, Vector2 hand, float flip = 1f)
         {
             Vector2 direction = AimAngle.ToRotationVector2();
-            int side = direction.X >= 0f ? -1 : 1; // the way out bulges upward, the way back downward
+            float side = (direction.X >= 0f ? -1f : 1f) * flip;
             Vector2 perpendicular = direction.RotatedBy(side * MathHelper.PiOver2);
             float a = AimReach * 0.5f;
             float b = a * Tuning.EllipseWidthRatio;

@@ -21,10 +21,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.BlueMoon
         public override int SpecialHangTicks => 0;                  // the head is never hidden: it is the one doing the hitting
         public override float RetractSpeed => 40f;
 
-        // ---- tier 3 special: six very fast throws, alternating up and down ----
+        // ---- tier 3 special: six very fast throws of the regular arc, alternating the regular and the mirrored one ----
         public int SpecialThrows => 6;
-        public int SpecialThrowTicks => 9;               // one out-and-back throw
-        public float SpecialSpread => 0.55f;             // radians above / below the aim line the throws alternate between
+        public int SpecialThrowTicks => 10;              // one whole arc (out and back)
+        public bool SpecialRetargets => true;            // each arc after the first aims at the cursor's position at that moment (false = all six use the release aim)
         public int SpecialHitCooldownTicks => 8;         // an enemy can be hit again by the next throw
 
         // ---- the water explosion on every enemy the special hits ----

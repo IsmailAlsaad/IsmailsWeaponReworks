@@ -229,7 +229,7 @@ tModLoader/other bases -> project types:
     #ItemType:int[ab] #ProjectileType:int[ab] +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **FlailProjectile.cs** uses: AfterimageTrail, DetachedTrails, FlailFx, FlailTrailStyle, FlailTuning, PixelTrail, PixelTrailStyle, RemoteHitTracker
   abstract class FlailProjectile : ModProjectile
-    #ItemType:int[ab] #Tuning:FlailTuning[ab] #Fx:FlailFx[ab] #BeginSpecial(Player)[ab] #UpdateSpecial(Player)[ab] #OnFlailHit(NPC,HitInfo,int)[v] #CreateTrailStyle(int)[v] #SweepsPath:bool[v] +Encode(Phase,int)[s] #CurrentPhase:Phase #Sub:int #AimAngle:float #AimReach:float #Owner:Player #IsOwner:bool #phaseTimer:int #headRotation:float #flash:float #trail:PixelTrail #lockedDamage:int +AI()[ov] #NewTrail(int) #EndSpecial() +PostAI()[ov] #HeadHidden:bool +Colliding(Rectangle,Rectangle)[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    #ItemType:int[ab] #Tuning:FlailTuning[ab] #Fx:FlailFx[ab] #BeginSpecial(Player)[ab] #UpdateSpecial(Player)[ab] #OnFlailHit(NPC,HitInfo,int)[v] #CreateTrailStyle(int)[v] #SweepsPath:bool[v] +Encode(Phase,int)[s] #CurrentPhase:Phase #Sub:int #AimAngle:float #AimReach:float #Owner:Player #IsOwner:bool #phaseTimer:int #headRotation:float #flash:float #trail:PixelTrail #lockedDamage:int #EllipsePoint(float,Vector2,float) +AI()[ov] #NewTrail(int) #EndSpecial() +PostAI()[ov] #HeadHidden:bool +Colliding(Rectangle,Rectangle)[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
       {Charge, Throw, Caught, Special, Retract, Fail}
     enum FailReason
@@ -345,7 +345,7 @@ tModLoader/other bases -> project types:
     #ItemType:int[ov] #ProjectileType:int[ov]
 **BlueMoonTuning.cs** uses: FlailTuning
   class BlueMoonTuning : FlailTuning
-    +Instance:BlueMoonTuning[s] +ThrowSpeed(int)[ov] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +SpecialThrows:int +SpecialThrowTicks:int +SpecialSpread:float +SpecialHitCooldownTicks:int +BlastRadius:float +BlastDamageMultiplier:float +BlastKnockbackMultiplier:float +BlastLifeTicks:int +BlastWetTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
+    +Instance:BlueMoonTuning[s] +ThrowSpeed(int)[ov] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +SpecialThrows:int +SpecialThrowTicks:int +SpecialRetargets:bool +SpecialHitCooldownTicks:int +BlastRadius:float +BlastDamageMultiplier:float +BlastKnockbackMultiplier:float +BlastLifeTicks:int +BlastWetTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
 
 ### Content/Weapons/DarkLance/
 **DarkLanceBlastProjectile.cs** uses: AreaEffect, DarkLanceFx, DarkLanceTuning, IceFx, RemoteHitTracker, ThrustFx, ThrustPalette
