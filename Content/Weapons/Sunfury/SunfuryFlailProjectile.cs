@@ -13,12 +13,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
     /// <summary>
     /// The Sunfury's flail head: one projectile that lives through the whole hold-charge rhythm loop (every flail will share it).
     /// CHARGE: hold to spin the head; the tier's charge must be held to its full threshold, releasing earlier throws nothing and ends the loop.
-    /// THROW: a completed tier 1 or 2 charge, released, throws the head along an ellipse whose apex is the cursor; at the apex a chain jingle
-    /// plays and the retract window opens (the return half, as long as the head needs to cover it, so faster tiers give shorter windows).
-    /// CAUGHT: pressing inside the window keeps the head returning and starts the next tier's charge (also needs a full hold).
+    /// THROW: a completed tier 1 or 2 charge, released, throws the head along an ellipse whose apex is the cursor; at the apex a chain jingle plays.
+    /// CAUGHT: a fresh click/hold at ANY moment while the head is out keeps it returning and starts the next tier's charge (also needs a full hold).
     /// SPECIAL: a completed tier 3 charge, released, sends the head straight at the cursor where it detonates in a sun-like explosion.
     /// RETRACT: the head comes back after the explosion and the projectile ends (tier back to zero).
-    /// FAIL: a press too early (locked chain), a missed window, an early release or too short a hold sends the head back and ends the loop.
+    /// FAIL: the head getting home without a new press, an early release or too short a hold sends the head back and ends the loop.
     /// Ending the projectile IS the reset: the next press starts a new projectile at tier 1.
     ///
     /// ai[0] = phase * 4 + sub (Charge: tier being charged, Throw/Caught: thrown tier, Special: 3, Fail: reason), ai[1] = aim angle, ai[2] = reach.
@@ -33,6 +32,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Sunfury;
 
         static Asset<Texture2D> art;
+        Asset<Texture2D> chainAsset;
 
         public enum Phase { Charge = 0, Throw = 1, Caught = 2, Special = 3, Retract = 4, Fail = 5 }
         public enum FailReason { Undercharged = 0, LockedChain = 1, Mistimed = 2 }
@@ -271,7 +271,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
 
             // The head spins faster and wider as the charge fills.
             float eased = 1f - (1f - progress) * (1f - progress);
-            float omega = MathHelper.Lerp(SunfuryTuning.SpinOmegaStart, SunfuryTuning.SpinOmegaEnd, eased);
+            float omega = MathHelper.Lerp(SunfuryTuning.SpinOmegaStart(tier), SunfuryTuning.SpinOmegaEnd(tier), eased);
             spinAngle += omega * Facing;
             float targetRadius = MathHelper.Lerp(SunfuryTuning.SpinRadiusMin, SunfuryTuning.SpinRadiusMax, eased);
             spinRadius = MathHelper.Lerp(spinRadius, targetRadius, SunfuryTuning.SpinRadiusSmoothing);
@@ -365,27 +365,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
             if (!IsOwner)
                 return;
 
-            float windowStart = half - SunfuryTuning.WindowEarlyGraceTicks;
             float arrival = half * 2f;
-            float windowEnd = arrival + SunfuryTuning.WindowLateGraceTicks;
             bool press = holding && !previousHold;
 
             if (CurrentPhase == Phase.Throw)
             {
                 if (press)
                 {
-                    if (time < windowStart)
-                        Fail(FailReason.LockedChain);   // too early
-                    else if (time <= windowEnd)
-                    {
-                        Projectile.ai[0] = Encode(Phase.Caught, thrownTier); // inside the window: the next charge starts
-                        Projectile.netUpdate = true;
-                    }
-                    else
-                        Fail(FailReason.Mistimed);
+                    Projectile.ai[0] = Encode(Phase.Caught, thrownTier); // a press at any moment while the head is out: the next charge starts
+                    Projectile.netUpdate = true;
                 }
-                else if (time > windowEnd)
-                    Fail(FailReason.Mistimed);          // too late: the window closed without a press
+                else if (time > arrival)
+                    Fail(FailReason.Mistimed);          // the head got home and no press came
                 return;
             }
 
@@ -560,25 +551,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
             return false;
         }
 
-        // The chain from the hand to the head: a pixel line with a brighter link every few pixels, heating up toward the head.
+        // The vanilla flail chain: the chain texture tiled from the head to the hand, every link lit by the light where it hangs.
         void DrawChain(Vector2 hand, Vector2 head)
         {
-            float grid = SunfuryTuning.PixelSize;
-            Vector2[] points = { hand, head };
-            float[] t = { 0f, 1f };
-            int tier = LookTier;
-            float heat = Damaging ? 1f : 0.3f;
-            PixelLine.Draw(points, t, 2, grid, x => 3f, x => Color.Lerp(SunfuryTuning.ChainColor, new Color(200, 110, 50), x * x * heat));
-
-            Vector2 span = head - hand;
+            chainAsset ??= ModContent.Request<Texture2D>("Terraria/Images/" + SunfuryTuning.ChainName);
+            Texture2D chain = chainAsset.Value;
+            Vector2 span = hand - head;
             float length = span.Length();
             if (length < 1f)
                 return;
             Vector2 direction = span / length;
-            for (float d = 6f; d < length; d += 9f)
+            float rotation = span.ToRotation() - MathHelper.PiOver2;
+            Vector2 origin = chain.Size() * 0.5f;
+            float step = Math.Max(1, chain.Height);
+            for (float d = step * 0.5f; d < length; d += step)
             {
-                float x = d / length;
-                IceFx.DrawPixel(hand + direction * d, grid * 2f, Color.Lerp(SunfuryTuning.ChainLightColor, SunfuryTuning.HotColor(tier), x * heat * 0.6f), grid);
+                Vector2 position = head + direction * d;
+                Color color = Lighting.GetColor((int)(position.X / 16f), (int)(position.Y / 16f));
+                Main.EntitySpriteDraw(chain, position - Main.screenPosition, null, color, rotation, origin, 1f, SpriteEffects.None, 0);
             }
         }
     }

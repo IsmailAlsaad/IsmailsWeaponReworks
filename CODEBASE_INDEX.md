@@ -4,7 +4,7 @@ generated 2026-11-12 | 288 .cs files | regenerate: `python index_codebase.py` (p
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-YoyoTuning(40) DetachedTrails(35) CameraShake(30) RemoteHitTracker(29) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(22) AfterimageTrail(19) YoyoFx(18) HeldAim(18) YoyoTrick(14) SweepTrail(14) PixelLine(13) ThrustPlayer(12) PixelTrail(12) IceFx(11) SweepTrailStyle(10) PixelFan(10) DarkLanceTuning(10) YoyoGlobalItem(9)
+YoyoTuning(40) DetachedTrails(35) CameraShake(30) RemoteHitTracker(29) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(22) AfterimageTrail(19) YoyoFx(18) HeldAim(18) YoyoTrick(14) SweepTrail(14) ThrustPlayer(12) PixelTrail(12) PixelLine(12) IceFx(11) SweepTrailStyle(10) PixelFan(10) DarkLanceTuning(10) YoyoGlobalItem(9)
 
 ## Inheritance
 Project bases -> derived:
@@ -684,7 +684,7 @@ tModLoader/other bases -> project types:
 **SunfuryBlastProjectile.cs** uses: IceFx, PixelLine, RemoteHitTracker, SunfuryFx, SunfuryTuning
   class SunfuryBlastProjectile : ModProjectile
     +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
-**SunfuryFlailProjectile.cs** uses: AfterimageTrail, DetachedTrails, IceFx, PixelLine, PixelTrail, RemoteHitTracker, SunfuryBlastProjectile, SunfuryFx, SunfuryTrailStyle, SunfuryTuning
+**SunfuryFlailProjectile.cs** uses: AfterimageTrail, DetachedTrails, IceFx, PixelTrail, RemoteHitTracker, SunfuryBlastProjectile, SunfuryFx, SunfuryTrailStyle, SunfuryTuning
   class SunfuryFlailProjectile : ModProjectile
     +Texture:string[ov] +Encode(Phase,int)[s] +Load()[ov] +Unload()[ov] +AI()[ov] +PostAI()[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
@@ -702,7 +702,7 @@ tModLoader/other bases -> project types:
     +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
 **SunfuryTuning.cs**
   static class SunfuryTuning
-    +ChargeTicks(int)[s] +WindowEarlyGraceTicks:int[s] +WindowLateGraceTicks:int[s] +MinReach:float[s] +MaxReach:float[s] +EllipseWidthRatio:float[s] +ThrowSpeed(int)[s] +ReleaseBlendTicks:int[s] +MinHalfTicks:int[s] +TierDamageMultiplier(int)[s] +HitCooldownTicks:int[s] +HeadSize:float[s] +BurnTicks:int[s] +SpinRadiusMin:float[s] +SpinRadiusMax:float[s] +SpinRadiusSmoothing:float[s] +SpinOmegaStart:float[s] +SpinOmegaEnd:float[s] +SpecialSpeed:float[s] +SpecialMinReach:float[s] +SpecialMaxReach:float[s] +SpecialStopsOnTiles:bool[s] +SpecialPathDamageMultiplier:float[s] +SpecialHangTicks:int[s] +RetractSpeed:float[s] +CatchDistance:float[s] +FailRetractSpeed:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastKnockbackMultiplier:float[s] +BlastLifeTicks:int[s] +BlastBurnTicks:int[s] +ShakeStrength:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailWidth(int)[s] +TrailJitter:float[s] +AfterimageTicks:int[s] +FlashTicks:int[s] +GlowColor(int)[s] +HotColor(int)[s] +ChainColor:Color[s] +ChainLightColor:Color[s]
+    +ChargeTicks(int)[s] +MinReach:float[s] +MaxReach:float[s] +EllipseWidthRatio:float[s] +ThrowSpeed(int)[s] +ReleaseBlendTicks:int[s] +MinHalfTicks:int[s] +TierDamageMultiplier(int)[s] +HitCooldownTicks:int[s] +HeadSize:float[s] +BurnTicks:int[s] +SpinRadiusMin:float[s] +SpinRadiusMax:float[s] +SpinRadiusSmoothing:float[s] +SpinOmegaStart(int)[s] +SpinOmegaEnd(int)[s] +SpecialSpeed:float[s] +SpecialMinReach:float[s] +SpecialMaxReach:float[s] +SpecialStopsOnTiles:bool[s] +SpecialPathDamageMultiplier:float[s] +SpecialHangTicks:int[s] +RetractSpeed:float[s] +CatchDistance:float[s] +FailRetractSpeed:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastKnockbackMultiplier:float[s] +BlastLifeTicks:int[s] +BlastBurnTicks:int[s] +ShakeStrength:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailWidth(int)[s] +TrailJitter:float[s] +AfterimageTicks:int[s] +FlashTicks:int[s] +GlowColor(int)[s] +HotColor(int)[s] +ChainName:string[s]
 
 ### Content/Weapons/Swordfish/
 **SwordfishFx.cs**
