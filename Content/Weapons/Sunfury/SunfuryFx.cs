@@ -49,11 +49,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         {
             if (Main.dedServ)
                 return;
-            int count = 10 + 8 * tier;
+            MetaballLayer fire = MetaballLayers.Of<SunfuryBurstStyle>();
+            fire.Spawn(head, Vector2.Zero, 16, SunfuryTuning.CompleteCoreSize(tier));
+            int count = SunfuryTuning.CompleteDroplets(tier);
+            float offset = Main.rand.NextFloat(MathHelper.TwoPi);
             for (int i = 0; i < count; i++)
             {
-                Vector2 direction = (MathHelper.TwoPi * i / count).ToRotationVector2();
-                Fire(head + direction * 10f, direction * (3f + 1.2f * tier), 1.2f + 0.2f * tier);
+                Vector2 direction = (offset + MathHelper.TwoPi * i / count).ToRotationVector2();
+                fire.Spawn(head + direction * 8f, direction * SunfuryTuning.CompleteSpeed(tier) * Main.rand.NextFloat(0.8f, 1.2f), Main.rand.Next(18, 30), SunfuryTuning.CompleteDropSize(tier) * Main.rand.NextFloat(0.8f, 1.2f));
             }
             SoundEngine.PlaySound(SoundID.Item25 with { Volume = 0.7f, Pitch = -0.2f + 0.2f * tier }, head);
             //if (tier >= 3)
@@ -195,12 +198,30 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
                 smoke.noGravity = true;
             }
 
+            // The fire metaballs: big slow globs in the middle that merge into one, and droplets thrown out and braked by the style's drag.
+            MetaballLayer fire = MetaballLayers.Of<SunfuryBurstStyle>();
+            for (int i = 0; i < SunfuryTuning.SunCores; i++)
+                fire.Spawn(center + Main.rand.NextVector2Circular(radius * 0.05f, radius * 0.05f), Main.rand.NextVector2Circular(1f, 1f) * SunfuryTuning.SunCoreSpeed,
+                    Main.rand.Next(18, 29), Main.rand.NextFloat(SunfuryTuning.SunCoreSizeMin, SunfuryTuning.SunCoreSizeMax));
+            for (int i = 0; i < SunfuryTuning.SunDroplets; i++)
+                fire.Spawn(center, Main.rand.NextVector2Unit() * Main.rand.NextFloat(SunfuryTuning.SunSpeedMin, SunfuryTuning.SunSpeedMax),
+                    Main.rand.Next(24, 45), Main.rand.NextFloat(SunfuryTuning.SunDropMin, SunfuryTuning.SunDropMax));
+
             SoundEngine.PlaySound(SoundID.Item14 with { Volume = 1f, Pitch = -0.3f }, center);
             SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.9f, Pitch = -0.4f }, center);
             CameraShake.Punch(center, SunfuryTuning.ShakeStrength, 22, "SunfuryBlast");
         }
 
         // ---- drawing helpers ----
+
+        // The fire metaballs, drawn from a Sunfury projectile's PreDraw (once per frame, in front of enemies). If no Sunfury projectile is
+        // alive the layer is drawn behind them by the shared system instead, so the fire never just vanishes.
+        public static void DrawLayers()
+        {
+            if (Main.dedServ)
+                return;
+            MetaballLayers.Of<SunfuryBurstStyle>().DrawInBatch();
+        }
 
         // A filled circle from horizontal pixel rows on the world pixel grid (client only, spriteBatch already running in world space).
         public static void DrawDisc(Vector2 center, float radius, Color color, float grid)

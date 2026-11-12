@@ -97,6 +97,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
                 float fadeCopy = fade;
                 PixelLine.Draw(points, t, 2, grid, x => 8f * (1f - x), x => SunfuryTuning.HotColor(2) * (0.8f * fadeCopy * (1f - x)));
             }
+            SunfuryFx.DrawLayers();   // the fire metaballs on top of the disc, in front of enemies
             return false;
         }
     }

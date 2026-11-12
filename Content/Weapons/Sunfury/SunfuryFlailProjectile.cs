@@ -53,6 +53,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         // The tier whose charge is running (Charge) or will run next (Caught).
         int ChargingTier => CurrentPhase == Phase.Caught ? Sub + 1 : Sub;
         bool Damaging => CurrentPhase == Phase.Throw || CurrentPhase == Phase.Caught || CurrentPhase == Phase.Special;
+        // The spinning head near the player also hurts (SunfuryTuning.SpinDamageMultiplier; 0 turns it off).
+        bool SpinHurts => CurrentPhase == Phase.Charge && SunfuryTuning.SpinDamageMultiplier(Sub) > 0f;
+        bool CanHurt => Damaging || SpinHurts;
         // The tier that colors the head and its trail.
         int LookTier => CurrentPhase == Phase.Special || CurrentPhase == Phase.Retract ? 3 : CurrentPhase == Phase.Fail ? 1 : Math.Max(1, Sub);
 
@@ -172,7 +175,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
             if (!Projectile.active)
                 return;
 
-            if (Damaging && !IsOwner)
+            if (CanHurt && !IsOwner)
             {
                 hitTracker ??= new RemoteHitTracker();
                 int tier = LookTier;
@@ -264,6 +267,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         {
             int tier = Sub;
             int need = SunfuryTuning.ChargeTicks(tier);
+            if (IsOwner)
+                Projectile.damage = Math.Max(1, (int)(baseDamage * SunfuryTuning.TierDamageMultiplier(tier) * SunfuryTuning.SpinDamageMultiplier(tier)));
             float progress = MathHelper.Clamp(chargeTimer / (float)Math.Max(1, need), 0f, 1f);
 
             if (IsOwner)
@@ -484,7 +489,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
 
         public override bool? CanDamage()
         {
-            return Damaging ? (bool?)null : false;
+            return CanHurt ? (bool?)null : false;
         }
 
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
@@ -519,6 +524,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
             Player owner = Owner;
             afterimages?.Draw();
             trail?.Draw();
+            SunfuryFx.DrawLayers();
 
             DrawChain(owner.MountedCenter, Projectile.Center); // the chain stays while the hidden head hangs in the explosion
             

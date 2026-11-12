@@ -10,7 +10,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
     public static class SunfuryTuning
     {
         // ---- the rhythm loop ----
-        public static int ChargeTicks(int tier) { return Pick(tier, 30, 36, 42); }      // hold this long to complete the tier's charge
+        public static int ChargeTicks(int tier) { return Pick(tier, 30, 54, 54); }      // hold this long to complete the tier's charge
 
         // ---- the elliptical throw (tiers 1 and 2) ----
         public static float MinReach => 7f * 16f;         // distance hand to apex (the cursor), clamped to this range
@@ -27,6 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         // ---- damage (locked in the moment the tier's charge completes) ----
         public static float TierDamageMultiplier(int tier) { return Pick(tier, 1f, 1.7f, 2.6f); }
         public static int HitCooldownTicks => 10;
+        public static float SpinDamageMultiplier(int tier) { return Pick(tier, 0.5f, 0.5f, 0.5f); }  // of that tier's damage, for the head hurting enemies while it spins near you (0 = harmless spin)
         public static float HeadSize => 30f;
         public static int BurnTicks => 180;               // On Fire from a head hit
 
@@ -74,6 +75,43 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
             return new Color(255, 200, 90, 0);
         }
         public static string ChainName => "Chain6";
+
+        // ---- fire metaballs (the shared metaball tool, the Volcano's look) ----
+        public static float FireMerge => 2.6f;            // how far a droplet's field reaches (bigger = they bridge and merge more)
+        public static float FireGlow => 0.1f;
+        public static float FireGravity => 0.03f;
+        public static float FireDrag => 0.9f;             // velocity kept per tick: low = thrown out and stopped quickly
+        public static float FireHeat => 0.95f;            // color heat at birth, cools to about a quarter of it
+        public static Color FireOutline => new Color(0, 0, 0, 0);
+
+        // The fire fill by heat: dark ember, deep red, orange, amber, white-yellow (the five hard bands of the metaball layer).
+        public static Color FireFill(float heat)
+        {
+            Color[] stops =
+            {
+                new Color(70, 14, 8), new Color(170, 35, 10), new Color(240, 95, 15), new Color(255, 165, 35), new Color(255, 240, 160)
+            };
+            float x = MathHelper.Clamp(heat, 0f, 1f) * (stops.Length - 1);
+            int i = System.Math.Min((int)x, stops.Length - 2);
+            return Color.Lerp(stops[i], stops[i + 1], x - i);
+        }
+
+        // charge-complete ring (per tier): a glob at the head and droplets flung outward
+        public static int CompleteDroplets(int tier) { return Pick(tier, 12, 16, 22); }
+        public static float CompleteSpeed(int tier) { return Pick(tier, 3f, 3.8f, 4.8f); }       // px per tick at birth
+        public static float CompleteDropSize(int tier) { return Pick(tier, 2.6f, 3f, 3.6f); }    // droplet radius
+        public static float CompleteCoreSize(int tier) { return Pick(tier, 5f, 6.5f, 8f); }      // the glob in the middle
+
+        // the sun explosion: big slow globs that merge in the middle and droplets thrown out and braked by FireDrag
+        public static int SunCores => 8;
+        public static float SunCoreSizeMin => 14f;
+        public static float SunCoreSizeMax => 24f;
+        public static float SunCoreSpeed => 2.4f;
+        public static int SunDroplets => 90;
+        public static float SunSpeedMin => 6f;
+        public static float SunSpeedMax => 22f;
+        public static float SunDropMin => 3f;
+        public static float SunDropMax => 7f;
 
         static T Pick<T>(int tier, T one, T two, T three)
         {
