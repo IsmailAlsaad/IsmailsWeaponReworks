@@ -52,6 +52,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         float tiltRad;         // blade tilt relative to the arm (includes the spin)
         Vector2 tipPosition;
         Vector2 lastTipPosition;
+        float plantStabArm;    // the plant: the facing-local arm angle at the end of the drive, solved from PlantReachPx when the plant starts
         Vector2 lastOwnerCenter; // where the owner was on the previous tick: the trail interpolates the owner's movement from it
         Vector2 hitOwnerFrom;    // the owner's position at the start and end of this tick: the hit test interpolates between them
         Vector2 hitOwnerTo;
@@ -123,7 +124,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         int StrikeTicks => Spins ? PhasebladeTuning.SpinSwingTicks : PhasebladeTuning.SwingTicks;
         int StrikeStart => WindupTicks;
         int StrikeEnd => StrikeStart + StrikeTicks;
-        int PlantImpactTick => PhasebladeTuning.PlantLiftTicks + PhasebladeTuning.PlantFlipTicks + PhasebladeTuning.PlantStabTicks;
+        int PlantImpactTick => PhasebladeTuning.PlantLiftTicks + PhasebladeTuning.PlantStabTicks;
         int TotalTicks => IsPlant ? PlantImpactTick + PhasebladeTuning.PlantRecoverTicks : StrikeEnd + PhasebladeTuning.RecoverTicks;
 
         // +1 when the arm angle grows during the swing (down), -1 when it shrinks (up).
@@ -184,6 +185,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
 
             if (ticks == 0 && IsOwner)
                 owner.ChangeDir(Facing);
+            if (ticks == 0 && IsPlant)
+                plantStabArm = SolveStabArm();
 
             Projectile.scale = PhasebladeTuning.SwordScale * owner.GetAdjustedItemScale(owner.HeldItem);
             Projectile.localNPCHitCooldown = Spins ? PhasebladeTuning.SpinHitCooldownTicks : -1; // swing 1 hits once; the spinning swings re-hit
@@ -261,38 +264,58 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
 
         // ---- the plant (right click) ----
 
-        // The arm (facing-local): it lifts with a cubic ease-out, holds while the blade flips, stabs down accelerating, then settles to the rest pose.
+        // The arm (facing-local): it lifts with a cubic ease-out, then comes down accelerating (the drive, while the blade rotates), then settles to the rest pose.
         float PlantArmAt(float time)
         {
             float lift = Math.Max(1, PhasebladeTuning.PlantLiftTicks);
-            float flip = PhasebladeTuning.PlantFlipTicks;
-            float stab = Math.Max(1, PhasebladeTuning.PlantStabTicks);
+            float drive = Math.Max(1, PhasebladeTuning.PlantStabTicks);
             float raised = Rad(PhasebladeTuning.PlantRaisedArmDeg);
             if (time < lift)
             {
                 float k = MathHelper.Clamp(time / lift, 0f, 1f);
                 return MathHelper.Lerp(StartArm, raised, 1f - (float)Math.Pow(1f - k, 3));
             }
-            if (time < lift + flip)
-                return raised;
             if (time < PlantImpactTick)
             {
-                float k = MathHelper.Clamp((time - lift - flip) / stab, 0f, 1f);
-                return MathHelper.Lerp(raised, Rad(PhasebladeTuning.PlantStabArmDeg), k * k);
+                float k = MathHelper.Clamp((time - lift) / drive, 0f, 1f);
+                return MathHelper.Lerp(raised, plantStabArm, k * k);
             }
             float settle = MathHelper.SmoothStep(0f, 1f, (time - PlantImpactTick) / Math.Max(1, PhasebladeTuning.PlantRecoverTicks));
-            return MathHelper.Lerp(Rad(PhasebladeTuning.PlantStabArmDeg), Rad(PhasebladeTuning.PlantRestArmDeg), settle);
+            return MathHelper.Lerp(plantStabArm, Rad(PhasebladeTuning.PlantRestArmDeg), settle);
         }
 
-        // The blade's own facing-local angle: up while the arm lifts, flipping over the front into point-down during the flip, point-down after.
+        // The blade's own facing-local angle: point-up while the arm lifts, then it rotates over the front to point-down during the same motion that
+        // drives it down, and is point-down a little before it lands.
         float PlantBladeAt(float time)
         {
             float lift = Math.Max(1, PhasebladeTuning.PlantLiftTicks);
-            float flip = Math.Max(1, PhasebladeTuning.PlantFlipTicks);
+            float drive = Math.Max(1, PhasebladeTuning.PlantStabTicks);
             if (time < lift)
                 return -MathHelper.PiOver2;
-            float k = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp((time - lift) / flip, 0f, 1f));
+            float k = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp((time - lift) / drive / 0.9f, 0f, 1f));
             return MathHelper.Lerp(-MathHelper.PiOver2, MathHelper.PiOver2, k);
+        }
+
+        // Where the planted blade stands: PlantReachPx in front of the player (the side the swing faces).
+        float PlantX => Owner.Center.X + Facing * PhasebladeTuning.PlantReachPx;
+
+        // The arm angle at the end of the drive: the one whose hand is PlantReachPx in front of the player (the blade hangs straight down from it), so
+        // the reach setting moves the planted blade AND the pose that plants it. A reach longer than the arm gives the arm's longest reach.
+        float SolveStabArm()
+        {
+            float best = Rad(PhasebladeTuning.PlantRaisedArmDeg);
+            float bestError = float.MaxValue;
+            for (float degrees = PhasebladeTuning.PlantRaisedArmDeg; degrees <= 60f; degrees += 1f)
+            {
+                Vector2 hand = HeldSwordPose.Hand(Owner, Facing, Rad(degrees));
+                float error = Math.Abs((hand.X - Owner.Center.X) * Facing - PhasebladeTuning.PlantReachPx);
+                if (error < bestError)
+                {
+                    bestError = error;
+                    best = Rad(degrees);
+                }
+            }
+            return best;
         }
 
         void PlantEffects()
@@ -308,25 +331,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
                 Lighting.AddLight(tipPosition, color.ToVector3() * 0.7f);
             if (t == PlantImpactTick)
             {
-                PhasebladeFx.PlayPlant(tipPosition);
-                if (!FindGroundAt(out Vector2 ground))
-                    ground = tipPosition;
+                if (!PhasebladePlantedProjectile.FindGround(Owner, PlantX, out Vector2 ground))
+                    ground = new Vector2(PlantX, tipPosition.Y);
+                PhasebladeFx.PlayPlant(ground);
                 PhasebladeFx.PlantImpact(ground, color);
                 if (IsOwner)
                     SpawnPlanted(ground);
             }
         }
 
-        bool FindGroundAt(out Vector2 ground)
-        {
-            return PhasebladePlantedProjectile.FindGround(Owner, tipPosition.X, out ground);
-        }
-
-        // Owner only: the planted blade stands on the ground where the held blade's tip landed, tip a few pixels in. It is a normal spawned projectile.
+        // Owner only: the planted blade stands on the ground PlantReachPx in front of the player, its tip PlantSinkPx into the tile (the tile hides that
+        // part, see PhasebladePlantedProjectile.DrawBehind). It is a normal spawned projectile.
         void SpawnPlanted(Vector2 ground)
         {
             float height = PhasebladeTuning.BladeLength * PhasebladeTuning.SwordScale;
-            Vector2 center = new Vector2(ground.X, ground.Y + 6f - height * 0.5f);
+            Vector2 center = new Vector2(ground.X, ground.Y + PhasebladeTuning.PlantSinkPx - height * 0.5f);
             Projectile.NewProjectile(Projectile.GetSource_FromThis(), center, Vector2.Zero, ModContent.ProjectileType<PhasebladePlantedProjectile>(),
                 Projectile.damage, Projectile.knockBack, Projectile.owner, Owner.HeldItem.type, Facing, 0f);
         }

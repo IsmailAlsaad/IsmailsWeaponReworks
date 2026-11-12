@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ID;
@@ -45,6 +46,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             Projectile.tileCollide = false;
             Projectile.ignoreWater = true;
             Projectile.timeLeft = 10000; // refreshed by the AI: it stays until it is pulled back
+            Projectile.hide = true;      // drawn by DrawBehind: behind the tiles, so the tile hides the part that sank in
             Projectile.usesLocalNPCImmunity = true;
             Projectile.localNPCHitCooldown = PhasebladeTuning.PlantedHitCooldownTicks;
         }
@@ -140,6 +142,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         }
 
         // ---- drawing ----
+
+        // Behind the tiles: the part of the blade that sank into the ground is covered by the tile; the rest stands in the air in front of the walls.
+        public override void DrawBehind(int index, List<int> behindNPCsAndTiles, List<int> behindNPCs, List<int> behindProjectiles, List<int> overPlayers, List<int> overWiresUI)
+        {
+            behindNPCsAndTiles.Add(index);
+        }
 
         public override bool PreDraw(ref Color lightColor)
         {

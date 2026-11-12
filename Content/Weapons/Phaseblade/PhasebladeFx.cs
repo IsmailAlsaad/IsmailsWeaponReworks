@@ -59,12 +59,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.5f, Pitch = 0.1f, PitchVariance = 0.1f }, position);
         }
 
-        public static void PlayPlant(Vector2 position)
+        // The sound the tile makes when it is hit (dirt, stone, wood, glass, a modded tile's own, see TileSound), taken from the tile the blade
+        // went into; the low blade hum is added on top. A plain clink only when the game's own tile sound cannot be played.
+        public static void PlayPlant(Vector2 ground)
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = -0.4f }, position);
-            SoundEngine.PlaySound(SoundID.Item15 with { Volume = 0.6f, Pitch = -0.3f }, position);
+            if (!TileSound.PlayHit((int)(ground.X / 16f), (int)(ground.Y / 16f)))
+                SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = -0.4f }, ground);
+            SoundEngine.PlaySound(SoundID.Item15 with { Volume = 0.6f, Pitch = -0.3f }, ground);
         }
 
         // The blade lands: a fan of sparks thrown up and sideways from the ground, and a short camera punch.

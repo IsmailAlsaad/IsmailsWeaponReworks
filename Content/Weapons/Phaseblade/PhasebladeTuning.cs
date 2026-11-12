@@ -50,16 +50,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public static int ComboTicks => 30;           // a swing started within this long after the last one continues the combo
         public static int FlashTicks => 10;
 
-        // ---- the plant (right click): the blade lifts up, flips into a dagger grip, and is driven into the ground in front of the feet ----
+        // ---- the plant (right click): the blade lifts up, then the arm drives it into the ground in front of the feet while it rotates point-down ----
         // Arm angles here are facing-local (0 = forward, negative = up), not relative to the aim.
         public static int PlantLiftTicks => 9;        // the arm lifts, blade up
-        public static int PlantFlipTicks => 7;        // the blade flips over into a dagger grip (point down) above the head
-        public static int PlantStabTicks => 5;        // the stab: it accelerates, and the blade lands on the last tick
+        public static int PlantStabTicks => 8;        // the drive: the arm comes down accelerating while the blade rotates from point-up to point-down in the same motion; it lands on the last tick
         public static int PlantRecoverTicks => 9;     // the arm settles back after the blade is planted
         public static float PlantRestArmDeg => 25f;   // where a plant starts when no swing came right before it, and where the arm settles
         public static float PlantRaisedArmDeg => -80f;
-        public static float PlantStabArmDeg => -40f;  // the arm at the end of the stab (the blade points down from the hand: tune this if the tip lands above or below the ground)
-        public static float PlantReachPx => 20f;      // the planted blade stands this far in front of the player's centre
+        public static float PlantSinkPx => 14f;       // how far the blade's tip sinks into the tile below the ground surface (the tile hides that part: the planted blade is drawn behind tiles)
+        public static float PlantReachPx => 20f;      // the planted blade stands this far in front of the player's centre; the arm's end pose is solved to reach it (the arm can only reach so far)
         public static float PlantMaxDropPx => 70f;    // the ground must be within this far below the feet, or the plant is refused
         public static float PlantedMaxDistancePx => 2400f; // a planted blade returns by itself when its owner is farther away than this (or dies)
         public static float PlantedEmberChance => 0.35f;   // per tick
