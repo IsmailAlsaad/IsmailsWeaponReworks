@@ -67,7 +67,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
                 return;
             if (!TileSound.PlayHit((int)(ground.X / 16f), (int)(ground.Y / 16f)))
                 SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = -0.4f }, ground);
-            SoundEngine.PlaySound(SoundID.Item15 with { Volume = 0.6f, Pitch = -0.3f }, ground);
+            SoundEngine.PlaySound(SoundID.Item15 with { Volume = 0.6f, Pitch = -0.1f }, ground);
         }
 
         // The blade lands: a fan of sparks thrown up and sideways from the ground, and a short camera punch.
@@ -108,7 +108,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
                 return;
             for (int i = 0; i < 8; i++)
                 Spark(position, Main.rand.NextVector2Circular(3f, 3f), 1.2f, color);
-            SoundEngine.PlaySound(SoundID.Item15 with { Volume = 0.5f, Pitch = 0.5f, PitchVariance = 0.1f }, position);
+            //SoundEngine.PlaySound(SoundID.Item15 with { Volume = 0.5f, Pitch = 0.5f, PitchVariance = 0.1f }, position);
         }
 
         // The blade goes without being caught (its owner died or went away, or it fell out of the world).

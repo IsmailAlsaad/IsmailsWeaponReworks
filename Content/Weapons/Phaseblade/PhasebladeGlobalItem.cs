@@ -115,8 +115,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Phaseblade1", "Right click to plant the blade in the ground (in the air it shoots straight down)"));
-            tooltips.Add(new TooltipLine(Mod, "Phaseblade2", "Click again to call it back: it flies to your hand, hurting enemies on the way"));
+            tooltips.Add(new TooltipLine(Mod, "Phaseblade1", "Right click to plant the blade in the ground"));// (in the air it shoots straight down)"));
+            //tooltips.Add(new TooltipLine(Mod, "Phaseblade2", "Click again to call it back: it flies to your hand, hurting enemies on the way"));
         }
     }
 }

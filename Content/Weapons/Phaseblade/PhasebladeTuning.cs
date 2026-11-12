@@ -17,8 +17,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public static float SwingDownKnockbackMultiplier => 1f;
         public static float SpinKnockbackMultiplier => 1.2f;
         public static float PlantedDamageMultiplier => 0.5f;     // each burn hit of the planted blade (times the item's damage)
-        public static float PlantedKnockbackMultiplier => 0.3f;
-        public static int PlantedHitCooldownTicks => 20;         // an enemy touching the planted blade is hit again after this many ticks
+        public static float PlantedKnockbackMultiplier => 0.01f;
+        public static int PlantedHitCooldownTicks => 12;         // an enemy touching the planted blade is hit again after this many ticks
         public static float ReturnDamageFactor => 2f;            // the blade flying back to the hand hits this much harder than the planted blade (on top of PlantedDamageMultiplier: 0.5 x 2 = the item's damage)
         public static int SpinHitCooldownTicks => 6;             // an enemy can be hit again by a spinning swing after this many ticks (strike 9 ticks: 5 = 2 hits, 3 to 4 = 3 hits)
 
