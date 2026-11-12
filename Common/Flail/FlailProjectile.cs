@@ -499,6 +499,9 @@ namespace IsmailsWeaponReworks.Common.Flail
         // The head is not drawn while it hangs inside the explosion.
         protected virtual bool HeadHidden => CurrentPhase == Phase.Retract && phaseTimer < Tuning.SpecialHangTicks;
 
+        // A flail whose head is loose (not on its chain) turns the chain drawing off.
+        protected virtual bool ChainHidden => false;
+
         // While spinning, the head hits everything along the path it travelled this tick, so a fast spin never skips an enemy.
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
         {
@@ -553,7 +556,8 @@ namespace IsmailsWeaponReworks.Common.Flail
             trail?.Draw();
             Fx.DrawLayers();
 
-            DrawChain(owner.MountedCenter, Projectile.Center); // the chain stays while the hidden head hangs in the explosion
+            if (!ChainHidden)
+                DrawChain(owner.MountedCenter, Projectile.Center); // the chain stays while the hidden head hangs in the explosion
             
             if (HeadHidden)
                 return false;

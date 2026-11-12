@@ -78,6 +78,7 @@ Projectiles: {
 	BlueMoonFlailProjectile.DisplayName: Blue Moon Flail Projectile
 	MeatballFlailProjectile.DisplayName: Meatball Flail Projectile
 	MeatballHeadProjectile.DisplayName: Meatball Head Projectile
+	BallOHurtFlailProjectile.DisplayName: Ball O' Hurt Flail Projectile
 }
 
 Buffs: {

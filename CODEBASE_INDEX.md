@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-12 | 308 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-12 | 312 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-YoyoTuning(40) DetachedTrails(36) CameraShake(31) RemoteHitTracker(30) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(22) AfterimageTrail(19) YoyoFx(18) HeldAim(18) YoyoTrick(14) SweepTrail(14) PixelTrail(13) ThrustPlayer(12) PixelLine(12) PixelTrailStyle(11) IceFx(11) SweepTrailStyle(10) PixelFan(10) DarkLanceTuning(10)
+YoyoTuning(40) DetachedTrails(36) CameraShake(31) RemoteHitTracker(30) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(22) AfterimageTrail(19) YoyoFx(18) HeldAim(18) YoyoTrick(14) SweepTrail(14) PixelTrail(13) ThrustPlayer(12) PixelLine(12) PixelTrailStyle(11) IceFx(11) SweepTrailStyle(10) PixelFan(10) FlailTuning(10)
 
 ## Inheritance
 Project bases -> derived:
@@ -12,10 +12,10 @@ Project bases -> derived:
 - BeeKeeperBeeProjectile: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
-- FlailFx: BlueMoonFx, MeatballFx, SunfuryFlailFx
-- FlailGlobalItem: BlueMoonGlobalItem, MeatballGlobalItem, SunfuryGlobalItem
-- FlailProjectile: BlueMoonFlailProjectile, MeatballFlailProjectile, SunfuryFlailProjectile
-- FlailTuning: BlueMoonTuning, MeatballTuning, SunfuryFlailTuning
+- FlailFx: BallOHurtFx, BlueMoonFx, MeatballFx, SunfuryFlailFx
+- FlailGlobalItem: BallOHurtGlobalItem, BlueMoonGlobalItem, MeatballGlobalItem, SunfuryGlobalItem
+- FlailProjectile: BallOHurtFlailProjectile, BlueMoonFlailProjectile, MeatballFlailProjectile, SunfuryFlailProjectile
+- FlailTuning: BallOHurtTuning, BlueMoonTuning, MeatballTuning, SunfuryFlailTuning
 - ForwardPassTrick: AmazonTrick, Code1Trick, ManOnTrapezeTrick, PopTheClutchTrick, RallyTrick
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
 - IAroundTheWorldTuning: AroundTheWorldDefaults, HiveFiveTuning, ValorTuning
@@ -229,7 +229,7 @@ tModLoader/other bases -> project types:
     #ItemType:int[ab] #ProjectileType:int[ab] +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **FlailProjectile.cs** uses: AfterimageTrail, DetachedTrails, FlailFx, FlailTrailStyle, FlailTuning, PixelTrail, PixelTrailStyle, RemoteHitTracker
   abstract class FlailProjectile : ModProjectile
-    #ItemType:int[ab] #Tuning:FlailTuning[ab] #Fx:FlailFx[ab] #BeginSpecial(Player)[ab] #UpdateSpecial(Player)[ab] #OnFlailHit(NPC,HitInfo,int)[v] #CreateTrailStyle(int)[v] #SweepsPath:bool[v] #RestartsOnHold:bool[v] +Encode(Phase,int)[s] #CurrentPhase:Phase #Sub:int #AimAngle:float #AimReach:float #Owner:Player #IsOwner:bool #phaseTimer:int #headRotation:float #flash:float #trail:PixelTrail #lockedDamage:int #EllipsePoint(float,Vector2,float) +AI()[ov] #NewTrail(int) #EndSpecial() +PostAI()[ov] #HeadHidden:bool[v] +Colliding(Rectangle,Rectangle)[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    #ItemType:int[ab] #Tuning:FlailTuning[ab] #Fx:FlailFx[ab] #BeginSpecial(Player)[ab] #UpdateSpecial(Player)[ab] #OnFlailHit(NPC,HitInfo,int)[v] #CreateTrailStyle(int)[v] #SweepsPath:bool[v] #RestartsOnHold:bool[v] +Encode(Phase,int)[s] #CurrentPhase:Phase #Sub:int #AimAngle:float #AimReach:float #Owner:Player #IsOwner:bool #phaseTimer:int #headRotation:float #flash:float #trail:PixelTrail #lockedDamage:int #EllipsePoint(float,Vector2,float) +AI()[ov] #NewTrail(int) #EndSpecial() +PostAI()[ov] #HeadHidden:bool[v] #ChainHidden:bool[v] +Colliding(Rectangle,Rectangle)[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
       {Charge, Throw, Caught, Special, Retract, Fail}
     enum FailReason
@@ -244,6 +244,22 @@ tModLoader/other bases -> project types:
 ### Content/Buffs/
 **LightsBaneImbueBuff.cs**
   class LightsBaneImbueBuff : ModBuff
+
+### Content/Weapons/BallOHurt/
+**BallOHurtFlailProjectile.cs** uses: BallOHurtFx, BallOHurtTuning, FlailFx, FlailProjectile, FlailTuning, Phase, Snarable
+  class BallOHurtFlailProjectile : FlailProjectile
+    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #ChainHidden:bool[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] +PostAI()[ov]
+    enum Stage
+      {Throw, Free, Hop}
+**BallOHurtFx.cs** uses: FlailFx
+  class BallOHurtFx : FlailFx
+    +Instance:BallOHurtFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +Detach(Vector2,Vector2) +TileBounce(Vector2) +Hop(Vector2,int) +Recall(Vector2)
+**BallOHurtGlobalItem.cs** uses: BallOHurtFlailProjectile, FlailGlobalItem
+  class BallOHurtGlobalItem : FlailGlobalItem
+    #ItemType:int[ov] #ProjectileType:int[ov]
+**BallOHurtTuning.cs** uses: FlailTuning
+  class BallOHurtTuning : FlailTuning
+    +Instance:BallOHurtTuning[s] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +AfterimageTicks:int[ov] +TrailLifeTicks:int[ov] +SpecialSpeed:float +BallSpeed:float +BallDamageMultiplier:float +BallHitCooldownTicks:int +BallBoxPx:float +FreeMaxTicks:int +ResyncTicks:int +MaxHops:int +HopRangePx:float +HopTurnRate:float +HopSnapDistancePx:float +ArriveCooldownTicks:int +HopMaxTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
 
 ### Content/Weapons/BeeKeeper/
 **BeeKeeperBeeProjectile.cs** uses: BeeKeeperFx, BeeKeeperPlayer, BeeKeeperTuning
@@ -415,7 +431,7 @@ tModLoader/other bases -> project types:
     +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
 
 ### Content/Weapons/EnchantedSword/
-**EnchantedSwordBladeProjectile.cs** uses: CameraShake, DetachedTrails, EnchantedSwordFx, EnchantedSwordPlayer, EnchantedSwordSweepTrailStyle, EnchantedSwordTuning, EtherealBeamProjectile, HeldAim, HeldSwordPose, PixelFan, PixelOutline, RemoteHitTracker, SegmentHit, SweepTrail
+**EnchantedSwordBladeProjectile.cs** uses: CameraShake, DetachedTrails, EnchantedSwordFx, EnchantedSwordPlayer, EnchantedSwordSweepTrailStyle, EnchantedSwordTuning, EtherealBeamProjectile, HeldAim, HeldSwordPose, PixelFan, PixelOutline, RemoteHitTracker, SegmentHit, Stage, SweepTrail
   class EnchantedSwordBladeProjectile : ModProjectile
     +Texture:string[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 **EnchantedSwordFx.cs** uses: EnchantedBoomerangFx
@@ -427,7 +443,7 @@ tModLoader/other bases -> project types:
 **EnchantedSwordPlayer.cs** uses: EnchantedSwordBladeProjectile, EnchantedSwordTuning
   class EnchantedSwordPlayer : ModPlayer
     +Hits:int +Find(int,int)[s] +AddHit(Player)[s] +IsFull(Player)[s] +Spend(Player)[s] +OnRespawn()[ov] +PostUpdate()[ov]
-**EnchantedSwordTrail.cs** uses: EnchantedSwordTuning, SweepFade, SweepTrailStyle
+**EnchantedSwordTrail.cs** uses: EnchantedSwordTuning, Stage, SweepFade, SweepTrailStyle
   class EnchantedSwordSweepTrailStyle : SweepTrailStyle
     +Stage:float +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
 **EnchantedSwordTuning.cs**
@@ -439,7 +455,7 @@ tModLoader/other bases -> project types:
 **EtherealBeamTrail.cs** uses: EnchantedSwordTuning, PixelTrailStyle
   class EtherealBeamTrailStyle : PixelTrailStyle
     +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
-**EtherealSwordProjectile.cs** uses: AfterimageTrail, CameraShake, DetachedTrails, EnchantedSwordFx, EnchantedSwordSweepTrailStyle, EnchantedSwordTuning, RemoteHitTracker, SegmentHit, StardustBurstProjectile, SweepTrail
+**EtherealSwordProjectile.cs** uses: AfterimageTrail, CameraShake, DetachedTrails, EnchantedSwordFx, EnchantedSwordSweepTrailStyle, EnchantedSwordTuning, RemoteHitTracker, SegmentHit, Stage, StardustBurstProjectile, SweepTrail
   class EtherealSwordProjectile : ModProjectile
     +Texture:string[ov] +Spawn(Player,NPC,Vector2,int,float,IEntitySource,float)[s] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 
