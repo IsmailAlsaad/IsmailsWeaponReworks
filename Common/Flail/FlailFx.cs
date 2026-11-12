@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.Audio;
+using Terraria.ID;
 
 namespace IsmailsWeaponReworks.Common.Flail
 {
@@ -23,5 +25,14 @@ namespace IsmailsWeaponReworks.Common.Flail
         public abstract void SpecialLaunch(Vector2 head);                                // the tier 3 release
         public abstract void HitSparks(Vector2 position, int tier);
         public abstract void DrawLayers();                                               // metaball layers drawn behind the head (nothing if the flail has none)
+
+        // The spinning head passes by: one whoosh every FlailTuning.SpinWhooshAngle of rotation, so the sound speeds up, gets louder and
+        // higher as the charge fills. Not abstract: every flail gets this default, one can override it. progress 0 to 1.
+        public virtual void SpinWhoosh(Vector2 head, int tier, float progress)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.3f + 0.25f * progress, Pitch = -0.35f + 0.2f * (tier - 1) + 0.5f * progress, MaxInstances = 4 }, head);
+        }
     }
 }

@@ -24,7 +24,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
 
         // ---- tier 3 special: the straight throw ----
         public float SpecialSpeed => 30f;                // px per tick, the head flying straight at the cursor
-        public int RegrowTicks => 42;                    // the hand stays empty this long after the ball tears loose (counted from the detach)
+        public int RegrowTicks => 0;                     // the hand stays empty this long after the ball tears loose (0 = only while the chain is whipping back)
 
         // ---- the detached ball ----
         public float BallSpeed => 22f;                   // px per tick, straight on in the throw's direction
@@ -38,9 +38,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
         public float ImpactKnockbackMultiplier => 0.4f;
 
         // ---- the fuse: it swells and pulses faster and faster ----
-        public int FuseTicks => 120;
+        public int FuseTicks => 180;
         public float PulsePeriodStart => 42f;            // ticks per beat when the ball sticks
-        public float PulsePeriodEnd => 7f;               // ticks per beat just before it goes off
+        public float PulsePeriodEnd => 2f;               // ticks per beat just before it goes off
         public float PulseCurve => 2f;                   // above 1: the beats stay slow for longer and speed up near the end
         public float SwellMax => 0.55f;                  // scale gained over the whole fuse
         public float PulseSwell => 0.35f;                // extra scale at the peak of a beat (grows with the fuse)

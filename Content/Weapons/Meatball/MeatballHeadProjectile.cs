@@ -175,7 +175,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
             for (int i = 0; i < Main.maxNPCs; i++)
             {
                 NPC npc = Main.npc[i];
-                if (!npc.active || !npc.CanBeChasedBy())
+                if (!Snarable.CanBite(npc))   // NOT CanBeChasedBy: it is false for the target dummy
                     continue;
                 float unused = 0f;
                 if (!Collision.CheckAABBvLineCollision(npc.Hitbox.TopLeft(), npc.Hitbox.Size(), from, to, width, ref unused))
@@ -379,16 +379,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
             Main.EntitySpriteDraw(texture, position, null, Tune.HotColor(3) * (0.45f * glow), Projectile.rotation, origin, scale * 1.12f, SpriteEffects.None, 0);
             Main.EntitySpriteDraw(texture, position, null, body, Projectile.rotation, origin, scale, SpriteEffects.None, 0);
 
-            // A ring of pixels leaves the ball with every beat.
-            if (attached && beatFlash > 0.02f)
-            {
-                float grid = Tune.PixelSize;
-                float u = 1f - beatFlash;
-                float ringRadius = 14f * scale + (20f + 28f * t) * u;
-                int count = Math.Max(10, (int)(MathHelper.TwoPi * ringRadius / (grid * 3f)));
-                for (int i = 0; i < count; i++)
-                    IceFx.DrawPixel(center + (MathHelper.TwoPi * i / count).ToRotationVector2() * ringRadius, grid * 2f, Tune.HotColor(3) * (0.8f * beatFlash), grid);
-            }
             return false;
         }
     }

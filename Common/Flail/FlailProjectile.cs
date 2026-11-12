@@ -82,6 +82,7 @@ namespace IsmailsWeaponReworks.Common.Flail
         bool chargeComplete;
         float spinAngle;
         float spinRadius;
+        float spinSoundAngle;    // rotation since the last spin whoosh
         protected float headRotation;
         protected float flash;
         Vector2 releasePosition;
@@ -221,6 +222,7 @@ namespace IsmailsWeaponReworks.Common.Flail
                     Vector2 offset = Projectile.Center - owner.MountedCenter;
                     spinRadius = offset.Length();
                     spinAngle = spinRadius > 1f ? offset.ToRotation() : -MathHelper.PiOver2;
+                    spinSoundAngle = 0f;
                     NewTrail(Sub);
                     break;
                 case Phase.Throw:
@@ -285,6 +287,12 @@ namespace IsmailsWeaponReworks.Common.Flail
             if (IsOwner)
                 Projectile.localNPCHitCooldown = Math.Max(1, (int)(MathHelper.TwoPi / omega * Tuning.SpinHitPeriodFraction)); // about one hit per full circle
             spinAngle += omega * Facing;
+            spinSoundAngle += omega;
+            if (spinSoundAngle >= Tuning.SpinWhooshAngle)
+            {
+                spinSoundAngle -= Tuning.SpinWhooshAngle;
+                Fx.SpinWhoosh(Projectile.Center, tier, progress);
+            }
             float targetRadius = MathHelper.Lerp(Tuning.SpinRadiusMin, Tuning.SpinRadiusMax, eased);
             spinRadius = MathHelper.Lerp(spinRadius, targetRadius, Tuning.SpinRadiusSmoothing);
             Vector2 previousCenter = Projectile.Center;

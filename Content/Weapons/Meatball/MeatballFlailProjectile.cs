@@ -11,8 +11,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
     /// The Meatball's flail head: the shared flail loop (Common/Flail/FlailProjectile.cs) plus the Meatball's own parts: its numbers and
     /// effects, and the tier 3 special: the head flies straight at the cursor (hurting enemies on the way); at the apex (the cursor, or the
     /// first tile it touches before that) the ball tears loose into a MeatballHeadProjectile that keeps flying in the same direction, and the
-    /// snapped chain whips back to the hand with the head hidden. The loop then ends (it never restarts on hold), and the hand stays empty
-    /// for MeatballTuning.RegrowTicks.
+    /// snapped chain whips back to the hand with the head hidden. When the chain is home the loop restarts at tier 1 if the button is
+    /// held (otherwise it ends and a new click starts a new loop); it never waits for the ball (MeatballTuning.RegrowTicks is 0).
     /// MULTIPLAYER: the shared loop's rules. The special's flight is deterministic on every machine (a straight line to the target); the
     /// owner's client decides the detach and spawns the ball as a normal synced projectile, and counts the regrow time (MeatballPlayer).
     /// </summary>
@@ -26,7 +26,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
         protected override FlailFx Fx => MeatballFx.Instance;
         protected override bool SweepsPath => CurrentPhase == Phase.Charge || CurrentPhase == Phase.Special;  // the special's head is far faster than it is wide
         protected override bool HeadHidden => CurrentPhase == Phase.Retract;   // the ball is gone: only the snapped chain whips back
-        protected override bool RestartsOnHold => false;                       // the hand stays empty after the special
+        protected override bool RestartsOnHold => true;                        // chain home + button held = tier 1 spins at once (the ball does not matter)
 
         static MeatballTuning Meat => MeatballTuning.Instance;
 

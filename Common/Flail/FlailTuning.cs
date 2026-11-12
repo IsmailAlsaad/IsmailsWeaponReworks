@@ -23,6 +23,7 @@ namespace IsmailsWeaponReworks.Common.Flail
         // ---- damage (locked in the moment the tier's charge completes) ----
         public virtual float TierDamageMultiplier(int tier) { return Pick(tier, 1f, 1.7f, 2.6f); }
         public virtual int HitCooldownTicks => 10;
+        public virtual float SpinWhooshAngle => MathHelper.TwoPi;  // the spin sound plays once per this much rotation (radians; a full circle = once per lap)
         public virtual float SpinHitPeriodFraction => 0.85f;  // an enemy can be hit again after this fraction of one full circle (below 1 so the next pass never arrives early)
         public virtual float SpinDamageMultiplier(int tier) { return Pick(tier, 0.5f, 0.5f, 0.5f); }  // of that tier's damage, for the head hurting enemies while it spins near you (0 = harmless spin)
         public virtual float HeadSize => 30f;

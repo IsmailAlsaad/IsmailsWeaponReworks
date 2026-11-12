@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using Terraria;
+using Terraria.ID;
 
 namespace IsmailsWeaponReworks.Common
 {
@@ -17,7 +18,7 @@ namespace IsmailsWeaponReworks.Common
             for (int i = 0; i < Main.maxNPCs; i++)
             {
                 NPC npc = Main.npc[i];
-                if (!npc.active || !npc.CanBeChasedBy())
+                if (!npc.active || (!npc.CanBeChasedBy() && npc.type != NPCID.TargetDummy))   // CanBeChasedBy is false for the target dummy
                     continue;
                 float reach = radius + Math.Max(npc.width, npc.height) * 0.5f;
                 if (Vector2.DistanceSquared(npc.Center, center) <= reach * reach)

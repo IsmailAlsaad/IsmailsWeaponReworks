@@ -4,7 +4,7 @@ generated 2026-11-12 | 308 .cs files | regenerate: `python index_codebase.py` (p
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-YoyoTuning(40) DetachedTrails(36) CameraShake(31) RemoteHitTracker(30) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(22) AfterimageTrail(19) YoyoFx(18) HeldAim(18) YoyoTrick(14) SweepTrail(14) PixelTrail(13) ThrustPlayer(12) PixelLine(12) IceFx(12) PixelTrailStyle(11) SweepTrailStyle(10) PixelFan(10) DarkLanceTuning(10)
+YoyoTuning(40) DetachedTrails(36) CameraShake(31) RemoteHitTracker(30) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(22) AfterimageTrail(19) YoyoFx(18) HeldAim(18) YoyoTrick(14) SweepTrail(14) PixelTrail(13) ThrustPlayer(12) PixelLine(12) PixelTrailStyle(11) IceFx(11) SweepTrailStyle(10) PixelFan(10) DarkLanceTuning(10)
 
 ## Inheritance
 Project bases -> derived:
@@ -223,7 +223,7 @@ tModLoader/other bases -> project types:
 ### Common/Flail/
 **FlailFx.cs**
   abstract class FlailFx
-    +ChargeGather(Vector2,int,float)[ab] +SpinEmbers(Vector2,Vector2,int,float)[ab] +TierComplete(Vector2,int)[ab] +ThrowWhoosh(Vector2,int)[ab] +ApexJingle(Vector2,int)[ab] +Caught(Vector2,int)[ab] +Fizzle(Vector2)[ab] +LockedChain(Vector2)[ab] +Mistimed(Vector2)[ab] +CatchHead(Vector2)[ab] +FlightDust(Vector2,Vector2,int)[ab] +SpecialLaunch(Vector2)[ab] +HitSparks(Vector2,int)[ab] +DrawLayers()[ab]
+    +ChargeGather(Vector2,int,float)[ab] +SpinEmbers(Vector2,Vector2,int,float)[ab] +TierComplete(Vector2,int)[ab] +ThrowWhoosh(Vector2,int)[ab] +ApexJingle(Vector2,int)[ab] +Caught(Vector2,int)[ab] +Fizzle(Vector2)[ab] +LockedChain(Vector2)[ab] +Mistimed(Vector2)[ab] +CatchHead(Vector2)[ab] +FlightDust(Vector2,Vector2,int)[ab] +SpecialLaunch(Vector2)[ab] +HitSparks(Vector2,int)[ab] +DrawLayers()[ab] +SpinWhoosh(Vector2,int,float)[v]
 **FlailGlobalItem.cs** uses: FlailProjectile, Phase
   abstract class FlailGlobalItem : GlobalItem
     #ItemType:int[ab] #ProjectileType:int[ab] +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
@@ -239,7 +239,7 @@ tModLoader/other bases -> project types:
     +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
 **FlailTuning.cs**
   abstract class FlailTuning
-    +ChargeTicks(int)[v] +MinReach:float[v] +MaxReach:float[v] +EllipseWidthRatio:float[v] +ThrowSpeed(int)[v] +ReleaseBlendTicks:int[v] +MinHalfTicks:int[v] +TierDamageMultiplier(int)[v] +HitCooldownTicks:int[v] +SpinHitPeriodFraction:float[v] +SpinDamageMultiplier(int)[v] +HeadSize:float[v] +SpinRadiusMin:float[v] +SpinRadiusMax:float[v] +SpinRadiusSmoothing:float[v] +SpinOmegaStart(int)[v] +SpinOmegaEnd(int)[v] +SpecialMinReach:float[v] +SpecialMaxReach:float[v] +SpecialPathDamageMultiplier:float[v] +SpecialHangTicks:int[v] +RetractSpeed:float[v] +CatchDistance:float[v] +FailRetractSpeed:float[v] +PixelSize:float[v] +TrailLifeTicks:int[v] +TrailWidth(int)[v] +TrailJitter:float[v] +AfterimageTicks:int[v] +FlashTicks:int[v] +GlowColor(int)[ab] +HotColor(int)[ab] +ChainName:string[ab] #Pick<T>(int,T,T,T)[s]
+    +ChargeTicks(int)[v] +MinReach:float[v] +MaxReach:float[v] +EllipseWidthRatio:float[v] +ThrowSpeed(int)[v] +ReleaseBlendTicks:int[v] +MinHalfTicks:int[v] +TierDamageMultiplier(int)[v] +HitCooldownTicks:int[v] +SpinWhooshAngle:float[v] +SpinHitPeriodFraction:float[v] +SpinDamageMultiplier(int)[v] +HeadSize:float[v] +SpinRadiusMin:float[v] +SpinRadiusMax:float[v] +SpinRadiusSmoothing:float[v] +SpinOmegaStart(int)[v] +SpinOmegaEnd(int)[v] +SpecialMinReach:float[v] +SpecialMaxReach:float[v] +SpecialPathDamageMultiplier:float[v] +SpecialHangTicks:int[v] +RetractSpeed:float[v] +CatchDistance:float[v] +FailRetractSpeed:float[v] +PixelSize:float[v] +TrailLifeTicks:int[v] +TrailWidth(int)[v] +TrailJitter:float[v] +AfterimageTicks:int[v] +FlashTicks:int[v] +GlowColor(int)[ab] +HotColor(int)[ab] +ChainName:string[ab] #Pick<T>(int,T,T,T)[s]
 
 ### Content/Buffs/
 **LightsBaneImbueBuff.cs**
@@ -578,7 +578,7 @@ tModLoader/other bases -> project types:
 **MeatballGlobalItem.cs** uses: FlailGlobalItem, MeatballFlailProjectile, MeatballPlayer
   class MeatballGlobalItem : FlailGlobalItem
     #ItemType:int[ov] #ProjectileType:int[ov] +CanUseItem(Item,Player)[ov]
-**MeatballHeadProjectile.cs** uses: AreaEffect, Contact, DetachedTrails, FlailTrailStyle, IceFx, MeatballFx, MeatballTuning, PixelTrail
+**MeatballHeadProjectile.cs** uses: AreaEffect, Contact, DetachedTrails, FlailTrailStyle, MeatballFx, MeatballTuning, PixelTrail, Snarable
   class MeatballHeadProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +MakeRoom(int,int)[s] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Phase

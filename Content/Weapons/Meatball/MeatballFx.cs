@@ -61,7 +61,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
                 if (i % 2 == 0)
                     blood.Spawn(head + direction * 8f, direction * (2.6f + 0.5f * tier) * Main.rand.NextFloat(0.8f, 1.2f), Main.rand.Next(18, 28), Main.rand.NextFloat(2.2f, 3.4f));
             }
-            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.7f, Pitch = -0.4f + 0.2f * tier }, head);
+            SoundEngine.PlaySound(SoundID.NPCDeath21 with { Volume = 0.5f, Pitch = -0.6f + 0.3f * tier }, head);
         }
 
         public override void ThrowWhoosh(Vector2 head, int tier)
@@ -87,7 +87,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
                 return;
             for (int i = 0; i < 8; i++)
                 Blood(hand + Main.rand.NextVector2Circular(10f, 10f), Main.rand.NextVector2Circular(2.5f, 2.5f), 1.1f, Main.rand.NextBool(2));
-            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.5f, Pitch = -0.3f + 0.25f * nextTier }, hand);
+
+            SoundStyle sound = Main.rand.Next() == 0 ? SoundID.Zombie24 : SoundID.Zombie25;
+            SoundEngine.PlaySound(sound with { Volume = 0.5f, Pitch = -0.3f + 0.25f * nextTier }, hand);
         }
 
         public override void Fizzle(Vector2 head)
@@ -142,7 +144,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
                 return;
             for (int i = 0; i < 16; i++)
                 Blood(head, Main.rand.NextVector2Circular(5f, 5f), 1.4f, Main.rand.NextBool(2));
-            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.9f, Pitch = -0.5f }, head);
+            SoundEngine.PlaySound(SoundID.NPCDeath23 with { Volume = 0.7f, Pitch = -0.5f }, head);
             SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.7f, Pitch = -0.4f }, head);
         }
 
@@ -250,7 +252,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
             if (Main.dedServ)
                 return;
             SoundEngine.PlaySound(SoundID.Item14 with { Volume = 1f, Pitch = -0.55f }, center);
-            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 1f, Pitch = -0.7f }, center);
+            SoundEngine.PlaySound(SoundID.Zombie21 with { Volume = 1f, Pitch = -0.2f }, center);
 
             int ring = 44;
             float offset = Main.rand.NextFloat(MathHelper.TwoPi);
