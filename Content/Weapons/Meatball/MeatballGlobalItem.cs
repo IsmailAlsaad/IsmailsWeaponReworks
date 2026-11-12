@@ -63,7 +63,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
             base.ModifyTooltips(item, tooltips);
             if (!MeatballSwedish.Active)
                 return;
-            tooltips.Add(new TooltipLine(Mod, "MeatballSwedish1", "It's extra swedish") { OverrideColor = new Color(254, 204, 0) });
+            tooltips.Add(new TooltipLine(Mod, "MeatballSwedish1", "\"It's extra swedish\"") { OverrideColor = new Color(254, 204, 0) });
             tooltips.Add(new TooltipLine(Mod, "MeatballSwedish2", "-Modded Tessarian") { OverrideColor = new Color(90, 165, 225) });
         }
     }
