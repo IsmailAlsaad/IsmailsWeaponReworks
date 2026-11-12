@@ -53,8 +53,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
                 PhasebladePlantedProjectile.PullBack(player, item.type, player.altFunctionUse != 2);
                 return false;
             }
+            if (PhasebladePlantedProjectile.IsReturning(player, item.type))
+                return false; // neither a plant nor a swing until the blade is caught
             if (player.altFunctionUse == 2)
-                return player.gravDir == 1f && !PhasebladePlantedProjectile.IsReturning(player, item.type); // no second plant until the first blade is caught
+                return player.gravDir == 1f;
             return true;
         }
 
