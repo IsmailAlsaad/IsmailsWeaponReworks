@@ -90,9 +90,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
             int rays = 14;
             for (int i = 0; i < rays; i++)
             {
+                float grow_ = grow * 0.75f;
                 float angle = MathHelper.TwoPi * i / rays + 0.2f;
-                float reach = radius * (0.9f + 0.5f * (i % 3) / 2f) * grow;
-                Vector2[] points = { center + angle.ToRotationVector2() * radius * 0.5f * grow, center + angle.ToRotationVector2() * reach };
+                float reach = radius * (0.9f + 0.5f * (i % 3) / 2f) * grow_;
+                Vector2[] points = { center + angle.ToRotationVector2() * radius * 0.5f * grow_, center + angle.ToRotationVector2() * reach };
                 float[] t = { 0f, 1f };
                 float fadeCopy = fade;
                 PixelLine.Draw(points, t, 2, grid, x => 8f * (1f - x), x => SunfuryTuning.HotColor(2) * (0.8f * fadeCopy * (1f - x)));

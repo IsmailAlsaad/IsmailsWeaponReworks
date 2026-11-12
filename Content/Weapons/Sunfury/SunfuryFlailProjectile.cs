@@ -16,7 +16,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
     /// THROW: a completed tier 1 or 2 charge, released, throws the head along an ellipse whose apex is the cursor; at the apex a chain jingle plays.
     /// CAUGHT: a fresh click/hold at ANY moment while the head is out keeps it returning and starts the next tier's charge (also needs a full hold).
     /// SPECIAL: a completed tier 3 charge, released, sends the head straight at the cursor where it detonates in a sun-like explosion.
-    /// RETRACT: the head comes back after the explosion and the projectile ends (tier back to zero).
+    /// RETRACT: the head comes back after the explosion. If the button is held when it reaches the hand (pressed at any moment during the
+    /// return, or still held), it is caught and tier 1 starts spinning at once; otherwise the projectile ends (tier back to zero).
     /// FAIL: the head getting home without a new press, an early release or too short a hold sends the head back and ends the loop.
     /// Ending the projectile IS the reset: the next press starts a new projectile at tier 1.
     ///
@@ -64,6 +65,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         int phaseTimer;          // ticks in the current phase (it keeps counting from Throw into Caught)
         int chargeTimer;         // ticks the hold has lasted (from the press in the window, or from the start of the charge)
         bool apexPlayed;
+        int parkedTicks;         // other machines: ticks the head has waited at the hand for the owner's decision after the special
         bool chargeComplete;
         float spinAngle;
         float spinRadius;
@@ -167,10 +169,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
                     UpdateSpecial(owner);
                     break;
                 case Phase.Retract:
-                    UpdateReturn(owner, SunfuryTuning.RetractSpeed, SunfuryTuning.SpecialHangTicks);
+                    UpdateReturn(owner, SunfuryTuning.RetractSpeed, SunfuryTuning.SpecialHangTicks, true, holding);
                     break;
                 default:
-                    UpdateReturn(owner, SunfuryTuning.FailRetractSpeed, 0);
+                    UpdateReturn(owner, SunfuryTuning.FailRetractSpeed, 0, false, false);
                     break;
             }
             if (!Projectile.active)
@@ -445,14 +447,30 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         }
 
         // The head comes straight back to the hand (after the explosion, or after a mistake) and the loop ends there.
-        void UpdateReturn(Player owner, float speed, int hangTicks)
+        // restartOnHold (after the special only): the owner decides at the catch. Button held (pressed at any moment during the return,
+        // or still down) = the same projectile goes straight into tier 1's spin; otherwise it ends. Other machines wait at the hand for that
+        // decision (it arrives through ai[0]) and only end their copy themselves if it never comes.
+        void UpdateReturn(Player owner, float speed, int hangTicks, bool restartOnHold, bool holding)
         {
             if (phaseTimer < hangTicks)
                 return; // hanging where the sun went off; the head is hidden
             Vector2 toHand = owner.MountedCenter - Projectile.Center;
             if (toHand.Length() <= speed + SunfuryTuning.CatchDistance)
             {
+                if (restartOnHold && !IsOwner && parkedTicks++ < 20)
+                {
+                    if (parkedTicks == 1)
+                        SunfuryFx.CatchHead(owner.MountedCenter);
+                    return;
+                }
                 SunfuryFx.CatchHead(owner.MountedCenter);
+                if (restartOnHold && IsOwner && holding)
+                {
+                    releasedAfterComplete = false;
+                    Projectile.ai[0] = Encode(Phase.Charge, 1); // the hold goes on: a fresh loop at tier 1, same head
+                    Projectile.netUpdate = true;
+                    return;
+                }
                 Projectile.Kill();
                 return;
             }

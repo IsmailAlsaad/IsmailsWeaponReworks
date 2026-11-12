@@ -18,7 +18,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         public static float EllipseWidthRatio => 0.42f;   // half-width of the ellipse divided by half its length
         public static float ThrowSpeed(int tier)
         {
-            return Pick(tier, 26, 32, 40);
+            return Pick(tier, 26, 40, 40);
             //return 32f;
         }  // px per tick along the path; this sets the retract window
         public static int ReleaseBlendTicks => 5;         // the head glides from the spin position onto the ellipse in this many ticks

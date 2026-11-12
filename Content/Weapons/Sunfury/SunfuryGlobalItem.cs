@@ -45,7 +45,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            //tooltips.Add(new TooltipLine(Mod, "Sunfury1", "Hold to spin up, release to throw; catch the chain as it returns and hold again to power up"));
+            tooltips.Add(new TooltipLine(Mod, "Sunfury1", "Re-engage while the flail head is flying to speed up"));
             //tooltips.Add(new TooltipLine(Mod, "Sunfury2", "Three perfect rounds in a row unleash a sun-like explosion"));
         }
     }
