@@ -17,7 +17,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.BallOHurt
         public override float SpecialMaxReach => 30f * 16f;
         public override float SpecialPathDamageMultiplier => 0.6f;  // of the tier 3 damage, for the head on its straight throw
         public override int SpecialHangTicks => 0;
-        public override float RetractSpeed => 40f;                  // the ball flies straight home after its last hop
+        public override float RetractSpeed => 48f;                  // the snapped chain whips back to the hand when the ball tears loose
         public override int AfterimageTicks => 18;                  // long afterimages: the loose ball is very fast
         public override int TrailLifeTicks => 18;
 
@@ -31,14 +31,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.BallOHurt
         public float BallBoxPx => 12f;                   // size of the box the ball bounces off tiles with
         public int FreeMaxTicks => 300;                  // no enemy hit this long after the tear-off: the ball goes home
         public int ResyncTicks => 20;                    // the owner re-syncs the ball's position this often
+        public int MaxBalls => 2;                        // balls out at once per player: a new tear-off recalls the oldest one
+        public float BallReturnSpeed => 40f;             // px per tick on the straight way home
 
         // ---- the hops between enemies ----
         public int MaxHops => 8;                         // enemies reached (the first one counts) before the ball goes home
         public float HopRangePx => 50f * 16f;            // a new target is picked among enemies this close to the ball
-        public float HopTurnRate => 0.38f;               // radians per tick the ball can turn toward its target
-        public float HopSnapDistancePx => 100f;          // closer than this (and past the cooldown) the ball aims straight at the target
-        public int ArriveCooldownTicks => 8;             // after reaching an enemy the ball cannot 'arrive' for this long (it flies on through)
-        public int HopMaxTicks => 90;                    // a hop that takes this long picks a new target
+        public float ArriveRadiusPx => 20f;              // the ball has arrived when its path passes this close to the aim point
+        public float ReboundPx => 8f * 16f;              // with one enemy only: the ball flies on through it this far, then comes back
+        public int HopMaxTicks => 60;                    // a hop that takes this long counts as arrived (the target moved away)
 
         // ---- looks ----
         public override Color GlowColor(int tier) { return new Color(120, 45, 200, 0); }

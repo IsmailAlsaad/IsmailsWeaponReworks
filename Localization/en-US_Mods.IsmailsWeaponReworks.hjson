@@ -79,6 +79,7 @@ Projectiles: {
 	MeatballFlailProjectile.DisplayName: Meatball Flail Projectile
 	MeatballHeadProjectile.DisplayName: Meatball Head Projectile
 	BallOHurtFlailProjectile.DisplayName: Ball O' Hurt Flail Projectile
+	BallOHurtBallProjectile.DisplayName: Ball O' Hurt Ball Projectile
 }
 
 Buffs: {
