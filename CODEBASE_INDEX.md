@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-12 | 289 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-12 | 301 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-YoyoTuning(40) DetachedTrails(35) CameraShake(30) RemoteHitTracker(29) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(22) AfterimageTrail(19) YoyoFx(18) HeldAim(18) YoyoTrick(14) SweepTrail(14) ThrustPlayer(12) PixelTrail(12) PixelLine(12) SweepTrailStyle(10) PixelFan(10) IceFx(10) DarkLanceTuning(10) YoyoGlobalItem(9)
+YoyoTuning(40) DetachedTrails(35) RemoteHitTracker(30) CameraShake(30) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(22) AfterimageTrail(19) YoyoFx(18) HeldAim(18) YoyoTrick(14) SweepTrail(14) ThrustPlayer(12) PixelTrail(12) PixelLine(12) PixelTrailStyle(11) IceFx(11) SweepTrailStyle(10) PixelFan(10) DarkLanceTuning(10)
 
 ## Inheritance
 Project bases -> derived:
@@ -12,6 +12,10 @@ Project bases -> derived:
 - BeeKeeperBeeProjectile: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
+- FlailFx: BlueMoonFx, SunfuryFlailFx
+- FlailGlobalItem: BlueMoonGlobalItem, SunfuryGlobalItem
+- FlailProjectile: BlueMoonFlailProjectile, SunfuryFlailProjectile
+- FlailTuning: BlueMoonTuning, SunfuryFlailTuning
 - ForwardPassTrick: AmazonTrick, Code1Trick, ManOnTrapezeTrick, PopTheClutchTrick, RallyTrick
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
 - IAroundTheWorldTuning: AroundTheWorldDefaults, HiveFiveTuning, ValorTuning
@@ -26,7 +30,7 @@ Project bases -> derived:
 - MalaiseRockTrick: MalaiseTrick
 - ManOnTrapezeTrick: ArteryTrick, MalaiseRockTrick
 - MetaballStyle: BeeKeeperHoneyStyle, DarkLanceBlobStyle, SunfuryBurstStyle, VolcanoBlobStyle, VolcanoDripStyle
-- PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, EtherealBeamTrailStyle, HiveFiveTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
+- PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, EtherealBeamTrailStyle, FlailTrailStyle, HiveFiveTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - PopTheClutchTrick: CascadeTrick, ValorTrick
 - SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, EnchantedSwordSweepTrailStyle, IceBladeTrailStyle, LightsBaneSweepTrailStyle, MuramasaSweepTrailStyle, PhasebladeSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
 - VolcanoDripStyle: VolcanoBurstStyle
@@ -37,8 +41,8 @@ Project bases -> derived:
 - YoyoTrick: AroundTheWorldTrick, ForwardPassTrick, SleeperHoldTrick, WalkTheDogTrick
 - YoyoTuning: AmazonTuning, ArteryTuning, CascadeTuning, Code1Tuning, HiveFiveTuning, MalaiseTuning, RallyTuning, ValorTuning, WoodenYoyoTuning
 tModLoader/other bases -> project types:
-- ModProjectile (61): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassHoldProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, CascadeBlastProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneBladeProjectile, LightsBaneImbueProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, SunfuryFlailProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
-- GlobalItem (26): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SunfuryGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, YoyoGlobalItem
+- ModProjectile (62): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassHoldProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, BlueMoonBlastProjectile, CascadeBlastProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlailProjectile, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneBladeProjectile, LightsBaneImbueProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
+- GlobalItem (26): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, YoyoGlobalItem
 - ModPlayer (15): BeeKeeperPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MuramasaPlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, YoyoPlayer
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
 - ModSystem (3): DetachedTrails, MetaballLayers, YoyoRegistry
@@ -216,6 +220,27 @@ tModLoader/other bases -> project types:
   static class VineDraw
     +BeginMesh()[s] +EndMesh()[s] +DrawStrip(Texture2D,Vector2,int,float,float,float,float,float)[s] +DrawHead(Texture2D,Vector2,float,float,Color,float)[s]
 
+### Common/Flail/
+**FlailFx.cs**
+  abstract class FlailFx
+    +ChargeGather(Vector2,int,float)[ab] +SpinEmbers(Vector2,Vector2,int,float)[ab] +TierComplete(Vector2,int)[ab] +ThrowWhoosh(Vector2,int)[ab] +ApexJingle(Vector2,int)[ab] +Caught(Vector2,int)[ab] +Fizzle(Vector2)[ab] +LockedChain(Vector2)[ab] +Mistimed(Vector2)[ab] +CatchHead(Vector2)[ab] +FlightDust(Vector2,Vector2,int)[ab] +SpecialLaunch(Vector2)[ab] +HitSparks(Vector2,int)[ab] +DrawLayers()[ab]
+**FlailGlobalItem.cs** uses: FlailProjectile, Phase
+  abstract class FlailGlobalItem : GlobalItem
+    #ItemType:int[ab] #ProjectileType:int[ab] +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**FlailProjectile.cs** uses: AfterimageTrail, DetachedTrails, FlailFx, FlailTrailStyle, FlailTuning, PixelTrail, PixelTrailStyle, RemoteHitTracker
+  abstract class FlailProjectile : ModProjectile
+    #ItemType:int[ab] #Tuning:FlailTuning[ab] #Fx:FlailFx[ab] #BeginSpecial(Player)[ab] #UpdateSpecial(Player)[ab] #OnFlailHit(NPC,HitInfo,int)[v] #CreateTrailStyle(int)[v] #SweepsPath:bool[v] +Encode(Phase,int)[s] #CurrentPhase:Phase #Sub:int #AimAngle:float #AimReach:float #Owner:Player #IsOwner:bool #phaseTimer:int #headRotation:float #flash:float #trail:PixelTrail #lockedDamage:int +AI()[ov] #NewTrail(int) #EndSpecial() +PostAI()[ov] #HeadHidden:bool +Colliding(Rectangle,Rectangle)[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Charge, Throw, Caught, Special, Retract, Fail}
+    enum FailReason
+      {Undercharged, LockedChain, Mistimed}
+**FlailTrailStyle.cs** uses: FlailTuning, PixelTrailStyle
+  class FlailTrailStyle : PixelTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
+**FlailTuning.cs**
+  abstract class FlailTuning
+    +ChargeTicks(int)[v] +MinReach:float[v] +MaxReach:float[v] +EllipseWidthRatio:float[v] +ThrowSpeed(int)[v] +ReleaseBlendTicks:int[v] +MinHalfTicks:int[v] +TierDamageMultiplier(int)[v] +HitCooldownTicks:int[v] +SpinHitPeriodFraction:float[v] +SpinDamageMultiplier(int)[v] +HeadSize:float[v] +SpinRadiusMin:float[v] +SpinRadiusMax:float[v] +SpinRadiusSmoothing:float[v] +SpinOmegaStart(int)[v] +SpinOmegaEnd(int)[v] +SpecialMinReach:float[v] +SpecialMaxReach:float[v] +SpecialPathDamageMultiplier:float[v] +SpecialHangTicks:int[v] +RetractSpeed:float[v] +CatchDistance:float[v] +FailRetractSpeed:float[v] +PixelSize:float[v] +TrailLifeTicks:int[v] +TrailWidth(int)[v] +TrailJitter:float[v] +AfterimageTicks:int[v] +FlashTicks:int[v] +GlowColor(int)[ab] +HotColor(int)[ab] +ChainName:string[ab] #Pick<T>(int,T,T,T)[s]
+
 ### Content/Buffs/
 **LightsBaneImbueBuff.cs**
   class LightsBaneImbueBuff : ModBuff
@@ -304,6 +329,23 @@ tModLoader/other bases -> project types:
 **BloodButchererTuning.cs**
   static class BloodButchererTuning
     +BladeLength:float[s] +HandleLength:float[s] +SwordScale:float[s] +WindupTicks:int[s] +ThrustTicks:int[s] +OpenTicks:int[s] +GapeTicks:int[s] +BiteTicks:int[s] +ChompCount:int[s] +ChompTicks:int[s] +ChompOpenAmount:float[s] +ChompDamageMultiplier:float[s] +ChompShake:float[s] +RecoverTicks:int[s] +DecideWaitTicks:int[s] +AttackSpeedInfluence:float[s] +SpeedScaleMin:float[s] +SpeedScaleMax:float[s] +PullTicks:int[s] +SpinTicks:int[s] +LockTicks:int[s] +SpinTopSpeed:float[s] +ChompTurnSpeed:float[s] +WindDownTicks:int[s] +WindDownRecoverTicks:int[s] +ReleaseHoldTicks:int[s] +ReleaseOpenTicks:int[s] +SpinOffset:float[s] +PinRatio:float[s] +LaunchSpeed:float[s] +LaunchAiOffTicks:int[s] +LaunchGravity:float[s] +LaunchMaxFall:float[s] +GripTickDamageMultiplier:float[s] +GripTickInterval:int[s] +LaunchDamageMultiplier:float[s] +MaxGrabSize:float[s] +LaunchShake:float[s] +SpinWhooshPitchLow:float[s] +SpinWhooshPitchHigh:float[s] +JawTrailCutTicks:int[s] +SpinSweepDamageMultiplier:float[s] +SpinSweepHitInterval:int[s] +SpinSweepMinSpeed:float[s] +SpinSweepWidth:float[s] +ImpactMinSpeed:float[s] +ImpactDamageMultiplier:float[s] +ImpactMaxMultiplier:float[s] +ImpactShake:float[s] +ImpactCooldownTicks:int[s] +TrailFullSpeed:float[s] +TrailFillTo:float[s] +SpinTrailLifeTicks:int[s] +SpinTrailRails:int[s] +SpinTrailOpacity:float[s] +SpinTrailSamplesPerTick:int[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TetherRestLength:float[s] +TetherWidth:float[s] +TetherThinWidth:float[s] +TetherSag:float[s] +TetherMaxSag:float[s] +TetherTrailing:float[s] +TetherMaxTrailing:float[s] +TetherWobble:float[s] +TetherSegments:int[s] +TetherDarkColor:Color[s] +TetherMidColor:Color[s] +TetherGlowColor:Color[s] +WindupPullback:float[s] +ThrustDistance:float[s] +BiteLungeDistance:float[s] +JawOpenDeg:float[s] +CatchPadding:float[s] +BiteDamageMultiplier:float[s] +OtherDamageMultiplier:float[s] +ClampShake:float[s] +PixelSize:float[s] +TeethCount:int[s] +ToothLength:float[s] +FlashTicks:int[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +TrailSamplesPerTick:int[s] +CrimsonColor:Color[s] +BrightColor:Color[s] +BoneColor:Color[s]
+
+### Content/Weapons/BlueMoon/
+**BlueMoonBlastProjectile.cs** uses: BlueMoonFx, BlueMoonTuning, IceFx, RemoteHitTracker
+  class BlueMoonBlastProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**BlueMoonFlailProjectile.cs** uses: BlueMoonBlastProjectile, BlueMoonFx, BlueMoonTuning, FlailFx, FlailProjectile, FlailTuning, Phase
+  class BlueMoonFlailProjectile : FlailProjectile
+    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
+**BlueMoonFx.cs** uses: FlailFx
+  class BlueMoonFx : FlailFx
+    +Instance:BlueMoonFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +WaterBlast(Vector2,float)
+**BlueMoonGlobalItem.cs** uses: BlueMoonFlailProjectile, FlailGlobalItem
+  class BlueMoonGlobalItem : FlailGlobalItem
+    #ItemType:int[ov] #ProjectileType:int[ov]
+**BlueMoonTuning.cs** uses: FlailTuning
+  class BlueMoonTuning : FlailTuning
+    +Instance:BlueMoonTuning[s] +ThrowSpeed(int)[ov] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +SpecialThrows:int +SpecialThrowTicks:int +SpecialSpread:float +SpecialHitCooldownTicks:int +BlastRadius:float +BlastDamageMultiplier:float +BlastKnockbackMultiplier:float +BlastLifeTicks:int +BlastWetTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
 
 ### Content/Weapons/DarkLance/
 **DarkLanceBlastProjectile.cs** uses: AreaEffect, DarkLanceFx, DarkLanceTuning, IceFx, RemoteHitTracker, ThrustFx, ThrustPalette
@@ -684,19 +726,21 @@ tModLoader/other bases -> project types:
 **SunfuryBlastProjectile.cs** uses: IceFx, PixelLine, RemoteHitTracker, SunfuryFx, SunfuryTuning
   class SunfuryBlastProjectile : ModProjectile
     +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
-**SunfuryFlailProjectile.cs** uses: AfterimageTrail, DetachedTrails, PixelTrail, RemoteHitTracker, SunfuryBlastProjectile, SunfuryFx, SunfuryTrailStyle, SunfuryTuning
-  class SunfuryFlailProjectile : ModProjectile
-    +Texture:string[ov] +Encode(Phase,int)[s] +Load()[ov] +Unload()[ov] +AI()[ov] +PostAI()[ov] +Colliding(Rectangle,Rectangle)[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-    enum Phase
-      {Charge, Throw, Caught, Special, Retract, Fail}
-    enum FailReason
-      {Undercharged, LockedChain, Mistimed}
+**SunfuryFlailFx.cs** uses: FlailFx, SunfuryFx
+  class SunfuryFlailFx : FlailFx
+    +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov]
+**SunfuryFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, PixelTrailStyle, SunfuryBlastProjectile, SunfuryFlailFx, SunfuryFlailTuning, SunfuryFx, SunfuryTrailStyle, SunfuryTuning
+  class SunfuryFlailProjectile : FlailProjectile
+    +Texture:string[ov] #ItemType:int[ov] #CreateTrailStyle(int)[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
+**SunfuryFlailTuning.cs** uses: FlailTuning, SunfuryTuning
+  class SunfuryFlailTuning : FlailTuning
+    +ChargeTicks(int)[ov] +MinReach:float[ov] +MaxReach:float[ov] +EllipseWidthRatio:float[ov] +ThrowSpeed(int)[ov] +ReleaseBlendTicks:int[ov] +MinHalfTicks:int[ov] +TierDamageMultiplier(int)[ov] +HitCooldownTicks:int[ov] +SpinHitPeriodFraction:float[ov] +SpinDamageMultiplier(int)[ov] +HeadSize:float[ov] +SpinRadiusMin:float[ov] +SpinRadiusMax:float[ov] +SpinRadiusSmoothing:float[ov] +SpinOmegaStart(int)[ov] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +CatchDistance:float[ov] +FailRetractSpeed:float[ov] +PixelSize:float[ov] +TrailLifeTicks:int[ov] +TrailWidth(int)[ov] +TrailJitter:float[ov] +AfterimageTicks:int[ov] +FlashTicks:int[ov] +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
 **SunfuryFx.cs** uses: CameraShake, MetaballLayer, MetaballLayers, SunfuryBurstStyle, SunfuryTuning
   static class SunfuryFx
     +ChargeGather(Vector2,int,float)[s] +SpinEmbers(Vector2,Vector2,int,float)[s] +TierComplete(Vector2,int)[s] +ThrowWhoosh(Vector2,int)[s] +ApexJingle(Vector2,int)[s] +Caught(Vector2,int)[s] +Fizzle(Vector2)[s] +LockedChain(Vector2)[s] +Mistimed(Vector2)[s] +CatchHead(Vector2)[s] +FlightDust(Vector2,Vector2,int)[s] +SpecialLaunch(Vector2)[s] +HitSparks(Vector2,int)[s] +SunBlast(Vector2,float)[s] +DrawLayers()[s] +DrawDisc(Vector2,float,Color,float)[s]
-**SunfuryGlobalItem.cs** uses: Phase, SunfuryFlailProjectile
-  class SunfuryGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**SunfuryGlobalItem.cs** uses: FlailGlobalItem, SunfuryFlailProjectile
+  class SunfuryGlobalItem : FlailGlobalItem
+    #ItemType:int[ov] #ProjectileType:int[ov]
 **SunfuryStyles.cs** uses: MetaballStyle, SunfuryTuning
   class SunfuryBurstStyle : MetaballStyle
     +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +DrawInProjectile:bool[ov] +Rise:float[ov] +Drag:float[ov] +SizeOverLife(float)[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]

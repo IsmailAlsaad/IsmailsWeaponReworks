@@ -74,6 +74,8 @@ Projectiles: {
 	CascadeBlastProjectile.DisplayName: Cascade Blast Projectile
 	PhasebladeSwingProjectile.DisplayName: Phaseblade Swing Projectile
 	PhasebladePlantedProjectile.DisplayName: Phaseblade Planted Projectile
+	BlueMoonBlastProjectile.DisplayName: Blue Moon Blast Projectile
+	BlueMoonFlailProjectile.DisplayName: Blue Moon Flail Projectile
 }
 
 Buffs: {
