@@ -41,6 +41,7 @@ namespace IsmailsWeaponReworks.Common.Flail
         protected virtual void OnFlailHit(NPC target, NPC.HitInfo hit, int damageDone) { }  // owner's client, after the hit sparks
         protected virtual PixelTrailStyle CreateTrailStyle(int tier) { return new FlailTrailStyle(Tuning, tier); }
         protected virtual bool SweepsPath => CurrentPhase == Phase.Charge;  // hit everything along the path the head travelled this tick (fast heads)
+        protected virtual bool RestartsOnHold => true;  // after the special, a held button restarts tier 1 when the head is caught (a flail whose head is gone turns it off)
 
         // Vanilla art until a <ProjectileName>.png exists next to the weapon's files.
         Asset<Texture2D> art;
@@ -170,7 +171,7 @@ namespace IsmailsWeaponReworks.Common.Flail
                     UpdateSpecial(owner);
                     break;
                 case Phase.Retract:
-                    UpdateReturn(owner, Tuning.RetractSpeed, Tuning.SpecialHangTicks, true, holding);
+                    UpdateReturn(owner, Tuning.RetractSpeed, Tuning.SpecialHangTicks, RestartsOnHold, holding);
                     break;
                 default:
                     UpdateReturn(owner, Tuning.FailRetractSpeed, 0, false, false);
@@ -456,7 +457,8 @@ namespace IsmailsWeaponReworks.Common.Flail
             Projectile.Center += toHand.SafeNormalize(Vector2.UnitX) * speed;
             if (CurrentPhase == Phase.Retract)
             {
-                trail?.Add(Projectile.Center);
+                if (!HeadHidden)
+                    trail?.Add(Projectile.Center);
                 Fx.FlightDust(Projectile.Center, toHand, 2);
             }
         }
@@ -487,7 +489,7 @@ namespace IsmailsWeaponReworks.Common.Flail
         }
 
         // The head is not drawn while it hangs inside the explosion.
-        protected bool HeadHidden => CurrentPhase == Phase.Retract && phaseTimer < Tuning.SpecialHangTicks;
+        protected virtual bool HeadHidden => CurrentPhase == Phase.Retract && phaseTimer < Tuning.SpecialHangTicks;
 
         // While spinning, the head hits everything along the path it travelled this tick, so a fast spin never skips an enemy.
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)

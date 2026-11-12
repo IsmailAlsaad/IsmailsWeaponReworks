@@ -76,6 +76,8 @@ Projectiles: {
 	PhasebladePlantedProjectile.DisplayName: Phaseblade Planted Projectile
 	BlueMoonBlastProjectile.DisplayName: Blue Moon Blast Projectile
 	BlueMoonFlailProjectile.DisplayName: Blue Moon Flail Projectile
+	MeatballFlailProjectile.DisplayName: Meatball Flail Projectile
+	MeatballHeadProjectile.DisplayName: Meatball Head Projectile
 }
 
 Buffs: {
