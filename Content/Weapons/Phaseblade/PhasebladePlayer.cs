@@ -11,5 +11,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public int LastPhase = -1;   // PhasebladeSwingProjectile.Phase of the previous swing, -1 = none yet
         public float LastEndArm;     // where the arm was when the previous swing ended (relative to its aim, wrapped to -180..180 degrees)
         public uint LastEndTick;     // Main.GameUpdateCount when it ended
+        public float LastEndWorldArm; // the same end pose as a world angle (a plant starts from it, whatever the aim was)
     }
 }

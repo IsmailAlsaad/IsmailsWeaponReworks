@@ -28,7 +28,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         // The projectile's own sprite is only a placeholder: the swing draws the held item's sprite (the color of the Phaseblade in the hand).
         public override string Texture => "Terraria/Images/Item_" + ItemID.BluePhaseblade;
 
-        public enum Phase { SwingDown = 0, SpinDown = 1, SpinUp = 2 }
+        public enum Phase { SwingDown = 0, SpinDown = 1, SpinUp = 2, Plant = 3 }
 
         Phase CurrentPhase => (Phase)(int)Projectile.ai[0];
         float StartArm => Projectile.ai[1];
@@ -38,7 +38,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         // A swing faces the side of its aim on every machine (so nobody's pose lags the synced direction).
         int Facing => Math.Cos(Aim) >= 0.0 ? 1 : -1;
         bool IsUp => CurrentPhase == Phase.SpinUp;
-        bool Spins => CurrentPhase != Phase.SwingDown;
+        bool Spins => CurrentPhase == Phase.SpinDown || CurrentPhase == Phase.SpinUp;
+        bool IsPlant => CurrentPhase == Phase.Plant;
         bool Loops => CurrentPhase == Phase.SpinDown;
         Color BladeColor => PhasebladeTuning.ColorOf(Owner.HeldItem.type);
 
@@ -81,14 +82,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         }
 
         // The arm and the blade as world angles (in the player's own frame, see ApplyPose); a swing is relative to its aim and mirrored by the facing.
+        // The plant keeps the facing-local angles (it does not follow the aim).
         float WorldArm(float arm)
         {
-            return Aim + Facing * arm;
+            return IsPlant ? HeldSwordPose.ToWorld(Facing, arm) : Aim + Facing * arm;
         }
 
         float WorldBlade(float arm, float tilt)
         {
-            return Aim + Facing * (arm + tilt);
+            return IsPlant ? HeldSwordPose.ToWorld(Facing, arm + tilt) : Aim + Facing * (arm + tilt);
         }
 
         // Where the pull back of a down swing ends (just above the top of the arc).
@@ -121,7 +123,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         int StrikeTicks => Spins ? PhasebladeTuning.SpinSwingTicks : PhasebladeTuning.SwingTicks;
         int StrikeStart => WindupTicks;
         int StrikeEnd => StrikeStart + StrikeTicks;
-        int TotalTicks => StrikeEnd + PhasebladeTuning.RecoverTicks;
+        int PlantImpactTick => PhasebladeTuning.PlantLiftTicks + PhasebladeTuning.PlantFlipTicks + PhasebladeTuning.PlantStabTicks;
+        int TotalTicks => IsPlant ? PlantImpactTick + PhasebladeTuning.PlantRecoverTicks : StrikeEnd + PhasebladeTuning.RecoverTicks;
 
         // +1 when the arm angle grows during the swing (down), -1 when it shrinks (up).
         float Travel => IsUp ? -1f : 1f;
@@ -156,7 +159,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             return tilt;
         }
 
-        bool Damaging => poseTime >= StrikeStart && poseTime <= StrikeEnd;
+        bool Damaging => !IsPlant && poseTime >= StrikeStart && poseTime <= StrikeEnd;
 
         // ---- AI ----
 
@@ -191,8 +194,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             hitOwnerTo = owner.Center;
             poseTime = timer;
 
-            armLocal = SwingArmAt(timer);
-            tiltRad = SwingTiltAt(timer);
+            if (IsPlant)
+            {
+                armLocal = PlantArmAt(timer);
+                tiltRad = PlantBladeAt(timer) - armLocal; // arm + tilt = the blade's facing-local angle
+            }
+            else
+            {
+                armLocal = SwingArmAt(timer);
+                tiltRad = SwingTiltAt(timer);
+            }
 
             owner.itemAnimation = 2; // keeps the item "in use" for as long as the blade is out
             owner.itemTime = 2;
@@ -214,6 +225,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
 
         void Effects()
         {
+            if (IsPlant)
+            {
+                PlantEffects();
+                return;
+            }
             Color color = BladeColor;
             if (ticks == 0 && Loops)
                 PhasebladeFx.PlayLoop(tipPosition);
@@ -241,6 +257,78 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
 
             if (timer >= strike && timer <= StrikeEnd)
                 Lighting.AddLight(tipPosition, color.ToVector3() * (0.7f + 0.4f * flash));
+        }
+
+        // ---- the plant (right click) ----
+
+        // The arm (facing-local): it lifts with a cubic ease-out, holds while the blade flips, stabs down accelerating, then settles to the rest pose.
+        float PlantArmAt(float time)
+        {
+            float lift = Math.Max(1, PhasebladeTuning.PlantLiftTicks);
+            float flip = PhasebladeTuning.PlantFlipTicks;
+            float stab = Math.Max(1, PhasebladeTuning.PlantStabTicks);
+            float raised = Rad(PhasebladeTuning.PlantRaisedArmDeg);
+            if (time < lift)
+            {
+                float k = MathHelper.Clamp(time / lift, 0f, 1f);
+                return MathHelper.Lerp(StartArm, raised, 1f - (float)Math.Pow(1f - k, 3));
+            }
+            if (time < lift + flip)
+                return raised;
+            if (time < PlantImpactTick)
+            {
+                float k = MathHelper.Clamp((time - lift - flip) / stab, 0f, 1f);
+                return MathHelper.Lerp(raised, Rad(PhasebladeTuning.PlantStabArmDeg), k * k);
+            }
+            float settle = MathHelper.SmoothStep(0f, 1f, (time - PlantImpactTick) / Math.Max(1, PhasebladeTuning.PlantRecoverTicks));
+            return MathHelper.Lerp(Rad(PhasebladeTuning.PlantStabArmDeg), Rad(PhasebladeTuning.PlantRestArmDeg), settle);
+        }
+
+        // The blade's own facing-local angle: up while the arm lifts, flipping over the front into point-down during the flip, point-down after.
+        float PlantBladeAt(float time)
+        {
+            float lift = Math.Max(1, PhasebladeTuning.PlantLiftTicks);
+            float flip = Math.Max(1, PhasebladeTuning.PlantFlipTicks);
+            if (time < lift)
+                return -MathHelper.PiOver2;
+            float k = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp((time - lift) / flip, 0f, 1f));
+            return MathHelper.Lerp(-MathHelper.PiOver2, MathHelper.PiOver2, k);
+        }
+
+        void PlantEffects()
+        {
+            Color color = BladeColor;
+            int t = (int)timer;
+            if (t == 0)
+            {
+                flash = 1f;
+                PhasebladeFx.PlayPlantLift(tipPosition);
+            }
+            if (t < PlantImpactTick)
+                Lighting.AddLight(tipPosition, color.ToVector3() * 0.7f);
+            if (t == PlantImpactTick)
+            {
+                PhasebladeFx.PlayPlant(tipPosition);
+                if (!FindGroundAt(out Vector2 ground))
+                    ground = tipPosition;
+                PhasebladeFx.PlantImpact(ground, color);
+                if (IsOwner)
+                    SpawnPlanted(ground);
+            }
+        }
+
+        bool FindGroundAt(out Vector2 ground)
+        {
+            return PhasebladePlantedProjectile.FindGround(Owner, tipPosition.X, out ground);
+        }
+
+        // Owner only: the planted blade stands on the ground where the held blade's tip landed, tip a few pixels in. It is a normal spawned projectile.
+        void SpawnPlanted(Vector2 ground)
+        {
+            float height = PhasebladeTuning.BladeLength * PhasebladeTuning.SwordScale;
+            Vector2 center = new Vector2(ground.X, ground.Y + 6f - height * 0.5f);
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), center, Vector2.Zero, ModContent.ProjectileType<PhasebladePlantedProjectile>(),
+                Projectile.damage, Projectile.knockBack, Projectile.owner, Owner.HeldItem.type, Facing, 0f);
         }
 
         // 'fraction' is how far between the previous tick and this one the sample is (0..1): the owner is placed where they were at that
@@ -338,8 +426,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             if (IsOwner)
             {
                 PhasebladePlayer state = Owner.GetModPlayer<PhasebladePlayer>();
-                state.LastPhase = (int)CurrentPhase;
+                state.LastPhase = IsPlant ? -1 : (int)CurrentPhase; // a plant ends the combo
                 state.LastEndArm = MathHelper.WrapAngle(armLocal);
+                state.LastEndWorldArm = WorldArm(armLocal);
                 state.LastEndTick = Main.GameUpdateCount;
             }
             DetachedTrails.Hand(trail);
@@ -351,6 +440,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public override bool PreDraw(ref Color lightColor)
         {
             trail?.Draw();
+            if (IsPlant && poseTime >= PlantImpactTick)
+                return false; // the blade is in the ground now (the planted projectile draws it)
 
             int itemType = Owner.HeldItem.type;
             if (!PhasebladeTuning.IsPhaseblade(itemType))

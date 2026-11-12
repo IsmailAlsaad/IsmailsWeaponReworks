@@ -1,6 +1,7 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Microsoft.Xna.Framework;
 using Terraria;
+using System.Collections.Generic;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -31,16 +32,48 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             item.UseSound = null;                 // the projectile plays its own sounds
         }
 
-        // One swing at a time.
+        public override bool AltFunctionUse(Item item, Player player)
+        {
+            return true; // right click plants the blade in the ground
+        }
+
+        // One swing at a time. A planted blade is pulled back by any click (the click is used up by it); a plant needs ground within reach.
         public override bool CanUseItem(Item item, Player player)
         {
-            return player.ownedProjectileCounts[ModContent.ProjectileType<PhasebladeSwingProjectile>()] <= 0;
+            if (player.ownedProjectileCounts[ModContent.ProjectileType<PhasebladeSwingProjectile>()] > 0)
+                return false;
+            if (player.ownedProjectileCounts[ModContent.ProjectileType<PhasebladePlantedProjectile>()] > 0)
+            {
+                PhasebladePlantedProjectile.PullBack(player);
+                return false;
+            }
+            if (player.altFunctionUse == 2)
+            {
+                int side = Main.MouseWorld.X >= player.Center.X ? 1 : -1;
+                return player.gravDir == 1f && PhasebladePlantedProjectile.FindGround(player, player.Center.X + side * PhasebladeTuning.PlantReachPx, out _);
+            }
+            return true;
         }
 
         public override bool Shoot(Item item, Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)
         {
             // Shoot only runs on the attacking player's own client; the projectile is then synced to everyone else.
             PhasebladePlayer state = player.GetModPlayer<PhasebladePlayer>();
+
+            // RIGHT CLICK: the plant swing. It starts from the arm's pose where the last swing ended (converted to the facing-local angles the plant uses).
+            if (player.altFunctionUse == 2)
+            {
+                int side = Main.MouseWorld.X >= player.Center.X ? 1 : -1;
+                bool justSwung = state.LastPhase >= 0 && Main.GameUpdateCount - state.LastEndTick <= (uint)PhasebladeTuning.ComboTicks;
+                float plantStart = justSwung ? MathHelper.WrapAngle(HeldSwordPose.ToWorld(side, state.LastEndWorldArm)) : MathHelper.ToRadians(PhasebladeTuning.PlantRestArmDeg);
+                Vector2 toCursor = Main.MouseWorld - player.MountedCenter;
+                float plantAim = toCursor.LengthSquared() > 1f ? toCursor.ToRotation() : (side == 1 ? 0f : MathHelper.Pi);
+                int plantDamage = (int)(damage * PhasebladeTuning.PlantedDamageMultiplier);
+                float plantKnockback = knockback * PhasebladeTuning.PlantedKnockbackMultiplier;
+                Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, plantDamage, plantKnockback, player.whoAmI, (float)PhasebladeSwingProjectile.Phase.Plant, plantStart, plantAim);
+                return false;
+            }
+
             bool combo = state.LastPhase >= 0 && Main.GameUpdateCount - state.LastEndTick <= (uint)PhasebladeTuning.ComboTicks;
 
             // The combo: swing down -> loop + swing down (spin) -> swing up (spin) -> swing down ... A fresh combo starts with the first swing down.
@@ -67,6 +100,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
 
             Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, scaledDamage, scaledKnockback, player.whoAmI, (float)phase, startArm, aim);
             return false;
+        }
+
+        public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
+        {
+            tooltips.Add(new TooltipLine(Mod, "Phaseblade1", "Right click to plant the blade in the ground, where it burns enemies"));
+            tooltips.Add(new TooltipLine(Mod, "Phaseblade2", "Click again to pull it back"));
         }
     }
 }

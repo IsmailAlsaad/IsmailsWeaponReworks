@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Common;
+using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.Audio;
 using Terraria.ID;
@@ -49,6 +50,52 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             if (Main.dedServ)
                 return;
             Spark(tip, -tipVelocity * 0.08f + Main.rand.NextVector2Circular(1f, 1f), 1.2f, color);
+        }
+
+        public static void PlayPlantLift(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.5f, Pitch = 0.1f, PitchVariance = 0.1f }, position);
+        }
+
+        public static void PlayPlant(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = -0.4f }, position);
+            SoundEngine.PlaySound(SoundID.Item15 with { Volume = 0.6f, Pitch = -0.3f }, position);
+        }
+
+        // The blade lands: a fan of sparks thrown up and sideways from the ground, and a short camera punch.
+        public static void PlantImpact(Vector2 ground, Color color)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 16; i++)
+            {
+                float angle = -MathHelper.PiOver2 + Main.rand.NextFloat(-1.3f, 1.3f);
+                Spark(ground, angle.ToRotationVector2() * Main.rand.NextFloat(1.5f, 5f), 1.3f, color);
+            }
+            CameraShake.Punch(ground, PhasebladeTuning.PlantShake, 10);
+        }
+
+        // An ember drifting up from the planted blade.
+        public static void PlantEmber(Vector2 position, Color color)
+        {
+            if (Main.dedServ)
+                return;
+            Spark(position + Main.rand.NextVector2Circular(5f, 3f), new Vector2(Main.rand.NextFloat(-0.4f, 0.4f), -Main.rand.NextFloat(0.8f, 2f)), 0.9f, color);
+        }
+
+        // The planted blade leaves the ground (pulled back, or its owner died or went away).
+        public static void Retract(Vector2 position, Color color)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 10; i++)
+                Spark(position + Main.rand.NextVector2Circular(6f, 20f), Main.rand.NextVector2Circular(2.5f, 2.5f), 1.2f, color);
+            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.5f, Pitch = -0.1f, PitchVariance = 0.1f }, position);
         }
 
         public static void HitSpark(Vector2 position, Color color)

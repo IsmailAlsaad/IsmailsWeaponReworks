@@ -16,6 +16,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public static float SpinDamageMultiplier => 1.25f;       // swings 2 and 3 (the spinning ones)
         public static float SwingDownKnockbackMultiplier => 1f;
         public static float SpinKnockbackMultiplier => 1.2f;
+        public static float PlantedDamageMultiplier => 0.5f;     // each burn hit of the planted blade (times the item's damage)
+        public static float PlantedKnockbackMultiplier => 0.3f;
+        public static int PlantedHitCooldownTicks => 20;         // an enemy touching the planted blade is hit again after this many ticks
+        public static int PlantedBurnTicks => 240;               // the On Fire (hellfire) debuff each hit applies
         public static int SpinHitCooldownTicks => 6;             // an enemy can be hit again by a spinning swing after this many ticks (strike 9 ticks: 5 = 2 hits, 3 to 4 = 3 hits)
 
         // ---- blade ----
@@ -45,6 +49,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public static float TiltLowDeg => 12f;        // ... and at the bottom
         public static int ComboTicks => 30;           // a swing started within this long after the last one continues the combo
         public static int FlashTicks => 10;
+
+        // ---- the plant (right click): the blade lifts up, flips into a dagger grip, and is driven into the ground in front of the feet ----
+        // Arm angles here are facing-local (0 = forward, negative = up), not relative to the aim.
+        public static int PlantLiftTicks => 9;        // the arm lifts, blade up
+        public static int PlantFlipTicks => 7;        // the blade flips over into a dagger grip (point down) above the head
+        public static int PlantStabTicks => 5;        // the stab: it accelerates, and the blade lands on the last tick
+        public static int PlantRecoverTicks => 9;     // the arm settles back after the blade is planted
+        public static float PlantRestArmDeg => 25f;   // where a plant starts when no swing came right before it, and where the arm settles
+        public static float PlantRaisedArmDeg => -80f;
+        public static float PlantStabArmDeg => -40f;  // the arm at the end of the stab (the blade points down from the hand: tune this if the tip lands above or below the ground)
+        public static float PlantReachPx => 20f;      // the planted blade stands this far in front of the player's centre
+        public static float PlantMaxDropPx => 70f;    // the ground must be within this far below the feet, or the plant is refused
+        public static float PlantedMaxDistancePx => 2400f; // a planted blade returns by itself when its owner is farther away than this (or dies)
+        public static float PlantedEmberChance => 0.35f;   // per tick
+        public static float PlantShake => 4f;         // camera punch when the blade lands
 
         // ---- pixel look ----
         public static float PixelSize => 2f;

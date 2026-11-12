@@ -73,6 +73,7 @@ Projectiles: {
 	CascadeProjectile.DisplayName: Cascade Projectile
 	CascadeBlastProjectile.DisplayName: Cascade Blast Projectile
 	PhasebladeSwingProjectile.DisplayName: Phaseblade Swing Projectile
+	PhasebladePlantedProjectile.DisplayName: Phaseblade Planted Projectile
 }
 
 Buffs: {
