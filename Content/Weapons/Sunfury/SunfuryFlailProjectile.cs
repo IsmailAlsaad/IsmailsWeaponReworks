@@ -70,6 +70,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         float headRotation;
         float flash;
         Vector2 releasePosition;
+        Vector2 sweepStart;      // where the spinning head was last tick (the hit sweeps from here to the head)
         Vector2 specialTarget;
         PixelTrail trail;
         AfterimageTrail afterimages;
@@ -277,10 +278,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
             // The head spins faster and wider as the charge fills.
             float eased = 1f - (1f - progress) * (1f - progress);
             float omega = MathHelper.Lerp(SunfuryTuning.SpinOmegaStart(tier), SunfuryTuning.SpinOmegaEnd(tier), eased);
+            if (IsOwner)
+                Projectile.localNPCHitCooldown = Math.Max(1, (int)(MathHelper.TwoPi / omega * SunfuryTuning.SpinHitPeriodFraction)); // about one hit per full circle
             spinAngle += omega * Facing;
             float targetRadius = MathHelper.Lerp(SunfuryTuning.SpinRadiusMin, SunfuryTuning.SpinRadiusMax, eased);
             spinRadius = MathHelper.Lerp(spinRadius, targetRadius, SunfuryTuning.SpinRadiusSmoothing);
             Vector2 previousCenter = Projectile.Center;
+            sweepStart = previousCenter;
             Projectile.Center = owner.MountedCenter + spinAngle.ToRotationVector2() * spinRadius;
             trail?.Add(Projectile.Center);
 
@@ -317,6 +321,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
             Vector2 toMouse = Main.MouseWorld - owner.MountedCenter;
             float reach = toMouse.Length();
             Projectile.ai[1] = toMouse.ToRotation();
+            Projectile.localNPCHitCooldown = SunfuryTuning.HitCooldownTicks;
             if (tier >= 3)
             {
                 Projectile.ai[2] = MathHelper.Clamp(reach, SunfuryTuning.SpecialMinReach, SunfuryTuning.SpecialMaxReach);
@@ -487,6 +492,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         // The head is not drawn while it hangs inside the explosion.
         bool HeadHidden => CurrentPhase == Phase.Retract && phaseTimer < SunfuryTuning.SpecialHangTicks;
 
+        // While spinning, the head hits everything along the path it travelled this tick, so a fast spin never skips an enemy.
+        public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
+        {
+            if (CurrentPhase != Phase.Charge)
+                return null;
+            Vector2 start = Vector2.DistanceSquared(sweepStart, Projectile.Center) > 120f * 120f ? Projectile.Center : sweepStart;
+            float unused = 0f;
+            return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), start, Projectile.Center, SunfuryTuning.HeadSize, ref unused);
+        }
+
         public override bool? CanDamage()
         {
             return CanHurt ? (bool?)null : false;
@@ -547,14 +562,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
             Main.EntitySpriteDraw(texture, position, null, Color.Lerp(lightColor, Color.White, 0.5f + 0.4f * flash), headRotation, origin, 1f, SpriteEffects.None, 0);
 
             // A ring of pixels pulses around the head when a tier's charge completes.
-            if (flash > 0.01f)
-            {
-                float grid = SunfuryTuning.PixelSize;
-                float ringRadius = 18f + 30f * (1f - flash);
-                int count = Math.Max(10, (int)(MathHelper.TwoPi * ringRadius / (grid * 3f)));
-                for (int i = 0; i < count; i++)
-                    IceFx.DrawPixel(Projectile.Center + (MathHelper.TwoPi * i / count).ToRotationVector2() * ringRadius, grid * 2f, SunfuryTuning.HotColor(tier) * flash, grid);
-            }
+            //if (flash > 0.01f)
+            //{
+            //    float grid = SunfuryTuning.PixelSize;
+            //    float ringRadius = 18f + 30f * (1f - flash);
+            //    int count = Math.Max(10, (int)(MathHelper.TwoPi * ringRadius / (grid * 3f)));
+            //    for (int i = 0; i < count; i++)
+            //        IceFx.DrawPixel(Projectile.Center + (MathHelper.TwoPi * i / count).ToRotationVector2() * ringRadius, grid * 2f, SunfuryTuning.HotColor(tier) * flash, grid);
+            //}
             return false;
         }
 

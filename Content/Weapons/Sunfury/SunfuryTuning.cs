@@ -27,6 +27,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         // ---- damage (locked in the moment the tier's charge completes) ----
         public static float TierDamageMultiplier(int tier) { return Pick(tier, 1f, 1.7f, 2.6f); }
         public static int HitCooldownTicks => 10;
+        public static float SpinHitPeriodFraction => 0.85f;  // an enemy can be hit again after this fraction of one full circle (below 1 so the next pass never arrives early)
         public static float SpinDamageMultiplier(int tier) { return Pick(tier, 0.5f, 0.5f, 0.5f); }  // of that tier's damage, for the head hurting enemies while it spins near you (0 = harmless spin)
         public static float HeadSize => 30f;
         public static int BurnTicks => 180;               // On Fire from a head hit

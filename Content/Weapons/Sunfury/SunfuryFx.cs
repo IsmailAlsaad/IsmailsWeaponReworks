@@ -180,16 +180,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
                 return;
 
             // Three rings of fire plus a spray of streaks and a column of smoke.
-            for (int ring = 0; ring < 3; ring++)
-            {
-                int count = 36 + 14 * ring;
-                float speed = 7f + 5f * ring;
-                for (int i = 0; i < count; i++)
-                {
-                    Vector2 direction = (MathHelper.TwoPi * i / count + ring * 0.2f).ToRotationVector2();
-                    Fire(center + direction * 12f, direction * speed, 2f - 0.3f * ring);
-                }
-            }
+            //for (int ring = 0; ring < 3; ring++)
+            //{
+            //    int count = 36 + 14 * ring;
+            //    float speed = 7f + 5f * ring;
+            //    for (int i = 0; i < count; i++)
+            //    {
+            //        Vector2 direction = (MathHelper.TwoPi * i / count + ring * 0.2f).ToRotationVector2();
+            //        Fire(center + direction * 12f, direction * speed, 2f - 0.3f * ring);
+            //    }
+            //}
             for (int i = 0; i < 70; i++)
                 Fire(center, Main.rand.NextVector2Circular(radius * 0.045f, radius * 0.045f), Main.rand.NextFloat(1.5f, 2.6f));
             for (int i = 0; i < 24; i++)

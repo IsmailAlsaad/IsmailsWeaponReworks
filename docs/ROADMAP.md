@@ -267,6 +267,8 @@ Patch 2 (2026-11-12): the locked-chain failure and the window grace tunables are
 
 Patch 3 (2026-11-12): while charging, the head also damages enemies it touches (the tier's damage x `SunfuryTuning.SpinDamageMultiplier(tier)`, 0.5 by default; the owner's client computes damage, other machines only draw hit sparks). The tier-complete flash ring and the sun explosion now also spawn fire metaballs from the shared tool (`SunfuryBurstStyle`, new file `SunfuryStyles.cs`, numbers in `SunfuryTuning`, the Volcano's five-band fire ramp as `FireFill`); they are visual only, spawned on every machine from the state it already has. Test: hold-spin the head into an enemy: it takes small repeated hits and catches fire; a tier completing shows a glob and a ring of droplets that merge and cool; the tier 3 sun shows big merging globs and droplets over the disc, in front of enemies; two players see the same.
 
+Patch 3b (2026-11-12): the spinning head sweeps its hitbox along the path it travelled each tick (no skipping at high spin speed) and its per-enemy cooldown is `SpinHitPeriodFraction` (0.85) of one full circle, so the head hits about once per circle; the charge-complete white pixel ring is removed. Test: spin into one enemy at low and full charge and count hits per circle.
+
 Next (for a new chat): test Sunfury, then report results; after that the next flail (Ball O' Hurt, Blue Moon, Flamelash-type reworks and so on) gets its own section here and its own tier 3 special, and its patch extracts the loop into `Common/Flail/`.
 
 ## 10. Starfury (vanilla `ItemID.Starfury`) [patches 1-7 applied, untested]
