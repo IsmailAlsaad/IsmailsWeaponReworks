@@ -331,22 +331,39 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
                 Lighting.AddLight(tipPosition, color.ToVector3() * 0.7f);
             if (t == PlantImpactTick)
             {
-                if (!PhasebladePlantedProjectile.FindGround(Owner, PlantX, out Vector2 ground))
-                    ground = new Vector2(PlantX, tipPosition.Y);
-                PhasebladeFx.PlayPlant(ground);
-                PhasebladeFx.PlantImpact(ground, color);
-                if (IsOwner)
-                    SpawnPlanted(ground);
+                // Ground within reach of the feet: the blade is driven in right here. Otherwise (airborne) it leaves the hand and is shot straight down.
+                if (PhasebladePlantedProjectile.FindGround(Owner, PlantX, out Vector2 ground, PhasebladeTuning.PlantGroundedDropPx))
+                {
+                    PhasebladeFx.PlayPlant(ground);
+                    PhasebladeFx.PlantImpact(ground, color);
+                    if (IsOwner)
+                        SpawnPlanted(ground);
+                }
+                else
+                {
+                    PhasebladeFx.PlayPlantLift(tipPosition);
+                    if (IsOwner)
+                        SpawnFalling();
+                }
             }
         }
 
         // Owner only: the planted blade stands on the ground PlantReachPx in front of the player, its tip PlantSinkPx into the tile (the tile hides that
-        // part, see PhasebladePlantedProjectile.DrawBehind). It is a normal spawned projectile.
+        // part, see PhasebladePlantedProjectile.DrawBehind). It is a normal spawned projectile, already in the planted state (ai[2] = 2).
         void SpawnPlanted(Vector2 ground)
         {
             float height = PhasebladeTuning.BladeLength * PhasebladeTuning.SwordScale;
             Vector2 center = new Vector2(ground.X, ground.Y + PhasebladeTuning.PlantSinkPx - height * 0.5f);
             Projectile.NewProjectile(Projectile.GetSource_FromThis(), center, Vector2.Zero, ModContent.ProjectileType<PhasebladePlantedProjectile>(),
+                Projectile.damage, Projectile.knockBack, Projectile.owner, Owner.HeldItem.type, Facing, 2f);
+        }
+
+        // Owner only: the blade leaves the hand's tip pointing down and falls straight down (ai[2] = 0 = falling) until it meets a tile.
+        void SpawnFalling()
+        {
+            float height = PhasebladeTuning.BladeLength * PhasebladeTuning.SwordScale;
+            Vector2 center = new Vector2(PlantX, tipPosition.Y - height * 0.5f);
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), center, new Vector2(0f, PhasebladeTuning.PlantDropSpeed), ModContent.ProjectileType<PhasebladePlantedProjectile>(),
                 Projectile.damage, Projectile.knockBack, Projectile.owner, Owner.HeldItem.type, Facing, 0f);
         }
 

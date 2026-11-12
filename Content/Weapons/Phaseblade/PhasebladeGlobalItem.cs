@@ -37,21 +37,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             return true; // right click plants the blade in the ground
         }
 
-        // One swing at a time. A planted blade is pulled back by any click (the click is used up by it); a plant needs ground within reach.
+        // One swing at a time. A planted (or falling) blade is pulled back by any click (the click is used up by it; a LEFT click also starts the combo
+        // when the blade is caught). A plant works anywhere: on the ground it is driven in, in the air the blade is shot straight down.
         public override bool CanUseItem(Item item, Player player)
         {
             if (player.ownedProjectileCounts[ModContent.ProjectileType<PhasebladeSwingProjectile>()] > 0)
                 return false;
+            if (Main.GameUpdateCount - player.GetModPlayer<PhasebladePlayer>().LastStartTick < 3)
+                return false; // a swing started on the last ticks and is not counted yet
             if (player.ownedProjectileCounts[ModContent.ProjectileType<PhasebladePlantedProjectile>()] > 0)
             {
-                PhasebladePlantedProjectile.PullBack(player);
+                PhasebladePlantedProjectile.PullBack(player, player.altFunctionUse != 2);
                 return false;
             }
             if (player.altFunctionUse == 2)
-            {
-                int side = Main.MouseWorld.X >= player.Center.X ? 1 : -1;
-                return player.gravDir == 1f && PhasebladePlantedProjectile.FindGround(player, player.Center.X + side * PhasebladeTuning.PlantReachPx, out _);
-            }
+                return player.gravDir == 1f;
             return true;
         }
 
@@ -71,9 +71,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
                 int plantDamage = (int)(damage * PhasebladeTuning.PlantedDamageMultiplier);
                 float plantKnockback = knockback * PhasebladeTuning.PlantedKnockbackMultiplier;
                 Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, plantDamage, plantKnockback, player.whoAmI, (float)PhasebladeSwingProjectile.Phase.Plant, plantStart, plantAim);
+                state.LastStartTick = Main.GameUpdateCount;
                 return false;
             }
 
+            StartCombo(player, source, damage, knockback);
+            return false;
+        }
+
+        // Starts the next swing of the combo (owner only). Left click uses it through Shoot; a blade that was pulled back by a left click uses it when
+        // it is caught.
+        public static void StartCombo(Player player, IEntitySource source, int damage, float knockback)
+        {
+            PhasebladePlayer state = player.GetModPlayer<PhasebladePlayer>();
+            int type = ModContent.ProjectileType<PhasebladeSwingProjectile>();
             bool combo = state.LastPhase >= 0 && Main.GameUpdateCount - state.LastEndTick <= (uint)PhasebladeTuning.ComboTicks;
 
             // The combo: swing down -> loop + swing down (spin) -> swing up (spin) -> swing down ... A fresh combo starts with the first swing down.
@@ -99,13 +110,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             float scaledKnockback = knockback * (spin ? PhasebladeTuning.SpinKnockbackMultiplier : PhasebladeTuning.SwingDownKnockbackMultiplier);
 
             Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, scaledDamage, scaledKnockback, player.whoAmI, (float)phase, startArm, aim);
-            return false;
+            state.LastStartTick = Main.GameUpdateCount;
         }
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Phaseblade1", "Right click to plant the blade in the ground, where it burns enemies"));
-            tooltips.Add(new TooltipLine(Mod, "Phaseblade2", "Click again to pull it back"));
+            tooltips.Add(new TooltipLine(Mod, "Phaseblade1", "Right click to plant the blade in the ground (in the air it shoots straight down)"));
+            tooltips.Add(new TooltipLine(Mod, "Phaseblade2", "Click again to call it back: it flies to your hand, hurting enemies on the way"));
         }
     }
 }

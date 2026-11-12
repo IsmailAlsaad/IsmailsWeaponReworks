@@ -19,7 +19,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public static float PlantedDamageMultiplier => 0.5f;     // each burn hit of the planted blade (times the item's damage)
         public static float PlantedKnockbackMultiplier => 0.3f;
         public static int PlantedHitCooldownTicks => 20;         // an enemy touching the planted blade is hit again after this many ticks
-        public static int PlantedBurnTicks => 240;               // the On Fire (hellfire) debuff each hit applies
+        public static float ReturnDamageFactor => 2f;            // the blade flying back to the hand hits this much harder than the planted blade (on top of PlantedDamageMultiplier: 0.5 x 2 = the item's damage)
         public static int SpinHitCooldownTicks => 6;             // an enemy can be hit again by a spinning swing after this many ticks (strike 9 ticks: 5 = 2 hits, 3 to 4 = 3 hits)
 
         // ---- blade ----
@@ -59,10 +59,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public static float PlantRaisedArmDeg => -80f;
         public static float PlantSinkPx => 14f;       // how far the blade's tip sinks into the tile below the ground surface (the tile hides that part: the planted blade is drawn behind tiles)
         public static float PlantReachPx => 20f;      // the planted blade stands this far in front of the player's centre; the arm's end pose is solved to reach it (the arm can only reach so far)
-        public static float PlantMaxDropPx => 70f;    // the ground must be within this far below the feet, or the plant is refused
+        public static float PlantGroundedDropPx => 24f; // ground within this far below the feet = a standing plant; farther (airborne) = the blade is shot straight down until it hits a tile (no distance limit)
+        public static float PlantDropSpeed => 26f;    // the shot blade's speed straight down, in pixels per tick
         public static float PlantedMaxDistancePx => 2400f; // a planted blade returns by itself when its owner is farther away than this (or dies)
         public static float PlantedEmberChance => 0.35f;   // per tick
         public static float PlantShake => 4f;         // camera punch when the blade lands
+
+        // ---- the pull back (any click while the blade is planted or falling): it leaves the ground, spins, flies to the hand, hits what it crosses ----
+        public static float ReturnPopSpeed => 7f;     // it pops up out of the ground at this speed before the pull takes over
+        public static float ReturnAcceleration => 1.6f; // pull toward the player's current position, per tick (BoomerangFlight.StepForceReturn)
+        public static float ReturnDrag => 0.97f;      // velocity kept per tick; below 1 so the flight spirals in instead of orbiting
+        public static float ReturnMaxSpeed => 24f;
+        public static float ReturnCatchDistance => 28f;
+        public static float ReturnSpinSpeed => 0.55f; // radians per tick
+        public static int ReturnHitCooldownTicks => 12; // the same enemy can be hit again on the way back after this long
+        public static int ReturnHitboxPx => 44;       // the flying blade's square hitbox
+        public static int ReturnTimeoutTicks => 420;  // safety: a returning blade that was never caught is removed after this long
 
         // ---- pixel look ----
         public static float PixelSize => 2f;

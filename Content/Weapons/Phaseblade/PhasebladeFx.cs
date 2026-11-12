@@ -91,7 +91,27 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             Spark(position + Main.rand.NextVector2Circular(5f, 3f), new Vector2(Main.rand.NextFloat(-0.4f, 0.4f), -Main.rand.NextFloat(0.8f, 2f)), 0.9f, color);
         }
 
-        // The planted blade leaves the ground (pulled back, or its owner died or went away).
+        // The blade tears out of the ground on its way back.
+        public static void PullOut(Vector2 position, Color color)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 10; i++)
+                Spark(position + Main.rand.NextVector2Circular(6f, 20f), Main.rand.NextVector2Circular(2.5f, 2.5f) + new Vector2(0f, -1.5f), 1.2f, color);
+            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.55f, Pitch = 0.25f, PitchVariance = 0.1f }, position);
+        }
+
+        // The blade slaps back into the hand.
+        public static void Catch(Vector2 position, Color color)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 8; i++)
+                Spark(position, Main.rand.NextVector2Circular(3f, 3f), 1.2f, color);
+            SoundEngine.PlaySound(SoundID.Item15 with { Volume = 0.5f, Pitch = 0.5f, PitchVariance = 0.1f }, position);
+        }
+
+        // The blade goes without being caught (its owner died or went away, or it fell out of the world).
         public static void Retract(Vector2 position, Color color)
         {
             if (Main.dedServ)
