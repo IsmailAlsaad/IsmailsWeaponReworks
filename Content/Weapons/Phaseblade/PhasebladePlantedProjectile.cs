@@ -100,6 +100,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             return false;
         }
 
+        // True while a blade of this Phaseblade type is flying back to the hand (not caught yet).
+        public static bool IsReturning(Player player, int itemType)
+        {
+            int type = ModContent.ProjectileType<PhasebladePlantedProjectile>();
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile other = Main.projectile[i];
+                if (other.active && other.owner == player.whoAmI && other.type == type && (int)other.ai[0] == itemType && other.ai[2] == 1f)
+                    return true;
+            }
+            return false;
+        }
+
         // Owner only (item use): every blade of the player that is planted or falling leaves for the hand. A LEFT click (thenSwing) also starts the
         // combo as soon as the blade is caught.
         public static void PullBack(Player player, int itemType, bool thenSwing)

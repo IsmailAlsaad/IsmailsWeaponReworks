@@ -54,7 +54,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
                 return false;
             }
             if (player.altFunctionUse == 2)
-                return player.gravDir == 1f;
+                return player.gravDir == 1f && !PhasebladePlantedProjectile.IsReturning(player, item.type); // no second plant until the first blade is caught
             return true;
         }
 

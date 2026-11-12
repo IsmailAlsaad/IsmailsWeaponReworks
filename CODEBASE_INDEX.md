@@ -567,7 +567,7 @@ tModLoader/other bases -> project types:
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +StartCombo(Player,IEntitySource,int,float)[s] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **PhasebladePlantedProjectile.cs** uses: HeldSwordPose, PhasebladeFx, PhasebladeGlobalItem, PhasebladePlayer, PhasebladeTuning, RemoteHitTracker
   class PhasebladePlantedProjectile : ModProjectile
-    +Texture:string[ov] +FindTileBelow(float,float,float,out Vector2)[s] +FindGround(Player,float,out Vector2,float)[s] +Has(Player,int)[s] +PullBack(Player,int,bool)[s] +AI()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +DrawBehind(int,List<int>,List<int>,List<int>,List<int>,List<int>)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +FindTileBelow(float,float,float,out Vector2)[s] +FindGround(Player,float,out Vector2,float)[s] +Has(Player,int)[s] +IsReturning(Player,int)[s] +PullBack(Player,int,bool)[s] +AI()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +DrawBehind(int,List<int>,List<int>,List<int>,List<int>,List<int>)[ov] +PreDraw(ref Color)[ov]
 **PhasebladePlayer.cs**
   class PhasebladePlayer : ModPlayer
     +LastPhase:int +LastEndArm:float +LastEndTick:uint +LastEndWorldArm:float +SwingAfterCatch:bool +LastStartTick:uint
