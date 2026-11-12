@@ -42,6 +42,8 @@ namespace IsmailsWeaponReworks.Common.Flail
         protected virtual PixelTrailStyle CreateTrailStyle(int tier) { return new FlailTrailStyle(Tuning, tier); }
         protected virtual bool SweepsPath => CurrentPhase == Phase.Charge;  // hit everything along the path the head travelled this tick (fast heads)
         protected virtual bool RestartsOnHold => true;  // after the special, a held button restarts tier 1 when the head is caught (a flail whose head is gone turns it off)
+        protected virtual Texture2D HeadTextureOverride() { return null; }   // a texture that replaces the head art (a seed or variant); null = the normal art
+        protected virtual Texture2D ChainTextureOverride() { return null; }  // a texture that replaces the chain art; null = the vanilla chain
 
         // Vanilla art until a <ProjectileName>.png exists next to the weapon's files.
         Asset<Texture2D> art;
@@ -541,6 +543,9 @@ namespace IsmailsWeaponReworks.Common.Flail
 
         Texture2D HeadTexture()
         {
+            Texture2D overrideArt = HeadTextureOverride();
+            if (overrideArt != null)
+                return overrideArt;
             if (!artTried)
             {
                 artTried = true;
@@ -593,7 +598,7 @@ namespace IsmailsWeaponReworks.Common.Flail
         void DrawChain(Vector2 hand, Vector2 head)
         {
             chainAsset ??= ModContent.Request<Texture2D>("Terraria/Images/" + Tuning.ChainName);
-            Texture2D chain = chainAsset.Value;
+            Texture2D chain = ChainTextureOverride() ?? chainAsset.Value;
             Vector2 span = hand - head;
             float length = span.Length();
             if (length < 1f)

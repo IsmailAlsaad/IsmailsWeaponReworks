@@ -50,6 +50,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
         PixelTrail trail;
         Asset<Texture2D> art;
         bool artTried;
+        Asset<Texture2D> swedishArt;   // the getfixedboi seed's head art, shared with the flail head (see MeatballSwedish)
+        bool swedishTried;
 
         public override void SetDefaults()
         {
@@ -336,6 +338,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
 
         Texture2D HeadTexture()
         {
+            Texture2D swedish = MeatballSwedish.Texture("MeatballProjectile_Swedish", ref swedishArt, ref swedishTried);
+            if (swedish != null)
+                return swedish;
             if (!artTried)
             {
                 artTried = true;

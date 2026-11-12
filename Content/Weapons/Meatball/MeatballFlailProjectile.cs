@@ -1,5 +1,7 @@
 ﻿using IsmailsWeaponReworks.Common.Flail;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
 using System;
 using Terraria;
 using Terraria.ID;
@@ -29,6 +31,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
         protected override bool RestartsOnHold => true;                        // chain home + button held = tier 1 spins at once (the ball does not matter)
 
         static MeatballTuning Meat => MeatballTuning.Instance;
+
+        // The getfixedboi seed's own head and chain art (see MeatballSwedish).
+        Asset<Texture2D> swedishHead;
+        Asset<Texture2D> swedishChain;
+        bool swedishHeadTried;
+        bool swedishChainTried;
+
+        protected override Texture2D HeadTextureOverride()
+        {
+            return MeatballSwedish.Texture("MeatballProjectile_Swedish", ref swedishHead, ref swedishHeadTried);
+        }
+
+        protected override Texture2D ChainTextureOverride()
+        {
+            return MeatballSwedish.Texture("MeatballChain_Swedish", ref swedishChain, ref swedishChainTried);
+        }
 
         Vector2 specialTarget;
 
