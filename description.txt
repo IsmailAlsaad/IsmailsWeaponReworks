@@ -25,5 +25,5 @@ all boomerangs
 - No music/sound was made by AI
 - No game mechanics/features were designed by AI
 - No creative freedom were given to AI
-- Every decision, design, and idea is intentional human thought, plan and creativity
 - AI was only used for assistance in backend code writing
+- Every decision, design, and idea is intentional human thought, plan and creativity
