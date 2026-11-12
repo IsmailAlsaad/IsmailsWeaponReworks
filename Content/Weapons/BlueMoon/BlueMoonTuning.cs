@@ -13,13 +13,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.BlueMoon
         public static BlueMoonTuning Instance { get; } = new BlueMoonTuning();
 
         // ---- the shared loop, Blue Moon flavor ----
-        public override float ThrowSpeed(int tier) { return Pick(tier, 28f, 34f, 40f); }
+        public override float ThrowSpeed(int tier) { return Pick(tier, 28f, 40f, 40f); }
         public override float SpinOmegaEnd(int tier) { return Pick(tier, 0.5f, 0.6f, 0.7f); }
         public override float SpecialMinReach => 6f * 16f;
-        public override float SpecialMaxReach => 16f * 16f;
+        public override float SpecialMaxReach => 30f * 16f;
         public override float SpecialPathDamageMultiplier => 0.7f;  // of the tier 3 damage, for every pass of the head during the special
         public override int SpecialHangTicks => 0;                  // the head is never hidden: it is the one doing the hitting
         public override float RetractSpeed => 40f;
+        public override int TrailLifeTicks => 16;
 
         // ---- tier 3 special: six very fast throws of the regular arc, alternating the regular and the mirrored one ----
         public int SpecialThrows => 6;
