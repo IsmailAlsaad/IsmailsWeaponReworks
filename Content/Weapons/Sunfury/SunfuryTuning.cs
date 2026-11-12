@@ -14,9 +14,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
 
         // ---- the elliptical throw (tiers 1 and 2) ----
         public static float MinReach => 7f * 16f;         // distance hand to apex (the cursor), clamped to this range
-        public static float MaxReach => 22f * 16f;
+        public static float MaxReach => 40f * 16f;
         public static float EllipseWidthRatio => 0.42f;   // half-width of the ellipse divided by half its length
-        public static float ThrowSpeed(int tier) { return Pick(tier, 12f, 17f, 17f); }  // px per tick along the path; this sets the retract window
+        public static float ThrowSpeed(int tier)
+        {
+            return Pick(tier, 26, 32, 40);
+            //return 32f;
+        }  // px per tick along the path; this sets the retract window
         public static int ReleaseBlendTicks => 5;         // the head glides from the spin position onto the ellipse in this many ticks
         public static int MinHalfTicks => 10;
 
@@ -31,13 +35,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         public static float SpinRadiusMax => 52f;
         public static float SpinRadiusSmoothing => 0.25f;
         public static float SpinOmegaStart(int tier) { return Pick(tier, 0.18f, 0.18f, 0.18f); }  // radians per tick when the charge begins (per tier)
-        public static float SpinOmegaEnd(int tier) { return Pick(tier, 0.75f, 0.75f, 0.75f); }     // radians per tick when the charge is complete (per tier)
+        public static float SpinOmegaEnd(int tier) { return Pick(tier, 0.55f, 0.65f, 0.75f); }     // radians per tick when the charge is complete (per tier)
 
         // ---- tier 3 special: straight throw, sun explosion, retract ----
-        public static float SpecialSpeed => 30f;
+        public static float SpecialSpeed => 50f;
         public static float SpecialMinReach => 5f * 16f;
         public static float SpecialMaxReach => 40f * 16f;
-        public static bool SpecialStopsOnTiles => true;   // the head detonates where it hits a block instead of passing through
+        public static bool SpecialStopsOnTiles => false;   // the head detonates where it hits a block instead of passing through
         public static float SpecialPathDamageMultiplier => 0.6f;  // of the tier 3 damage, for the head itself on its way out
         public static int SpecialHangTicks => 14;         // the head is gone (it IS the sun) this long before it comes back
         public static float RetractSpeed => 34f;
@@ -56,12 +60,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         public static float PixelSize => 2f;
         public static int TrailLifeTicks => 22;
         public static float TrailWidth(int tier) { return Pick(tier, 10f, 14f, 22f); }
-        public static float TrailJitter => 1.8f;
+        public static float TrailJitter => 0f;
         public static int AfterimageTicks => 12;
         public static int FlashTicks => 12;
-        public static Color GlowColor(int tier) { return Pick(tier, new Color(255, 110, 30, 0), new Color(255, 160, 50, 0), new Color(255, 215, 110, 0)); }
-        public static Color HotColor(int tier) { return Pick(tier, new Color(255, 200, 90, 0), new Color(255, 230, 140, 0), new Color(255, 250, 210, 0)); }
-        public static string ChainName => "Chain4";       // Terraria/Images/<this>: the Sunfury's vanilla chain. If the look is wrong try another Chain1..Chain43
+        public static Color GlowColor(int tier)
+        {
+            //return Pick(tier, new Color(255, 110, 30, 0), new Color(255, 160, 50, 0), new Color(255, 215, 110, 0));
+            return new Color(255, 110, 30, 0);
+        }
+        public static Color HotColor(int tier) 
+        {
+            //return Pick(tier, new Color(255, 200, 90, 0), new Color(255, 230, 140, 0), new Color(255, 250, 210, 0)); 
+            return new Color(255, 200, 90, 0);
+        }
+        public static string ChainName => "Chain6";
 
         static T Pick<T>(int tier, T one, T two, T three)
         {

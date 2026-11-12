@@ -55,9 +55,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
                 Vector2 direction = (MathHelper.TwoPi * i / count).ToRotationVector2();
                 Fire(head + direction * 10f, direction * (3f + 1.2f * tier), 1.2f + 0.2f * tier);
             }
-            SoundEngine.PlaySound(SoundID.Item25 with { Volume = 0.7f, Pitch = -0.2f + 0.25f * tier }, head);
-            if (tier >= 3)
-                SoundEngine.PlaySound(SoundID.Item45 with { Volume = 0.6f, Pitch = 0.1f }, head);
+            SoundEngine.PlaySound(SoundID.Item25 with { Volume = 0.7f, Pitch = -0.2f + 0.2f * tier }, head);
+            //if (tier >= 3)
+                //SoundEngine.PlaySound(SoundID.Item45 with { Volume = 0.6f, Pitch = 0.5f }, head);
         }
 
         // ---- throwing and the window ----
@@ -76,7 +76,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item35 with { Volume = 0.9f, Pitch = 0.1f + 0.1f * tier }, head);
+            //SoundEngine.PlaySound(SoundID.Item35 with { Volume = 0.9f, Pitch = 0.1f + 0.1f * tier }, head);
             for (int i = 0; i < 10; i++)
                 Fire(head, Main.rand.NextVector2Circular(2.5f, 2.5f), 1f);
         }
@@ -88,7 +88,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
                 return;
             for (int i = 0; i < 8; i++)
                 Fire(hand + Main.rand.NextVector2Circular(10f, 10f), Main.rand.NextVector2Circular(2.5f, 2.5f), 1.1f);
-            SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.6f, Pitch = 0.2f * nextTier }, hand);
+            //SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.6f, Pitch = 0.2f * nextTier }, hand);
+            SoundEngine.PlaySound(SoundID.Item45 with { Volume = 0.8f, Pitch = -0.7f + 0.4f * nextTier }, hand);
+
         }
 
         // ---- mistakes ----

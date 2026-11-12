@@ -519,10 +519,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Sunfury
             Player owner = Owner;
             afterimages?.Draw();
             trail?.Draw();
+
+            DrawChain(owner.MountedCenter, Projectile.Center); // the chain stays while the hidden head hangs in the explosion
+            
             if (HeadHidden)
                 return false;
-
-            DrawChain(owner.MountedCenter, Projectile.Center);
 
             Texture2D texture = HeadTexture();
             Vector2 origin = texture.Size() * 0.5f;
