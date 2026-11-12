@@ -202,12 +202,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             Projectile.rotation += PhasebladeTuning.ReturnSpinSpeed * Facing;
             if (Main.rand.NextBool(2))
                 PhasebladeFx.PlantEmber(Projectile.Center, BladeColor);
-            if (BoomerangFlight.StepForceReturn(Projectile, owner, PhasebladeTuning.ReturnAcceleration, PhasebladeTuning.ReturnMaxSpeed, PhasebladeTuning.ReturnDrag, PhasebladeTuning.ReturnCatchDistance))
+
+            // A straight line: the velocity always points exactly at the player's current position. The speed starts at ReturnPopSpeed and grows by
+            // ReturnAcceleration per tick up to ReturnMaxSpeed. Caught when the blade is within a step or ReturnCatchDistance of the player.
+            Vector2 toOwner = owner.Center - Projectile.Center;
+            float distance = toOwner.Length();
+            float speed = Math.Min(PhasebladeTuning.ReturnMaxSpeed, Math.Max(Projectile.velocity.Length(), PhasebladeTuning.ReturnPopSpeed) + PhasebladeTuning.ReturnAcceleration);
+            if (distance <= Math.Max(speed, PhasebladeTuning.ReturnCatchDistance))
             {
                 caught = true;
                 Projectile.Kill();
                 return true;
             }
+            Projectile.velocity = toOwner / distance * speed;
             return false;
         }
 
