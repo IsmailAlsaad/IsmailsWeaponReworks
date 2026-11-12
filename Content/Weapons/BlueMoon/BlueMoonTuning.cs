@@ -22,6 +22,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BlueMoon
         public override float RetractSpeed => 40f;
         public override int TrailLifeTicks => 16;
 
+        public override float MinReach => 7f * 16f;         // distance hand to apex (the cursor), clamped to this range
+        public override float MaxReach => 30f * 16f;
+
         // ---- tier 3 special: six very fast throws of the regular arc, alternating the regular and the mirrored one ----
         public int SpecialThrows => 6;
         public int SpecialThrowTicks => 10;              // one whole arc (out and back)

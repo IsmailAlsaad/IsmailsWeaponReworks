@@ -20,6 +20,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.BallOHurt
         public override float RetractSpeed => 48f;                  // the snapped chain whips back to the hand when the ball tears loose
         public override int AfterimageTicks => 18;                  // long afterimages: the loose ball is very fast
         public override int TrailLifeTicks => 18;
+        public override float MinReach => 7f * 16f;         // distance hand to apex (the cursor), clamped to this range
+        public override float MaxReach => 25f * 16f;
 
         // ---- tier 3 special: the straight throw ----
         public float SpecialSpeed => 34f;                // px per tick, the head flying straight at the cursor

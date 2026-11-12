@@ -181,7 +181,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.BallOHurt
                 Vector2 direction = (offset + MathHelper.TwoPi * i / ring).ToRotationVector2();
                 Rot(at, direction * Main.rand.NextFloat(3f, 7f), 1.5f);
             }
-            SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.6f, Pitch = Math.Min(0.8f, -0.3f + 0.1f * hops), MaxInstances = 4 }, at);
+            SoundEngine.PlaySound(SoundID.NPCHit4 with { Volume = 0.45f, Pitch = 0.4f, MaxInstances = 4 }, at);
+
+            //SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.6f, Pitch = Math.Min(0.8f, -0.3f + 0.1f * hops), MaxInstances = 4 }, at);
         }
 
         // The ball is out of hops and goes home.
