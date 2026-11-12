@@ -119,6 +119,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         float ToArm => Rad(IsUp ? PhasebladeTuning.SwingHighDeg : PhasebladeTuning.SwingLowDeg) + Wrap;
         float FromTilt => Rad(IsUp ? PhasebladeTuning.TiltLowDeg : PhasebladeTuning.TiltHighDeg);
         float ToTilt => Rad(IsUp ? PhasebladeTuning.TiltHighDeg : PhasebladeTuning.TiltLowDeg);
+        // The loop swing always follows swing 1, which ends with the wrist at the LOW tilt: start there, so the blade does not snap to the high tilt.
+        float StartTilt => Loops ? Rad(PhasebladeTuning.TiltLowDeg) : FromTilt;
 
         int WindupTicks => Loops ? PhasebladeTuning.LoopTicks : PhasebladeTuning.AnticipateTicks;
         int StrikeTicks => Spins ? PhasebladeTuning.SpinSwingTicks : PhasebladeTuning.SwingTicks;
@@ -153,7 +155,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         {
             float back = FromTilt - Travel * Rad(PhasebladeTuning.AnticipateTiltDeg);
             float tilt = time < StrikeStart
-                ? MathHelper.Lerp(FromTilt, back, MathHelper.SmoothStep(0f, 1f, time / Math.Max(1, StrikeStart)))
+                ? MathHelper.Lerp(StartTilt, back, MathHelper.SmoothStep(0f, 1f, time / Math.Max(1, StrikeStart)))
                 : MathHelper.Lerp(back, ToTilt, SwingProgress(time));
             if (Spins)
                 tilt += Travel * MathHelper.TwoPi * PhasebladeTuning.SpinTurns * SwingProgress(time);
@@ -161,6 +163,35 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         }
 
         bool Damaging => !IsPlant && poseTime >= StrikeStart && poseTime <= StrikeEnd;
+
+        // From the last ticks of the strike on, the next click may start its swing: the item is released (see AI) and PhasebladeGlobalItem ends this
+        // swing and starts the next in the same tick, so one blade replaces the other with no frame in between.
+        public bool InChainWindow => !IsPlant && timer >= StrikeEnd - PhasebladeTuning.ChainEarlyTicks;
+
+        // The player's running swing (or plant swing), or null.
+        public static PhasebladeSwingProjectile Find(Player player)
+        {
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile other = Main.projectile[i];
+                if (other.active && other.owner == player.whoAmI && other.ModProjectile is PhasebladeSwingProjectile swing)
+                    return swing;
+            }
+            return null;
+        }
+
+        // Other machines only: true when a newer swing of the same owner has arrived (it has run fewer ticks than this one). This one then goes
+        // at once, so there are never two blades for a frame.
+        bool Superseded()
+        {
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile other = Main.projectile[i];
+                if (other.active && other.whoAmI != Projectile.whoAmI && other.owner == Projectile.owner && other.ModProjectile is PhasebladeSwingProjectile swing && swing.ticks < ticks)
+                    return true;
+            }
+            return false;
+        }
 
         // ---- AI ----
 
@@ -175,7 +206,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
                 return;
             }
 
-            if (timer >= TotalTicks)
+            if (!IsOwner && Superseded())
+            {
+                Projectile.Kill();
+                return;
+            }
+
+            // The owner's copy ends right at the end of the swing; the other players' copy holds its last pose a few ticks longer, so a late packet
+            // of the next swing does not leave a gap.
+            if (timer >= TotalTicks + (!IsOwner && !IsPlant ? PhasebladeTuning.RemoteLingerTicks : 0))
             {
                 owner.itemAnimation = 0; // the next swing may start on the very next tick
                 owner.itemTime = 0;
@@ -208,8 +247,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
                 tiltRad = SwingTiltAt(timer);
             }
 
-            owner.itemAnimation = 2; // keeps the item "in use" for as long as the blade is out
-            owner.itemTime = 2;
+            // The item stays "in use" for as long as the blade is out, except in the chain window: there the owner's item is released so a held or
+            // pressed button starts the next swing right away (the item's Shoot ends this swing first).
+            bool release = IsOwner && InChainWindow;
+            owner.itemAnimation = release ? 0 : 2;
+            owner.itemTime = release ? 0 : 2;
             ApplyPose(owner);
             if (ticks == 0)
                 lastTipPosition = tipPosition;

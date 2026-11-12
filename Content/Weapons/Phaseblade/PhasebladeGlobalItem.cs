@@ -41,13 +41,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         // when the blade is caught). A plant works anywhere: on the ground it is driven in, in the air the blade is shot straight down.
         public override bool CanUseItem(Item item, Player player)
         {
-            if (player.ownedProjectileCounts[ModContent.ProjectileType<PhasebladeSwingProjectile>()] > 0)
+            // A swing in progress blocks the item, except in its chain window (the last ticks of the strike): then the next swing may start.
+            PhasebladeSwingProjectile swing = PhasebladeSwingProjectile.Find(player);
+            if (swing != null && !swing.InChainWindow)
                 return false;
             if (Main.GameUpdateCount - player.GetModPlayer<PhasebladePlayer>().LastStartTick < 3)
-                return false; // a swing started on the last ticks and is not counted yet
-            if (player.ownedProjectileCounts[ModContent.ProjectileType<PhasebladePlantedProjectile>()] > 0)
+                return false; // a swing started on the last ticks
+            // Only a planted blade of the color in the hand is called back: the other colors stay planted, each color plants on its own.
+            if (swing == null && PhasebladePlantedProjectile.Has(player, item.type))
             {
-                PhasebladePlantedProjectile.PullBack(player, player.altFunctionUse != 2);
+                PhasebladePlantedProjectile.PullBack(player, item.type, player.altFunctionUse != 2);
                 return false;
             }
             if (player.altFunctionUse == 2)
@@ -59,6 +62,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         {
             // Shoot only runs on the attacking player's own client; the projectile is then synced to everyone else.
             PhasebladePlayer state = player.GetModPlayer<PhasebladePlayer>();
+
+            // Chained from a swing that is still in its last ticks: end it now (its OnKill records where the arm is, and the next swing starts from
+            // that pose in this same tick, so the blade is never missing for a frame; its trail keeps fading by itself).
+            PhasebladeSwingProjectile.Find(player)?.Projectile.Kill();
 
             // RIGHT CLICK: the plant swing. It starts from the arm's pose where the last swing ended (converted to the facing-local angles the plant uses).
             if (player.altFunctionUse == 2)

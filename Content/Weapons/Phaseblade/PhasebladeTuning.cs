@@ -48,6 +48,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
         public static float TiltHighDeg => -12f;      // blade tilt relative to the arm at the top ...
         public static float TiltLowDeg => 12f;        // ... and at the bottom
         public static int ComboTicks => 30;           // a swing started within this long after the last one continues the combo
+        public static int ChainEarlyTicks => 0;       // the next click may start its swing this many ticks BEFORE the strike ends (the swing hands over to it with no gap: the arm is nearly at rest there)
+        public static int RemoteLingerTicks => 6;     // other players' copy of a swing holds its last pose this long, waiting for the next swing to arrive over the network (so lag does not make the blade blink)
         public static int FlashTicks => 10;
 
         // ---- the plant (right click): the blade lifts up, then the arm drives it into the ground in front of the feet while it rotates point-down ----

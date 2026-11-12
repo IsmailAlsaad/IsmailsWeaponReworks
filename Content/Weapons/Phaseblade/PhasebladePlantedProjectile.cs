@@ -87,9 +87,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             return FindTileBelow(x, player.Bottom.Y - 10f, 10f + maxDrop, out ground);
         }
 
+        // True when the player has a planted or falling blade of this Phaseblade type (one per color: the colors are planted separately).
+        public static bool Has(Player player, int itemType)
+        {
+            int type = ModContent.ProjectileType<PhasebladePlantedProjectile>();
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile other = Main.projectile[i];
+                if (other.active && other.owner == player.whoAmI && other.type == type && (int)other.ai[0] == itemType && other.ai[2] != 1f)
+                    return true;
+            }
+            return false;
+        }
+
         // Owner only (item use): every blade of the player that is planted or falling leaves for the hand. A LEFT click (thenSwing) also starts the
         // combo as soon as the blade is caught.
-        public static void PullBack(Player player, bool thenSwing)
+        public static void PullBack(Player player, int itemType, bool thenSwing)
         {
             if (thenSwing)
                 player.GetModPlayer<PhasebladePlayer>().SwingAfterCatch = true;
@@ -97,7 +110,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             for (int i = 0; i < Main.maxProjectiles; i++)
             {
                 Projectile other = Main.projectile[i];
-                if (other.active && other.owner == player.whoAmI && other.type == type && other.ai[2] != 1f)
+                if (other.active && other.owner == player.whoAmI && other.type == type && (int)other.ai[0] == itemType && other.ai[2] != 1f)
                 {
                     other.ai[2] = 1f;
                     other.netUpdate = true;
@@ -248,7 +261,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Phaseblade
             if (!IsOwner)
                 return;
             PhasebladePlayer state = Owner.GetModPlayer<PhasebladePlayer>();
-            bool swing = caught && state.SwingAfterCatch && !Owner.dead && PhasebladeTuning.IsPhaseblade(Owner.HeldItem.type);
+            bool swing = caught && state.SwingAfterCatch && !Owner.dead && Owner.HeldItem.type == ItemType;
             state.SwingAfterCatch = false;
             if (swing)
                 PhasebladeGlobalItem.StartCombo(Owner, Owner.GetSource_ItemUse(Owner.HeldItem), Owner.GetWeaponDamage(Owner.HeldItem), Owner.GetWeaponKnockback(Owner.HeldItem, Owner.HeldItem.knockBack));
