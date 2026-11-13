@@ -28,6 +28,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int BlastTicks => 4;              // how long the area lasts (every enemy inside is hit once)
         public static int BlastShadowflameTicks => 240; // Shadowflame on everything it hits (4 s)
 
+        // ---- the flame wave (patch 4): every swing that STARTS with a fully charged sword throws one short wave toward the cursor ----
+        public static float WaveDamageMultiplier => 0.6f;   // of the swing's base damage; each enemy is hit once
+        public static float WaveKnockbackMultiplier => 0.5f;
+        public static float WaveSpeed => 13f;               // px per tick (it does not slow down)
+        public static float WaveRangeTiles => 12f;          // how far it flies before it fades out
+        public static float WaveSpawnFraction => 0.8f;      // it is born this far along the blade length from the player (a fraction of BladeLength)
+        public static int WaveShadowflameTicks => 240;      // Shadowflame on every enemy it hits (4 s)
+        public static float WaveRadius => 40f;              // radius of the crescent's circle at birth (px)
+        public static float WaveThickness => 11f;           // thickness of the crescent in the middle (px)
+        public static float WaveArcHalfDeg => 55f;          // half the arc's angle
+        public static float WaveGrowth => 0.4f;             // the crescent grows by this fraction over its flight (fast at first)
+        public static int WaveAfterimages => 6;
+        public static float WaveFlameRate => 1.3f;          // metaball flames shed off the crescent per tick
+        public static float WaveFlameSize => 2.4f;          // their radius at birth (px)
+        public static float WaveDustChance => 0.55f;        // per tick: a vanilla dust mote off the crescent
+
         // ---- charge: true melee hits speed the sword up until it is full ----
         public static int HitsToFull => 20;             // the FIRST enemy each swing touches counts as one hit (a swing through a crowd = 1)
         public static float ChargePerHit => 1f / Math.Max(1, HitsToFull);
@@ -130,6 +146,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float FlameGlow => 0.2f;
         public static float EmberDustChance => 0.35f;   // per tick at full charge: a vanilla Shadowflame / purple dust mote off the edge
         public static float LightStrength => 1f;        // the purple light along the blade
+        public static float FlameDieCharge => 0.35f;    // the flame look follows the charge: it is full at full charge, thins and shrinks as the charge drains and is gone at this charge
+        public static float FlameFollow => 0.12f;       // how fast the flame strength eases toward that (per tick, 0..1)
+        public static int FlipCalmTicks => 3;           // after the sword flips to the other side the flames and embers ignore the blade's motion this long (the flip is instant)
         public static float BlastShake => 2.2f;         // camera punch of a charged hit's explosion
         public static int BlastCores => 6;              // big slow blobs in the middle of the explosion: they merge into one glob that shrinks away
         public static float BlastCoreSizeMin => 6f;

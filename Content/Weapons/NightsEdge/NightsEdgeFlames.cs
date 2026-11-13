@@ -62,6 +62,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             return count;
         }
 
+        // A fixed pseudo-random 0..1 per index: as the strength falls, the edge blobs drop out one by one in the same order.
+        static float Hash01(int index)
+        {
+            unchecked
+            {
+                return (((uint)index * 2654435761u) >> 8 & 0xFFu) / 256f;
+            }
+        }
+
         // Where the effect sits: a mask pixel (index) or, without a mask, along the blade from FallbackStart to the tip.
         static Vector2 EdgePoint(ChargedBladePose pose, NightsEdgeMask mask, int index, int total)
         {
@@ -71,12 +80,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             return pose.Hand + pose.Direction * (Vector2.Distance(pose.Hand, pose.Tip) * t);
         }
 
-        public static void Feed(ChargedBladePose pose, NightsEdgeMask mask)
+        public static void Feed(ChargedBladePose pose, NightsEdgeMask mask, NightsEdgeFlameState state)
         {
             if (Main.dedServ)
                 return;
-            float show = pose.Outline;
-            if (show < 0.05f || pose.SpriteSize.X < 1f)
+            Vector2 motion = state.Update(pose); // the blade's motion the flames may inherit (zero right after the sword flips sides)
+            float show = state.Strength;         // follows the charge down, so the flames die out gradually
+            if (show < 0.02f || pose.SpriteSize.X < 1f)
                 return;
             mask.EnsureLoaded();
 
@@ -89,10 +99,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             int total = mask.Count > 0 ? mask.Count : Math.Max(6, (int)(length / Math.Max(1f, NightsEdgeTuning.EdgeRadius * scale * 1.6f)));
 
             // ---- the edge: a small round blob on every Nth mask pixel, wobbling a little so the edge lives ----
-            float radius = NightsEdgeTuning.EdgeRadius * scale * (0.5f + 0.5f * show);
+            float radius = NightsEdgeTuning.EdgeRadius * scale * (0.4f + 0.6f * show);
             int stride = Math.Max(1, NightsEdgeTuning.EdgeBlobStride);
             for (int i = 0; i < total; i += stride)
             {
+                if (Hash01(i) >= show)
+                    continue; // thinning out as the charge drains
                 float phase = time * NightsEdgeTuning.EdgeWobbleSpeed + i * 1.9f;
                 Vector2 position = EdgePoint(pose, mask, i, total) + normal * ((float)Math.Sin(phase) * NightsEdgeTuning.EdgeWobble * scale);
                 float r = radius * (1f + 0.2f * (float)Math.Sin(phase * 1.3f + 1f));
@@ -105,14 +117,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             for (int i = 0; i < flameCount; i++)
             {
                 Vector2 position = EdgePoint(pose, mask, Main.rand.Next(total), total) + Main.rand.NextVector2Circular(1.5f, 1.5f);
-                Vector2 velocity = new Vector2(Main.rand.NextFloat(-0.3f, 0.3f), -Main.rand.NextFloat(0.5f, 1.3f)) + pose.TipMotion * 0.25f;
+                Vector2 velocity = new Vector2(Main.rand.NextFloat(-0.3f, 0.3f), -Main.rand.NextFloat(0.5f, 1.3f)) + motion * 0.25f;
                 int life = Main.rand.Next(NightsEdgeTuning.FlameLifeMin, NightsEdgeTuning.FlameLifeMax + 1);
-                flames.Spawn(position, velocity, life, NightsEdgeTuning.FlameSize * scale * Main.rand.NextFloat(0.7f, 1.15f));
+                flames.Spawn(position, velocity, life, NightsEdgeTuning.FlameSize * scale * Main.rand.NextFloat(0.7f, 1.15f) * (0.6f + 0.4f * show));
             }
 
             // ---- vanilla dust embers and the light ----
             if (Main.rand.NextFloat() < NightsEdgeTuning.EmberDustChance * show)
-                NightsEdgeFx.Ember(EdgePoint(pose, mask, Main.rand.Next(total), total), pose.TipMotion);
+                NightsEdgeFx.Ember(EdgePoint(pose, mask, Main.rand.Next(total), total), motion);
             float glow = NightsEdgeTuning.LightStrength * show;
             Lighting.AddLight(Vector2.Lerp(pose.Hand, pose.Tip, 0.5f), 0.55f * glow, 0.18f * glow, 0.95f * glow);
         }

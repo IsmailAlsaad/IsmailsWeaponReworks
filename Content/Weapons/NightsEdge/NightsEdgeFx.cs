@@ -119,6 +119,38 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             MetaballLayers.Of<NightsEdgeEdgeStyle>().DrawInBatch();
         }
 
+        // ---- the flame wave (patch 4) ----
+
+        // The wave leaves the blade: a low whoosh with a dark flame crackle.
+        public static void PlayWave(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item45 with { Volume = 0.6f, Pitch = -0.35f, PitchVariance = 0.1f }, position);
+        }
+
+        // The wave hit a block and dissolves: a puff of dark flame dust.
+        public static void WaveBreak(Vector2 position, Vector2 direction)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.35f, Pitch = -0.1f, PitchVariance = 0.1f }, position);
+            for (int i = 0; i < 14; i++)
+                Mote(position, direction * Main.rand.NextFloat(-1f, 0.5f) + Main.rand.NextVector2Circular(2.5f, 2.5f), Main.rand.NextFloat(1f, 1.7f), i % 2 == 0 ? DustID.Shadowflame : DustID.PurpleTorch);
+        }
+
+        // One dust mote and one metaball flame shed off a point of the crescent.
+        public static void WaveShed(Vector2 position, Vector2 velocity, float fade, bool dust, bool flame)
+        {
+            if (Main.dedServ)
+                return;
+            if (dust)
+                Mote(position, velocity, Main.rand.NextFloat(0.9f, 1.5f), Main.rand.NextBool(2) ? DustID.Shadowflame : DustID.PurpleTorch);
+            if (flame)
+                MetaballLayers.Of<NightsEdgeFlameStyle>().Spawn(position, velocity * 0.4f + new Vector2(0f, -0.3f), Main.rand.Next(NightsEdgeTuning.FlameLifeMin, NightsEdgeTuning.FlameLifeMax + 1),
+                    NightsEdgeTuning.WaveFlameSize * Main.rand.NextFloat(0.7f, 1.15f) * (0.5f + 0.5f * fade));
+        }
+
         // The dark flame explosion of a charged hit (radius in px): a deep bang, a few big slow blobs in the middle that merge and shrink away,
         // droplets thrown out and braked by drag, and some vanilla dust.
         public static void Blast(Vector2 center, float radius)

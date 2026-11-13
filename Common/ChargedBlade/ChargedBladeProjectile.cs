@@ -64,6 +64,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         protected virtual void DrawAfterBlade(ChargedBladePose pose) { }
         /// <summary>Owner's client, for every true melee hit, before the charge changes. 'fullBefore' = the sword was already fully charged before this swing (the swing that fills it does not count).</summary>
         protected virtual void OnOwnerHit(NPC target, NPC.HitInfo hit, bool fullBefore) { }
+        /// <summary>Owner's client, once per swing at the moment the strike begins (the blade starts to cut): 'hand' is the owner's center, 'direction' the swing's aim as a unit vector. The Night's Edge throws its flame wave from here.</summary>
+        protected virtual void OnOwnerStrikeStart(Vector2 hand, Vector2 direction) { }
 
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
@@ -618,6 +620,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
                 strikeStarted = true;
                 flash = Math.Max(flash, 0.6f);
                 FxPlaySwing(tipPosition, chargeShown);
+                if (IsOwner)
+                    OnOwnerStrikeStart(Owner.MountedCenter, aim.ToRotationVector2());
             }
 
             if (timer >= StrikeStart && timer < StrikeEnd)

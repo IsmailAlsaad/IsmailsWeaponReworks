@@ -156,31 +156,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.IceBlade
 
         // ---- drawing ----
 
-        static Vector2[] crescentPoints = new Vector2[0];
-        static float[] crescentTs = new float[0];
-
-        // One crescent drawn by the shared pixel line renderer (smoothed): the line follows the circle, thickest in the middle and shrinking
-        // to a single pixel at both tips. It sits on the pixel grid, so the shape looks like pixel art and crawls as it moves.
+        // The crescent painter is shared now (Common/CrescentPainter; the Night's Edge wave uses it too).
         static void DrawCrescent(Vector2 center, float angle, float radius, float thickness, float half, Color color)
         {
-            float grid = IceBladeTuning.PixelSize;
-            Vector2 origin = center - angle.ToRotationVector2() * radius;
-            int count = Math.Min(64, Math.Max(5, (int)Math.Ceiling(radius * 2f * half / (grid * 4f)) + 1));
-            if (crescentPoints.Length < count)
-            {
-                crescentPoints = new Vector2[count];
-                crescentTs = new float[count];
-            }
-            for (int i = 0; i < count; i++)
-            {
-                float f = i / (float)(count - 1);
-                crescentTs[i] = f;
-                crescentPoints[i] = origin + (angle + MathHelper.Lerp(-half, half, f)).ToRotationVector2() * radius;
-            }
-            PixelLine.Draw(crescentPoints, crescentTs, count, grid,
-                f => Math.Max(grid, thickness * (float)Math.Pow(Math.Max(0.0, Math.Cos((f - 0.5f) * MathHelper.Pi)), 0.75)), // 1 in the middle, 0 at the tips
-                f => color,
-                true);
+            CrescentPainter.Draw(center, angle, radius, thickness, half, color, IceBladeTuning.PixelSize);
         }
 
         public override bool PreDraw(ref Color lightColor)

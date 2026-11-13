@@ -86,6 +86,7 @@ Projectiles: {
 	FlamingMaceFlailProjectile.DisplayName: Flaming Mace Flail Projectile
 	NightsEdgeBladeProjectile.DisplayName: Nights Edge Blade Projectile
 	NightsEdgeBlastProjectile.DisplayName: Nights Edge Blast Projectile
+	NightsEdgeWaveProjectile.DisplayName: Nights Edge Wave Projectile
 }
 
 Buffs: {

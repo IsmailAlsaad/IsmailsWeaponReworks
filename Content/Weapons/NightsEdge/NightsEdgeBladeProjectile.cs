@@ -18,6 +18,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
 
         // The edge mask (your PNG), read on first use; the metaballs sit on its pixels.
         readonly NightsEdgeMask mask = new NightsEdgeMask();
+        readonly NightsEdgeFlameState flameState = new NightsEdgeFlameState();
 
         IChargedBladeTuning tune;
         protected override IChargedBladeTuning Tune => tune ?? (tune = new NightsEdgeBladeTune());
@@ -61,13 +62,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         // Every machine, every tick: the dark flame metaballs along the blade's edge, the rising flames and the embers (visual only, nothing is synced).
         protected override void TickVisuals(ChargedBladePose pose)
         {
-            NightsEdgeFlames.Feed(pose, mask);
+            NightsEdgeFlames.Feed(pose, mask, flameState);
         }
 
         // The metaball layers are drawn from here, in front of the enemies.
         protected override void DrawAfterBlade(ChargedBladePose pose)
         {
             NightsEdgeFx.DrawLayers();
+        }
+
+        // Owner's client, once per swing when the strike begins: a swing that STARTS with a fully charged sword throws one short flame wave toward
+        // the cursor (the swing that fills the sword fills it later, during the strike, so it throws none). The projectile is spawned by the owner,
+        // so tModLoader syncs it; every machine plays the same visuals, the owner's client applies the hits.
+        protected override void OnOwnerStrikeStart(Vector2 hand, Vector2 direction)
+        {
+            if (OwnerCharge(Main.player[Projectile.owner]) < NightsEdgeTuning.ChargedAt)
+                return;
+            Vector2 spawn = hand + direction * (Tune.BladeLength * Projectile.scale * NightsEdgeTuning.WaveSpawnFraction);
+            int damage = (int)(Projectile.damage * NightsEdgeTuning.WaveDamageMultiplier);
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, direction * NightsEdgeTuning.WaveSpeed, ModContent.ProjectileType<NightsEdgeWaveProjectile>(),
+                damage, Projectile.knockBack * NightsEdgeTuning.WaveKnockbackMultiplier, Projectile.owner);
         }
 
         // Owner's client. A hit while the sword was already fully charged (the swing that fills it does not explode): the enemy bursts into a dark
