@@ -1,4 +1,5 @@
 ﻿using IsmailsWeaponReworks.Common;
+using IsmailsWeaponReworks.Common.ChargedBlade;
 using Microsoft.Xna.Framework;
 
 namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
@@ -9,10 +10,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
     /// (0..1) while it lays the fan: a charged sword leaves a stronger fan that reaches further down the blade (the reach is set where the
     /// points are laid, the strength here).
     /// </summary>
-    public class LightsBaneSweepTrailStyle : SweepTrailStyle
+    public class LightsBaneSweepTrailStyle : ChargedBladeTrailStyle
     {
-        public float Charge;
-
         public override float Grid => LightsBaneTuning.PixelSize;
         public override int LifeTicks => LightsBaneTuning.TrailLifeTicks;
         public override int Rails => LightsBaneTuning.TrailRails;
