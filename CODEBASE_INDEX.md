@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-13 | 316 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-13 | 322 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-YoyoTuning(40) DetachedTrails(37) RemoteHitTracker(31) CameraShake(31) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(22) AfterimageTrail(20) YoyoFx(18) HeldAim(18) YoyoTrick(14) SweepTrail(14) PixelTrail(14) ThrustPlayer(12) PixelLine(12) PixelTrailStyle(11) IceFx(11) SweepTrailStyle(10) PixelFan(10) FlailTuning(10)
+YoyoTuning(40) DetachedTrails(37) RemoteHitTracker(32) CameraShake(32) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(22) AfterimageTrail(20) YoyoFx(18) HeldAim(18) YoyoTrick(14) SweepTrail(14) PixelTrail(14) PixelTrailStyle(13) ThrustPlayer(12) PixelLine(12) IceFx(12) FlailTuning(12) FlailFx(11) SweepTrailStyle(10)
 
 ## Inheritance
 Project bases -> derived:
@@ -12,10 +12,10 @@ Project bases -> derived:
 - BeeKeeperBeeProjectile: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
-- FlailFx: BallOHurtFx, BlueMoonFx, MeatballFx, SunfuryFlailFx
-- FlailGlobalItem: BallOHurtGlobalItem, BlueMoonGlobalItem, MeatballGlobalItem, SunfuryGlobalItem
-- FlailProjectile: BallOHurtFlailProjectile, BlueMoonFlailProjectile, MeatballFlailProjectile, SunfuryFlailProjectile
-- FlailTuning: BallOHurtTuning, BlueMoonTuning, MeatballTuning, SunfuryFlailTuning
+- FlailFx: BallOHurtFx, BlueMoonFx, FlamingMaceFx, MeatballFx, SunfuryFlailFx
+- FlailGlobalItem: BallOHurtGlobalItem, BlueMoonGlobalItem, FlamingMaceGlobalItem, MeatballGlobalItem, SunfuryGlobalItem
+- FlailProjectile: BallOHurtFlailProjectile, BlueMoonFlailProjectile, FlamingMaceFlailProjectile, MeatballFlailProjectile, SunfuryFlailProjectile
+- FlailTuning: BallOHurtTuning, BlueMoonTuning, FlamingMaceTuning, MeatballTuning, SunfuryFlailTuning
 - ForwardPassTrick: AmazonTrick, Code1Trick, ManOnTrapezeTrick, PopTheClutchTrick, RallyTrick
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
 - IAroundTheWorldTuning: AroundTheWorldDefaults, HiveFiveTuning, ValorTuning
@@ -30,7 +30,7 @@ Project bases -> derived:
 - MalaiseRockTrick: MalaiseTrick
 - ManOnTrapezeTrick: ArteryTrick, MalaiseRockTrick
 - MetaballStyle: BeeKeeperHoneyStyle, DarkLanceBlobStyle, MeatballBloodStyle, SunfuryBurstStyle, VolcanoBlobStyle, VolcanoDripStyle
-- PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, EtherealBeamTrailStyle, FlailTrailStyle, HiveFiveTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
+- PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, EtherealBeamTrailStyle, FlailTrailStyle, FlamingMaceTrailStyle, HiveFiveTrailStyle, MoltenTrailStyle, SunfuryTrailStyle
 - PopTheClutchTrick: CascadeTrick, ValorTrick
 - SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, EnchantedSwordSweepTrailStyle, IceBladeTrailStyle, LightsBaneSweepTrailStyle, MuramasaSweepTrailStyle, PhasebladeSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
 - VolcanoDripStyle: VolcanoBurstStyle
@@ -41,7 +41,7 @@ Project bases -> derived:
 - YoyoTrick: AroundTheWorldTrick, ForwardPassTrick, SleeperHoldTrick, WalkTheDogTrick
 - YoyoTuning: AmazonTuning, ArteryTuning, CascadeTuning, Code1Tuning, HiveFiveTuning, MalaiseTuning, RallyTuning, ValorTuning, WoodenYoyoTuning
 tModLoader/other bases -> project types:
-- ModProjectile (64): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BallOHurtBallProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassHoldProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, BlueMoonBlastProjectile, CascadeBlastProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlailProjectile, FlamerangBlastProjectile, FlamerangProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneBladeProjectile, LightsBaneImbueProjectile, MeatballHeadProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
+- ModProjectile (65): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BallOHurtBallProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassHoldProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, BlueMoonBlastProjectile, CascadeBlastProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlailProjectile, FlamerangBlastProjectile, FlamerangProjectile, FlamingMaceBlastProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneBladeProjectile, LightsBaneImbueProjectile, MeatballHeadProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
 - GlobalItem (26): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, YoyoGlobalItem
 - ModPlayer (16): BeeKeeperPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, YoyoPlayer
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
@@ -494,6 +494,26 @@ tModLoader/other bases -> project types:
 **ObsidianShardProjectile.cs** uses: FlamerangFx, FlamerangTuning, RemoteHitTracker
   class ObsidianShardProjectile : ModProjectile
     +Texture:string[ov] +Load()[ov] +Unload()[ov] +Break() +MakeRoom(int,int)[s] +CanHitNPC(NPC)[ov] +OnKill(int)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+
+### Content/Weapons/FlamingMace/
+**FlamingMaceBlastProjectile.cs** uses: FlamingMaceFx, FlamingMaceTuning, IceFx, RemoteHitTracker
+  class FlamingMaceBlastProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**FlamingMaceFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, FlamingMaceBlastProjectile, FlamingMaceFx, FlamingMaceTrailStyle, FlamingMaceTuning, Phase, PixelTrailStyle
+  class FlamingMaceFlailProjectile : FlailProjectile
+    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #CreateTrailStyle(int)[ov] #SweepsPath:bool[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
+**FlamingMaceFx.cs** uses: CameraShake, FlailFx, FlamingMaceTuning
+  class FlamingMaceFx : FlailFx
+    +Instance:FlamingMaceFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +FireBlast(Vector2,float)
+**FlamingMaceGlobalItem.cs** uses: FlailGlobalItem, FlamingMaceFlailProjectile
+  class FlamingMaceGlobalItem : FlailGlobalItem
+    #ItemType:int[ov] #ProjectileType:int[ov]
+**FlamingMaceTrailStyle.cs** uses: FlamingMaceTuning, PixelTrailStyle
+  class FlamingMaceTrailStyle : PixelTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
+**FlamingMaceTuning.cs** uses: FlailTuning
+  class FlamingMaceTuning : FlailTuning
+    +Instance:FlamingMaceTuning[s] +MinReach:float[ov] +MaxReach:float[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +TrailWidth(int)[ov] +SpecialThrowSpeed:float +SpecialMinTicks:int +SpecialHitCooldownFraction:float +SpecialTrailLifeTicks:int +SpecialTrailJitter:float +BlastRadius:float +BlastDamageMultiplier:float +BlastKnockbackMultiplier:float +BlastLifeTicks:int +BlastBurnTicks:int +BlastShake:float +BurnTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +EmberColor:Color +ChainName:string[ov]
 
 ### Content/Weapons/IceBlade/
 **IceBladeFx.cs** uses: IceFx
