@@ -29,7 +29,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int BlastShadowflameTicks => 240; // Shadowflame on everything it hits (4 s)
 
         // ---- charge: true melee hits speed the sword up until it is full ----
-        public static int HitsToFull => 10;             // the FIRST enemy each swing touches counts as one hit (a swing through a crowd = 1)
+        public static int HitsToFull => 20;             // the FIRST enemy each swing touches counts as one hit (a swing through a crowd = 1)
         public static float ChargePerHit => 1f / Math.Max(1, HitsToFull);
         public static float ChargedAt => 0.995f;        // from this charge on the sword counts as fully charged
         public static float ChargeShowEase => 0.15f;    // how fast the DRAWN charge follows the real one (per tick, 0..1)
@@ -38,8 +38,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float SpeedCurvePower => 1f;      // 1 = the speed rises evenly with the charge; above 1 it rises late
 
         // ---- the charge fades (a FULL charge fades too): it starts when no swing has counted a hit for a while ----
-        public static int FadeGraceTicks => 180;        // after the last counted hit the charge holds this long (3 s) ...
-        public static int FadeDrainTicks => 180;        // ... then it drains from full to nothing over this long (3 s)
+        public static int FadeGraceTicks => 300;        // after the last counted hit the charge holds this long (3 s) ...
+        public static int FadeDrainTicks => 600;        // ... then it drains from full to nothing over this long (3 s)
 
         // ---- the swing (a chop centered on the cursor, alternating up and down; scaled by the charge and by melee speed) ----
         public static float AttackSpeedInfluence => 1f; // 0 = ignore the player's melee attack speed, 1 = fully applied
@@ -127,7 +127,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float FlameHeat => 0.8f;          // a flame starts this hot and cools
         public static float FlameMerge => 2.7f;
         public static float FlameOutline => 0f;
-        public static float FlameGlow => 0f;
+        public static float FlameGlow => 0.2f;
         public static float EmberDustChance => 0.35f;   // per tick at full charge: a vanilla Shadowflame / purple dust mote off the edge
         public static float LightStrength => 1f;        // the purple light along the blade
         public static float BlastShake => 2.2f;         // camera punch of a charged hit's explosion
