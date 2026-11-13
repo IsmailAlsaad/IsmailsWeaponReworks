@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-13 | 331 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-13 | 338 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -10,8 +10,8 @@ YoyoTuning(40) DetachedTrails(38) RemoteHitTracker(33) CameraShake(33) ThrustPal
 Project bases -> derived:
 - AroundTheWorldTrick: HiveFiveTrick, ValorAroundTheWorldTrick
 - BeeKeeperBeeProjectile: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile
-- ChargedBladeProjectile: LightsBaneBladeProjectile
-- ChargedBladeTrailStyle: LightsBaneSweepTrailStyle
+- ChargedBladeProjectile: LightsBaneBladeProjectile, NightsEdgeBladeProjectile
+- ChargedBladeTrailStyle: LightsBaneSweepTrailStyle, NightsEdgeSweepTrailStyle
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
 - FlailFx: BallOHurtFx, BlueMoonFx, FlamingMaceFx, MaceFx, MeatballFx, SunfuryFlailFx
@@ -22,7 +22,7 @@ Project bases -> derived:
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
 - IAroundTheWorldTuning: AroundTheWorldDefaults, HiveFiveTuning, ValorTuning
 - IChargeOutlineTuning: CascadeTuning, HiveFiveTuning
-- IChargedBladeTuning: LightsBaneBladeTune
+- IChargedBladeTuning: LightsBaneBladeTune, NightsEdgeBladeTune
 - IForwardPassTuning: AmazonTuning, ArteryTuning, CascadeTuning, Code1Tuning, ForwardPassDefaults, MalaiseTuning, RallyTuning, ValorTuning
 - ILoopTuning: ArteryTuning, MalaiseTuning
 - IPopTheClutchTuning: CascadeTuning, PopTheClutchDefaults, ValorTuning
@@ -45,8 +45,8 @@ Project bases -> derived:
 - YoyoTuning: AmazonTuning, ArteryTuning, CascadeTuning, Code1Tuning, HiveFiveTuning, MalaiseTuning, RallyTuning, ValorTuning, WoodenYoyoTuning
 tModLoader/other bases -> project types:
 - ModProjectile (66): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BallOHurtBallProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassHoldProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, BlueMoonBlastProjectile, CascadeBlastProjectile, ChargedBladeProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlailProjectile, FlamerangBlastProjectile, FlamerangProjectile, FlamingMaceBlastProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneImbueProjectile, MaceShrapnelProjectile, MeatballHeadProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
-- GlobalItem (26): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, YoyoGlobalItem
-- ModPlayer (16): BeeKeeperPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, YoyoPlayer
+- GlobalItem (27): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, NightsEdgeGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, YoyoGlobalItem
+- ModPlayer (17): BeeKeeperPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, NightsEdgePlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, YoyoPlayer
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
 - ModSystem (3): DetachedTrails, MetaballLayers, YoyoRegistry
 - Mod (1): IsmailsWeaponReworks
@@ -708,6 +708,29 @@ tModLoader/other bases -> project types:
 **MuramasaTuning.cs** uses: HitMarkStyle, MuramasaGreen
   static class MuramasaTuning
     +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +SheathTicks:int[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +SheathArmDeg:float[s] +SheathTiltDeg:float[s] +ScrapeAt:float[s] +ClickKickDeg:float[s] +ClickFlashTicks:int[s] +ClickDustCount:int[s] +ClickShake:float[s] +OutlineWidth:float[s] +OutlinePulseTicks:int[s] +OutlineMin:float[s] +OutlineMax:float[s] +OutlineFade:float[s] +GlowScale:float[s] +OutlineColor:Color[s] +OutlineCoreColor:Color[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +HitShake:float[s] +FlashTicks:int[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOpacity:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +BlueColor:Color[s] +DeepColor:Color[s] +TintLight(Vector3)[s] +TrailLagTicks:float[s] +TrailLengthScale:float[s] +ShowBladeDebug:bool[s] +DrawWindowTicks:int[s] +DrawSampleSpacing:float[s] +DrawMinPathPixels:float[s] +DrawMaxStrokes:int[s] +DrawSimplifyTolerance:float[s] +DrawLineWidth:float[s] +DrawRingMax:float[s] +DrawRingMin:float[s] +DrawWarnFraction:float[s] +IaidoDrawTicks:int[s] +IaidoRecoverTicks:int[s] +SlashGapTicks:int[s] +SlashSpeed:float[s] +SlashMinTravelTicks:int[s] +SlashMaxTravelTicks:int[s] +SlashEasePower:float[s] +SlashDamageMultiplier:float[s] +SlashWidth:float[s] +SlashLineWidth:float[s] +SlashLingerTicks:int[s] +SlashAfterimageTicks:int[s] +SlashShake:float[s] +SlashHitShake:float[s] +SlashPitchLow:float[s] +SlashPitchHigh:float[s] +HitMarkTicks:int[s] +HitMarkCount:int[s] +HitMarkLength:float[s] +HitMarkWidth:float[s] +HitMarkAngleDeg:float[s] +MaxHitMarks:int[s] +HitMarkCoverage:float[s] +HitMarkWidthGrow:float[s] +HitMarkMaxScale:float[s] +HitMarks:HitMarkStyle[s]
+
+### Content/Weapons/NightsEdge/
+**NightsEdgeBladeProjectile.cs** uses: ChargedBladeProjectile, ChargedBladeTrailStyle, IChargedBladeTuning, NightsEdgeBladeTune, NightsEdgeFx, NightsEdgePlayer, NightsEdgeSweepTrailStyle
+  class NightsEdgeBladeProjectile : ChargedBladeProjectile
+    +Texture:string[ov] #Tune:IChargedBladeTuning[ov] #ItemType:int[ov] #OwnerCharge(Player)[ov] #AddOwnerCharge(Player,float)[ov] #CreateTrailStyle()[ov] #StabAvailable(Player)[ov] #OnStabImpacted(Player)[ov] #FxPlaySwing(Vector2,float)[ov] #FxSwingDust(Vector2,Vector2,float)[ov] #FxHitSpark(Vector2,float)[ov] #FxChargeHit(Vector2)[ov] #FxCharged(Vector2,Vector2)[ov] #FxPlayStabWindup(Vector2)[ov] #FxStabImpact(Vector2)[ov] #FxSparkle(Vector2,Vector2)[ov]
+**NightsEdgeBladeTune.cs** uses: IChargedBladeTuning, NightsEdgeTuning
+  class NightsEdgeBladeTune : IChargedBladeTuning
+    +ReadyArmDeg:float +ReadyTiltDeg:float +BladeLength:float +SwingLowDeg:float +SwingHighDeg:float +TiltLowDeg:float +TiltHighDeg:float +ChainAnticipateTicks:int +AnticipateTicks:int +ChainAnticipateDeg:float +AnticipateDeg:float +SwingTicks:int +RecoverTicks:int +SwingEasePower:float +OvershootDeg:float +AnticipateTiltDeg:float +SwordScale:float +ChargedAt:float +ChargeSyncStep:float +ChargeShowEase:float +OutlineFade:float +IdleBobTicks:int +IdleBobDeg:float +IdleEase:float +StabBlendOut:float +SparkleChance:float +FlashTicks:int +StabBufferTicks:int +StabTurnTicks:int +StabAimTicks:int +StabPlungeTicks:int +StabArmDeg:float +StabChestOffsetY:float +StabAimDistance:float +StabDepth:float +StabShake:float +StabHoldTicks:int +StabHitShake:float +MaxSpeedScale:float +SpeedCurvePower:float +AttackSpeedInfluence:float +MinSpeed:float +MaxSpeed:float +TrailSamplesPerTick:int +TrailLagTicks:float +TrailOuter:float +TrailInnerLow:float +TrailInnerHigh:float +TrailExpandBy:float +SweepHitSteps:int +HitLengthScale:float +HitWidth:float +DamageMultiplier:float +KnockbackMultiplier:float +HitShake:float +ChargePerHit:float +GripOffset:float +GlowMaxAlpha:float +OutlineColor:Color +GlowScale:float +OutlinePulseTicks:int +OutlineMin:float +OutlineMax:float +OutlineWidth:float +OutlineCoreColor:Color +CoreColor:Color +ShowBladeDebug:bool
+**NightsEdgeFx.cs**
+  static class NightsEdgeFx
+    +PlaySwing(Vector2,float)[s] +PlayHit(Vector2,float)[s] +PlayCharged(Vector2)[s] +SwingDust(Vector2,Vector2,float)[s] +HitSpark(Vector2,float)[s] +ChargeHit(Vector2)[s] +Charged(Vector2,Vector2)[s] +Sparkle(Vector2,Vector2)[s] +PlayStabWindup(Vector2)[s] +StabImpact(Vector2)[s]
+**NightsEdgeGlobalItem.cs**
+  class NightsEdgeGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov]
+**NightsEdgePlayer.cs** uses: NightsEdgeBladeProjectile, NightsEdgeTuning
+  class NightsEdgePlayer : ModPlayer
+    +Charge:float +Find(int,int)[s] +AddCharge(Player,float)[s] +OnRespawn()[ov] +PostUpdate()[ov]
+**NightsEdgeTrail.cs** uses: ChargedBladeTrailStyle, NightsEdgeTuning, SweepFade
+  class NightsEdgeSweepTrailStyle : ChargedBladeTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
+**NightsEdgeTuning.cs**
+  static class NightsEdgeTuning
+    +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +ShowBladeDebug:bool[s] +DamageMultiplier:float[s] +KnockbackMultiplier:float[s] +HitLengthScale:float[s] +HitWidth:float[s] +SweepHitSteps:int[s] +HitsToFull:int[s] +ChargePerHit:float[s] +ChargedAt:float[s] +ChargeShowEase:float[s] +ChargeSyncStep:float[s] +MaxSpeedScale:float[s] +SpeedCurvePower:float[s] +FadeGraceTicks:int[s] +FadeDrainTicks:int[s] +AttackSpeedInfluence:float[s] +MinSpeed:float[s] +MaxSpeed:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +ChainAnticipateTicks:int[s] +ChainAnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +IdleBobDeg:float[s] +IdleBobTicks:int[s] +IdleEase:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInnerLow:float[s] +TrailInnerHigh:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailSamplesPerTick:int[s] +TrailOpacityLow:float[s] +TrailOpacityHigh:float[s] +GlowMaxAlpha:float[s] +GlowScale:float[s] +OutlineWidth:float[s] +OutlinePulseTicks:int[s] +OutlineMin:float[s] +OutlineMax:float[s] +OutlineFade:float[s] +FlashTicks:int[s] +HitShake:float[s] +SparkleChance:float[s] +StabTurnTicks:int[s] +StabAimTicks:int[s] +StabPlungeTicks:int[s] +StabHoldTicks:int[s] +StabBufferTicks:int[s] +StabArmDeg:float[s] +StabAimDistance:float[s] +StabDepth:float[s] +StabChestOffsetY:float[s] +StabShake:float[s] +StabBlendOut:float[s] +StabHitShake:float[s] +OutlineColor:Color[s] +OutlineCoreColor:Color[s] +CoreColor:Color[s] +PurpleColor:Color[s] +DeepColor:Color[s]
 
 ### Content/Weapons/Phaseblade/
 **PhasebladeFx.cs** uses: CameraShake, PhasebladeTuning, TileSound
