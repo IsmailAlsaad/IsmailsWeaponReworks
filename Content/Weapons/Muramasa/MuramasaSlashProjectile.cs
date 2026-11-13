@@ -98,7 +98,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                     previousHead = head;
                     head = start + Offset * Progress(local + 1);
                     MuramasaFx.SlashSweepDust(previousHead, head);
-                    Lighting.AddLight(head, 0.3f, 0.55f, 1f);
+                    Lighting.AddLight(head, MuramasaTuning.TintLight(new Vector3(0.3f, 0.55f, 1f)));
                     float angle = Offset.ToRotation();
                     float scale = MuramasaTuning.SwordScale;
                     Vector2 hilt = head - angle.ToRotationVector2() * MuramasaTuning.BladeLength * scale * 0.5f; // the sword is centered on the head
@@ -134,7 +134,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                 return;
             afterimages = new AfterimageTrail(MuramasaTuning.SlashAfterimageTicks, (image, age) =>
             {
-                Texture2D texture = TextureAssets.Projectile[Type].Value;
+                Texture2D texture = MuramasaGreen.Sprite(TextureAssets.Projectile[Type].Value);
                 HeldSwordPose.Sprite(texture, 1, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
                 Main.EntitySpriteDraw(texture, image.Position - Main.screenPosition, null, image.Color * (1f - age), image.Rotation + rotationOffset, origin, image.Scale, effects, 0);
             });
@@ -214,7 +214,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             // The phantom sword, centered on the head, only while it travels.
             if (local < Travel)
             {
-                Texture2D texture = TextureAssets.Projectile[Type].Value;
+                Texture2D texture = MuramasaGreen.Sprite(TextureAssets.Projectile[Type].Value);
                 HeldSwordPose.Sprite(texture, 1, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
                 float angle = Offset.ToRotation();
                 float scale = MuramasaTuning.SwordScale;

@@ -193,7 +193,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                     AddTrailSample(timer - 1f + fraction, fraction);
                 }
                 MuramasaFx.SlashDust(Main.LocalPlayer.Center, tipPosition);
-                Lighting.AddLight(tipPosition, 0.3f, 0.55f, 1f);
+                Lighting.AddLight(tipPosition, MuramasaTuning.TintLight(new Vector3(0.3f, 0.55f, 1f)));
             }
         }
 
@@ -301,7 +301,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         {
             trail?.Draw();
 
-            Texture2D texture = TextureAssets.Projectile[Type].Value;
+            Texture2D texture = MuramasaGreen.Sprite(TextureAssets.Projectile[Type].Value);
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
 
             Vector2 position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, MuramasaTuning.GripOffset, Projectile.scale) - Main.screenPosition;

@@ -40,7 +40,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
 
         static void Spark(Vector2 position, Vector2 velocity, float scale, bool bright)
         {
-            Dust dust = Dust.NewDustPerfect(position, bright ? DustID.IceTorch : DustID.BlueTorch, velocity, 0, default, scale);
+            int type = MuramasaGreen.Active ? DustID.GreenTorch : (bright ? DustID.IceTorch : DustID.BlueTorch);
+            Dust dust = Dust.NewDustPerfect(position, type, velocity, 0, default, scale);
             dust.noGravity = true;
         }
 

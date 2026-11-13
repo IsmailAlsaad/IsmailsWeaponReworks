@@ -166,7 +166,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                 CameraShake.Punch(Projectile.Center, MuramasaTuning.ClickShake, 8);
             }
             if (shown)
-                Lighting.AddLight(tipPosition, 0.2f, 0.4f, 0.9f);
+                Lighting.AddLight(tipPosition, MuramasaTuning.TintLight(new Vector3(0.2f, 0.4f, 0.9f)));
 
             flash = Math.Max(0f, flash - 1f / Math.Max(1, MuramasaTuning.FlashTicks));
             ticks++;
@@ -206,7 +206,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             if (!shown)
                 return false;
 
-            Texture2D texture = TextureAssets.Projectile[Type].Value;
+            Texture2D texture = MuramasaGreen.Sprite(TextureAssets.Projectile[Type].Value);
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
             Vector2 position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, MuramasaTuning.GripOffset, Projectile.scale) - Main.screenPosition;
             float rotation = Projectile.rotation + rotationOffset;

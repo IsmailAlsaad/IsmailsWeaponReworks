@@ -54,7 +54,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
                 path.Add(cursor);
                 MuramasaFx.DrawDust(cursor);
             }
-            Lighting.AddLight(cursor, 0.2f, 0.45f, 0.9f);
+            Lighting.AddLight(cursor, MuramasaTuning.TintLight(new Vector3(0.2f, 0.45f, 0.9f)));
 
             if (held && ticks < MuramasaTuning.DrawWindowTicks)
                 return false;

@@ -1,5 +1,6 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using Terraria;
 using Terraria.DataStructures;
@@ -79,6 +80,37 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
             tooltips.Add(new TooltipLine(Mod, "Muramasa1", "Draw quick slashes when fully sheathed"));
+            if (MuramasaGreen.Active)
+                tooltips.Add(new TooltipLine(Mod, "MuramasaGreen1", "\"You've seen blue, you've seen red, but get ready for...\"") { OverrideColor = new Color(90, 230, 110) });
+        }
+
+        // ---- the green easter egg (see MuramasaGreen): the item's own art ----
+
+        public override void Unload()
+        {
+            MuramasaGreen.Unload();
+        }
+
+        // Inventory, hotbar, chests, shops: GreenMuramasa.png at the same spot and scale as the vanilla icon.
+        public override bool PreDrawInInventory(Item item, SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
+        {
+            Texture2D texture = MuramasaGreen.Texture();
+            if (texture == null)
+                return true;
+            Vector2 center = position - origin * scale + frame.Size() * scale * 0.5f;   // where the vanilla icon's middle would be
+            spriteBatch.Draw(texture, center, null, drawColor, 0f, texture.Size() * 0.5f, scale, SpriteEffects.None, 0f);
+            return false;
+        }
+
+        // The item lying in the world: bottom-centered on the item's box, like vanilla.
+        public override bool PreDrawInWorld(Item item, SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI)
+        {
+            Texture2D texture = MuramasaGreen.Texture();
+            if (texture == null)
+                return true;
+            Vector2 position = item.position - Main.screenPosition + new Vector2(item.width * 0.5f, item.height - texture.Height * 0.5f);
+            spriteBatch.Draw(texture, position, null, alphaColor, rotation, texture.Size() * 0.5f, scale, SpriteEffects.None, 0f);
+            return false;
         }
     }
 }

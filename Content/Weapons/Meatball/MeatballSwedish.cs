@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using IsmailsWeaponReworks.Common;
+using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Terraria;
 using Terraria.ModLoader;
@@ -22,12 +23,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
         {
             if (!Active)
                 return null;
-            if (!tried)
-            {
-                tried = true;
-                ModContent.RequestIfExists<Texture2D>("IsmailsWeaponReworks/Content/Weapons/Meatball/" + name, out asset);
-            }
-            return asset != null && asset.IsLoaded ? asset.Value : null;
+            return EasterEgg.Load("IsmailsWeaponReworks/Content/Weapons/Meatball/" + name, ref asset, ref tried);
         }
     }
 }

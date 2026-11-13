@@ -118,7 +118,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
             {
                 if (Main.rand.NextFloat() < 0.1f + 0.2f * outlineShown)
                     MuramasaFx.BladeSparkle(Projectile.Center, tipPosition);
-                Lighting.AddLight(tipPosition, 0.1f * outlineShown, 0.3f * outlineShown, 0.7f * outlineShown);
+                Lighting.AddLight(tipPosition, MuramasaTuning.TintLight(new Vector3(0.1f * outlineShown, 0.3f * outlineShown, 0.7f * outlineShown)));
             }
 
             if (Projectile.owner == Main.myPlayer && UpdateDraw(owner))
@@ -192,7 +192,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         {
             draw?.Draw();
 
-            Texture2D texture = TextureAssets.Projectile[Type].Value;
+            Texture2D texture = MuramasaGreen.Sprite(TextureAssets.Projectile[Type].Value);
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
 
             Vector2 position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, MuramasaTuning.GripOffset, Projectile.scale) - Main.screenPosition;

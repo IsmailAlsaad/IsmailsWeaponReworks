@@ -35,8 +35,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         public static float OutlineMax => 1f;
         public static float OutlineFade => 0.3f;      // how fast the outline fades in and out (per tick, 0..1)
         public static float GlowScale => 1.18f;       // the soft glow copy behind the outline
-        public static Color OutlineColor => new Color(70, 160, 255, 0);
-        public static Color OutlineCoreColor => new Color(160, 220, 255, 0);
+        public static Color OutlineColor => MuramasaGreen.Active ? new Color(70, 230, 110, 0) : new Color(70, 160, 255, 0);
+        public static Color OutlineCoreColor => MuramasaGreen.Active ? new Color(170, 255, 190, 0) : new Color(160, 220, 255, 0);
 
         // ---- the plain swing (a click before the sword is fully sheathed): anticipation, strike, recover; fixed ticks ----
         public static int AnticipateTicks => 3;
@@ -64,9 +64,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Muramasa
         public static float TrailInner => 0.3f;       // fully expanded, the fan reaches down the blade to this fraction of its length
         public static float TrailOpacity => 1f;
         public static int TrailSamplesPerTick => 8;
-        public static Color CoreColor => new Color(215, 240, 255, 0);
-        public static Color BlueColor => new Color(80, 170, 255, 0);
-        public static Color DeepColor => new Color(40, 80, 220, 0);
+        public static Color CoreColor => MuramasaGreen.Active ? new Color(215, 255, 225, 0) : new Color(215, 240, 255, 0);   // with the easter egg on, "blue" is green
+        public static Color BlueColor => MuramasaGreen.Active ? new Color(80, 255, 130, 0) : new Color(80, 170, 255, 0);
+        public static Color DeepColor => MuramasaGreen.Active ? new Color(30, 170, 70, 0) : new Color(40, 80, 220, 0);
+
+        // Every light of the Muramasa goes through this: same brightness, green with the easter egg on.
+        public static Vector3 TintLight(Vector3 light)
+        {
+            if (!MuramasaGreen.Active)
+                return light;
+            float brightness = Math.Max(light.X, Math.Max(light.Y, light.Z));
+            return new Vector3(0.2f, 1f, 0.4f) * brightness;
+        }
 
         // ---- trail alignment: if the trail does not sit on the sprite, tune these (they are live under hot reload) ----
         public static float TrailLagTicks => 0.15f;      // how many ticks the trail runs BEHIND the sprite (0 = exactly on it; the old fixed value was 0.8)
