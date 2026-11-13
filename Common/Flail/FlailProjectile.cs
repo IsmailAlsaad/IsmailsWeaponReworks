@@ -304,7 +304,7 @@ namespace IsmailsWeaponReworks.Common.Flail
             CheckChargeComplete(owner, tier, need);
             Fx.SpinEmbers(Projectile.Center, Projectile.Center - previousCenter, tier, progress);
             Fx.ChargeGather(owner.MountedCenter, tier, progress);
-            Lighting.AddLight(Projectile.Center, 0.6f + 0.6f * progress + flash, 0.3f + 0.3f * progress + 0.5f * flash, 0.08f + 0.2f * flash);
+            Lighting.AddLight(Projectile.Center, Tuning.TintLight(new Vector3(0.6f + 0.6f * progress + flash, 0.3f + 0.3f * progress + 0.5f * flash, 0.08f + 0.2f * flash)));
 
             if (!IsOwner || holding)
                 return;
@@ -377,7 +377,7 @@ namespace IsmailsWeaponReworks.Common.Flail
                 Fx.ApexJingle(Projectile.Center, thrownTier);
             }
             Fx.FlightDust(Projectile.Center, target - Projectile.Center, thrownTier);
-            Lighting.AddLight(Projectile.Center, 1f, 0.55f, 0.15f);
+            Lighting.AddLight(Projectile.Center, Tuning.TintLight(new Vector3(1f, 0.55f, 0.15f)));
 
             if (CurrentPhase == Phase.Caught)
             {

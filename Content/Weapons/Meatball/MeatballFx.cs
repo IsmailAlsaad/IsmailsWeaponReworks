@@ -22,6 +22,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
         static Dust Blood(Vector2 position, Vector2 velocity, float scale, bool noGravity = true)
         {
             int type = Main.rand.NextBool(5) ? DustID.RedTorch : DustID.Blood;
+            if (MeatballSwedish.Active)
+                type = Main.rand.NextBool(2) ? DustID.YellowTorch : DustID.BlueTorch;   // the getfixedboi seed: the flag's yellow and blue
             Dust dust = Dust.NewDustPerfect(position, type, velocity, 0, default, scale);
             dust.noGravity = noGravity;
             return dust;
@@ -265,7 +267,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
                 Blood(center + Main.rand.NextVector2Circular(radius * 0.1f, radius * 0.1f), Main.rand.NextVector2Circular(radius * 0.08f, radius * 0.08f) + new Vector2(0f, -2.5f), Main.rand.NextFloat(1.6f, 2.6f), false);
             for (int i = 0; i < 24; i++)
             {
-                Dust smoke = Dust.NewDustPerfect(center + Main.rand.NextVector2Circular(radius * 0.4f, radius * 0.4f), DustID.Smoke, Main.rand.NextVector2Circular(3f, 3f) + new Vector2(0f, -1.5f), 150, new Color(90, 8, 14), 2f);
+                Dust smoke = Dust.NewDustPerfect(center + Main.rand.NextVector2Circular(radius * 0.4f, radius * 0.4f), DustID.Smoke, Main.rand.NextVector2Circular(3f, 3f) + new Vector2(0f, -1.5f), 150, Tune.SmokeTint, 2f);
                 smoke.noGravity = true;
             }
 

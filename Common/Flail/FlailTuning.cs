@@ -53,6 +53,7 @@ namespace IsmailsWeaponReworks.Common.Flail
         public virtual int FlashTicks => 12;
         public abstract Color GlowColor(int tier);
         public abstract Color HotColor(int tier);
+        public virtual Vector3 TintLight(Vector3 light) { return light; }   // every Lighting.AddLight of the flail goes through this, so a flail (or a seed) can recolor its light
         public abstract string ChainName { get; }           // the vanilla chain texture under Terraria/Images (for example "Chain6")
 
         protected static T Pick<T>(int tier, T one, T two, T three)

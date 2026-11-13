@@ -66,7 +66,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
             Projectile.Center = arrived ? specialTarget : Projectile.Center + toTarget.SafeNormalize(Vector2.UnitX) * speed;
             trail?.Add(Projectile.Center);
             Fx.FlightDust(Projectile.Center, Projectile.Center - oldCenter, 3);
-            Lighting.AddLight(Projectile.Center, 1.1f, 0.12f, 0.15f);
+            Lighting.AddLight(Projectile.Center, Meat.TintLight(new Vector3(1.1f, 0.12f, 0.15f)));
 
             if (!IsOwner)
                 return;

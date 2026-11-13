@@ -161,7 +161,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
             Projectile.rotation += 0.45f;
             trail?.Add(to);
             MeatballFx.Instance.BallFlight(to, Projectile.velocity);
-            Lighting.AddLight(to, 0.9f, 0.1f, 0.12f);
+            Lighting.AddLight(to, Tune.TintLight(new Vector3(0.9f, 0.1f, 0.12f)));
 
             if (IsOwner && age > Tune.BallMaxLifeTicks)
                 Detonate();
@@ -279,7 +279,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
             int dripChance = Math.Max(1, (int)MathHelper.Lerp(Tune.DripChanceStart, Tune.DripChanceEnd, t));
             if (Main.rand.NextBool(dripChance))
                 MeatballFx.Instance.Drip(Projectile.Center);
-            Lighting.AddLight(Projectile.Center, 0.5f + 0.9f * t + 0.5f * beatFlash, 0.05f, 0.08f);
+            Lighting.AddLight(Projectile.Center, Tune.TintLight(new Vector3(0.5f + 0.9f * t + 0.5f * beatFlash, 0.05f, 0.08f)));
 
             if (IsOwner && fuseTicks >= Tune.FuseTicks)
                 Detonate();
@@ -376,7 +376,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
             Vector2 center = Projectile.Center + shake;
             Vector2 position = center - Main.screenPosition;
             float glow = attached ? 0.3f + 0.7f * t + 0.5f * beatFlash : 0.8f;
-            Color body = Color.Lerp(lightColor, new Color(255, 70, 70), MathHelper.Clamp(0.5f * t + 0.3f * pulse * t, 0f, 1f));
+            Color body = Color.Lerp(lightColor, Tune.SwellTint, MathHelper.Clamp(0.5f * t + 0.3f * pulse * t, 0f, 1f));
 
             Texture2D texture = HeadTexture();
             Vector2 origin = texture.Size() * 0.5f;

@@ -77,18 +77,28 @@ namespace IsmailsWeaponReworks.Content.Weapons.Meatball
         // The blood fill by heat: near black, dark red, red, bright red, a wet highlight (the five hard bands of the metaball layer).
         public Color BloodFill(float heat)
         {
-            Color[] stops =
-            {
-                new Color(40, 2, 8), new Color(105, 8, 16), new Color(170, 16, 26), new Color(215, 38, 44), new Color(245, 96, 92)
-            };
+            Color[] stops = MeatballSwedish.Active
+                ? new[] { new Color(0, 38, 72), new Color(0, 78, 128), new Color(0, 106, 167), new Color(254, 204, 0), new Color(255, 238, 120) }   // the getfixedboi seed: deep blue, flag blue, flag yellow, a bright highlight
+                : new[] { new Color(40, 2, 8), new Color(105, 8, 16), new Color(170, 16, 26), new Color(215, 38, 44), new Color(245, 96, 92) };
             float x = MathHelper.Clamp(heat, 0f, 1f) * (stops.Length - 1);
             int i = Math.Min((int)x, stops.Length - 2);
             return Color.Lerp(stops[i], stops[i + 1], x - i);
         }
 
         // ---- looks ----
-        public override Color GlowColor(int tier) { return new Color(200, 24, 34, 0); }
-        public override Color HotColor(int tier) { return new Color(255, 120, 110, 0); }
+        public override Color GlowColor(int tier) { return MeatballSwedish.Active ? new Color(0, 115, 185, 0) : new Color(200, 24, 34, 0); }       // the seed: flag blue glow under a flag yellow core
+        public override Color HotColor(int tier) { return MeatballSwedish.Active ? new Color(254, 204, 0, 0) : new Color(255, 120, 110, 0); }
+        public Color SmokeTint => MeatballSwedish.Active ? new Color(30, 80, 140) : new Color(90, 8, 14);          // the explosion's smoke
+        public Color SwellTint => MeatballSwedish.Active ? new Color(255, 240, 170) : new Color(255, 70, 70);      // the ball turns this as it swells
+
+        // The light of the flail and the ball. In the seed it keeps the same brightness but is flag blue when dim and flag yellow when bright.
+        public override Vector3 TintLight(Vector3 light)
+        {
+            if (!MeatballSwedish.Active)
+                return light;
+            float brightness = Math.Max(light.X, Math.Max(light.Y, light.Z));
+            return Vector3.Lerp(new Vector3(0f, 0.42f, 0.65f), new Vector3(1f, 0.8f, 0f), MathHelper.Clamp(brightness - 0.6f, 0f, 1f)) * brightness;
+        }
         public override string ChainName => "Chain13";   // the vanilla Meatball chain texture (Chain13 per the wiki's chain id list)
     }
 }
