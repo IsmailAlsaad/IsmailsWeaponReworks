@@ -12,15 +12,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
     public static class NightsEdgeTuning
     {
         // ---- sword ----
-        public static float BladeLength => 80f;       // hand to tip, px at scale 1: a first guess, tune it with ShowBladeDebug until the magenta square sits on the sprite's tip
-        public static float SwordScale => 1f;
+        public static float BladeLength => 70f;       // hand to tip, px at scale 1: a first guess, tune it with ShowBladeDebug until the magenta square sits on the sprite's tip
+        public static float SwordScale => 1.1f;
         public static float GripOffset => 0f;         // draw only: moves the sprite this far (px at scale 1) back along the blade, so the hand holds it higher or lower
         public static bool ShowBladeDebug => false;   // true: a magenta square on the tip the hit test uses
 
         // ---- damage: everything that decides what a swing does to an enemy ----
         public static float DamageMultiplier => 1f;     // of the item's damage (the speed is the reward for charging, so 1)
         public static float KnockbackMultiplier => 1f;
-        public static float HitLengthScale => 1.3f;     // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
+        public static float HitLengthScale => 1.07f;     // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
         public static float HitWidth => 18f;            // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
         public static int SweepHitSteps => 6;           // the hit test is checked at this many poses between two ticks (a fast strike needs more)
 
@@ -40,7 +40,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         // ---- the swing (a chop centered on the cursor, alternating up and down; scaled by the charge and by melee speed) ----
         public static float AttackSpeedInfluence => 1f; // 0 = ignore the player's melee attack speed, 1 = fully applied
         public static float MinSpeed => 0.3f;           // the final speed (charge x melee speed) is clamped to this range
-        public static float MaxSpeed => 6f;
+        public static float MaxSpeed => 10f;
         public static int AnticipateTicks => 5;         // a swing that starts from the ready pose: the pull-back ...
         public static float AnticipateDeg => 18f;       // ... this far past the start of the arc
         public static int ChainAnticipateTicks => 9;    // a swing that FLOWS out of the previous one: the previous strike carries on through this wind-up ...
@@ -69,9 +69,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int TrailRails => 7;              // parallel pixel lines that fill the fan
         public static float TrailExpandBy => 0.8f;      // the fan has fully expanded this far into the strike (0..1)
         public static float TrailInnerLow => 0.8f;      // fully expanded, the fan reaches down the blade to this fraction of its length: with no charge ...
-        public static float TrailInnerHigh => 0.3f;     // ... and with a full charge
-        public static float TrailOuter => 1.25f;        // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
-        public static float TrailLagTicks => 0.4f;      // how many ticks the trail runs BEHIND the sprite (0 = exactly on it)
+        public static float TrailInnerHigh => 0.1f;     // ... and with a full charge
+        public static float TrailOuter => 1f;        // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
+        public static float TrailLagTicks => 0.2f;      // how many ticks the trail runs BEHIND the sprite (0 = exactly on it)
         public static int TrailSamplesPerTick => 8;     // trail points laid per tick (the strike is fast, so many keep the fan smooth)
         public static float TrailOpacityLow => 0.3f;    // how strong the fan is with no charge ...
         public static float TrailOpacityHigh => 0.8f;   // ... and with a full charge
