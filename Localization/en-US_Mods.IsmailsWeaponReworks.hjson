@@ -84,6 +84,7 @@ Projectiles: {
 	MaceShrapnelProjectile.DisplayName: Mace Shrapnel Projectile
 	FlamingMaceBlastProjectile.DisplayName: Flaming Mace Blast Projectile
 	FlamingMaceFlailProjectile.DisplayName: Flaming Mace Flail Projectile
+	NightsEdgeBladeProjectile.DisplayName: Nights Edge Blade Projectile
 }
 
 Buffs: {
