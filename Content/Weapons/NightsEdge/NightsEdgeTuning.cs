@@ -23,6 +23,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float HitLengthScale => 1.07f;     // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
         public static float HitWidth => 18f;            // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
         public static int SweepHitSteps => 6;           // the hit test is checked at this many poses between two ticks (a fast strike needs more)
+        public static float BlastDamageMultiplier => 0.6f; // the dark flame explosion of a charged hit: of the swing's base damage, on everything inside (the enemy that was hit too)
+        public static int BlastSize => 104;             // diameter of that explosion (px): the area it hurts
+        public static int BlastTicks => 4;              // how long the area lasts (every enemy inside is hit once)
+        public static int BlastShadowflameTicks => 240; // Shadowflame on everything it hits (4 s)
 
         // ---- charge: true melee hits speed the sword up until it is full ----
         public static int HitsToFull => 10;             // the FIRST enemy each swing touches counts as one hit (a swing through a crowd = 1)
@@ -102,11 +106,50 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float StabBlendOut => 0.2f;
         public static float StabHitShake => 2.5f;
 
+        // ---- the dark flame look (patch 3): shows with the full-charge outline; the edge is fed from NightsEdgeBladeMask.png ----
+        public static float EdgeRadius => 2.2f;         // radius of one edge blob (px at scale 1)
+        public static int EdgeBlobStride => 3;          // one blob on every Nth opaque mask pixel (1 = all of them, a lot of blobs)
+        public static float EdgeMerge => 2.4f;          // how far a blob's field reaches, in its radii
+        public static float EdgeOutline => 0f;       // thickness of the edge's outline (field units)
+        public static float EdgeGlow => 0.15f;
+        public static float EdgeHeat => 0.55f;          // color heat of the edge (0 = deep violet, 1 = pale lilac)
+        public static float EdgeHeatFlicker => 0.2f;
+        public static float EdgeWobble => 0.6f;         // each blob slides sideways this far (px) ...
+        public static float EdgeWobbleSpeed => 5f;      // ... at this speed
+        public static float FallbackStart => 0.3f;      // without the mask PNG the effect runs along the blade from this fraction of its length to the tip
+        public static float FlameRate => 1.4f;          // flames born per tick at full charge
+        public static float FlameSize => 2f;            // radius at birth (px at scale 1)
+        public static int FlameLifeMin => 16;
+        public static int FlameLifeMax => 28;
+        public static float FlameRise => 0.05f;
+        public static float FlameDrag => 0.95f;
+        public static float FlameWobble => 0.04f;
+        public static float FlameHeat => 0.8f;          // a flame starts this hot and cools
+        public static float FlameMerge => 2.7f;
+        public static float FlameOutline => 0f;
+        public static float FlameGlow => 0f;
+        public static float EmberDustChance => 0.35f;   // per tick at full charge: a vanilla Shadowflame / purple dust mote off the edge
+        public static float LightStrength => 1f;        // the purple light along the blade
+        public static float BlastShake => 2.2f;         // camera punch of a charged hit's explosion
+        public static int BlastCores => 6;              // big slow blobs in the middle of the explosion: they merge into one glob that shrinks away
+        public static float BlastCoreSizeMin => 6f;
+        public static float BlastCoreSizeMax => 10f;
+        public static float BlastCoreSpeed => 1.6f;
+        public static int BlastDroplets => 26;          // droplets thrown out and braked by BurstDrag
+        public static float BlastSpeedMin => 2.5f;
+        public static float BlastSpeedMax => 8f;
+        public static float BlastDropMin => 2.4f;       // radius of a droplet
+        public static float BlastDropMax => 5f;
+        public static float BurstMerge => 2.6f;         // how far the droplets' fields reach (bigger = they bridge and merge more)
+        public static float BurstGravity => 0.1f;
+        public static float BurstDrag => 0.9f;          // velocity kept per tick: low = thrown out and stopped quickly
+        public static float BurstHeat => 0.95f;         // color heat at birth, cools to about a quarter of it
+
         // ---- colors (alpha 0 = additive) ----
-        public static Color OutlineColor => new Color(170, 70, 255, 0);
-        public static Color OutlineCoreColor => new Color(235, 200, 255, 0);
+        public static Color OutlineColor => PurpleColor;
+        public static Color OutlineCoreColor => PurpleColor;//new Color(235, 200, 255, 0);
         public static Color CoreColor => new Color(235, 205, 255, 0);
         public static Color PurpleColor => new Color(150, 60, 240, 0);
-        public static Color DeepColor => new Color(60, 15, 130, 0);
+        public static Color DeepColor => PurpleColor;// new Color(60, 15, 130, 0);
     }
 }

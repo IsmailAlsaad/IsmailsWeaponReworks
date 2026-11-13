@@ -10,8 +10,8 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
 {
     /// <summary>
-    /// The Light's Bane's charge (0 to 1) lives here, on the owner's machine: true melee hits fill it, it cools on its own while it is not
-    /// full (a FULL charge stays), and it is lost when the player swaps to another item or dies (the Starfury's rule); it is never saved.
+    /// The Light's Bane's charge (0 to 1) lives here, on the owner's machine: true melee hits fill it, it cools on its own once no hit has counted for
+    /// ChargeHoldTicks (a FULL charge cools too, like the Night's Edge's), and it is lost when the player swaps to another item or dies (the Starfury's rule); it is never saved.
     /// While the player has LightsBaneImbueBuff (from any source) the charge is held at full, whatever item is held; when the buff ends it is lost.
     /// It also keeps the held blade alive: whenever the sword is held and no LightsBaneBladeProjectile exists, it spawns one. The other
     /// machines learn the charge from the blade projectile (SendExtraAI), nothing here is synced.
@@ -140,7 +140,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
             else
             {
                 sinceHit++;
-                if (Charge > 0f && Charge < LightsBaneTuning.ChargedAt && sinceHit > LightsBaneTuning.ChargeHoldTicks)
+                if (Charge > 0f && sinceHit > LightsBaneTuning.ChargeHoldTicks)
                     Charge = Math.Max(0f, Charge - LightsBaneTuning.ChargeDecayPerTick);
             }
 

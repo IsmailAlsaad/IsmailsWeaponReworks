@@ -57,6 +57,14 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         protected abstract void FxStabImpact(Vector2 chest);
         protected abstract void FxSparkle(Vector2 hand, Vector2 tip);
 
+        // Optional hooks (they do nothing by default; the Light's Bane does not use them, the Night's Edge builds its dark flame look on them).
+        /// <summary>Every machine, every tick (not on a dedicated server), after the pose is set: feed visuals (metaballs, dust) from the sprite's pose.</summary>
+        protected virtual void TickVisuals(ChargedBladePose pose) { }
+        /// <summary>From PreDraw, right after the sword itself is drawn (a spritebatch is running): draw layers that belong in front of the blade.</summary>
+        protected virtual void DrawAfterBlade(ChargedBladePose pose) { }
+        /// <summary>Owner's client, for every true melee hit, before the charge changes. 'fullBefore' = the sword was already fully charged before this swing (the swing that fills it does not count).</summary>
+        protected virtual void OnOwnerHit(NPC target, NPC.HitInfo hit, bool fullBefore) { }
+
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
 
@@ -105,6 +113,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         float outlineShown;       // 0..1, how visible the full-charge outline is
         bool wasCharged;
         bool strikeStarted;
+        bool swingFilled;         // owner: this swing is the one that filled the charge (its other hits are not "already full" yet)
         bool swingGaveCharge;     // owner: this swing already added its charge (a swing counts at most one hit toward the charge)
         float flash;
         Vector2 lastOwnerCenter;
@@ -364,6 +373,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
                     FxSparkle(Projectile.Center, tipPosition);
                 if (outlineShown > 0.05f)
                     Lighting.AddLight(tipPosition, 0.35f * outlineShown, 0.12f * outlineShown, 0.7f * outlineShown);
+                TickVisuals(MakePose());
             }
 
             flash = Math.Max(0f, flash - 1f / Math.Max(1, Tune.FlashTicks));
@@ -575,6 +585,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             {
                 swingSerial = (swingSerial + 1) & 255;
                 swingGaveCharge = false;
+                swingFilled = false;
                 swingAim = aim;
                 swingSpeed = speed;
                 swingChained = chain;
@@ -712,12 +723,16 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         // Owner's client only. A true melee hit of the swing: sparks, a sound, a camera punch, and (for the first hit of the swing) charge.
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
+            bool fullBefore = chargeTarget >= Tune.ChargedAt && !swingFilled;
+            OnOwnerHit(target, hit, fullBefore);
             FxHitSpark(target.Center, chargeShown);
             CameraShake.Punch(target.Center, Tune.HitShake * (0.6f + chargeShown), 8);
             if (!swingGaveCharge)
             {
                 swingGaveCharge = true; // only the first hit of a swing charges the blade
                 AddOwnerCharge(Owner, Tune.ChargePerHit);
+                if (!fullBefore && OwnerCharge(Owner) >= Tune.ChargedAt)
+                    swingFilled = true;
                 FxChargeHit(tipPosition);
                 Projectile.netUpdate = true; // the other machines hear the new charge through SendExtraAI
             }
@@ -769,8 +784,40 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             if (flash > 0.01f)
                 Main.EntitySpriteDraw(texture, position, null, Tune.CoreColor * (0.7f * flash), rotation, origin, scale, effects, 0);
 
+            DrawAfterBlade(MakePose());
             DrawBladeDebug();
             return false;
+        }
+
+        // The sprite's pose for the visual hooks (the same position, rotation and flip PreDraw draws with). SpriteSize stays zero until the
+        // texture is loaded (the first frame): a hook skips its effect then.
+        ChargedBladePose MakePose()
+        {
+            ChargedBladePose pose = new ChargedBladePose();
+            var asset = TextureAssets.Projectile[Type];
+            if (asset.IsLoaded)
+            {
+                Texture2D texture = asset.Value;
+                HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
+                Vector2 position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, Tune.GripOffset, Projectile.scale);
+                if (stabBlend > 0f)
+                    position += stabShake + Projectile.rotation.ToRotationVector2() * (stabSlide * stabBlend);
+                pose.SpritePosition = position;
+                pose.SpriteRotation = Projectile.rotation + rotationOffset;
+                pose.SpriteOrigin = origin;
+                pose.SpriteSize = new Vector2(texture.Width, texture.Height);
+                pose.Effects = effects;
+            }
+            pose.Scale = Projectile.scale;
+            pose.Hand = Projectile.Center;
+            pose.Tip = tipPosition;
+            pose.TipMotion = tipPosition - prevTip;
+            pose.Direction = Projectile.rotation.ToRotationVector2();
+            pose.Charge = chargeShown;
+            pose.Outline = outlineShown;
+            pose.Striking = Damaging;
+            pose.Ticks = ticks;
+            return pose;
         }
 
         // Tune.ShowBladeDebug: a magenta square on the tip the hit test uses and a green one on the hand.

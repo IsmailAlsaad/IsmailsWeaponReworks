@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
+using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
 {
@@ -14,6 +15,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
     {
         // The vanilla item sprite is the sword (no art needed).
         public override string Texture => "Terraria/Images/Item_" + ItemID.NightsEdge;
+
+        // The edge mask (your PNG), read on first use; the metaballs sit on its pixels.
+        readonly NightsEdgeMask mask = new NightsEdgeMask();
 
         IChargedBladeTuning tune;
         protected override IChargedBladeTuning Tune => tune ?? (tune = new NightsEdgeBladeTune());
@@ -53,5 +57,28 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         protected override void FxPlayStabWindup(Vector2 position) { NightsEdgeFx.PlayStabWindup(position); }
         protected override void FxStabImpact(Vector2 chest) { NightsEdgeFx.StabImpact(chest); }
         protected override void FxSparkle(Vector2 hand, Vector2 tip) { NightsEdgeFx.Sparkle(hand, tip); }
+
+        // Every machine, every tick: the dark flame metaballs along the blade's edge, the rising flames and the embers (visual only, nothing is synced).
+        protected override void TickVisuals(ChargedBladePose pose)
+        {
+            NightsEdgeFlames.Feed(pose, mask);
+        }
+
+        // The metaball layers are drawn from here, in front of the enemies.
+        protected override void DrawAfterBlade(ChargedBladePose pose)
+        {
+            NightsEdgeFx.DrawLayers();
+        }
+
+        // Owner's client. A hit while the sword was already fully charged (the swing that fills it does not explode): the enemy bursts into a dark
+        // flame explosion that also hurts what stands next to it and sets it on Shadowflame. The projectile is spawned by the owner, so it syncs.
+        protected override void OnOwnerHit(NPC target, NPC.HitInfo hit, bool fullBefore)
+        {
+            if (!fullBefore)
+                return;
+            Vector2 point = Vector2.Clamp(Projectile.Center + Projectile.rotation.ToRotationVector2() * Tune.BladeLength * Projectile.scale * 0.7f, target.TopLeft, target.BottomRight);
+            int damage = (int)(Projectile.damage * NightsEdgeTuning.BlastDamageMultiplier);
+            Projectile.NewProjectile(Projectile.GetSource_OnHit(target), point, Vector2.Zero, ModContent.ProjectileType<NightsEdgeBlastProjectile>(), damage, 0f, Projectile.owner);
+        }
     }
 }

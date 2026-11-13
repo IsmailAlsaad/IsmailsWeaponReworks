@@ -27,8 +27,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.LightsBane
         // ---- charge: true melee hits speed the sword up until it is full ----
         public static int HitsToFull => 20;             // the FIRST enemy each swing touches counts as one hit (a swing through a crowd = 1)
         public static float ChargePerHit => 1f / Math.Max(1, HitsToFull);
-        public static int ChargeHoldTicks => 180;       // a partial charge does not cool for this long after the last hit
-        public static float ChargeDecayPerTick => 0.003f; // then it cools by this much per tick (a full bar in about 5.5 s). A FULL charge never cools
+        public static int ChargeHoldTicks => 180;       // the charge (a full one too) does not cool for this long after the last counted hit
+        public static float ChargeDecayPerTick => 0.003f; // then it cools by this much per tick (a full bar in about 5.5 s; 0.0056 = 3 s like the Night's Edge). A full charge cools too, except while imbued
         public static float ChargedAt => 0.995f;        // from this charge on the sword counts as fully charged
         public static float ChargeShowEase => 0.15f;    // how fast the DRAWN charge follows the real one (per tick, 0..1)
         public static float ChargeSyncStep => 0.04f;    // the owner tells the other machines when the charge moved this much

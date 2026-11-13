@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
+using IsmailsWeaponReworks.Common;
+using System;
 using Terraria.Audio;
 using Terraria.ID;
 
@@ -95,6 +97,52 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             if (Main.dedServ)
                 return;
             Mote(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Circular(0.6f, 0.6f) + new Vector2(0f, -0.3f), 0.9f, Main.rand.NextBool(2) ? DustID.PurpleTorch : DustID.Shadowflame);
+        }
+
+        // ---- the dark flame look (patch 3) ----
+
+        // A vanilla dust mote that leaves the edge of the blade.
+        public static void Ember(Vector2 position, Vector2 motion)
+        {
+            if (Main.dedServ)
+                return;
+            Mote(position, new Vector2(Main.rand.NextFloat(-0.4f, 0.4f), -Main.rand.NextFloat(0.4f, 1.4f)) + motion * 0.2f, Main.rand.NextFloat(0.9f, 1.5f), Main.rand.NextBool(2) ? DustID.Shadowflame : DustID.PurpleTorch);
+        }
+
+        // The held blade draws the three metaball layers from its PreDraw, in front of the enemies (an explosion's droplets, the flames, the edge).
+        public static void DrawLayers()
+        {
+            if (Main.dedServ)
+                return;
+            MetaballLayers.Of<NightsEdgeBurstStyle>().DrawInBatch();
+            MetaballLayers.Of<NightsEdgeFlameStyle>().DrawInBatch();
+            MetaballLayers.Of<NightsEdgeEdgeStyle>().DrawInBatch();
+        }
+
+        // The dark flame explosion of a charged hit (radius in px): a deep bang, a few big slow blobs in the middle that merge and shrink away,
+        // droplets thrown out and braked by drag, and some vanilla dust.
+        public static void Blast(Vector2 center, float radius)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.55f, Pitch = -0.25f, PitchVariance = 0.1f }, center);
+            SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.45f, Pitch = -0.3f, PitchVariance = 0.15f }, center);
+            float scale = radius / (NightsEdgeTuning.BlastSize * 0.5f);
+            float dropScale = (float)Math.Sqrt(Math.Max(1f, scale));
+            MetaballLayer burst = MetaballLayers.Of<NightsEdgeBurstStyle>();
+            for (int i = 0; i < NightsEdgeTuning.BlastCores; i++)
+            {
+                Vector2 position = center + Main.rand.NextVector2Circular(4f, 4f) * scale;
+                Vector2 velocity = Main.rand.NextVector2Circular(1f, 1f) * NightsEdgeTuning.BlastCoreSpeed * scale;
+                burst.Spawn(position, velocity, Main.rand.Next(14, 23), Main.rand.NextFloat(NightsEdgeTuning.BlastCoreSizeMin, NightsEdgeTuning.BlastCoreSizeMax) * scale);
+            }
+            for (int i = 0; i < NightsEdgeTuning.BlastDroplets; i++)
+            {
+                Vector2 velocity = Main.rand.NextVector2Unit() * Main.rand.NextFloat(NightsEdgeTuning.BlastSpeedMin, NightsEdgeTuning.BlastSpeedMax) * scale;
+                burst.Spawn(center, velocity, Main.rand.Next(20, 39), Main.rand.NextFloat(NightsEdgeTuning.BlastDropMin, NightsEdgeTuning.BlastDropMax) * dropScale);
+            }
+            for (int i = 0; i < 14; i++)
+                Mote(center, Main.rand.NextVector2Unit() * Main.rand.NextFloat(2f, 6f) * scale, Main.rand.NextFloat(1.2f, 1.9f), i % 2 == 0 ? DustID.Shadowflame : DustID.PurpleTorch);
         }
 
         // ---- the stab (unused until patch 5 and 6; the shared blade needs these two hooks) ----
