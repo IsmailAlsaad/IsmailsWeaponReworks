@@ -17,7 +17,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Mace
         static Dust Metal(Vector2 position, Vector2 velocity, float scale)
         {
             int roll = Main.rand.Next(6);
-            int type = roll == 0 ? DustID.Torch : roll <= 2 ? DustID.Silver : DustID.Iron;
+            int type = roll == 0 ? DustID.Platinum : roll <= 2 ? DustID.Silver : DustID.Lead;
             Dust dust = Dust.NewDustPerfect(position, type, velocity, 0, default, scale);
             dust.noGravity = true;
             return dust;
@@ -56,7 +56,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Mace
                 Vector2 direction = (offset + MathHelper.TwoPi * i / count).ToRotationVector2();
                 Metal(head + direction * 8f, direction * (3f + 0.6f * tier), 1.2f);
             }
-            SoundEngine.PlaySound(SoundID.Item37 with { Volume = 0.6f, Pitch = -0.2f + 0.2f * tier }, head);
+            SoundEngine.PlaySound(SoundID.NPCHit4 with { Volume = 0.6f, Pitch = -0.2f + 0.2f * tier }, head);
         }
 
         public override void ThrowWhoosh(Vector2 head, int tier)
@@ -74,7 +74,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Mace
                 return;
             for (int i = 0; i < 8; i++)
                 Metal(head, Main.rand.NextVector2Circular(2.5f, 2.5f), 1f);
-            SoundEngine.PlaySound(SoundID.Item35 with { Volume = 0.35f, Pitch = -0.4f }, head);
+            //SoundEngine.PlaySound(SoundID.Item35 with { Volume = 0.35f, Pitch = -0.4f }, head);
         }
 
         public override void Caught(Vector2 hand, int nextTier)
@@ -83,7 +83,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Mace
                 return;
             for (int i = 0; i < 8; i++)
                 Metal(hand + Main.rand.NextVector2Circular(10f, 10f), Main.rand.NextVector2Circular(2.5f, 2.5f), 1.1f);
-            SoundEngine.PlaySound(SoundID.NPCHit4 with { Volume = 0.45f, Pitch = -0.1f + 0.2f * nextTier }, hand);
+            SoundEngine.PlaySound(SoundID.Item37 with { Volume = 0.45f, Pitch = -0.3f + 0.2f * nextTier }, hand);
         }
 
         public override void Fizzle(Vector2 head)
