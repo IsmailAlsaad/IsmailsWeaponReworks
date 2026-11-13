@@ -196,7 +196,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Mace
             SoundEngine.PlaySound(SoundID.NPCHit3 with { Volume = 0.35f, Pitch = 0.4f, MaxInstances = 4 }, position);
         }
 
-        // The shard breaks (after its last enemy, on a tile, or at the end of its life).
+        // A piece bounces off a tile: a few flecks and a soft clink, louder with the impact speed.
+        public void ShardBounce(Vector2 position, float impact)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 2; i++)
+                Metal(position, Main.rand.NextVector2Circular(2f, 2f), 0.8f);
+            SoundEngine.PlaySound(SoundID.Item10 with { Volume = MathHelper.Clamp(0.1f + 0.04f * impact, 0.1f, 0.35f), Pitch = 0.3f, MaxInstances = 4 }, position);
+        }
+
+        // The piece breaks (after its last enemy, or when it fades).
         public void ShardBreak(Vector2 position)
         {
             if (Main.dedServ)

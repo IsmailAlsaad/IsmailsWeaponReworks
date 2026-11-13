@@ -616,18 +616,18 @@ tModLoader/other bases -> project types:
     +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #HeadHidden:bool[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
 **MaceFx.cs** uses: CameraShake, FlailFx
   class MaceFx : FlailFx
-    +Instance:MaceFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +Explosion(Vector2) +ShardFlight(Vector2,Vector2) +ShardHit(Vector2) +ShardBreak(Vector2)
+    +Instance:MaceFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +Explosion(Vector2) +ShardFlight(Vector2,Vector2) +ShardHit(Vector2) +ShardBounce(Vector2,float) +ShardBreak(Vector2)
 **MaceGlobalItem.cs** uses: FlailGlobalItem, MaceFlailProjectile
   class MaceGlobalItem : FlailGlobalItem
     #ItemType:int[ov] #ProjectileType:int[ov]
 **MaceShrapnelProjectile.cs** uses: DetachedTrails, MaceFx, MaceTuning, PixelTrail, PixelTrailStyle, RemoteHitTracker
   class MaceShrapnelProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanHitNPC(NPC)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanHitNPC(NPC)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
   class MaceShardTrailStyle : PixelTrailStyle
     +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
 **MaceTuning.cs** uses: FlailTuning
   class MaceTuning : FlailTuning
-    +Instance:MaceTuning[s] +ThrowSpeed(int)[ov] +SpinOmegaEnd(int)[ov] +MinReach:float[ov] +MaxReach:float[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +AfterimageTicks:int[ov] +TierDamageMultiplier(int)[ov] +SpecialPathDamageMultiplier:float[ov] +ShardDamageMultiplier:float +ShardKnockbackMultiplier:float +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialHangTicks:int[ov] +SpecialSpeed:float +SpecialMinTicks:int +ShardCount:int +ShardAngleJitter:float +ShardSpeedMin:float +ShardSpeedMax:float +ShardDrag:float +ShardPierce:int +ShardLifeTicks:int +ShardGraceTicks:int +ShardBoxPx:float +ShardTrailWidth:float +ShardTrailLifeTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
+    +Instance:MaceTuning[s] +ThrowSpeed(int)[ov] +SpinOmegaEnd(int)[ov] +MinReach:float[ov] +MaxReach:float[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +AfterimageTicks:int[ov] +TierDamageMultiplier(int)[ov] +SpecialPathDamageMultiplier:float[ov] +ShardDamageMultiplier:float +ShardKnockbackMultiplier:float +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialHangTicks:int[ov] +SpecialSpeed:float +SpecialMinTicks:int +ShardColumns:int +ShardRows:int +ShardLaunchSpeedMin:float +ShardLaunchSpeedMax:float +ShardLaunchUp:float +ShardGravity:float +ShardMaxFallSpeed:float +ShardAirDrag:float +ShardBounceDamp:float +ShardRestSpeed:float +ShardGroundFriction:float +ShardSpin:float +ShardPierce:int +ShardLifeTicks:int +ShardGraceTicks:int +ShardBoxPx:float +ShardTrailWidth:float +ShardTrailLifeTicks:int +ShardTrailMinSpeed:float +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
 
 ### Content/Weapons/Meatball/
 **MeatballFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, MeatballFx, MeatballHeadProjectile, MeatballPlayer, MeatballSwedish, MeatballTuning, Phase

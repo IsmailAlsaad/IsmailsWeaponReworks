@@ -10,7 +10,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Mace
     /// <summary>
     /// The Mace's flail head: the shared flail loop (Common/Flail/FlailProjectile.cs) plus the Mace's own parts: its numbers and effects,
     /// and the tier 3 special: the regular elliptical throw (apex at the cursor, reach 8 to 20 tiles), only much faster. The first enemy the
-    /// head hits makes it EXPLODE into MaceShrapnelProjectiles (a ring of metal shards, each piercing 3 enemies before it breaks); the head
+    /// head hits makes it EXPLODE into MaceShrapnelProjectiles (the vanilla head fractured into a 3 x 3 grid of pieces, thrown out and falling under gravity, each piercing 3 enemies before it breaks); the head
     /// is gone and only the chain whips back to the hand (a held button then restarts tier 1). A throw that hits nothing just arrives home
     /// and the loop ends (or restarts if the button is held).
     /// MULTIPLAYER: the owner's client decides everything (the shared loop's rules). Where the head is during the special is a pure function
@@ -68,17 +68,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Mace
             if (CurrentPhase != Phase.Special)
                 return;
 
-            int count = Math.Max(1, Mace.ShardCount);
+            int pieces = Math.Max(1, Mace.ShardColumns) * Math.Max(1, Mace.ShardRows);
             int damage = Math.Max(1, (int)(lockedDamage * Mace.ShardDamageMultiplier));
             float knockback = Projectile.knockBack * Mace.ShardKnockbackMultiplier;
+            float gravDir = Owner.gravDir >= 0f ? 1f : -1f;
             float start = Main.rand.NextFloat(MathHelper.TwoPi);
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < pieces; i++)
             {
-                float angle = start + MathHelper.TwoPi * i / count + Main.rand.NextFloat(-Mace.ShardAngleJitter, Mace.ShardAngleJitter);
-                Vector2 velocity = angle.ToRotationVector2() * Main.rand.NextFloat(Mace.ShardSpeedMin, Mace.ShardSpeedMax);
-                // ai[0] = the enemy it exploded on (+1; its shards leave it alone for a moment), ai[1] = 1 for the shard that plays the explosion effect.
+                float angle = start + MathHelper.TwoPi * i / pieces + Main.rand.NextFloat(-0.2f, 0.2f);
+                Vector2 velocity = angle.ToRotationVector2() * Main.rand.NextFloat(Mace.ShardLaunchSpeedMin, Mace.ShardLaunchSpeedMax) + new Vector2(0f, -Mace.ShardLaunchUp * gravDir);
+                // ai[0] = the enemy it exploded on (+1; its pieces leave it alone for a moment), ai[1] = which piece of the head this is, piece 0 plays the explosion effect.
                 Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, velocity, ModContent.ProjectileType<MaceShrapnelProjectile>(),
-                    damage, knockback, Projectile.owner, target.whoAmI + 1, i == 0 ? 1f : 0f);
+                    damage, knockback, Projectile.owner, target.whoAmI + 1, i);
             }
             EndSpecial();
         }

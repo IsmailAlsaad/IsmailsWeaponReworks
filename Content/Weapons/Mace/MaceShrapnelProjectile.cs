@@ -11,26 +11,31 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.Mace
 {
     /// <summary>
-    /// A piece of metal shrapnel thrown out when the Mace's head explodes. It flies straight, slowing a little, with a short pixel trail,
-    /// and BREAKS after piercing MaceTuning.ShardPierce enemies, on the first tile it touches, or when its life ends.
-    /// ai[0] = the enemy the head exploded on (+1, 0 = none): the shard cannot hit it for ShardGraceTicks. ai[1] = 1 for the one shard that
-    /// plays the explosion effect. localAI[0] = age.
-    /// MULTIPLAYER: spawned by the owner's client (so it is synced); every machine flies it from the spawn velocity, the owner's client does
-    /// the damage and the piercing count (Projectile.penetrate), the other machines add the hit sparks themselves (RemoteHitTracker), and
-    /// every machine plays the break effect in OnKill.
+    /// A fractured piece of the Mace's head, thrown out when the head explodes. It falls under gravity (toward the owner's feet, so flipped
+    /// gravity works), bounces subtly off tiles and settles on them, like the Rally's shell shards. It hurts every enemy it touches (each
+    /// enemy once) and breaks after MaceTuning.ShardPierce of them (vanilla piercing); a piece that did not break fades after ShardLifeTicks.
+    /// Drawn as one cell of a ShardColumns x ShardRows grid cut from the vanilla Mace head sprite (ai[1] picks the cell); a
+    /// MaceShrapnelProjectile.png next to this file replaces the cut piece with one picture.
+    /// ai[0] = the enemy the head exploded on (+1, 0 = none): the piece cannot hit it for ShardGraceTicks. ai[1] = piece number (0 also
+    /// plays the explosion effect). localAI[0] = age in ticks.
+    /// MULTIPLAYER: the owner's client spawns the pieces (normal spawned projectiles, so the position and the launch velocity are synced)
+    /// and vanilla counts the pierces and removes the piece on every machine; the fall, the bounce and the fade are deterministic from the
+    /// launch, each machine simulates its own copy. Other machines add the hit sparks themselves (RemoteHitTracker, visual only).
     /// </summary>
     public class MaceShrapnelProjectile : ModProjectile
     {
-        // The vanilla crystal shard sprite, tinted. A MaceShrapnelProjectile.png next to this file replaces it.
-        public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.CrystalShard;
+        // The vanilla Mace head: the piece is cut out of it.
+        public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Mace;
 
         static Asset<Texture2D> art;
         static MaceTuning Tuning => MaceTuning.Instance;
 
         float Age => Projectile.localAI[0];
+        int Piece => (int)Projectile.ai[1];
 
         PixelTrail trail;
         RemoteHitTracker hitTracker; // other machines only
+        bool resting;                // it landed last tick
 
         public override void Load()
         {
@@ -68,21 +73,38 @@ namespace IsmailsWeaponReworks.Content.Weapons.Mace
 
         public override void AI()
         {
+            Player owner = Main.player[Projectile.owner];
+            if (!owner.active)
+            {
+                Projectile.Kill();
+                return;
+            }
             if (Projectile.localAI[0] == 0f)
             {
-                if (Projectile.ai[1] == 1f)
+                if (Piece == 0)
                     MaceFx.Instance.Explosion(Projectile.Center);
                 if (!Main.dedServ)
                     trail = new PixelTrail(new MaceShardTrailStyle(), Projectile.owner == Main.myPlayer);
             }
             Projectile.localAI[0]++;
 
-            Projectile.velocity *= Tuning.ShardDrag;
-            Projectile.rotation = Projectile.velocity.ToRotation() + MathHelper.PiOver2;
-            trail?.Add(Projectile.Center);
+            int g = owner.gravDir >= 0f ? 1 : -1;
+            bool wasResting = resting;
+            resting = false;
+
+            Projectile.velocity.Y += Tuning.ShardGravity * g;
+            Projectile.velocity.Y = g > 0 ? Math.Min(Projectile.velocity.Y, Tuning.ShardMaxFallSpeed) : Math.Max(Projectile.velocity.Y, -Tuning.ShardMaxFallSpeed);
+            Projectile.velocity.X *= Tuning.ShardAirDrag;
+
+            float speed = Projectile.velocity.Length();
+            if (!wasResting)
+                Projectile.rotation += (Tuning.ShardSpin + 0.03f * speed) * (Piece % 2 == 0 ? 1f : -1f);
+            if (speed >= Tuning.ShardTrailMinSpeed)
+                trail?.Add(Projectile.Center);
             trail?.Tick();
-            MaceFx.Instance.ShardFlight(Projectile.Center, Projectile.velocity);
-            Lighting.AddLight(Projectile.Center, 0.35f, 0.38f, 0.45f);
+            if (speed > 3f)
+                MaceFx.Instance.ShardFlight(Projectile.Center, Projectile.velocity);
+            Lighting.AddLight(Projectile.Center, 0.3f, 0.33f, 0.4f);
 
             if (Projectile.owner != Main.myPlayer && !Main.dedServ)
             {
@@ -101,7 +123,35 @@ namespace IsmailsWeaponReworks.Content.Weapons.Mace
             MaceFx.Instance.ShardHit(target.Center); // owner's client; the penetrate count breaks the shard after its last enemy
         }
 
-        // A tile breaks the shard (the default); OnKill plays the break effect on every machine.
+        // A tile: bounce subtly, or settle when it lands softly. Returning false keeps the piece alive.
+        public override bool OnTileCollide(Vector2 oldVelocity)
+        {
+            int g = Main.player[Projectile.owner].gravDir >= 0f ? 1 : -1;
+            Vector2 velocity = Projectile.velocity;
+            if (Projectile.velocity.X != oldVelocity.X)
+                velocity.X = -oldVelocity.X * Tuning.ShardBounceDamp;
+            if (Projectile.velocity.Y != oldVelocity.Y)
+            {
+                if (Math.Abs(oldVelocity.Y) < Tuning.ShardRestSpeed)
+                {
+                    velocity.Y = 0f;
+                    if (oldVelocity.Y * g > 0f)
+                    {
+                        resting = true;   // landed on the feet side: it slides to a stop
+                        velocity.X = oldVelocity.X * Tuning.ShardGroundFriction;
+                    }
+                }
+                else
+                {
+                    velocity.Y = -oldVelocity.Y * Tuning.ShardBounceDamp;
+                    MaceFx.Instance.ShardBounce(Projectile.Center, Math.Abs(oldVelocity.Y));
+                }
+            }
+            Projectile.velocity = velocity;
+            return false;
+        }
+
+        // Every machine: the last pierce, the end of its time, or the owner leaving (OnKill plays the break effect).
         public override void OnKill(int timeLeft)
         {
             MaceFx.Instance.ShardBreak(Projectile.Center);
@@ -112,11 +162,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Mace
         public override bool PreDraw(ref Color lightColor)
         {
             trail?.Draw();
-            Texture2D texture = art?.Value ?? TextureAssets.Projectile[Type].Value;
-            Vector2 origin = texture.Size() * 0.5f;
             Vector2 position = Projectile.Center - Main.screenPosition;
-            Main.EntitySpriteDraw(texture, position, null, Tuning.GlowColor(3) * 0.7f, Projectile.rotation, origin, 1.25f, SpriteEffects.None, 0);
-            Main.EntitySpriteDraw(texture, position, null, Color.Lerp(new Color(185, 195, 210), lightColor, 0.35f), Projectile.rotation, origin, 1f, SpriteEffects.None, 0);
+            Texture2D own = art != null && art.IsLoaded ? art.Value : null;
+            if (own != null)
+            {
+                Main.EntitySpriteDraw(own, position, null, lightColor, Projectile.rotation, own.Size() * 0.5f, 1f, SpriteEffects.None, 0);
+                return false;
+            }
+
+            // One cell of the vanilla head, cut from a ShardColumns x ShardRows grid.
+            Texture2D texture = TextureAssets.Projectile[Type].Value;
+            int columns = Math.Max(1, Tuning.ShardColumns);
+            int rows = Math.Max(1, Tuning.ShardRows);
+            int cellW = Math.Max(1, texture.Width / columns);
+            int cellH = Math.Max(1, texture.Height / rows);
+            int piece = Math.Max(0, Piece) % (columns * rows);
+            Rectangle source = new Rectangle((piece % columns) * cellW, (piece / columns) * cellH, cellW, cellH);
+            Main.EntitySpriteDraw(texture, position, source, lightColor, Projectile.rotation, source.Size() * 0.5f, 1f, SpriteEffects.None, 0);
             return false;
         }
     }
