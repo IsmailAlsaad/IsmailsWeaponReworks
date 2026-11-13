@@ -92,6 +92,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Starfury
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
+            tooltips.RemoveAll(line => line.Mod == "Terraria" && line.Name.StartsWith("Tooltip"));
             tooltips.Add(new TooltipLine(Mod, "Starfury1", "Right click to call a star"));
             tooltips.Add(new TooltipLine(Mod, "Starfury2", "Hit a star with a swing to bat it"));
             //tooltips.Add(new TooltipLine(Mod, "Starfury3", $"Each swing that hits an enemy charges the sword ({StarfuryTuning.HitsPerLevel} hits per level); tossing a star spends the charge on a higher tier star"));
