@@ -1,4 +1,5 @@
 ﻿using IsmailsWeaponReworks.Common.ChargedBlade;
+using IsmailsWeaponReworks.Content.Buffs;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
@@ -9,7 +10,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
     /// <summary>
     /// The held Night's Edge: the shared charged blade (Common/ChargedBlade/ChargedBladeProjectile holds the whole swing, charge, outline
     /// and trail machinery) with the Night's Edge's numbers, sounds, trail and charge plugged in. The charge lives in NightsEdgePlayer
-    /// (it fades there). Right click does nothing yet: the stab is switched off until the impale and the self-stab arrive (patches 5 and 6).
+    /// (it fades there). Right click at full charge is the self-stab (patch 5): it gives the Shadow Armor buff. The impale below full charge is patch 6.
     /// </summary>
     public class NightsEdgeBladeProjectile : ChargedBladeProjectile
     {
@@ -40,14 +41,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             return new NightsEdgeSweepTrailStyle();
         }
 
-        // Right click does nothing for now (patch 5 = the self-stab at full charge, patch 6 = the impale below full charge).
+        // Right click at full charge is the self-stab (the shared blade plays it); not while the Shadow Armor is on. Below full charge it does nothing until patch 6 (the impale).
         protected override bool StabAvailable(Player owner)
         {
-            return false;
+            return owner.GetModPlayer<NightsEdgePlayer>().ShadowTicks <= 0;
         }
 
+        // Owner's client, at the moment the blade sinks in: the buff is the whole effect (NightsEdgePlayer and the buff react to it from any source,
+        // vanilla syncs the buff list), plus a first fan of dark droplets (spawned by the owner, so tModLoader syncs them).
         protected override void OnStabImpacted(Player owner)
         {
+            owner.AddBuff(ModContent.BuffType<NightsEdgeShadowArmorBuff>(), NightsEdgeTuning.ShadowArmorTicks);
+            owner.AddBuff(ModContent.BuffType<LightsBaneImbueBuff>(), NightsEdgeTuning.ShadowArmorTicks);
+            NightsEdgeDropProjectile.Throw(owner, NightsEdgeTuning.StabBurstDrops);
         }
 
         protected override void FxPlaySwing(Vector2 position, float charge) { NightsEdgeFx.PlaySwing(position, charge); }
@@ -69,19 +75,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         protected override void DrawAfterBlade(ChargedBladePose pose)
         {
             NightsEdgeFx.DrawLayers();
-        }
-
-        // Owner's client, once per swing when the strike begins: a swing that STARTS with a fully charged sword throws one short flame wave toward
-        // the cursor (the swing that fills the sword fills it later, during the strike, so it throws none). The projectile is spawned by the owner,
-        // so tModLoader syncs it; every machine plays the same visuals, the owner's client applies the hits.
-        protected override void OnOwnerStrikeStart(Vector2 hand, Vector2 direction)
-        {
-            if (OwnerCharge(Main.player[Projectile.owner]) < NightsEdgeTuning.ChargedAt)
-                return;
-            Vector2 spawn = hand + direction * (Tune.BladeLength * Projectile.scale * NightsEdgeTuning.WaveSpawnFraction);
-            int damage = (int)(Projectile.damage * NightsEdgeTuning.WaveDamageMultiplier);
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, direction * NightsEdgeTuning.WaveSpeed, ModContent.ProjectileType<NightsEdgeWaveProjectile>(),
-                damage, Projectile.knockBack * NightsEdgeTuning.WaveKnockbackMultiplier, Projectile.owner);
         }
 
         // Owner's client. A hit while the sword was already fully charged (the swing that fills it does not explode): the enemy bursts into a dark

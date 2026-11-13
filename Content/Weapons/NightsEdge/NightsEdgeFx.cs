@@ -119,36 +119,60 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             MetaballLayers.Of<NightsEdgeEdgeStyle>().DrawInBatch();
         }
 
-        // ---- the flame wave (patch 4) ----
+        // ---- Shadow Armor (patch 5) ----
 
-        // The wave leaves the blade: a low whoosh with a dark flame crackle.
-        public static void PlayWave(Vector2 position)
+        // Every machine, every tick while the buff is on: dark flames rise off the whole body, a few dust motes, a purple light. 'fade' is 1 and eases to 0 over the buff's last ticks.
+        public static void ArmorLook(Player player, float fade)
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item45 with { Volume = 0.6f, Pitch = -0.35f, PitchVariance = 0.1f }, position);
+            float rate = NightsEdgeTuning.ArmorFlameRate * fade;
+            int count = (int)rate + (Main.rand.NextFloat() < rate - (int)rate ? 1 : 0);
+            MetaballLayer flames = MetaballLayers.Of<NightsEdgeFlameStyle>();
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 at = player.Center + new Vector2(Main.rand.NextFloat(-0.5f, 0.5f) * player.width, Main.rand.NextFloat(-0.5f, 0.5f) * player.height);
+                Vector2 velocity = new Vector2(Main.rand.NextFloat(-0.4f, 0.4f), -Main.rand.NextFloat(0.5f, 1.5f)) + player.velocity * 0.25f;
+                flames.Spawn(at, velocity, Main.rand.Next(NightsEdgeTuning.FlameLifeMin, NightsEdgeTuning.FlameLifeMax + 1), NightsEdgeTuning.ArmorFlameSize * Main.rand.NextFloat(0.7f, 1.2f));
+            }
+            if (Main.rand.NextFloat() < NightsEdgeTuning.ArmorDustChance * fade)
+                Mote(player.Center + new Vector2(Main.rand.NextFloat(-0.5f, 0.5f) * player.width, Main.rand.NextFloat(-0.5f, 0.5f) * player.height), new Vector2(Main.rand.NextFloat(-0.3f, 0.3f), -Main.rand.NextFloat(0.4f, 1.2f)),
+                    Main.rand.NextFloat(0.9f, 1.5f), Main.rand.NextBool(2) ? DustID.Shadowflame : DustID.PurpleTorch);
+            float light = NightsEdgeTuning.ArmorLightStrength * fade;
+            Lighting.AddLight(player.Center, 0.55f * light, 0.2f * light, 1f * light);
         }
 
-        // The wave hit a block and dissolves: a puff of dark flame dust.
-        public static void WaveBreak(Vector2 position, Vector2 direction)
+        // The armor just switched on (every machine sees it on every player): a burst of big dark droplets from the body and a deep whoosh.
+        public static void ArmorIgnite(Player player)
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.35f, Pitch = -0.1f, PitchVariance = 0.1f }, position);
-            for (int i = 0; i < 14; i++)
-                Mote(position, direction * Main.rand.NextFloat(-1f, 0.5f) + Main.rand.NextVector2Circular(2.5f, 2.5f), Main.rand.NextFloat(1f, 1.7f), i % 2 == 0 ? DustID.Shadowflame : DustID.PurpleTorch);
+            SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.6f, Pitch = -0.4f }, player.Center);
+            MetaballLayer burst = MetaballLayers.Of<NightsEdgeBurstStyle>();
+            for (int i = 0; i < NightsEdgeTuning.ArmorIgniteDroplets; i++)
+                burst.Spawn(player.Center + Main.rand.NextVector2Circular(6f, 8f), Main.rand.NextVector2Unit() * Main.rand.NextFloat(2f, 6f), Main.rand.Next(20, 36), Main.rand.NextFloat(NightsEdgeTuning.BlastDropMin, NightsEdgeTuning.BlastDropMax));
+            for (int i = 0; i < 16; i++)
+                Mote(player.Center, Main.rand.NextVector2Unit() * Main.rand.NextFloat(2f, 5f), Main.rand.NextFloat(1.2f, 1.8f), i % 2 == 0 ? DustID.Shadowflame : DustID.PurpleTorch);
         }
 
-        // One dust mote and one metaball flame shed off a point of the crescent.
-        public static void WaveShed(Vector2 position, Vector2 velocity, float fade, bool dust, bool flame)
+        // A dark droplet lands: a small splash of dust.
+        public static void DropLand(Vector2 position, float size)
         {
             if (Main.dedServ)
                 return;
-            if (dust)
-                Mote(position, velocity, Main.rand.NextFloat(0.9f, 1.5f), Main.rand.NextBool(2) ? DustID.Shadowflame : DustID.PurpleTorch);
-            if (flame)
-                MetaballLayers.Of<NightsEdgeFlameStyle>().Spawn(position, velocity * 0.4f + new Vector2(0f, -0.3f), Main.rand.Next(NightsEdgeTuning.FlameLifeMin, NightsEdgeTuning.FlameLifeMax + 1),
-                    NightsEdgeTuning.WaveFlameSize * Main.rand.NextFloat(0.7f, 1.15f) * (0.5f + 0.5f * fade));
+            for (int i = 0; i < 4; i++)
+                Mote(position, new Vector2(Main.rand.NextFloat(-1.6f, 1.6f), -Main.rand.NextFloat(0.6f, 2f)), Main.rand.NextFloat(0.9f, 1.4f) * size, Main.rand.NextBool(2) ? DustID.Shadowflame : DustID.PurpleTorch);
+        }
+
+        // A droplet that falls in water (or is told to go): a puff of smoke-like dust.
+        public static void DropHiss(Vector2 position, bool sound)
+        {
+            if (Main.dedServ)
+                return;
+            if (sound)
+                SoundEngine.PlaySound(SoundID.LiquidsWaterLava with { Volume = 0.25f, Pitch = 0.2f }, position);
+            for (int i = 0; i < 5; i++)
+                Mote(position, new Vector2(Main.rand.NextFloat(-0.8f, 0.8f), -Main.rand.NextFloat(0.3f, 1.2f)), Main.rand.NextFloat(0.9f, 1.4f), DustID.Shadowflame);
         }
 
         // The dark flame explosion of a charged hit (radius in px): a deep bang, a few big slow blobs in the middle that merge and shrink away,
@@ -177,7 +201,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
                 Mote(center, Main.rand.NextVector2Unit() * Main.rand.NextFloat(2f, 6f) * scale, Main.rand.NextFloat(1.2f, 1.9f), i % 2 == 0 ? DustID.Shadowflame : DustID.PurpleTorch);
         }
 
-        // ---- the stab (unused until patch 5 and 6; the shared blade needs these two hooks) ----
+        // ---- the self-stab (patch 5; the shared blade calls these two) ----
 
         public static void PlayStabWindup(Vector2 position)
         {

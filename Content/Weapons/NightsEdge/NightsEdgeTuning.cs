@@ -28,22 +28,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int BlastTicks => 4;              // how long the area lasts (every enemy inside is hit once)
         public static int BlastShadowflameTicks => 240; // Shadowflame on everything it hits (4 s)
 
-        // ---- the flame wave (patch 4): every swing that STARTS with a fully charged sword throws one short wave toward the cursor ----
-        public static float WaveDamageMultiplier => 0.6f;   // of the swing's base damage; each enemy is hit once
-        public static float WaveKnockbackMultiplier => 0.5f;
-        public static float WaveSpeed => 13f;               // px per tick (it does not slow down)
-        public static float WaveRangeTiles => 32f;          // how far it flies before it fades out
-        public static float WaveSpawnFraction => 0.6f;      // it is born this far along the blade length from the player (a fraction of BladeLength)
-        public static int WaveShadowflameTicks => 240;      // Shadowflame on every enemy it hits (4 s)
-        public static float WaveRadius => 80f;              // radius of the crescent's circle at birth (px)
-        public static float WaveThickness => 15f;           // thickness of the crescent in the middle (px)
-        public static float WaveArcHalfDeg => 55f;          // half the arc's angle
-        public static float WaveGrowth => 0.8f;             // the crescent grows by this fraction over its flight (fast at first)
-        public static int WaveAfterimages => 6;
-        public static float WaveFlameRate => 1.3f;          // metaball flames shed off the crescent per tick
-        public static float WaveFlameSize => 2.4f;          // their radius at birth (px)
-        public static float WaveDustChance => 0.55f;        // per tick: a vanilla dust mote off the crescent
-
         // ---- charge: true melee hits speed the sword up until it is full ----
         public static int HitsToFull => 20;             // the FIRST enemy each swing touches counts as one hit (a swing through a crowd = 1)
         public static float ChargePerHit => 1f / Math.Max(1, HitsToFull);
@@ -108,7 +92,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float HitShake => 0.6f;           // camera punch on a hit (grows with the charge)
         public static float SparkleChance => 0.3f;      // per tick, while fully charged: a mote somewhere along the blade
 
-        // ---- the stab (not used yet: right click does nothing until patch 5 and 6; the shared blade reads these numbers already) ----
+        // ---- the self-stab (patch 5): right click at full charge; the shared blade plays it and reads these numbers ----
         public static int StabTurnTicks => 12;
         public static int StabAimTicks => 5;
         public static int StabPlungeTicks => 3;
@@ -121,6 +105,36 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float StabShake => 1.2f;
         public static float StabBlendOut => 0.2f;
         public static float StabHitShake => 2.5f;
+
+        // ---- Shadow Armor (patch 5): the buff the self-stab gives ----
+        public static int ShadowArmorTicks => 480;      // how long it lasts (8 s); the sword stays fully charged and its fade is paused meanwhile, the charge is 0 when it ends
+        public static int ShadowArmorFadeTicks => 40;   // the body flames and the light ease out over the last this many ticks
+        public static float ShadowArmorReduction => 0.3f; // damage reduction (Player.endurance): 0.3 = 30% less damage taken
+        public static float ArmorFlameRate => 1.6f;     // dark flames born per tick off the body
+        public static float ArmorFlameSize => 2.6f;     // their radius at birth (px)
+        public static float ArmorDustChance => 0.5f;    // per tick: a vanilla dust mote off the body
+        public static float ArmorLightStrength => 0.9f; // the purple light around the player
+        public static int ArmorIgniteDroplets => 14;    // big droplets thrown from the body the moment the armor switches on
+
+        // ---- the dark droplets: while the armor is on the player spits them up and out; they arc, land and lie as small dark puddles ----
+        public static int DropIntervalTicks => 6;       // one droplet this often while the armor is on
+        public static int StabBurstDrops => 10;         // the fan thrown at the moment of the stab
+        public static float DropFanDeg => 60f;          // the fan opens this far to each side of straight up
+        public static float DropSpeedMin => 3f;
+        public static float DropSpeedMax => 7f;
+        public static float DropGravity => 0.25f;
+        public static float DropSizeMin => 0.8f;       // a droplet's size multiplier is random between these
+        public static float DropSizeMax => 1.3f;
+        public static float DropRadius => 3.2f;         // metaball radius at size 1 (px)
+        public static float DropHeat => 0.7f;           // color heat of a fresh droplet, cooling to DropColdHeat on the ground
+        public static float DropColdHeat => 0.2f;
+        public static int DropFlightMaxTicks => 180;    // a droplet that never lands is removed after this long
+        public static int DropLingerTicks => 180;       // a landed puddle lies this long (3 s) ...
+        public static int DropFadeTicks => 40;          // ... and shrinks away over its last this many ticks
+        public static int DropMax => 30;                // alive at once per player; a new droplet over this makes the oldest go
+        public static int DropShadowflameTicks => 240;  // Shadowflame on an enemy that touches a droplet or a puddle (4 s); the droplet does no damage itself
+        public static float DropTouchWidth => 28f;      // a puddle's touch area (px)
+        public static float DropTouchHeight => 12f;
 
         // ---- the dark flame look (patch 3): shows with the full-charge outline; the edge is fed from NightsEdgeBladeMask.png ----
         public static float EdgeRadius => 2.2f;         // radius of one edge blob (px at scale 1)

@@ -86,12 +86,17 @@ Projectiles: {
 	FlamingMaceFlailProjectile.DisplayName: Flaming Mace Flail Projectile
 	NightsEdgeBladeProjectile.DisplayName: Nights Edge Blade Projectile
 	NightsEdgeBlastProjectile.DisplayName: Nights Edge Blast Projectile
-	NightsEdgeWaveProjectile.DisplayName: Nights Edge Wave Projectile
+	NightsEdgeDropProjectile.DisplayName: Nights Edge Drop Projectile
 }
 
 Buffs: {
 	LightsBaneImbueBuff: {
 		DisplayName: Shadow Speed
 		Description: Greatly increased movement speed
+	}
+
+	NightsEdgeShadowArmorBuff: {
+		DisplayName: Shadow Armor
+		Description: 30% reduced damage taken
 	}
 }
