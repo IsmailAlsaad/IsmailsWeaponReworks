@@ -320,16 +320,34 @@ namespace IsmailsWeaponReworks.Content.Weapons.BallOHurt
             PickTarget();
         }
 
+        // Owner only: is there an enemy other than a target dummy within HopRangePx of the ball? Then the ball ignores target dummies when it picks a target.
+        bool RealEnemyInRange()
+        {
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC npc = Main.npc[i];
+                if (!Targetable(npc) || npc.type == NPCID.TargetDummy)
+                    continue;
+                float reach = Ball.HopRangePx + Math.Max(npc.width, npc.height) * 0.5f;
+                if (Vector2.DistanceSquared(npc.Center, Projectile.Center) <= reach * reach)
+                    return true;
+            }
+            return false;
+        }
+
         // Owner only: a random enemy within HopRangePx of the ball, not the one just reached unless it is the only one. The ball turns at once
         // and flies at where the enemy will be. None in range: home.
         void PickTarget()
         {
             List<int> pool = new List<int>();
             bool lastInRange = false;
+            bool realInRange = RealEnemyInRange();   // a real enemy near the ball: target dummies are skipped
             for (int i = 0; i < Main.maxNPCs; i++)
             {
                 NPC npc = Main.npc[i];
                 if (!Targetable(npc))
+                    continue;
+                if (realInRange && npc.type == NPCID.TargetDummy)
                     continue;
                 float reach = Ball.HopRangePx + Math.Max(npc.width, npc.height) * 0.5f;
                 if (Vector2.DistanceSquared(npc.Center, Projectile.Center) > reach * reach)

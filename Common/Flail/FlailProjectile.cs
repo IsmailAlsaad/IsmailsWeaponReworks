@@ -302,7 +302,8 @@ namespace IsmailsWeaponReworks.Common.Flail
             trail?.Add(Projectile.Center);
 
             CheckChargeComplete(owner, tier, need);
-            Fx.SpinEmbers(Projectile.Center, Projectile.Center - previousCenter, tier, progress);
+            // The embers start anywhere along the arc the head travelled this tick (not always at its current spot), so they never line up at the same places of the circle.
+            Fx.SpinEmbers(Vector2.Lerp(previousCenter, Projectile.Center, Main.rand.NextFloat()), Projectile.Center - previousCenter, tier, progress);
             Fx.ChargeGather(owner.MountedCenter, tier, progress);
             Lighting.AddLight(Projectile.Center, Tuning.TintLight(new Vector3(0.6f + 0.6f * progress + flash, 0.3f + 0.3f * progress + 0.5f * flash, 0.08f + 0.2f * flash)));
 
