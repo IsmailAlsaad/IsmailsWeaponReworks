@@ -34,6 +34,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         float CurrentThickness => NightsEdgeTuning.WaveThickness * Math.Min(1f, (Age + 1f) / 4f) * (0.4f + 0.6f * Fade);
 
         AfterimageTrail afterimages; // visual only, never synced
+        PixelTrail tipTrailA;        // the trails behind the two pointed ends of the crescent (the flail head's trail look), visual only
+        PixelTrail tipTrailB;
 
         public override void SetDefaults()
         {
@@ -141,7 +143,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             afterimages ??= new AfterimageTrail(NightsEdgeTuning.WaveAfterimages, PaintAfterimage);
             afterimages.Tick();
             afterimages.Add(Projectile.Center, Projectile.rotation, CurrentRadius, NightsEdgeTuning.PurpleColor * Fade, CurrentThickness);
+
+            tipTrailA ??= new PixelTrail(new NightsEdgeWaveTipTrailStyle(), IsOwnerClient);
+            tipTrailB ??= new PixelTrail(new NightsEdgeWaveTipTrailStyle(), IsOwnerClient);
+            float half = MathHelper.ToRadians(NightsEdgeTuning.WaveArcHalfDeg);
+            float radius = CurrentRadius;
+            if (Fade > 0.05f)
+            {
+                tipTrailA.Add(ArcPoint(-half, radius));
+                tipTrailB.Add(ArcPoint(half, radius));
+            }
+            tipTrailA.Tick();
+            tipTrailB.Tick();
         }
+
+        bool IsOwnerClient => Projectile.owner == Main.myPlayer;
 
         // Older copies of the crescent, smaller and dimmer with age.
         static void PaintAfterimage(Afterimage image, float age)
@@ -155,11 +171,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         {
             DetachedTrails.Hand(afterimages);
             afterimages = null;
+            DetachedTrails.Hand(tipTrailA);
+            DetachedTrails.Hand(tipTrailB);
+            tipTrailA = null;
+            tipTrailB = null;
         }
 
         public override bool PreDraw(ref Color lightColor)
         {
             afterimages?.Draw();
+            tipTrailA?.Draw();
+            tipTrailB?.Draw();
             float fade = Fade;
             if (fade <= 0.01f)
                 return false;
@@ -173,6 +195,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             CrescentPainter.Draw(center, angle, radius, thickness * 1.2f, half, NightsEdgeTuning.PurpleColor * (0.5f * fade), grid);
             CrescentPainter.Draw(center, angle, radius, thickness * 0.8f, half, NightsEdgeTuning.CoreColor * (0.95f * fade), grid);  // hot core
             return false;
+        }
+    }
+
+    /// <summary>The trail behind each pointed end of the wave's crescent: the same look as the flail head's trail (a wide purple glow under a narrower hot core, tapering away).</summary>
+    public class NightsEdgeWaveTipTrailStyle : PixelTrailStyle
+    {
+        public override float Grid => NightsEdgeTuning.PixelSize;
+        public override int LifeTicks => NightsEdgeTuning.WaveTipTrailLifeTicks;
+        public override int Layers => 2;
+
+        public override float GetWidth(int layer, float age)
+        {
+            return NightsEdgeTuning.WaveTipTrailWidth * (layer == 0 ? 1f : 0.5f) * (1f - age);
+        }
+
+        public override Color GetColor(int layer, float age)
+        {
+            Color color = layer == 0 ? NightsEdgeTuning.PurpleColor : NightsEdgeTuning.CoreColor;
+            return color * ((1f - age * age) * (layer == 0 ? 0.55f : 0.9f)); // alpha stays 0: additive
         }
     }
 }

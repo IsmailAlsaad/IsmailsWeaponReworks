@@ -25,7 +25,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         int ImpaleBeats { get; }                    // how many beats (each ends in a pulse of damage)
         int ImpaleBeatTicks { get; }                // one beat
         float ImpaleRisePortion { get; }            // the lift happens in this first part of each beat, the rest is a pause before the pulse
-        float ImpaleLiftDeg { get; }                // the whole lift: the blade swings this far toward straight up
+        float ImpaleHeldAngleDeg { get; }           // THE ARM LIFTS to this angle above the horizontal (on the facing side; 90 = straight up) while the enemy is held; the blade keeps the angle it stabbed at
         float ImpaleShake { get; }                  // the blade trembles this much (px) while it holds the enemy
         int ImpaleFinishTicks { get; }              // the pose is held this long after the finisher
         float ImpaleHitShake { get; }               // camera punch of the stab

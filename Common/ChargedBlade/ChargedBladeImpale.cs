@@ -224,10 +224,12 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
                     float rise = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(inBeat / Math.Max(1f, beatLen * t.ImpaleRisePortion), 0f, 1f));
                     lift = (b + rise) / beats;
                 }
-                // The arm rises toward straight up while the blade straightens out along it (the hook opens), so the enemy on the blade is lifted.
-                float toUp = MathHelper.WrapAngle(-MathHelper.PiOver2 - endArm);
-                arm = endArm + Math.Sign(toUp) * Math.Min(Math.Abs(toUp), Rad(t.ImpaleLiftDeg)) * lift;
-                blade = arm + cross * (1f - lift);
+                // Only the arm lifts, from where the swing ended to the held angle (ImpaleHeldAngleDeg above the horizontal, on the facing side). The blade
+                // keeps the angle it stabbed at: it stays the same distance off the arm, so it never straightens out and the enemy is carried up on it.
+                float heldRad = Rad(t.ImpaleHeldAngleDeg);
+                float heldArm = new Vector2(facing * (float)Math.Cos(heldRad), -(float)Math.Sin(heldRad)).ToRotation();
+                arm = LerpAngle(endArm, heldArm, lift);
+                blade = arm + cross;
                 reach = t.ImpaleReach;
             }
             impArm = arm;

@@ -43,6 +43,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float WaveFlameRate => 1.3f;          // metaball flames shed off the crescent per tick
         public static float WaveFlameSize => 2.4f;          // their radius at birth (px)
         public static float WaveDustChance => 0.55f;        // per tick: a vanilla dust mote off the crescent
+        public static float WaveTipTrailWidth => 9f;        // the trail behind each pointed end of the crescent: its width at the start (px) ...
+        public static int WaveTipTrailLifeTicks => 18;      // ... and how long a point of it lives (the flail head's trail look)
 
         // ---- the impale (patch 6a): damage ----
         public static float ImpaleStabDamageMultiplier => 1f;   // the stab itself, of the item's damage (a boss or an unmovable enemy takes only this)
@@ -148,7 +150,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int ImpaleBeats => 3;             // beats; each ends in a pulse of damage
         public static int ImpaleBeatTicks => 26;        // one beat
         public static float ImpaleRisePortion => 0.7f;  // the lift happens in this first part of each beat, the rest is a pause before the pulse
-        public static float ImpaleLiftDeg => 30f;       // the whole lift: the blade swings this far toward straight up
+        public static float ImpaleHeldAngleDeg => 80f;  // THE ARM LIFTS to this angle above the horizontal (90 = straight up) while the enemy is held; the blade keeps the angle it stabbed at (ImpaleBladeAngleDeg)
         public static float ImpaleShake => 1f;          // the blade trembles this much (px) while it holds the enemy
         public static int ImpaleFinishTicks => 8;       // the pose is held this long after the finisher
         public static float ImpaleHitShake => 2.5f;     // camera punch of the stab
