@@ -8,9 +8,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public int ImpaleBufferTicks => NightsEdgeTuning.ImpaleBufferTicks;
         public int ImpaleWindupTicks => NightsEdgeTuning.ImpaleWindupTicks;
         public float ImpaleWindupArmDeg => NightsEdgeTuning.ImpaleWindupArmDeg;
-        public float ImpaleWindupBladeDeg => NightsEdgeTuning.ImpaleWindupBladeDeg;
+        public float ImpaleSwingEndDeg => NightsEdgeTuning.ImpaleSwingEndDeg;
+        public float ImpaleBladeAngleDeg => NightsEdgeTuning.ImpaleBladeAngleDeg;
         public float ImpaleWindupPull => NightsEdgeTuning.ImpaleWindupPull;
-        public int ImpaleThrustTicks => NightsEdgeTuning.ImpaleThrustTicks;
+        public int ImpaleSwingTicks => NightsEdgeTuning.ImpaleSwingTicks;
         public float ImpaleReach => NightsEdgeTuning.ImpaleReach;
         public float ImpaleMaxSize => NightsEdgeTuning.ImpaleMaxSize;
         public int ImpaleWaitTicks => NightsEdgeTuning.ImpaleWaitTicks;

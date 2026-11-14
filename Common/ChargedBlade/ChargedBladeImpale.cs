@@ -9,7 +9,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
 {
     /// <summary>
     /// The shared blade's IMPALE (a second right click move beside the self-stab; only blades whose ImpaleTune is not null have it). Right click
-    /// BELOW full charge drives the sword at the cursor like a dagger. The first enemy on the blade is struck; a gripped-able one (Snarable.CanGrip)
+    /// BELOW full charge swings the sword up toward the cursor in an uppercut, the blade held across the hand (ImpaleBladeAngleDeg). The first enemy on the blade is struck; a gripped-able one (Snarable.CanGrip)
     /// is IMPALED: held on the blade by CarriedNPC.Hold, the sword slowly lifts it toward straight up in ImpaleBeats beats, each beat ends in a pulse
     /// of damage, then the finisher (the weapon's OnImpaleFinish) and the charge jumps to full. A boss or an unmovable enemy takes the stab as a
     /// normal hit and is not impaled. An enemy that dies mid-way jumps straight to the finisher (the charge is still given).
@@ -188,7 +188,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             IImpaleTuning t = ImpaleTune;
             float a = impAim;
             float windArm = a + facing * Rad(t.ImpaleWindupArmDeg);
-            float windBlade = a + facing * Rad(t.ImpaleWindupBladeDeg);
+            float endArm = a + facing * Rad(t.ImpaleSwingEndDeg);
+            float cross = -facing * Rad(t.ImpaleBladeAngleDeg); // the blade stands this far off the arm (90 = across the hand like a hook, 0 = straight along the arm)
             float pull = t.ImpaleWindupPull;
             float arm;
             float blade;
@@ -197,15 +198,15 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             {
                 float s = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(impTimer / Math.Max(1f, t.ImpaleWindupTicks), 0f, 1f));
                 arm = LerpAngle(impStartArm, windArm, s);
-                blade = LerpAngle(impStartBlade, windBlade, s);
+                blade = LerpAngle(impStartBlade, windArm + cross, s);
                 reach = -pull * s;
             }
             else if (impPhase == ImpThrust)
             {
-                float u = MathHelper.Clamp((impTimer + 1f) / Math.Max(1f, t.ImpaleThrustTicks), 0f, 1f);
-                float e = 1f - (1f - u) * (1f - u); // fast start
-                arm = LerpAngle(windArm, a, e);
-                blade = LerpAngle(windBlade, a, e);
+                float u = MathHelper.Clamp((impTimer + 1f) / Math.Max(1f, t.ImpaleSwingTicks), 0f, 1f);
+                float e = 1f - (1f - u) * (1f - u); // fast start, slowing down at the top (the uppercut)
+                arm = LerpAngle(windArm, endArm, e);
+                blade = arm + cross;
                 reach = MathHelper.Lerp(-pull, t.ImpaleReach, e);
             }
             else
@@ -223,10 +224,10 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
                     float rise = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(inBeat / Math.Max(1f, beatLen * t.ImpaleRisePortion), 0f, 1f));
                     lift = (b + rise) / beats;
                 }
-                float toUp = MathHelper.WrapAngle(-MathHelper.PiOver2 - a);
-                float angle = a + Math.Sign(toUp) * Math.Min(Math.Abs(toUp), Rad(t.ImpaleLiftDeg)) * lift;
-                arm = angle;
-                blade = angle;
+                // The arm rises toward straight up while the blade straightens out along it (the hook opens), so the enemy on the blade is lifted.
+                float toUp = MathHelper.WrapAngle(-MathHelper.PiOver2 - endArm);
+                arm = endArm + Math.Sign(toUp) * Math.Min(Math.Abs(toUp), Rad(t.ImpaleLiftDeg)) * lift;
+                blade = arm + cross * (1f - lift);
                 reach = t.ImpaleReach;
             }
             impArm = arm;
@@ -270,7 +271,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
                 case ImpThrust:
                     if (IsOwner && !impHit)
                         ImpaleContact(owner, direction);
-                    if (++impTimer >= Math.Max(1, t.ImpaleThrustTicks))
+                    if (++impTimer >= Math.Max(1, t.ImpaleSwingTicks))
                     {
                         impTimer = 0f;
                         if (IsOwner)
@@ -314,8 +315,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         void ImpaleContact(Player owner, Vector2 direction)
         {
             IImpaleTuning t = ImpaleTune;
-            Vector2 start = Projectile.Center;
-            Vector2 end = start + direction * (TotalLength * Tune.HitLengthScale + impReach);
+            float length = TotalLength * Tune.HitLengthScale + impReach;
             float width = Tune.HitWidth * Projectile.scale;
             int best = -1;
             int bestRank = int.MaxValue;
@@ -325,12 +325,10 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
                 NPC npc = Main.npc[i];
                 if (!Snarable.CanBite(npc) || npc.life <= 0)
                     continue;
-                Rectangle box = npc.Hitbox;
-                float point = 0f;
-                if (!Collision.CheckAABBvLineCollision(box.TopLeft(), box.Size(), start, end, width, ref point))
+                if (!ImpaleBladeTouches(npc.Hitbox, width, length))
                     continue;
                 int rank = npc.boss ? 2 : (Snarable.CanGrip(npc, t.ImpaleMaxSize) ? 0 : 1);
-                float distance = Vector2.DistanceSquared(start, npc.Center);
+                float distance = Vector2.DistanceSquared(Projectile.Center, npc.Center);
                 if (rank < bestRank || (rank == bestRank && distance < bestDistance))
                 {
                     best = i;
@@ -358,6 +356,23 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
                 FxImpalePierce(point, direction, false);
                 CameraShake.Punch(point, t.ImpaleHitShake, 10);
             }
+        }
+
+        // The blade is a line from the hand; the swing is fast, so it is checked at a few poses between the previous tick and this one (an arc, not a stab).
+        bool ImpaleBladeTouches(Rectangle box, float width, float length)
+        {
+            int steps = Math.Max(1, Tune.SweepHitSteps);
+            float deltaAngle = MathHelper.WrapAngle(Projectile.rotation - prevRotation);
+            for (int i = 1; i <= steps; i++)
+            {
+                float fraction = i / (float)steps;
+                Vector2 start = Vector2.Lerp(prevCenter, Projectile.Center, fraction);
+                Vector2 end = start + (prevRotation + deltaAngle * fraction).ToRotationVector2() * length;
+                float point = 0f;
+                if (Collision.CheckAABBvLineCollision(box.TopLeft(), box.Size(), start, end, width, ref point))
+                    return true;
+            }
+            return false;
         }
 
         void StartImpaleHold(Player owner, Vector2 direction)

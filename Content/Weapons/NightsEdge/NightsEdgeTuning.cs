@@ -48,6 +48,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float ImpaleStabDamageMultiplier => 1f;   // the stab itself, of the item's damage (a boss or an unmovable enemy takes only this)
         public static float ImpaleBeatDamageMultiplier => 0.3f; // each beat's pulse
         public static float ImpaleFinishDamageMultiplier => 4f; // the finisher's explosion (it also hurts what stands next to the enemy)
+        public static float DropDamageMultiplier => 0.35f;      // a dark droplet or puddle hurts an enemy that touches it: of the Night's Edge's damage
+        public static int DropHitCooldownTicks => 30;           // ... at most this often per enemy (counted across ALL droplets, so many puddles do not hit every tick)
         public static float ImpaleMaxSize => 120f;              // an enemy bigger than this (width or height) is stabbed but not impaled (the Blood Butcherer's limit)
 
         // ---- charge: true melee hits speed the sword up until it is full ----
@@ -133,11 +135,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         // ---- the impale (patch 6a): right click below full charge; a dagger stab that spears an enemy, lifts it in beats and ends in a finisher ----
         public static int ImpaleBufferTicks => 10;      // a right click during a strike is remembered this long
         public static int ImpaleWindupTicks => 7;       // the pull-back before the thrust
-        public static float ImpaleWindupArmDeg => 55f;  // the arm drops this far below the aim (the uppercut) ...
-        public static float ImpaleWindupBladeDeg => 20f; // ... and the blade points this far below it
-        public static float ImpaleWindupPull => 16f;    // the sword is drawn back this far (px)
-        public static int ImpaleThrustTicks => 3;       // the drive-in: the only part that can catch an enemy
-        public static float ImpaleReach => 20f;         // the sword is driven this far (px) past its normal length
+        public static float ImpaleWindupArmDeg => 75f;  // the arm drops this far below the aim before the uppercut
+        public static float ImpaleSwingEndDeg => -10f;  // the upward swing ends with the arm this far from the aim (negative = above the cursor line)
+        public static float ImpaleBladeAngleDeg => 90f; // THE BLADE IS HELD THIS FAR OFF THE ARM: 90 = across the hand like a hook (the uppercut), 0 = straight along the arm (a plain stab)
+        public static float ImpaleWindupPull => 0f;     // the sword is slid back along its length this far (px) in the wind-up
+        public static int ImpaleSwingTicks => 7;        // the upward swing: the only part that can catch an enemy
+        public static float ImpaleReach => 0f;          // the sword is slid out along its length this far (px) at the end of the swing and while it holds the enemy
         public static int ImpaleWaitTicks => 14;        // other machines wait this long for the owner's catch before they call it a miss
         public static int ImpaleMissTicks => 12;        // a stab that caught nothing holds its pose this long
         public static int ImpaleSeatTicks => 6;         // the caught enemy slides from where it was onto the blade over this long
@@ -177,7 +180,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int DropLingerTicks => 180;       // a landed puddle lies this long (3 s) ...
         public static int DropFadeTicks => 40;          // ... and shrinks away over its last this many ticks
         public static int DropMax => 30;                // alive at once per player; a new droplet over this makes the oldest go
-        public static int DropShadowflameTicks => 240;  // Shadowflame on an enemy that touches a droplet or a puddle (4 s); the droplet does no damage itself
+        public static int DropShadowflameTicks => 240;  // Shadowflame on an enemy that touches a droplet or a puddle (4 s); the damage is DropDamageMultiplier in the damage section
         public static float DropTouchWidth => 28f;      // a puddle's touch area (px)
         public static float DropTouchHeight => 12f;
 

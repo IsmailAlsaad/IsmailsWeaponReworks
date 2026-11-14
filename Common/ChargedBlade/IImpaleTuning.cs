@@ -12,9 +12,10 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         int ImpaleBufferTicks { get; }              // a right click during a strike is remembered this long
         int ImpaleWindupTicks { get; }              // the pull-back before the thrust
         float ImpaleWindupArmDeg { get; }           // the arm drops this far below the aim in the wind-up (the uppercut)
-        float ImpaleWindupBladeDeg { get; }         // the blade's angle below the aim in the wind-up
+        float ImpaleSwingEndDeg { get; }            // the swing ends with the arm this far from the aim (negative = above the cursor line)
+        float ImpaleBladeAngleDeg { get; }          // THE BLADE IS HELD THIS FAR OFF THE ARM: 90 = across the hand like a hook (the uppercut), 0 = straight along the arm
         float ImpaleWindupPull { get; }             // the sword is drawn back this far (px) in the wind-up
-        int ImpaleThrustTicks { get; }              // the drive-in (the only part that can catch an enemy)
+        int ImpaleSwingTicks { get; }               // the upward swing (the only part that can catch an enemy)
         float ImpaleReach { get; }                  // the sword is driven this far (px) past its normal length
         float ImpaleMaxSize { get; }                // an enemy bigger than this (width or height) is stabbed but not impaled
         int ImpaleWaitTicks { get; }                // other machines wait this long for the owner's catch before they call it a miss

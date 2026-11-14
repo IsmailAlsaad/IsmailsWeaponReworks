@@ -43,7 +43,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             Projectile.friendly = true;
             Projectile.DamageType = DamageClass.Melee;
             Projectile.penetrate = -1;
-            Projectile.tileCollide = true; // stops at blocks
+            Projectile.tileCollide = false; // passes through blocks (patch 6a2); it ends only at the end of its range
             Projectile.ignoreWater = true;
             Projectile.timeLeft = 120; // set from the range on the first tick
             Projectile.usesLocalNPCImmunity = true;
