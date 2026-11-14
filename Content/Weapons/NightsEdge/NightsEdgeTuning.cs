@@ -136,9 +136,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int ImpaleBufferTicks => 10;      // a right click during a strike is remembered this long
         public static int ImpaleWindupTicks => 7;       // the pull-back before the thrust
         public static float ImpaleWindupArmDeg => 75f;  // the arm drops this far below the aim before the uppercut
-        public static float ImpaleSwingEndDeg => -10f;  // the upward swing ends with the arm this far from the aim (negative = above the cursor line)
-        public static float ImpaleBladeAngleDeg => 90f; // THE BLADE IS HELD THIS FAR OFF THE ARM: 90 = across the hand like a hook (the uppercut), 0 = straight along the arm (a plain stab)
-        public static float ImpaleWindupPull => 0f;     // the sword is slid back along its length this far (px) in the wind-up
+        public static float ImpaleSwingEndDeg => 0f;  // the upward swing ends with the arm this far from the aim (negative = above the cursor line)
+        public static float ImpaleBladeAngleDeg => 50f; // THE BLADE IS HELD THIS FAR OFF THE ARM: 90 = across the hand like a hook (the uppercut), 0 = straight along the arm (a plain stab)
+        public static float ImpaleWindupPull => 13f;     // the sword is slid back along its length this far (px) in the wind-up
         public static int ImpaleSwingTicks => 7;        // the upward swing: the only part that can catch an enemy
         public static float ImpaleReach => 0f;          // the sword is slid out along its length this far (px) at the end of the swing and while it holds the enemy
         public static int ImpaleWaitTicks => 14;        // other machines wait this long for the owner's catch before they call it a miss
@@ -148,7 +148,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int ImpaleBeats => 3;             // beats; each ends in a pulse of damage
         public static int ImpaleBeatTicks => 26;        // one beat
         public static float ImpaleRisePortion => 0.7f;  // the lift happens in this first part of each beat, the rest is a pause before the pulse
-        public static float ImpaleLiftDeg => 55f;       // the whole lift: the blade swings this far toward straight up
+        public static float ImpaleLiftDeg => 30f;       // the whole lift: the blade swings this far toward straight up
         public static float ImpaleShake => 1f;          // the blade trembles this much (px) while it holds the enemy
         public static int ImpaleFinishTicks => 8;       // the pose is held this long after the finisher
         public static float ImpaleHitShake => 2.5f;     // camera punch of the stab
