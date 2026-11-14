@@ -92,9 +92,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         // cursor (the swing that fills the sword fills it later, so it throws none). NOT while the Shadow Armor is on. Spawned by the owner, so it syncs.
         protected override void OnOwnerStrikeStart(Vector2 hand, Vector2 direction)
         {
+            wavePending = false;
             Player owner = Main.player[Projectile.owner];
             if (OwnerCharge(owner) < NightsEdgeTuning.ChargedAt || owner.GetModPlayer<NightsEdgePlayer>().ShadowTicks > 0)
                 return;
+            // The wave appears when the cut has got WaveSpawnProgress of the way (0 = right now).
+            if (NightsEdgeTuning.WaveSpawnProgress <= 0f)
+            {
+                SpawnWave(hand, direction);
+                return;
+            }
+            wavePending = true;
+            waveDirection = direction;
+        }
+
+        bool wavePending;       // owner's client: the wave of this swing is still to be thrown (WaveSpawnProgress)
+        Vector2 waveDirection;
+
+        void SpawnWave(Vector2 hand, Vector2 direction)
+        {
             Vector2 spawn = hand + direction * (Tune.BladeLength * Projectile.scale * NightsEdgeTuning.WaveSpawnFraction);
             int damage = (int)(Projectile.damage * NightsEdgeTuning.WaveDamageMultiplier);
             Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, direction * NightsEdgeTuning.WaveSpeed, ModContent.ProjectileType<NightsEdgeWaveProjectile>(),
@@ -113,6 +129,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         // Every machine, every tick: the dark flame metaballs along the blade's edge, the rising flames and the embers (visual only, nothing is synced).
         protected override void TickVisuals(ChargedBladePose pose)
         {
+            // Owner's client: the delayed wave leaves when the cut has reached WaveSpawnProgress; a swing that was cut short (stab, impale) throws none.
+            if (wavePending)
+            {
+                if (!InStrikePhase || Projectile.owner != Main.myPlayer)
+                    wavePending = false;
+                else if (StrikeProgress >= MathHelper.Clamp(NightsEdgeTuning.WaveSpawnProgress, 0f, 1f))
+                {
+                    wavePending = false;
+                    SpawnWave(Main.player[Projectile.owner].MountedCenter, waveDirection);
+                }
+            }
             NightsEdgeFlames.Feed(pose, mask, flameState);
         }
 

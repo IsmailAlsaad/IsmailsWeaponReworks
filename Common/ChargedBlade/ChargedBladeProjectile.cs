@@ -170,6 +170,11 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         float StrikeEnd => StrikeStart + Tune.SwingTicks * timeScale;
         float TotalTicks => StrikeEnd + Tune.RecoverTicks * timeScale;
 
+        /// <summary>0 when the strike (the cut) begins, 1 when it ends; for a weapon that times something inside the cut (the Night's Edge wave).</summary>
+        protected float StrikeProgress => MathHelper.Clamp((timer - StrikeStart) / Math.Max(0.01f, StrikeEnd - StrikeStart), 0f, 1f);
+        /// <summary>True while a swing is running and its strike has begun (false for a stab, an impale, or no swing).</summary>
+        protected bool InStrikePhase => swinging && timer >= StrikeStart;
+
         bool Damaging => swinging && timer >= StrikeStart && timer <= StrikeEnd;
 
         // The arm and the blade as world angles: relative to the aim and mirrored by the facing.

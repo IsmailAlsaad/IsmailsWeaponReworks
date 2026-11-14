@@ -22,7 +22,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         float Age => Projectile.localAI[0];
         float Life => Math.Max(4f, NightsEdgeTuning.WaveRangeTiles * 16f / Math.Max(1f, NightsEdgeTuning.WaveSpeed));
         float Progress => MathHelper.Clamp(Age / Life, 0f, 1f);
-        float Fade => 1f - MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp((Progress - 0.65f) / 0.35f, 0f, 1f));
+        float FadeTicks => MathHelper.Clamp(NightsEdgeTuning.WaveFadeTicks, 1f, Life);   // the last this many ticks of the flight are the fade-out
+        float Fade => 1f - MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp((Age - (Life - FadeTicks)) / FadeTicks, 0f, 1f));
         float CurrentRadius
         {
             get
@@ -146,15 +147,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
 
             tipTrailA ??= new PixelTrail(new NightsEdgeWaveTipTrailStyle(), IsOwnerClient);
             tipTrailB ??= new PixelTrail(new NightsEdgeWaveTipTrailStyle(), IsOwnerClient);
-            float half = MathHelper.ToRadians(NightsEdgeTuning.WaveArcHalfDeg);
-            float radius = CurrentRadius;
-            if (Fade > 0.05f)
+            tipTrailA.Add(TipTrailPoint(-1f));
+            tipTrailB.Add(TipTrailPoint(1f));
+            // During the fade-out every point of the trails is made to vanish by the time the crescent does, so both are gone together.
+            if (Age > Life - FadeTicks)
             {
-                tipTrailA.Add(ArcPoint(-half, radius));
-                tipTrailB.Add(ArcPoint(half, radius));
+                int remaining = Math.Max(1, (int)Math.Ceiling(Life - Age));
+                tipTrailA.FadeWithin(remaining);
+                tipTrailB.FadeWithin(remaining);
             }
             tipTrailA.Tick();
             tipTrailB.Tick();
+        }
+
+        // Where a trail starts: at a tip of the crescent (side -1 or +1), moved by the three placement numbers of NightsEdgeTuning.
+        Vector2 TipTrailPoint(float side)
+        {
+            float phi = side * (MathHelper.ToRadians(NightsEdgeTuning.WaveArcHalfDeg) + MathHelper.ToRadians(NightsEdgeTuning.WaveTipTrailArcDeg));
+            Vector2 outward = (Projectile.rotation + phi).ToRotationVector2();
+            return ArcPoint(phi, CurrentRadius) + outward * NightsEdgeTuning.WaveTipTrailOutward + Projectile.rotation.ToRotationVector2() * NightsEdgeTuning.WaveTipTrailForward;
         }
 
         bool IsOwnerClient => Projectile.owner == Main.myPlayer;

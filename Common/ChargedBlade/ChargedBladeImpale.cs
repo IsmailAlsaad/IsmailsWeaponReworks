@@ -203,8 +203,11 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             }
             else if (impPhase == ImpThrust)
             {
-                float u = MathHelper.Clamp((impTimer + 1f) / Math.Max(1f, t.ImpaleSwingTicks), 0f, 1f);
-                float e = 1f - (1f - u) * (1f - u); // fast start, slowing down at the top (the uppercut)
+                // A lerp toward the end pose: each tick closes ImpaleSwingLerp of what is left, so the arm starts fast and settles softly onto the end
+                // pose; rescaled by the whole swing's total so the last tick lands exactly on it.
+                float keep = 1f - MathHelper.Clamp(t.ImpaleSwingLerp, 0.01f, 0.99f);
+                float ticks = Math.Max(1f, t.ImpaleSwingTicks);
+                float e = MathHelper.Clamp((1f - (float)Math.Pow(keep, impTimer + 1f)) / (1f - (float)Math.Pow(keep, ticks)), 0f, 1f);
                 arm = LerpAngle(windArm, endArm, e);
                 blade = arm + cross;
                 reach = MathHelper.Lerp(-pull, t.ImpaleReach, e);
