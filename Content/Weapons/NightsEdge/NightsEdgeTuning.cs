@@ -47,12 +47,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float WaveDustChance => 0.55f;        // per tick: a vanilla dust mote off the crescent
         public static float WaveTipTrailWidth => 6f;        // the trail behind each pointed end of the crescent: its width at the start (px) ...
         public static int WaveTipTrailLifeTicks => 18;      // ... and how long a point of it lives (the flail head's trail look)
+        public static float WaveTipTrailFadeSpeed => 1f;    // THE SPEED OF THE TRAIL'S FADE: 1 = as the flail's (even), above 1 = it thins and dims quickly and its last part lingers, below 1 = it stays thick and bright and drops away late (a point still always ends with its life)
         public static float WaveTipTrailArcDeg => -1f;       // TRAIL PLACEMENT: slides the trail's start along the crescent from the very tip (negative = inward toward the middle, positive = past the tip)
         public static float WaveTipTrailOutward => 0f;      // TRAIL PLACEMENT: pushes it away from the crescent's circle (px, negative = inward, toward the circle's center)
         public static float WaveTipTrailForward => 10f;      // TRAIL PLACEMENT: moves it along the wave's flight direction (px, negative = behind the crescent)
 
         // ---- the impale (patch 6a): damage ----
-        public static float ImpaleStabDamageMultiplier => 1f;   // the stab itself, of the item's damage (a boss or an unmovable enemy takes only this)
+        public static float ImpaleStabDamageMultiplier => 0.6f;   // the stab itself, of the item's damage (a boss or an unmovable enemy takes only this)
         public static float ImpaleBeatDamageMultiplier => 0.3f; // each beat's pulse
         public static float ImpaleFinishDamageMultiplier => 4f; // the finisher's explosion (it also hurts what stands next to the enemy)
         public static float DropDamageMultiplier => 0.35f;      // a dark droplet or puddle hurts an enemy that touches it: of the Night's Edge's damage

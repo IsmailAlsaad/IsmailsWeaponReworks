@@ -218,13 +218,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
 
         public override float GetWidth(int layer, float age)
         {
-            return NightsEdgeTuning.WaveTipTrailWidth * (layer == 0 ? 1f : 0.5f) * (1f - age);
+            return NightsEdgeTuning.WaveTipTrailWidth * (layer == 0 ? 1f : 0.5f) * (1f - FadeAge(age));
         }
 
         public override Color GetColor(int layer, float age)
         {
             Color color = layer == 0 ? NightsEdgeTuning.PurpleColor : NightsEdgeTuning.CoreColor;
-            return color * ((1f - age * age) * (layer == 0 ? 0.55f : 0.9f)); // alpha stays 0: additive
+            float f = FadeAge(age);
+            return color * ((1f - f * f) * (layer == 0 ? 0.55f : 0.9f)); // alpha stays 0: additive
+        }
+
+        // The age bent by the fade speed: still 0 when laid and 1 at the end of its life, only the curve between differs.
+        static float FadeAge(float age)
+        {
+            return (float)Math.Pow(MathHelper.Clamp(age, 0f, 1f), 1f / Math.Max(0.05f, NightsEdgeTuning.WaveTipTrailFadeSpeed));
         }
     }
 }

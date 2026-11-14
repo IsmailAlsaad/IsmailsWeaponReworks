@@ -159,6 +159,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
                 EndSwing(owner); // settles the swing's pose into the resting angles the wind-up starts from
 
             impaling = true;
+            Projectile.hide = true; // drawn by DrawBehind (behind the enemies) for as long as the impale lasts
             impPhase = ImpWindup;
             impTimer = 0f;
             impHoldTick = 0;
@@ -464,10 +465,18 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         }
 
         // The arm and blade angles it ended in become the resting angles the ready pose eases away from; the push-out slides back through StabBlendOut.
+        // During the impale the blade is drawn BEHIND the enemies (the impaled one covers it); Projectile.hide is on only for that long, otherwise the blade is a normal projectile.
+        public override void DrawBehind(int index, System.Collections.Generic.List<int> behindNPCsAndTiles, System.Collections.Generic.List<int> behindNPCs, System.Collections.Generic.List<int> behindProjectiles, System.Collections.Generic.List<int> overPlayers, System.Collections.Generic.List<int> overWiresUI)
+        {
+            if (impaling)
+                behindNPCs.Add(index);
+        }
+
         void EndImpale(Player owner)
         {
             ReleaseImpaleTarget();
             impaling = false;
+            Projectile.hide = false;
             stabShake = Vector2.Zero;
             armLocal = HeldSwordPose.ToWorld(facing, impArm);
             tiltRad = MathHelper.WrapAngle(HeldSwordPose.ToWorld(facing, impBlade) - armLocal);
