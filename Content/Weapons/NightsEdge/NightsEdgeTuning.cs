@@ -55,7 +55,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         // ---- the impale (patch 6a): damage ----
         public static float ImpaleStabDamageMultiplier => 0.6f;   // the stab itself, of the item's damage (a boss or an unmovable enemy takes only this)
         public static float ImpaleBeatDamageMultiplier => 0.3f; // each beat's pulse
-        public static float ImpaleFinishDamageMultiplier => 4f; // the finisher's explosion (it also hurts what stands next to the enemy)
+        public static float ImpaleFinishDamageMultiplier => 1f; // the finisher's explosion (it also hurts what stands next to the enemy)
         public static float DropDamageMultiplier => 0.35f;      // a dark droplet or puddle hurts an enemy that touches it: of the Night's Edge's damage
         public static int DropHitCooldownTicks => 30;           // ... at most this often per enemy (counted across ALL droplets, so many puddles do not hit every tick)
         public static float ImpaleMaxSize => 120f;              // an enemy bigger than this (width or height) is stabbed but not impaled (the Blood Butcherer's limit)
