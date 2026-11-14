@@ -98,6 +98,6 @@ Buffs: {
 
 	NightsEdgeShadowArmorBuff: {
 		DisplayName: Shadow Armor
-		Description: 15% reduced damage taken
+		Description: 15% Increased damage reduction
 	}
 }
