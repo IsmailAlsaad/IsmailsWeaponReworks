@@ -53,7 +53,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float ImpaleMaxSize => 120f;              // an enemy bigger than this (width or height) is stabbed but not impaled (the Blood Butcherer's limit)
 
         // ---- charge: true melee hits speed the sword up until it is full ----
-        public static int HitsToFull => 20;             // the FIRST enemy each swing touches counts as one hit (a swing through a crowd = 1)
+        public static int HitsToFull => 15;             // the FIRST enemy each swing touches counts as one hit (a swing through a crowd = 1)
         public static float ChargePerHit => 1f / Math.Max(1, HitsToFull);
         public static float ChargedAt => 0.995f;        // from this charge on the sword counts as fully charged
         public static float ChargeShowEase => 0.15f;    // how fast the DRAWN charge follows the real one (per tick, 0..1)
@@ -64,22 +64,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float ArmorTimeScale => 1f;       // with the Shadow Armor on a swing takes this many times as long (1 = as fast as an empty sword)
 
         // ---- the charge fades (a FULL charge fades too): it starts when no swing has counted a hit for a while ----
-        public static int FadeGraceTicks => 300;        // after the last counted hit the charge holds this long (3 s) ...
+        public static int FadeGraceTicks => 600;        // after the last counted hit the charge holds this long (3 s) ...
         public static int FadeDrainTicks => 600;        // ... then it drains from full to nothing over this long (3 s)
 
         // ---- the swing (a chop centered on the cursor, alternating up and down; scaled by the charge and by melee speed) ----
         public static float AttackSpeedInfluence => 1f; // 0 = ignore the player's melee attack speed, 1 = fully applied
         public static float MinSpeed => 0.3f;           // the final speed (charge x melee speed) is clamped to this range
         public static float MaxSpeed => 10f;
-        public static int AnticipateTicks => 5;         // a swing that starts from the ready pose: the pull-back ...
+        public static int AnticipateTicks => 3;         // a swing that starts from the ready pose: the pull-back ...
         public static float AnticipateDeg => 18f;       // ... this far past the start of the arc
         public static int ChainAnticipateTicks => 9;    // a swing that FLOWS out of the previous one: the previous strike carries on through this wind-up ...
         public static float ChainAnticipateDeg => 24f;  // ... to this far past the end of the arc. Keep it above OvershootDeg, so the arm keeps drifting the way it was going
         public static float AnticipateTiltDeg => 10f;   // the wrist cocks back this much before every strike
-        public static int SwingTicks => 10;             // the strike (the only part that damages)
+        public static int SwingTicks => 6;             // the strike (the only part that damages)
         public static float SwingEasePower => 2f;       // 1 = even speed; higher = faster start and a longer deceleration
         public static float OvershootDeg => 8f;         // the strike carries this far past the end of the arc
-        public static int RecoverTicks => 7;            // only when the button is let go: the arm settles back to the end of the arc over this long
+        public static int RecoverTicks => 4;            // only when the button is let go: the arm settles back to the end of the arc over this long
         public static float SwingHighDeg => -70f;       // top of the arc
         public static float SwingLowDeg => 70f;         // bottom of the arc
         public static float TiltHighDeg => -14f;        // blade tilt relative to the arm at the top (wrist) ...
