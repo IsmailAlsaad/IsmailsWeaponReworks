@@ -33,23 +33,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float WaveKnockbackMultiplier => 0.5f;
         public static float WaveSpeed => 13f;               // px per tick (it does not slow down)
         public static float WaveRangeTiles => 32f;          // how far it flies before it fades out
-        public static float WaveSpawnProgress => 0f;        // WHEN THE WAVE APPEARS during the cut: 0 = the moment the strike begins, 0.5 = halfway through the cut, 1 = at its end
-        public static float WaveFadeTicks => 14f;           // HOW LONG THE WAVE FADES OUT at the end of its flight (the crescent and both trails are gone together at the end of it)
+        public static float WaveSpawnProgress => 0.2f;        // WHEN THE WAVE APPEARS during the cut: 0 = the moment the strike begins, 0.5 = halfway through the cut, 1 = at its end
+        public static float WaveFadeTicks => 32f;           // HOW LONG THE WAVE FADES OUT at the end of its flight (the crescent and both trails are gone together at the end of it)
         public static float WaveSpawnFraction => 0.6f;      // it is born this far along the blade length from the player (a fraction of BladeLength)
         public static int WaveShadowflameTicks => 240;      // Shadowflame on every enemy it hits (4 s)
         public static float WaveRadius => 80f;              // radius of the crescent's circle at birth (px)
-        public static float WaveThickness => 15f;           // thickness of the crescent in the middle (px)
+        public static float WaveThickness => 20f;           // thickness of the crescent in the middle (px)
         public static float WaveArcHalfDeg => 55f;          // half the arc's angle
         public static float WaveGrowth => 0.8f;             // the crescent grows by this fraction over its flight (fast at first)
-        public static int WaveAfterimages => 6;
+        public static int WaveAfterimages => 16;
         public static float WaveFlameRate => 1.3f;          // metaball flames shed off the crescent per tick
         public static float WaveFlameSize => 2.4f;          // their radius at birth (px)
         public static float WaveDustChance => 0.55f;        // per tick: a vanilla dust mote off the crescent
-        public static float WaveTipTrailWidth => 9f;        // the trail behind each pointed end of the crescent: its width at the start (px) ...
+        public static float WaveTipTrailWidth => 6f;        // the trail behind each pointed end of the crescent: its width at the start (px) ...
         public static int WaveTipTrailLifeTicks => 18;      // ... and how long a point of it lives (the flail head's trail look)
-        public static float WaveTipTrailArcDeg => 0f;       // TRAIL PLACEMENT: slides the trail's start along the crescent from the very tip (negative = inward toward the middle, positive = past the tip)
+        public static float WaveTipTrailArcDeg => -1f;       // TRAIL PLACEMENT: slides the trail's start along the crescent from the very tip (negative = inward toward the middle, positive = past the tip)
         public static float WaveTipTrailOutward => 0f;      // TRAIL PLACEMENT: pushes it away from the crescent's circle (px, negative = inward, toward the circle's center)
-        public static float WaveTipTrailForward => 0f;      // TRAIL PLACEMENT: moves it along the wave's flight direction (px, negative = behind the crescent)
+        public static float WaveTipTrailForward => 10f;      // TRAIL PLACEMENT: moves it along the wave's flight direction (px, negative = behind the crescent)
 
         // ---- the impale (patch 6a): damage ----
         public static float ImpaleStabDamageMultiplier => 1f;   // the stab itself, of the item's damage (a boss or an unmovable enemy takes only this)
@@ -144,13 +144,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int ImpaleWindupTicks => 7;       // the pull-back before the thrust
         public static float ImpaleWindupArmDeg => 75f;  // the arm drops this far below the aim before the uppercut
         public static float ImpaleSwingEndDeg => 0f;  // the upward swing ends with the arm this far from the aim (negative = above the cursor line)
-        public static float ImpaleBladeAngleDeg => 50f; // THE BLADE IS HELD THIS FAR OFF THE ARM: 90 = across the hand like a hook (the uppercut), 0 = straight along the arm (a plain stab)
+        public static float ImpaleBladeAngleDeg => 0f; // THE BLADE IS HELD THIS FAR OFF THE ARM: 90 = across the hand like a hook (the uppercut), 0 = straight along the arm (a plain stab)
         public static float ImpaleWindupPull => 13f;     // the sword is slid back along its length this far (px) in the wind-up
         public static int ImpaleSwingTicks => 7;        // the upward swing: the only part that can catch an enemy
-        public static float ImpaleSwingLerp => 0.45f;   // THE SWING LERPS toward its end pose: every tick the arm closes this fraction of the way that is left (0.1 = slow and soft, 0.8 = almost jumps there); the last tick always lands exactly on it
+        public static float ImpaleSwingLerp => 0.35f;   // THE SWING LERPS toward its end pose: every tick the arm closes this fraction of the way that is left (0.1 = slow and soft, 0.8 = almost jumps there); the last tick always lands exactly on it
         public static float ImpaleReach => 0f;          // the sword is slid out along its length this far (px) at the end of the swing and while it holds the enemy
         public static int ImpaleWaitTicks => 14;        // other machines wait this long for the owner's catch before they call it a miss
-        public static int ImpaleMissTicks => 12;        // a stab that caught nothing holds its pose this long
+        public static int ImpaleMissTicks => 4;        // a stab that caught nothing holds its pose this long
         public static int ImpaleSeatTicks => 6;         // the caught enemy slides from where it was onto the blade over this long
         public static float ImpaleAnchorFraction => 0.8f; // the enemy sits this far along the blade (1 = at the tip)
         public static int ImpaleBeats => 3;             // beats; each ends in a pulse of damage
