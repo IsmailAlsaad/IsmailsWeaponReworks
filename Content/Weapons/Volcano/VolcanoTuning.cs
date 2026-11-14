@@ -13,7 +13,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
     {
         // ---- sword: the sprite is only the handle, the blade is procedural lava ----
         public static float HandleLength => 1f;     // hand to the JOINT (where the lava blade starts), px at scale 1: match your handle art
-        public static float BladeLength => 140f;      // joint to the tip of the lava blade
+        public static float BladeLength => 100f;      // joint to the tip of the lava blade
         public static float SwordScale => 1f;
         public static float HandleCrop => 0.32f;     // stand-in art only: the part of the vanilla sprite (from its hilt corner) drawn as the handle
         public static bool ShowBladeDebug => false;  // true: magenta square on the tip the hit test uses, green square on the joint
@@ -86,8 +86,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Volcano
 
         // ---- where along the lava blade each thing starts and ends (0 = the joint, 1 = the tip; may go past 1) ----
         public static float BodyStart => 0.08f;         // the round blobs of the lava body (and the white-hot core)
-        public static float BodyEndLow => 0.8f;        // where the lava body is cut off at heat 0 (1 = the tip); lower it until the lone pixels at the tip are gone ...
-        public static float BodyEndHigh => 0.8f;       // ... and the same at full heat; in between it is interpolated by the heat
+        public static float BodyEndLow => 1f;        // where the lava body is cut off at heat 0 (1 = the tip); lower it until the lone pixels at the tip are gone ...
+        public static float BodyEndHigh => 1f;       // ... and the same at full heat; in between it is interpolated by the heat
         public static float BodyScatter => 0.35f;       // how far from the middle line the body blobs sit (fraction of the blob radius)
         public static float CoreScatter => 0.6f;        // the same for the white-hot spots
         public static float FlameStart => 0.05f;     // the rising flames

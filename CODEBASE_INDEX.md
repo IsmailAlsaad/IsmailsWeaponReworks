@@ -23,6 +23,7 @@ Project bases -> derived:
 - IAroundTheWorldTuning: AroundTheWorldDefaults, HiveFiveTuning, ValorTuning
 - IChargeOutlineTuning: CascadeTuning, HiveFiveTuning
 - IChargedBladeTuning: LightsBaneBladeTune, NightsEdgeBladeTune
+- IDrawnBehindCarried: ChargedBladeProjectile
 - IForwardPassTuning: AmazonTuning, ArteryTuning, CascadeTuning, Code1Tuning, ForwardPassDefaults, MalaiseTuning, RallyTuning, ValorTuning
 - IImpaleTuning: NightsEdgeImpaleTune
 - ILoopTuning: ArteryTuning, MalaiseTuning
@@ -89,7 +90,9 @@ tModLoader/other bases -> project types:
     +Punch(Vector2,float,int,string)[s]
 **CarriedNPC.cs**
   class CarriedNPC : GlobalNPC
-    +InstancePerEntity:bool[ov] +HoldTick:long +Held:bool +CanCarry(NPC,float)[s] +Hold(NPC,Vector2)[s] +Release(NPC)[s] +ClampToOpenAir(Vector2,Vector2,NPC)[s] +PreAI(NPC)[ov] +CanHitPlayer(NPC,Player,ref int)[ov]
+    +InstancePerEntity:bool[ov] +HoldTick:long +DrawFirstProjectile:int +Held:bool +CanCarry(NPC,float)[s] +Hold(NPC,Vector2,Projectile)[s] +Release(NPC)[s] +ClampToOpenAir(Vector2,Vector2,NPC)[s] +PreAI(NPC)[ov] +CanHitPlayer(NPC,Player,ref int)[ov] +PreDraw(NPC,SpriteBatch,Vector2,Color)[ov]
+  interface IDrawnBehindCarried
+    +DrawBehindCarried(NPC)
 **Contact.cs**
   static class Contact
     +EntryPoint(Vector2,Vector2,Rectangle)[s]
@@ -234,13 +237,13 @@ tModLoader/other bases -> project types:
 ### Common/ChargedBlade/
 **ChargedBladeImpale.cs** uses: CameraShake, CarriedNPC, HeldAim, HeldSwordPose, IImpaleTuning, Snarable
   abstract partial class ChargedBladeProjectile
-    #ImpaleTune:IImpaleTuning[v] #ImpaleAvailable(Player)[v] #ChargeSpeedScale(Player,float)[v] #FxImpaleWindup(Vector2)[v] #FxImpalePierce(Vector2,Vector2,bool)[v] #FxImpaleBeat(Vector2,int)[v] #FxImpaleFinish(Vector2)[v] #FxImpaleHold(Vector2,Vector2,Vector2,float,int)[v] #OnImpaleFinish(Player,Vector2)[v] +DrawBehind(int,List<int>,List<int>,List<int>,List<int>,List<int>)[ov]
+    #ImpaleTune:IImpaleTuning[v] #ImpaleAvailable(Player)[v] #ChargeSpeedScale(Player,float)[v] #FxImpaleWindup(Vector2)[v] #FxImpalePierce(Vector2,Vector2,bool)[v] #FxImpaleBeat(Vector2,int)[v] #FxImpaleFinish(Vector2)[v] #FxImpaleHold(Vector2,Vector2,Vector2,float,int)[v] #OnImpaleFinish(Player,Vector2)[v]
 **ChargedBladePose.cs**
   struct ChargedBladePose
     +SpritePosition:Vector2 +SpriteRotation:float +SpriteOrigin:Vector2 +SpriteSize:Vector2 +Scale:float +Effects:SpriteEffects +Hand:Vector2 +Tip:Vector2 +TipMotion:Vector2 +Direction:Vector2 +Charge:float +Outline:float +Striking:bool +Ticks:int +ToWorld(Vector2)
-**ChargedBladeProjectile.cs** uses: CameraShake, ChargedBladePose, ChargedBladeTrailStyle, DetachedTrails, HeldAim, HeldSwordPose, IChargedBladeTuning, PixelFan, PixelOutline, RemoteHitTracker, SweepTrail
-  abstract partial class ChargedBladeProjectile : ModProjectile
-    #Tune:IChargedBladeTuning[ab] #ItemType:int[ab] #OwnerCharge(Player)[ab] #AddOwnerCharge(Player,float)[ab] #CreateTrailStyle()[ab] #StabAvailable(Player)[v] #OnStabImpacted(Player)[ab] #FxPlaySwing(Vector2,float)[ab] #FxSwingDust(Vector2,Vector2,float)[ab] #FxHitSpark(Vector2,float)[ab] #FxChargeHit(Vector2)[ab] #FxCharged(Vector2,Vector2)[ab] #FxPlayStabWindup(Vector2)[ab] #FxStabImpact(Vector2)[ab] #FxSparkle(Vector2,Vector2)[ab] #TickVisuals(ChargedBladePose)[v] #DrawAfterBlade(ChargedBladePose)[v] #OnOwnerHit(NPC,HitInfo,bool)[v] #OnOwnerStrikeStart(Vector2,Vector2)[v] #StrikeProgress:float #InStrikePhase:bool +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**ChargedBladeProjectile.cs** uses: CameraShake, ChargedBladePose, ChargedBladeTrailStyle, DetachedTrails, HeldAim, HeldSwordPose, IChargedBladeTuning, IDrawnBehindCarried, PixelFan, PixelOutline, RemoteHitTracker, SweepTrail
+  abstract partial class ChargedBladeProjectile : ModProjectile, IDrawnBehindCarried
+    #Tune:IChargedBladeTuning[ab] #ItemType:int[ab] #OwnerCharge(Player)[ab] #AddOwnerCharge(Player,float)[ab] #CreateTrailStyle()[ab] #StabAvailable(Player)[v] #OnStabImpacted(Player)[ab] #FxPlaySwing(Vector2,float)[ab] #FxSwingDust(Vector2,Vector2,float)[ab] #FxHitSpark(Vector2,float)[ab] #FxChargeHit(Vector2)[ab] #FxCharged(Vector2,Vector2)[ab] #FxPlayStabWindup(Vector2)[ab] #FxStabImpact(Vector2)[ab] #FxSparkle(Vector2,Vector2)[ab] #TickVisuals(ChargedBladePose)[v] #DrawAfterBlade(ChargedBladePose)[v] #OnOwnerHit(NPC,HitInfo,bool)[v] #OnOwnerStrikeStart(Vector2,Vector2)[v] #StrikeProgress:float #InStrikePhase:bool +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +DrawBehindCarried(NPC) +PreDraw(ref Color)[ov]
 **ChargedBladeTrailStyle.cs** uses: SweepTrailStyle
   abstract class ChargedBladeTrailStyle : SweepTrailStyle
     +Charge:float

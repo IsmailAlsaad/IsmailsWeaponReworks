@@ -1,4 +1,5 @@
-﻿using Terraria;
+﻿using System.Collections.Generic;
+using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -30,5 +31,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         {
             return false;
         }
+        //public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
+        //{
+        //    tooltips.Add(new TooltipLine(Mod, "NightsEdge0", "Right click to stab enemies and charge the blade"));
+        //    tooltips.Add(new TooltipLine(Mod, "NightsEdge1", "Right click again at full charge to stab yourself"));
+        //}
     }
 }

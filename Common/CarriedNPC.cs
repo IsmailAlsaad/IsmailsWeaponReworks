@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using Terraria;
 using Terraria.ID;
@@ -19,6 +20,7 @@ namespace IsmailsWeaponReworks.Common
         public override bool InstancePerEntity => true;
 
         public long HoldTick = -1000;  // Main.GameUpdateCount stamp refreshed by the carrier every tick
+        public int DrawFirstProjectile = -1;   // the carrier that wants to be drawn behind this enemy (IDrawnBehindCarried), handed over in Hold every tick; -1 = none
 
         public bool Held => Main.GameUpdateCount - HoldTick <= 2;
 
@@ -30,11 +32,15 @@ namespace IsmailsWeaponReworks.Common
         }
 
         // The carrier calls this every tick on every machine for each carried enemy.
-        public static void Hold(NPC npc, Vector2 center)
+        // 'drawFirst' (optional): a carrier that wants the enemy drawn IN FRONT of it (IDrawnBehindCarried) hands itself over here every tick; the enemy's own
+        // draw then draws the carrier right before the enemy's sprite (see PreDraw below).
+        public static void Hold(NPC npc, Vector2 center, Projectile drawFirst = null)
         {
             npc.Center = center;
             npc.velocity = Vector2.Zero;
-            npc.GetGlobalNPC<CarriedNPC>().HoldTick = (long)Main.GameUpdateCount;
+            CarriedNPC state = npc.GetGlobalNPC<CarriedNPC>();
+            state.HoldTick = (long)Main.GameUpdateCount;
+            state.DrawFirstProjectile = drawFirst != null ? drawFirst.whoAmI : -1;
             if (Main.netMode == NetmodeID.Server && Main.GameUpdateCount % 3 == 0)
                 npc.netUpdate = true; // the server's copy is the authority
         }
@@ -83,5 +89,26 @@ namespace IsmailsWeaponReworks.Common
         {
             return !Held;
         }
+
+        // A carrier that handed itself over in Hold is drawn HERE, inside the enemy's own draw, right before the enemy's sprite: the sprite lands on top, so
+        // the enemy covers the carrier (and everything the carrier draws with it). It does not depend on any draw layer list, so no ordering can put the
+        // carrier in front. The carrier skips its own draw for that tick.
+        public override bool PreDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
+        {
+            if (Held && DrawFirstProjectile >= 0 && DrawFirstProjectile < Main.maxProjectiles)
+            {
+                Projectile carrier = Main.projectile[DrawFirstProjectile];
+                if (carrier.active && carrier.ModProjectile is IDrawnBehindCarried behind)
+                    behind.DrawBehindCarried(npc);
+            }
+            return true;
+        }
+    }
+
+    /// <summary>A projectile that carries an enemy (CarriedNPC.Hold with itself as 'drawFirst') and wants the enemy drawn in FRONT of it.</summary>
+    public interface IDrawnBehindCarried
+    {
+        /// <summary>Called from the carried enemy's draw (a spritebatch is running), right before the enemy's sprite. Draw the whole carrier here; the carrier skips its own normal draw for this tick.</summary>
+        void DrawBehindCarried(NPC npc);
     }
 }

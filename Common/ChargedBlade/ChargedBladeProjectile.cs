@@ -25,7 +25,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
     /// start the same swing when the serial changes and run the same timers for pose, trail, sound and sparks. Hits and damage are the
     /// owner's alone (RemoteHitTracker gives the others their hit sparks). No custom packets.
     /// </summary>
-    public abstract partial class ChargedBladeProjectile : ModProjectile
+    public abstract partial class ChargedBladeProjectile : ModProjectile, IDrawnBehindCarried
     {
         // ---- what a weapon fills in (everything else is shared) ----
 
@@ -766,11 +766,32 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
 
         // ---- drawing ----
 
+        // THE ENEMY IN FRONT OF THE BLADE (the impale): while an impaled enemy is held, ITS draw calls DrawBehindCarried, which draws the whole blade (trail, glow,
+        // sword, the weapon's flame layers) right before the enemy's own sprite, so the enemy covers it. It stamps the update tick, and the normal PreDraw below
+        // skips that tick. If the enemy does not draw it (off screen), the stamp is stale and the blade draws here as usual, so it can never vanish.
+        long drawnByCarriedAt = -1;
+
+        public void DrawBehindCarried(NPC npc)
+        {
+            if (ticks == 0)
+                return;
+            drawnByCarriedAt = (long)Main.GameUpdateCount;
+            DrawBlade(Lighting.GetColor((int)(Projectile.Center.X / 16f), (int)(Projectile.Center.Y / 16f)));
+        }
+
         public override bool PreDraw(ref Color lightColor)
         {
             if (ticks == 0)
                 return false; // not posed yet (the first tick has not run)
+            if (drawnByCarriedAt == (long)Main.GameUpdateCount)
+                return false; // the impaled enemy already drew the blade this tick, behind itself
+            DrawBlade(lightColor);
+            return false;
+        }
 
+        // The whole look of the held blade: the trail, the glow and outline, the sword, then the weapon's layers in front of it.
+        void DrawBlade(Color lightColor)
+        {
             trail?.Draw();
 
             Texture2D texture = TextureAssets.Projectile[Type].Value;
@@ -805,7 +826,6 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
 
             DrawAfterBlade(MakePose());
             DrawBladeDebug();
-            return false;
         }
 
         // The sprite's pose for the visual hooks (the same position, rotation and flip PreDraw draws with). SpriteSize stays zero until the
