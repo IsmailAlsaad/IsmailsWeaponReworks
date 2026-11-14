@@ -150,7 +150,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int ImpaleBeats => 3;             // beats; each ends in a pulse of damage
         public static int ImpaleBeatTicks => 26;        // one beat
         public static float ImpaleRisePortion => 0.7f;  // the lift happens in this first part of each beat, the rest is a pause before the pulse
-        public static float ImpaleHeldAngleDeg => 80f;  // THE ARM LIFTS to this angle above the horizontal (90 = straight up) while the enemy is held; the blade keeps the angle it stabbed at (ImpaleBladeAngleDeg)
+        public static float ImpaleHeldAngleDeg => 60f;  // THE ARM LIFTS to this angle above the horizontal (90 = straight up) while the enemy is held; the blade keeps the angle it stabbed at (ImpaleBladeAngleDeg)
         public static float ImpaleShake => 1f;          // the blade trembles this much (px) while it holds the enemy
         public static int ImpaleFinishTicks => 8;       // the pose is held this long after the finisher
         public static float ImpaleHitShake => 2.5f;     // camera punch of the stab
