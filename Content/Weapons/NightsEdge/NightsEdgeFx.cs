@@ -119,6 +119,38 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             MetaballLayers.Of<NightsEdgeEdgeStyle>().DrawInBatch();
         }
 
+        // ---- the flame wave (patch 4, back in patch 6a) ----
+
+        // The wave leaves the blade: a low whoosh with a dark flame crackle.
+        public static void PlayWave(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item45 with { Volume = 0.6f, Pitch = -0.35f, PitchVariance = 0.1f }, position);
+        }
+
+        // The wave hit a block and dissolves: a puff of dark flame dust.
+        public static void WaveBreak(Vector2 position, Vector2 direction)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.35f, Pitch = -0.1f, PitchVariance = 0.1f }, position);
+            for (int i = 0; i < 14; i++)
+                Mote(position, direction * Main.rand.NextFloat(-1f, 0.5f) + Main.rand.NextVector2Circular(2.5f, 2.5f), Main.rand.NextFloat(1f, 1.7f), i % 2 == 0 ? DustID.Shadowflame : DustID.PurpleTorch);
+        }
+
+        // One dust mote and one metaball flame shed off a point of the crescent.
+        public static void WaveShed(Vector2 position, Vector2 velocity, float fade, bool dust, bool flame)
+        {
+            if (Main.dedServ)
+                return;
+            if (dust)
+                Mote(position, velocity, Main.rand.NextFloat(0.9f, 1.5f), Main.rand.NextBool(2) ? DustID.Shadowflame : DustID.PurpleTorch);
+            if (flame)
+                MetaballLayers.Of<NightsEdgeFlameStyle>().Spawn(position, velocity * 0.4f + new Vector2(0f, -0.3f), Main.rand.Next(NightsEdgeTuning.FlameLifeMin, NightsEdgeTuning.FlameLifeMax + 1),
+                    NightsEdgeTuning.WaveFlameSize * Main.rand.NextFloat(0.7f, 1.15f) * (0.5f + 0.5f * fade));
+        }
+
         // ---- Shadow Armor (patch 5) ----
 
         // Every machine, every tick while the buff is on: dark flames rise off the whole body, a few dust motes, a purple light. 'fade' is 1 and eases to 0 over the buff's last ticks.
@@ -199,6 +231,50 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             }
             for (int i = 0; i < 14; i++)
                 Mote(center, Main.rand.NextVector2Unit() * Main.rand.NextFloat(2f, 6f) * scale, Main.rand.NextFloat(1.2f, 1.9f), i % 2 == 0 ? DustID.Shadowflame : DustID.PurpleTorch);
+        }
+
+        // ---- the impale (patch 6a; the shared blade calls these) ----
+
+        // The arm drops and the sword is drawn back: a low breath of a whoosh.
+        public static void ImpaleWindup(Vector2 hand)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.5f, Pitch = -0.6f }, hand);
+        }
+
+        // The point goes in (caught = the enemy is impaled on it): a heavy thud, a spray of dark sparks along the blade.
+        public static void ImpalePierce(Vector2 point, Vector2 direction, bool caught)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.9f, Pitch = -0.6f }, point);
+            if (caught)
+                SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.5f, Pitch = -0.2f }, point);
+            int count = caught ? 20 : 10;
+            for (int i = 0; i < count; i++)
+                Mote(point, direction * Main.rand.NextFloat(1f, 6f) + Main.rand.NextVector2Circular(2.5f, 2.5f), Main.rand.NextFloat(1.1f, 1.8f), i % 2 == 0 ? DustID.Shadowflame : DustID.PurpleTorch);
+        }
+
+        // The end of a beat: a ring of dark motes and a chime that climbs with every beat (patch 6b adds the energy streams and the big flashes).
+        public static void ImpaleBeat(Vector2 point, int beat)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.7f, Pitch = -0.2f + 0.25f * beat }, point);
+            int count = 12 + 6 * beat;
+            for (int i = 0; i < count; i++)
+                Mote(point, (MathHelper.TwoPi * i / count).ToRotationVector2() * (4f + beat), 1.4f + 0.2f * beat, i % 2 == 0 ? DustID.PurpleTorch : DustID.Shadowflame);
+        }
+
+        // The enemy is let go and the explosion goes off (the blast projectile plays its own burst): a deep sound and a few motes.
+        public static void ImpaleFinish(Vector2 point)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.5f, Pitch = -0.3f }, point);
+            for (int i = 0; i < 10; i++)
+                Mote(point, Main.rand.NextVector2Unit() * Main.rand.NextFloat(2f, 6f), Main.rand.NextFloat(1.2f, 1.8f), i % 2 == 0 ? DustID.Shadowflame : DustID.PurpleTorch);
         }
 
         // ---- the self-stab (patch 5; the shared blade calls these two) ----

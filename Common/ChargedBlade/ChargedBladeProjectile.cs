@@ -25,7 +25,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
     /// start the same swing when the serial changes and run the same timers for pose, trail, sound and sparks. Hits and damage are the
     /// owner's alone (RemoteHitTracker gives the others their hit sparks). No custom packets.
     /// </summary>
-    public abstract class ChargedBladeProjectile : ModProjectile
+    public abstract partial class ChargedBladeProjectile : ModProjectile
     {
         // ---- what a weapon fills in (everything else is shared) ----
 
@@ -219,6 +219,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             writer.Write(swingSpeed);
             writer.Write(swingChained);
             writer.Write((byte)(stabSerial & 255));
+            SendImpale(writer);
         }
 
         public override void ReceiveExtraAI(BinaryReader reader)
@@ -229,6 +230,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             float readSpeed = reader.ReadSingle();
             bool readChained = reader.ReadBoolean();
             int readStab = reader.ReadByte();
+            ReceiveImpale(reader);
             if (!syncedOnce)
                 stabSerial = readStab;
             else if (readStab != stabSerial)
@@ -297,7 +299,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             bool charged = chargeTarget >= Tune.ChargedAt;
             outlineShown += ((charged ? 1f : 0f) - outlineShown) * MathHelper.Clamp(Tune.OutlineFade, 0.01f, 1f);
 
-            // A stab (right click at full charge) is checked first, so it wins over the next swing.
+            // The impale (right click BELOW full charge, only blades with an ImpaleTune) and the stab (right click at full charge) are checked first, so they win over the next swing.
+            TryStartImpale(owner);
             TryStartStab(owner);
 
             // A swing starts: from the ready pose, or flowing out of the one that just finished its strike.
@@ -309,7 +312,11 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
 
             float worldArm;
             float worldBlade;
-            if (stabbing)
+            if (impaling)
+            {
+                ImpalePose(owner, out worldArm, out worldBlade);
+            }
+            else if (stabbing)
             {
                 StabPose(owner, out worldArm, out worldBlade);
             }
@@ -337,7 +344,9 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             }
 
             ApplyPose(owner, worldArm, worldBlade);
-            if (stabbing)
+            if (impaling)
+                AfterImpalePose(owner);
+            else if (stabbing)
             {
                 // The stab's blade is shorter than the sword: its tip is where the stab pose put it.
                 tipPosition = Projectile.Center + Projectile.rotation.ToRotationVector2() * stabTipDist;
@@ -417,10 +426,10 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
                     stabBuffer = Tune.StabBufferTicks;
                 else if (stabBuffer > 0)
                     stabBuffer--;
-                if (stabBuffer > 0 && ready && !stabbing && (!swinging || timer >= StrikeEnd))
+                if (stabBuffer > 0 && ready && !stabbing && !impaling && (!swinging || timer >= StrikeEnd))
                     BeginStab(owner);
             }
-            else if (pendingStab && !stabbing)
+            else if (pendingStab && !stabbing && !impaling)
             {
                 pendingStab = false;
                 BeginStab(owner);
@@ -530,7 +539,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         // The swing speed the owner starts a swing with: the charge's speed-up times the player's melee speed (the result travels to everyone).
         float ComputeSpeed()
         {
-            float chargeScale = MathHelper.Lerp(1f, Tune.MaxSpeedScale, (float)Math.Pow(MathHelper.Clamp(chargeTarget, 0f, 1f), Math.Max(0.01f, Tune.SpeedCurvePower)));
+            float chargeScale = ChargeSpeedScale(Owner, chargeTarget);
             float melee = MathHelper.Lerp(1f, Owner.GetTotalAttackSpeed(DamageClass.Melee), Tune.AttackSpeedInfluence);
             return MathHelper.Clamp(melee * chargeScale, Tune.MinSpeed, Tune.MaxSpeed);
         }
@@ -539,8 +548,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         // still striking is never interrupted; one that has finished its strike (even if it is already recovering) is flowed out of.
         void TryStartSwing()
         {
-            if (stabbing)
-                return; // the stab runs its own timeline; a held left click resumes swinging right after it
+            if (stabbing || impaling)
+                return; // the stab and the impale run their own timelines; a held left click resumes swinging right after them
             bool afterStrike = swinging && timer >= StrikeEnd;
             if (swinging && !afterStrike)
                 return;
@@ -745,6 +754,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         // The trail outlives the blade and keeps fading on its own (DetachedTrails).
         public override void OnKill(int timeLeft)
         {
+            ReleaseImpaleTarget();
             DetachedTrails.Hand(trail);
             trail = null;
         }

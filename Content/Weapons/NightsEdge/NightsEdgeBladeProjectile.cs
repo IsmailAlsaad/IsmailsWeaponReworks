@@ -1,6 +1,7 @@
 ﻿using IsmailsWeaponReworks.Common.ChargedBlade;
 using IsmailsWeaponReworks.Content.Buffs;
 using Microsoft.Xna.Framework;
+using System;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -41,7 +42,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             return new NightsEdgeSweepTrailStyle();
         }
 
-        // Right click at full charge is the self-stab (the shared blade plays it); not while the Shadow Armor is on. Below full charge it does nothing until patch 6 (the impale).
+        // Right click at full charge is the self-stab (the shared blade plays it); not while the Shadow Armor is on. Below full charge it is the impale (patch 6).
         protected override bool StabAvailable(Player owner)
         {
             return owner.GetModPlayer<NightsEdgePlayer>().ShadowTicks <= 0;
@@ -54,6 +55,50 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             owner.AddBuff(ModContent.BuffType<NightsEdgeShadowArmorBuff>(), NightsEdgeTuning.ShadowArmorTicks);
             owner.AddBuff(ModContent.BuffType<LightsBaneImbueBuff>(), NightsEdgeTuning.ShadowArmorTicks);
             NightsEdgeDropProjectile.Throw(owner, NightsEdgeTuning.StabBurstDrops);
+        }
+
+        // ---- the impale (patch 6a): right click below full charge; the shared blade runs it, these are the Night's Edge's numbers, sounds and finisher ----
+        IImpaleTuning impaleTune;
+        protected override IImpaleTuning ImpaleTune => impaleTune ?? (impaleTune = new NightsEdgeImpaleTune());
+
+        // Not while the Shadow Armor is on (the charge is held full then, so the impale could not start anyway).
+        protected override bool ImpaleAvailable(Player owner)
+        {
+            return owner.GetModPlayer<NightsEdgePlayer>().ShadowTicks <= 0;
+        }
+
+        protected override void FxImpaleWindup(Vector2 hand) { NightsEdgeFx.ImpaleWindup(hand); }
+        protected override void FxImpalePierce(Vector2 point, Vector2 direction, bool caught) { NightsEdgeFx.ImpalePierce(point, direction, caught); }
+        protected override void FxImpaleBeat(Vector2 point, int beat) { NightsEdgeFx.ImpaleBeat(point, beat); }
+        protected override void FxImpaleFinish(Vector2 point) { NightsEdgeFx.ImpaleFinish(point); }
+
+        // Owner's client, at the finisher: the dark flame explosion on the impaled enemy (patch 6b makes it bigger and nicer). Spawned by the owner, so it syncs.
+        protected override void OnImpaleFinish(Player owner, Vector2 point)
+        {
+            int damage = (int)(Projectile.damage * NightsEdgeTuning.ImpaleFinishDamageMultiplier);
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), point, Vector2.Zero, ModContent.ProjectileType<NightsEdgeBlastProjectile>(), damage, 0f, Projectile.owner);
+        }
+
+        // THE SWING SLOWS DOWN WITH THE CHARGE (the Volcano's pattern): fastest when empty, slowest when full. The Shadow Armor makes it fast again.
+        protected override float ChargeSpeedScale(Player owner, float charge)
+        {
+            if (owner.GetModPlayer<NightsEdgePlayer>().ShadowTicks > 0)
+                return 1f / Math.Max(0.1f, NightsEdgeTuning.ArmorTimeScale);
+            float heavy = MathHelper.Lerp(1f, NightsEdgeTuning.FullTimeScale, (float)Math.Pow(MathHelper.Clamp(charge, 0f, 1f), Math.Max(0.01f, NightsEdgeTuning.SpeedCurvePower)));
+            return 1f / Math.Max(0.1f, heavy);
+        }
+
+        // Owner's client, once per swing when the strike begins: a swing that STARTS with a fully charged sword throws one short dark flame wave toward the
+        // cursor (the swing that fills the sword fills it later, so it throws none). NOT while the Shadow Armor is on. Spawned by the owner, so it syncs.
+        protected override void OnOwnerStrikeStart(Vector2 hand, Vector2 direction)
+        {
+            Player owner = Main.player[Projectile.owner];
+            if (OwnerCharge(owner) < NightsEdgeTuning.ChargedAt || owner.GetModPlayer<NightsEdgePlayer>().ShadowTicks > 0)
+                return;
+            Vector2 spawn = hand + direction * (Tune.BladeLength * Projectile.scale * NightsEdgeTuning.WaveSpawnFraction);
+            int damage = (int)(Projectile.damage * NightsEdgeTuning.WaveDamageMultiplier);
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, direction * NightsEdgeTuning.WaveSpeed, ModContent.ProjectileType<NightsEdgeWaveProjectile>(),
+                damage, Projectile.knockBack * NightsEdgeTuning.WaveKnockbackMultiplier, Projectile.owner);
         }
 
         protected override void FxPlaySwing(Vector2 position, float charge) { NightsEdgeFx.PlaySwing(position, charge); }
@@ -77,11 +122,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             NightsEdgeFx.DrawLayers();
         }
 
-        // Owner's client. A hit while the sword was already fully charged (the swing that fills it does not explode): the enemy bursts into a dark
+        // Owner's client. A true melee hit WHILE THE SHADOW ARMOR IS ON (a full charge alone is not enough any more): the enemy bursts into a dark
         // flame explosion that also hurts what stands next to it and sets it on Shadowflame. The projectile is spawned by the owner, so it syncs.
         protected override void OnOwnerHit(NPC target, NPC.HitInfo hit, bool fullBefore)
         {
-            if (!fullBefore)
+            if (Main.player[Projectile.owner].GetModPlayer<NightsEdgePlayer>().ShadowTicks <= 0)
                 return;
             Vector2 point = Vector2.Clamp(Projectile.Center + Projectile.rotation.ToRotationVector2() * Tune.BladeLength * Projectile.scale * 0.7f, target.TopLeft, target.BottomRight);
             int damage = (int)(Projectile.damage * NightsEdgeTuning.BlastDamageMultiplier);

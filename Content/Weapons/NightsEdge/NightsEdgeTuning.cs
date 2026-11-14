@@ -28,14 +28,38 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int BlastTicks => 4;              // how long the area lasts (every enemy inside is hit once)
         public static int BlastShadowflameTicks => 240; // Shadowflame on everything it hits (4 s)
 
+        // ---- the flame wave (patch 4, back in patch 6a): every swing that STARTS with a fully charged sword throws one short wave toward the cursor; not while the Shadow Armor is on ----
+        public static float WaveDamageMultiplier => 0.6f;   // of the swing's base damage; each enemy is hit once
+        public static float WaveKnockbackMultiplier => 0.5f;
+        public static float WaveSpeed => 13f;               // px per tick (it does not slow down)
+        public static float WaveRangeTiles => 32f;          // how far it flies before it fades out
+        public static float WaveSpawnFraction => 0.6f;      // it is born this far along the blade length from the player (a fraction of BladeLength)
+        public static int WaveShadowflameTicks => 240;      // Shadowflame on every enemy it hits (4 s)
+        public static float WaveRadius => 80f;              // radius of the crescent's circle at birth (px)
+        public static float WaveThickness => 15f;           // thickness of the crescent in the middle (px)
+        public static float WaveArcHalfDeg => 55f;          // half the arc's angle
+        public static float WaveGrowth => 0.8f;             // the crescent grows by this fraction over its flight (fast at first)
+        public static int WaveAfterimages => 6;
+        public static float WaveFlameRate => 1.3f;          // metaball flames shed off the crescent per tick
+        public static float WaveFlameSize => 2.4f;          // their radius at birth (px)
+        public static float WaveDustChance => 0.55f;        // per tick: a vanilla dust mote off the crescent
+
+        // ---- the impale (patch 6a): damage ----
+        public static float ImpaleStabDamageMultiplier => 1f;   // the stab itself, of the item's damage (a boss or an unmovable enemy takes only this)
+        public static float ImpaleBeatDamageMultiplier => 0.3f; // each beat's pulse
+        public static float ImpaleFinishDamageMultiplier => 4f; // the finisher's explosion (it also hurts what stands next to the enemy)
+        public static float ImpaleMaxSize => 120f;              // an enemy bigger than this (width or height) is stabbed but not impaled (the Blood Butcherer's limit)
+
         // ---- charge: true melee hits speed the sword up until it is full ----
         public static int HitsToFull => 20;             // the FIRST enemy each swing touches counts as one hit (a swing through a crowd = 1)
         public static float ChargePerHit => 1f / Math.Max(1, HitsToFull);
         public static float ChargedAt => 0.995f;        // from this charge on the sword counts as fully charged
         public static float ChargeShowEase => 0.15f;    // how fast the DRAWN charge follows the real one (per tick, 0..1)
         public static float ChargeSyncStep => 0.04f;    // the owner tells the other machines when the charge moved this much
-        public static float MaxSpeedScale => 2.5f;      // swing speed at full charge, as a multiple of the normal speed
-        public static float SpeedCurvePower => 1f;      // 1 = the speed rises evenly with the charge; above 1 it rises late
+        public static float MaxSpeedScale => 2.5f;      // NOT USED by the Night's Edge any more (the swing slows down with the charge, see FullTimeScale); the shared blade still reads it
+        public static float SpeedCurvePower => 1f;      // 1 = the swing slows down evenly with the charge; above 1 it slows late
+        public static float FullTimeScale => 2f;        // THE SWING SLOWS DOWN (the Volcano's pattern): a swing takes this many times as long at full charge (1 when empty, which is the fastest)
+        public static float ArmorTimeScale => 1f;       // with the Shadow Armor on a swing takes this many times as long (1 = as fast as an empty sword)
 
         // ---- the charge fades (a FULL charge fades too): it starts when no swing has counted a hit for a while ----
         public static int FadeGraceTicks => 300;        // after the last counted hit the charge holds this long (3 s) ...
@@ -106,10 +130,31 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static float StabBlendOut => 0.2f;
         public static float StabHitShake => 2.5f;
 
+        // ---- the impale (patch 6a): right click below full charge; a dagger stab that spears an enemy, lifts it in beats and ends in a finisher ----
+        public static int ImpaleBufferTicks => 10;      // a right click during a strike is remembered this long
+        public static int ImpaleWindupTicks => 7;       // the pull-back before the thrust
+        public static float ImpaleWindupArmDeg => 55f;  // the arm drops this far below the aim (the uppercut) ...
+        public static float ImpaleWindupBladeDeg => 20f; // ... and the blade points this far below it
+        public static float ImpaleWindupPull => 16f;    // the sword is drawn back this far (px)
+        public static int ImpaleThrustTicks => 3;       // the drive-in: the only part that can catch an enemy
+        public static float ImpaleReach => 20f;         // the sword is driven this far (px) past its normal length
+        public static int ImpaleWaitTicks => 14;        // other machines wait this long for the owner's catch before they call it a miss
+        public static int ImpaleMissTicks => 12;        // a stab that caught nothing holds its pose this long
+        public static int ImpaleSeatTicks => 6;         // the caught enemy slides from where it was onto the blade over this long
+        public static float ImpaleAnchorFraction => 0.8f; // the enemy sits this far along the blade (1 = at the tip)
+        public static int ImpaleBeats => 3;             // beats; each ends in a pulse of damage
+        public static int ImpaleBeatTicks => 26;        // one beat
+        public static float ImpaleRisePortion => 0.7f;  // the lift happens in this first part of each beat, the rest is a pause before the pulse
+        public static float ImpaleLiftDeg => 55f;       // the whole lift: the blade swings this far toward straight up
+        public static float ImpaleShake => 1f;          // the blade trembles this much (px) while it holds the enemy
+        public static int ImpaleFinishTicks => 8;       // the pose is held this long after the finisher
+        public static float ImpaleHitShake => 2.5f;     // camera punch of the stab
+        public static float ImpaleBeatShake => 1.5f;    // camera punch of a beat
+
         // ---- Shadow Armor (patch 5): the buff the self-stab gives ----
         public static int ShadowArmorTicks => 480;      // how long it lasts (8 s); the sword stays fully charged and its fade is paused meanwhile, the charge is 0 when it ends
         public static int ShadowArmorFadeTicks => 40;   // the body flames and the light ease out over the last this many ticks
-        public static float ShadowArmorReduction => 0.3f; // damage reduction (Player.endurance): 0.3 = 30% less damage taken
+        public static float ShadowArmorReduction => 0.15f; // damage reduction (Player.endurance)
         public static float ArmorFlameRate => 1.6f;     // dark flames born per tick off the body
         public static float ArmorFlameSize => 2.6f;     // their radius at birth (px)
         public static float ArmorDustChance => 0.5f;    // per tick: a vanilla dust mote off the body
