@@ -24,6 +24,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public float ImpaleRisePortion => NightsEdgeTuning.ImpaleRisePortion;
         public float ImpaleHeldAngleDeg => NightsEdgeTuning.ImpaleHeldAngleDeg;
         public float ImpaleShake => NightsEdgeTuning.ImpaleShake;
+        public float ImpaleShakeGrowth => NightsEdgeTuning.ImpaleShakeGrowth;
         public int ImpaleFinishTicks => NightsEdgeTuning.ImpaleFinishTicks;
         public float ImpaleHitShake => NightsEdgeTuning.ImpaleHitShake;
         public float ImpaleBeatShake => NightsEdgeTuning.ImpaleBeatShake;

@@ -162,6 +162,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         public static int ImpaleFinishTicks => 8;       // the pose is held this long after the finisher
         public static float ImpaleHitShake => 2.5f;     // camera punch of the stab
         public static float ImpaleBeatShake => 1.5f;    // camera punch of a beat
+        public static float ImpaleShakeGrowth => 4f;    // THE BLADE'S TREMBLING rises over the hold: this many times ImpaleShake by the end of the last beat (1 = no rise)
+        public static float ImpaleStreamRateMin => 0.6f; // THE ENERGY STREAM from the enemy into the blade: motes per tick at the start of the hold ...
+        public static float ImpaleStreamRateMax => 3.5f; // ... and at the end of it (it grows with every beat)
+        public static int ImpaleStreamTicks => 14;      // a mote takes this long to flow from the enemy into the blade
+        public static float ImpaleFlashSize => 9f;      // THE FLASH of a beat: radius (px) of the bright core at the enemy on the first beat ...
+        public static float ImpaleFlashGrowth => 0.7f;  // ... and how much bigger each further beat's is (0.7 = +70% per beat)
+        public static float ImpaleFinishSize => 2.2f;   // THE FINISHER'S EXPLOSION is this many times the size of a charged hit's explosion (BlastSize): its area, its droplets and its shake
+        public static int ImpaleFillSweepTicks => 16;   // after the finisher a wave of dark flames runs up the blade from the hilt to the tip over this long (the jump to full charge)
+        public static bool ShowMaskDebug => false;      // true: every pixel of NightsEdgeBladeMask.png is drawn as a magenta dot on the blade, and the chat tells how many pixels the mask has (to see if it is loaded and where it sits)
 
         // ---- Shadow Armor (patch 5): the buff the self-stab gives ----
         public static int ShadowArmorTicks => 480;      // how long it lasts (8 s); the sword stays fully charged and its fade is paused meanwhile, the charge is 0 when it ends

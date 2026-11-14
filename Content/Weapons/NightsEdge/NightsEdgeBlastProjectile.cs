@@ -18,7 +18,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
 
         int ticks;
 
-        float Radius => NightsEdgeTuning.BlastSize * 0.5f;
+        // ai[0] is a size multiplier (0 = 1): the impale's finisher is a bigger explosion than a charged hit's. Synced with the spawn like any projectile.
+        float SizeScale => Projectile.ai[0] > 0f ? Projectile.ai[0] : 1f;
+        float Radius => NightsEdgeTuning.BlastSize * 0.5f * SizeScale;
 
         public override void SetDefaults()
         {
@@ -40,7 +42,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             if (ticks == 0)
             {
                 NightsEdgeFx.Blast(Projectile.Center, Radius);
-                CameraShake.Punch(Projectile.Center, NightsEdgeTuning.BlastShake, 12, "NightsEdgeBlast");
+                CameraShake.Punch(Projectile.Center, NightsEdgeTuning.BlastShake * (float)System.Math.Sqrt(SizeScale), 12, "NightsEdgeBlast");
             }
             float fade = Projectile.timeLeft / (float)System.Math.Max(1, NightsEdgeTuning.BlastTicks);
             Lighting.AddLight(Projectile.Center, 0.9f * fade, 0.3f * fade, 1.6f * fade);

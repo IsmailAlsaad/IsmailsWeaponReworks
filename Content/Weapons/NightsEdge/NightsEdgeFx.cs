@@ -262,17 +262,46 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
             if (Main.dedServ)
                 return;
             SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.7f, Pitch = -0.2f + 0.25f * beat }, point);
+            // THE FLASH: a bright core of metaballs at the enemy that is bigger with every beat, and a burst of embers.
+            float flashSize = NightsEdgeTuning.ImpaleFlashSize * (float)Math.Pow(1f + Math.Max(0f, NightsEdgeTuning.ImpaleFlashGrowth), beat);
+            MetaballLayer flash = MetaballLayers.Of<NightsEdgeBurstStyle>();
+            for (int i = 0; i < 3 + beat; i++)
+                flash.Spawn(point + Main.rand.NextVector2Circular(3f, 3f), Main.rand.NextVector2Circular(0.6f, 0.6f), Main.rand.Next(8, 13), flashSize * Main.rand.NextFloat(0.7f, 1.1f));
+            Lighting.AddLight(point, 1.2f + 0.4f * beat, 0.4f + 0.1f * beat, 2f);
             int count = 12 + 6 * beat;
             for (int i = 0; i < count; i++)
                 Mote(point, (MathHelper.TwoPi * i / count).ToRotationVector2() * (4f + beat), 1.4f + 0.2f * beat, i % 2 == 0 ? DustID.PurpleTorch : DustID.Shadowflame);
         }
 
-        // The enemy is let go and the explosion goes off (the blast projectile plays its own burst): a deep sound and a few motes.
+        // Every tick of the hold: dark energy flows from the enemy into the blade, more of it as the hold goes on (and every beat).
+        public static void ImpaleStream(Vector2 enemy, Vector2 bladeFrom, Vector2 bladeTo, float progress, int beat)
+        {
+            if (Main.dedServ)
+                return;
+            float rate = MathHelper.Lerp(NightsEdgeTuning.ImpaleStreamRateMin, NightsEdgeTuning.ImpaleStreamRateMax, progress);
+            int count = (int)rate;
+            if (Main.rand.NextFloat() < rate - count)
+                count++;
+            float ticks = Math.Max(2f, NightsEdgeTuning.ImpaleStreamTicks);
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 start = enemy + Main.rand.NextVector2Circular(14f, 14f);
+                Vector2 target = Vector2.Lerp(bladeFrom, bladeTo, Main.rand.NextFloat());
+                Mote(start, (target - start) / ticks, Main.rand.NextFloat(1f, 1.4f + 0.5f * progress), Main.rand.NextBool(3) ? DustID.Shadowflame : DustID.PurpleTorch);
+            }
+            Lighting.AddLight(Vector2.Lerp(bladeFrom, bladeTo, 0.5f), 0.4f + 0.5f * progress, 0.15f + 0.1f * progress, 0.8f + 0.7f * progress);
+        }
+
+        // The enemy is let go and the explosion goes off (the blast projectile plays its own burst, bigger than a charged hit's): a deep sound, two rings and a few motes.
         public static void ImpaleFinish(Vector2 point)
         {
             if (Main.dedServ)
                 return;
             SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.5f, Pitch = -0.3f }, point);
+            SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.8f, Pitch = -0.5f }, point);
+            for (int ring = 0; ring < 2; ring++)
+                for (int i = 0; i < 28; i++)
+                    Mote(point, (MathHelper.TwoPi * i / 28f).ToRotationVector2() * (7f + 5f * ring), 1.8f + 0.4f * ring, i % 2 == 0 ? DustID.PurpleTorch : DustID.Shadowflame);
             for (int i = 0; i < 10; i++)
                 Mote(point, Main.rand.NextVector2Unit() * Main.rand.NextFloat(2f, 6f), Main.rand.NextFloat(1.2f, 1.8f), i % 2 == 0 ? DustID.Shadowflame : DustID.PurpleTorch);
         }

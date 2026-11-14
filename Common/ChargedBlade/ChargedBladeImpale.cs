@@ -35,6 +35,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         protected virtual void FxImpalePierce(Vector2 point, Vector2 direction, bool caught) { }
         protected virtual void FxImpaleBeat(Vector2 point, int beat) { }
         protected virtual void FxImpaleFinish(Vector2 point) { }
+        /// <summary>Every machine, every tick of the hold: 'enemy' is where the impaled enemy is, 'bladeFrom' and 'bladeTo' the stretch of blade it feeds, 'progress' 0..1 over the whole hold, 'beat' the beats finished so far.</summary>
+        protected virtual void FxImpaleHold(Vector2 enemy, Vector2 bladeFrom, Vector2 bladeTo, float progress, int beat) { }
         /// <summary>Owner's client, at the finisher (the enemy has been released): spawn the explosion. The charge is given right after.</summary>
         protected virtual void OnImpaleFinish(Player owner, Vector2 point) { }
 
@@ -418,10 +420,12 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             Vector2 position = CarriedNPC.ClampToOpenAir(owner.Center, Vector2.Lerp(impFrom, anchor, seat), npc);
             CarriedNPC.Hold(npc, position);
             impLastAnchor = position;
-            stabShake = Main.rand.NextVector2Circular(1f, 1f) * t.ImpaleShake;
-
             int beatLen = Math.Max(1, t.ImpaleBeatTicks);
             int beats = Math.Max(1, t.ImpaleBeats);
+            // The trembling rises with the hold: ImpaleShake at the start, ImpaleShakeGrowth times as much at the end of the last beat.
+            float holdProgress = MathHelper.Clamp(impHoldTick / (float)(beats * beatLen), 0f, 1f);
+            stabShake = Main.rand.NextVector2Circular(1f, 1f) * t.ImpaleShake * MathHelper.Lerp(1f, Math.Max(0f, t.ImpaleShakeGrowth), holdProgress);
+            FxImpaleHold(position, Projectile.Center + direction * (TotalLength * 0.3f + impReach), Projectile.Center + direction * (TotalLength * 0.95f + impReach), holdProgress, impBeatsDone);
             if (impBeatsDone < beats && impHoldTick == (impBeatsDone + 1) * beatLen - 1)
             {
                 int beat = impBeatsDone;

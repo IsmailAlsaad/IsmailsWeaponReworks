@@ -20,6 +20,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         bool tried;
 
         public int Count => points.Length;
+        public Vector2 Size => size;
+        public bool Reported;   // the debug message was shown once
 
         public void EnsureLoaded()
         {
@@ -78,6 +80,51 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
                 return pose.ToWorld(mask.SpritePixel(index, pose.SpriteSize));
             float t = NightsEdgeTuning.FallbackStart + (1f - NightsEdgeTuning.FallbackStart) * (index + 0.5f) / Math.Max(1, total);
             return pose.Hand + pose.Direction * (Vector2.Distance(pose.Hand, pose.Tip) * t);
+        }
+
+        // Debug (NightsEdgeTuning.ShowMaskDebug): every mask pixel as a magenta dot on the blade, drawn in front of everything of the blade.
+        public static void DrawMaskDebug(ChargedBladePose pose, NightsEdgeMask mask)
+        {
+            if (Main.dedServ || pose.SpriteSize.X < 1f)
+                return;
+            mask.EnsureLoaded();
+            if (!mask.Reported)
+            {
+                mask.Reported = true;
+                Main.NewText("Night's Edge mask: " + mask.Count + " pixels, mask canvas " + mask.Size.X + "x" + mask.Size.Y + ", sword sprite " + pose.SpriteSize.X + "x" + pose.SpriteSize.Y, 255, 120, 255);
+            }
+            Texture2D pixel = Terraria.GameContent.TextureAssets.MagicPixel.Value;
+            for (int i = 0; i < mask.Count; i++)
+                Main.EntitySpriteDraw(pixel, pose.ToWorld(mask.SpritePixel(i, pose.SpriteSize)) - Main.screenPosition, new Rectangle(0, 0, 1, 1), Color.Magenta, 0f, new Vector2(0.5f), 2f, SpriteEffects.None, 0);
+        }
+
+        // The jump to full charge after an impale: a front of dark flames and embers runs up the blade from the hilt to the tip. 'progress' goes 0 to 1.
+        public static void FillSweep(ChargedBladePose pose, NightsEdgeMask mask, float progress)
+        {
+            if (Main.dedServ || pose.SpriteSize.X < 1f)
+                return;
+            mask.EnsureLoaded();
+            float length = Math.Max(1f, Vector2.Distance(pose.Hand, pose.Tip));
+            MetaballLayer flames = MetaballLayers.Of<NightsEdgeFlameStyle>();
+            MetaballLayer edge = MetaballLayers.Of<NightsEdgeEdgeStyle>();
+            int total = mask.Count > 0 ? mask.Count : 24;
+            int spawned = 0;
+            for (int i = 0; i < total && spawned < 14; i++)
+            {
+                Vector2 position = EdgePoint(pose, mask, i, total);
+                float along = Vector2.Dot(position - pose.Hand, pose.Direction) / length;   // 0 at the hand, 1 at the tip
+                if (Math.Abs(along - progress) > 0.09f || Main.rand.NextBool(3))
+                    continue;
+                spawned++;
+                Vector2 velocity = new Vector2(Main.rand.NextFloat(-0.6f, 0.6f), -Main.rand.NextFloat(1f, 2.4f));
+                flames.Spawn(position, velocity, Main.rand.Next(NightsEdgeTuning.FlameLifeMin, NightsEdgeTuning.FlameLifeMax + 1), NightsEdgeTuning.FlameSize * pose.Scale * Main.rand.NextFloat(1.1f, 1.7f));
+                if (Main.rand.NextBool(2))
+                    NightsEdgeFx.Ember(position, Vector2.Zero);
+            }
+            Vector2 front = Vector2.Lerp(pose.Hand, pose.Tip, MathHelper.Clamp(progress, 0f, 1f));
+            Lighting.AddLight(front, 0.9f, 0.3f, 1.5f);
+            if (progress > 0.02f)
+                edge.AddBlob(front, NightsEdgeTuning.EdgeRadius * pose.Scale * 2.2f, 1f);
         }
 
         public static void Feed(ChargedBladePose pose, NightsEdgeMask mask, NightsEdgeFlameState state)

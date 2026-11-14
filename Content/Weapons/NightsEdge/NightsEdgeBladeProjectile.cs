@@ -70,13 +70,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         protected override void FxImpaleWindup(Vector2 hand) { NightsEdgeFx.ImpaleWindup(hand); }
         protected override void FxImpalePierce(Vector2 point, Vector2 direction, bool caught) { NightsEdgeFx.ImpalePierce(point, direction, caught); }
         protected override void FxImpaleBeat(Vector2 point, int beat) { NightsEdgeFx.ImpaleBeat(point, beat); }
-        protected override void FxImpaleFinish(Vector2 point) { NightsEdgeFx.ImpaleFinish(point); }
+        protected override void FxImpaleHold(Vector2 enemy, Vector2 bladeFrom, Vector2 bladeTo, float progress, int beat) { NightsEdgeFx.ImpaleStream(enemy, bladeFrom, bladeTo, progress, beat); }
+        protected override void FxImpaleFinish(Vector2 point)
+        {
+            NightsEdgeFx.ImpaleFinish(point);
+            fillSweepTick = Math.Max(1, NightsEdgeTuning.ImpaleFillSweepTicks);   // every machine: the front of flames runs up the blade
+        }
+
+        int fillSweepTick;   // visual only: ticks left of the flame front that runs up the blade after the finisher
 
         // Owner's client, at the finisher: the dark flame explosion on the impaled enemy (patch 6b makes it bigger and nicer). Spawned by the owner, so it syncs.
         protected override void OnImpaleFinish(Player owner, Vector2 point)
         {
             int damage = (int)(Projectile.damage * NightsEdgeTuning.ImpaleFinishDamageMultiplier);
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), point, Vector2.Zero, ModContent.ProjectileType<NightsEdgeBlastProjectile>(), damage, 0f, Projectile.owner);
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), point, Vector2.Zero, ModContent.ProjectileType<NightsEdgeBlastProjectile>(), damage, 0f, Projectile.owner, NightsEdgeTuning.ImpaleFinishSize); // ai[0] = size multiplier
         }
 
         // THE SWING SLOWS DOWN WITH THE CHARGE (the Volcano's pattern): fastest when empty, slowest when full. The Shadow Armor makes it fast again.
@@ -140,6 +147,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
                     SpawnWave(Main.player[Projectile.owner].MountedCenter, waveDirection);
                 }
             }
+            if (fillSweepTick > 0)
+            {
+                float total = Math.Max(1, NightsEdgeTuning.ImpaleFillSweepTicks);
+                NightsEdgeFlames.FillSweep(pose, mask, 1f - (fillSweepTick - 0.5f) / total);
+                fillSweepTick--;
+            }
             NightsEdgeFlames.Feed(pose, mask, flameState);
         }
 
@@ -147,6 +160,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.NightsEdge
         protected override void DrawAfterBlade(ChargedBladePose pose)
         {
             NightsEdgeFx.DrawLayers();
+            if (NightsEdgeTuning.ShowMaskDebug)
+                NightsEdgeFlames.DrawMaskDebug(pose, mask);
         }
 
         // Owner's client. A true melee hit WHILE THE SHADOW ARMOR IS ON (a full charge alone is not enough any more): the enemy bursts into a dark
