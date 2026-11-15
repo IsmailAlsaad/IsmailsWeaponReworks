@@ -15,6 +15,7 @@ namespace IsmailsWeaponReworks.Common.Rework
         public override ConfigScope Mode => ConfigScope.ServerSide;
 
         [ReloadRequired]
+        [CustomModConfigItem(typeof(ReworkGridElement))]
         public List<ItemDefinition> DisabledReworks = new List<ItemDefinition>();
     }
 }

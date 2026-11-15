@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-15 | 353 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-15 | 355 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -53,6 +53,7 @@ tModLoader/other bases -> project types:
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
 - ModSystem (4): DetachedTrails, MetaballLayers, ReworkRegistry, YoyoRegistry
 - ModBuff (2): LightsBaneImbueBuff, NightsEdgeShadowArmorBuff
+- ConfigElement (1): ReworkGridElement
 - Mod (1): IsmailsWeaponReworks
 - ModConfig (1): ReworksToggleConfig
 - PlayerDrawLayer (1): BladeOfGrassSwordLayer
@@ -277,13 +278,19 @@ tModLoader/other bases -> project types:
     +ChargeTicks(int)[v] +MinReach:float[v] +MaxReach:float[v] +EllipseWidthRatio:float[v] +ThrowSpeed(int)[v] +ReleaseBlendTicks:int[v] +MinHalfTicks:int[v] +TierDamageMultiplier(int)[v] +HitCooldownTicks:int[v] +SpinWhooshAngle:float[v] +SpinHitPeriodFraction:float[v] +SpinDamageMultiplier(int)[v] +HeadSize:float[v] +SpinRadiusMin:float[v] +SpinRadiusMax:float[v] +SpinRadiusSmoothing:float[v] +SpinOmegaStart(int)[v] +SpinOmegaEnd(int)[v] +SpecialMinReach:float[v] +SpecialMaxReach:float[v] +SpecialPathDamageMultiplier:float[v] +SpecialHangTicks:int[v] +RetractSpeed:float[v] +CatchDistance:float[v] +FailRetractSpeed:float[v] +PixelSize:float[v] +TrailLifeTicks:int[v] +TrailWidth(int)[v] +TrailJitter:float[v] +AfterimageTicks:int[v] +FlashTicks:int[v] +GlowColor(int)[ab] +HotColor(int)[ab] +TintLight(Vector3)[v] +ChainName:string[ab] #Pick<T>(int,T,T,T)[s]
 
 ### Common/Rework/
+**ReworkGridElement.cs** uses: ReworkGridTuning, ReworkRegistry
+  class ReworkGridElement : ConfigElement<List<ItemDefinition>>
+    +OnBind()[ov] +LeftClick(UIMouseEvent)[ov] +ScrollWheel(UIScrollWheelEvent)[ov] #DrawSelf(SpriteBatch)[ov]
+**ReworkGridTuning.cs**
+  static class ReworkGridTuning
+    +CellSize:int[s] +CellGap:int[s] +VisibleRows:int[s] +HeaderHeight:int[s] +EdgePadding:int[s] +ScrollbarSpace:int[s] +BottomPadding:int[s] +IconPadding:int[s] +InactiveIconAlpha:float[s] +HoverBrighten:float[s] +ActiveCell:Color[s] +InactiveCell:Color[s] +FallbackCross:Color[s]
 **ReworkRegistry.cs** uses: ReworksToggleConfig
   class ReworkRegistry : ModSystem
     +ItemTypes:HashSet<int> +Add(int) +IsDisabled(int) +PostSetupContent()[ov]
 **ReworkToggle.cs** uses: ReworkRegistry
   static class ReworkToggle
     +Applies(int,bool)[s] +IsActive(int)[s] +Holds(Player,int)[s]
-**ReworksToggleConfig.cs** uses: Mode
+**ReworksToggleConfig.cs** uses: Mode, ReworkGridElement
   class ReworksToggleConfig : ModConfig
     +Mode:ConfigScope[ov] +DisabledReworks:List<ItemDefinition>
 

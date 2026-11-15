@@ -92,8 +92,10 @@ Projectiles: {
 
 Configs: {
 	ReworksToggleConfig.DisplayName: Reworks toggle config
-	ReworksToggleConfig.DisabledReworks.Label: Switched-off reworks
-	ReworksToggleConfig.DisabledReworks.Tooltip: Items in this list use their normal vanilla behavior. Everything else is reworked. Changes need a reload.
+	ReworksToggleConfig.DisabledReworks.Label: Reworks
+	ReworksToggleConfig.DisabledReworks.Tooltip: Click a weapon to switch its rework on or off. A crossed-out weapon uses its normal vanilla behavior. Save, then reload for the change to take effect.
+	ReworksToggleConfig.Active: Active
+	ReworksToggleConfig.Inactive: Inactive
 }
 
 Buffs: {
