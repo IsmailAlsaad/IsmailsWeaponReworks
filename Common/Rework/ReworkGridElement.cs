@@ -624,7 +624,7 @@ namespace IsmailsWeaponReworks.Common.Rework
             {
                 int inset = ReworkGridTuning.HeaderBackgroundInset;
                 Rectangle band = new Rectangle(hit.X + inset, hit.Y, hit.Width - 2 * inset, hit.Height);
-                spriteBatch.Draw(TextureAssets.MagicPixel.Value, band, baseColor * ReworkGridTuning.HeaderBackgroundAlpha);
+                spriteBatch.Draw(TextureAssets.MagicPixel.Value, band, ReworkGridTuning.HeaderBackgroundColor * ReworkGridTuning.HeaderBackgroundAlpha);
             }
             int rowHeight = ReworkGridTuning.CellSize + ReworkGridTuning.CellGap;
             int x = (int)dims.X + ReworkGridTuning.EdgePadding + line.Level * ReworkGridTuning.HeaderIndent;
@@ -636,14 +636,29 @@ namespace IsmailsWeaponReworks.Common.Rework
             // The triangle: one pixel row (down) or column (right) at a time.
             Texture2D pixel = TextureAssets.MagicPixel.Value;
             int size = ReworkGridTuning.TriangleSize(line.Level);
-            for (int i = 0; i < size; i++)
+            void DrawTriangle(int offsetX, int offsetY, Color tint)
             {
-                int half = size - i;
-                if (line.Collapsed)
-                    spriteBatch.Draw(pixel, new Rectangle(triangleCenter.X - size / 2 + i, triangleCenter.Y - half + 1, 1, 2 * half - 1), color);
-                else
-                    spriteBatch.Draw(pixel, new Rectangle(triangleCenter.X - half + 1, triangleCenter.Y - size / 2 + i, 2 * half - 1, 1), color);
+                for (int i = 0; i < size; i++)
+                {
+                    int half = size - i;
+                    if (line.Collapsed)
+                        spriteBatch.Draw(pixel, new Rectangle(triangleCenter.X - size / 2 + i + offsetX, triangleCenter.Y - half + 1 + offsetY, 1, 2 * half - 1), tint);
+                    else
+                        spriteBatch.Draw(pixel, new Rectangle(triangleCenter.X - half + 1 + offsetX, triangleCenter.Y - size / 2 + i + offsetY, 2 * half - 1, 1), tint);
+                }
             }
+
+            // The outline first (the triangle shifted in every direction), then the fill on top.
+            int outline = ReworkGridTuning.TriangleOutline;
+            for (int dx = -outline; dx <= outline; dx++)
+            {
+                for (int dy = -outline; dy <= outline; dy++)
+                {
+                    if (dx != 0 || dy != 0)
+                        DrawTriangle(dx, dy, ReworkGridTuning.TriangleOutlineColor);
+                }
+            }
+            DrawTriangle(0, 0, color);
 
             int lineRight = (int)(dims.X + dims.Width) - ReworkGridTuning.EdgePadding - ReworkGridTuning.ScrollbarSpace + ReworkGridTuning.CellGap;
             spriteBatch.Draw(pixel, new Rectangle(x, y + ReworkGridTuning.CellSize - 1, Math.Max(0, lineRight - x), 1), Color.White * ReworkGridTuning.HeaderLineAlpha(line.Level));

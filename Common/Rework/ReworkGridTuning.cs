@@ -35,6 +35,8 @@ namespace IsmailsWeaponReworks.Common.Rework
         public static int HeaderTextOffsetY => 4;      // moves the header text DOWN this many pixels (negative = up)
         public static float HeaderScale(int level) => level == 0 ? 1.15f : level == 1 ? 0.95f : 0.8f;
         public static int TriangleSize(int level) => 7 - level; // the collapse triangle next to a header name
+        public static int TriangleOutline => 1;                  // outline thickness of that triangle in pixels (0 = no outline)
+        public static Color TriangleOutlineColor => Color.Black;
         public static float HeaderLineAlpha(int level) => level == 0 ? 0.6f : level == 1 ? 0.4f : 0.25f; // the thin line under a header
 
         // --- Order of the sections (folder names; anything not listed comes after the listed ones, alphabetically) ---
@@ -57,7 +59,8 @@ namespace IsmailsWeaponReworks.Common.Rework
         public static Color InactiveColor => new Color(255, 85, 85);     // red text: "Inactive" in the filter button, "Disable all"
         public static Color MeleeColor => new Color(230, 50, 50);        // the Melee header (a class without a color here stays white)
         public static Color SubHeaderTint => new Color(255, 225, 235);   // pinkish white: the lower header levels lerp toward it
-        public static float HeaderBackgroundAlpha => 0.22f;              // the band behind a hovered header: the header's color times this
+        public static Color HeaderBackgroundColor => Color.Lerp(HeaderHoverColor, Color.White, 0.5f); // whitish version of the yellow the text turns on hover
+        public static float HeaderBackgroundAlpha => 0.22f;              // the band behind a hovered header: HeaderBackgroundColor times this
         public static int HeaderBackgroundInset => 2;                    // the band stops this many pixels short of the panel's left and right edge
         public static Color ClassColor(string className) => className == "Melee" ? MeleeColor : Color.White;
         public static float SubHeaderLerp(int level) => level == 0 ? 0f : level == 1 ? 0.45f : 0.8f; // how far each level lerps toward SubHeaderTint
