@@ -31,7 +31,7 @@ namespace IsmailsWeaponReworks.Common.Rework
         public static int ButtonTextOffsetY => 4;      // moves the text of the buttons and the search box DOWN this many pixels (negative = up)
 
         // --- Section headers (class, progression, subclass) ---
-        public static int HeaderIndent => 14;          // every header level is indented this much more than the one above
+        public static int HeaderIndent => 0;          // every header level is indented this much more than the one above
         public static int HeaderTextOffsetY => 4;      // moves the header text DOWN this many pixels (negative = up)
         public static float HeaderScale(int level) => level == 0 ? 1.15f : level == 1 ? 0.95f : 0.8f;
         public static int TriangleSize(int level) => 7 - level; // the collapse triangle next to a header name
