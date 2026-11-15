@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-14 | 350 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-15 | 350 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -282,26 +282,165 @@ tModLoader/other bases -> project types:
   class NightsEdgeShadowArmorBuff : ModBuff
     +Texture:string[ov] +Update(Player,ref int)[ov]
 
-### Content/Weapons/BallOHurt/
-**BallOHurtBallProjectile.cs** uses: AfterimageTrail, BallOHurtFx, BallOHurtTuning, DetachedTrails, FlailTrailStyle, PixelTrail, RemoteHitTracker, Snarable
-  class BallOHurtBallProjectile : ModProjectile
-    +Texture:string[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +MakeRoom(int,int)[s] +Colliding(Rectangle,Rectangle)[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-    enum Stage
-      {Free, Hop, Return}
-**BallOHurtFlailProjectile.cs** uses: BallOHurtBallProjectile, BallOHurtFx, BallOHurtTuning, FlailFx, FlailProjectile, FlailTuning, Phase
-  class BallOHurtFlailProjectile : FlailProjectile
-    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #HeadHidden:bool[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov]
-**BallOHurtFx.cs** uses: FlailFx
-  class BallOHurtFx : FlailFx
-    +Instance:BallOHurtFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +Detach(Vector2,Vector2) +TileBounce(Vector2) +Hop(Vector2,int) +Recall(Vector2)
-**BallOHurtGlobalItem.cs** uses: BallOHurtFlailProjectile, FlailGlobalItem
-  class BallOHurtGlobalItem : FlailGlobalItem
-    #ItemType:int[ov] #ProjectileType:int[ov]
-**BallOHurtTuning.cs** uses: FlailTuning
-  class BallOHurtTuning : FlailTuning
-    +Instance:BallOHurtTuning[s] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +AfterimageTicks:int[ov] +TrailLifeTicks:int[ov] +MinReach:float[ov] +MaxReach:float[ov] +SpecialSpeed:float +BallSpeed:float +BallDamageMultiplier:float +BallHitCooldownTicks:int +BallBoxPx:float +FreeMaxTicks:int +ResyncTicks:int +MaxBalls:int +BallReturnSpeed:float +MaxHops:int +HopRangePx:float +ArriveRadiusPx:float +ReboundPx:float +HopMaxTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
+### Content/Weapons/Melee/PreHardmode/Boomerangs/EnchantedBoomerang/
+**EnchantedBoomerangBase.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, EnchantedBoomerangFx, EnchantedBoomerangTuning, EtherealBoomerangProjectile, RemoteHitTracker, StardustBurstProjectile
+  abstract class EnchantedBoomerangBase : ModProjectile
+    +Texture:string[ov] #Ethereal:bool[ab] +Load()[ov] +Unload()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Outbound, Returning, Bounced}
+**EnchantedBoomerangFx.cs**
+  static class EnchantedBoomerangFx
+    +FlightDust(Vector2,Vector2,bool)[s] +HitSparks(Vector2,bool)[s] +Catch(Vector2,bool)[s] +BounceSparks(Vector2)[s] +Burst(Vector2,float)[s]
+**EnchantedBoomerangGlobalItem.cs** uses: EnchantedBoomerangProjectile, EnchantedBoomerangTuning, EtherealBoomerangProjectile
+  class EnchantedBoomerangGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**EnchantedBoomerangProjectile.cs** uses: EnchantedBoomerangBase
+  class EnchantedBoomerangProjectile : EnchantedBoomerangBase
+    #Ethereal:bool[ov]
+**EnchantedBoomerangTuning.cs**
+  static class EnchantedBoomerangTuning
+    +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +SpinSpeed:float[s] +CollideRadius:float[s] +BounceSpeed:float[s] +BurstRadius:float[s] +BurstDamageMultiplier:float[s] +BurstLifeTicks:int[s] +NormalColor:Color[s] +EtherealColor:Color[s] +EtherealOpacity:float[s] +PixelSize:float[s]
+**EtherealBoomerangProjectile.cs** uses: EnchantedBoomerangBase
+  class EtherealBoomerangProjectile : EnchantedBoomerangBase
+    #Ethereal:bool[ov]
+**StardustBurstProjectile.cs** uses: EnchantedBoomerangFx, EnchantedBoomerangTuning, IceFx, RemoteHitTracker
+  class StardustBurstProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
 
-### Content/Weapons/BeeKeeper/
+### Content/Weapons/Melee/PreHardmode/Boomerangs/Flamerang/
+**FlamerangBlastProjectile.cs** uses: FlamerangBurn, FlamerangFx, FlamerangTuning, IceFx, RemoteHitTracker
+  class FlamerangBlastProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**FlamerangFx.cs** uses: FlamerangTuning
+  static class FlamerangFx
+    +FlightDust(Vector2,Vector2,float)[s] +Gather(Vector2,float)[s] +HitSparks(Vector2)[s] +Catch(Vector2)[s] +Blast(Vector2,float)[s] +MoltenBorn(Vector2,Vector2)[s] +TrailEmber(Vector2)[s] +ShardLand(Vector2)[s] +ShardShatter(Vector2)[s] +ShardGlow(Vector2,float)[s]
+**FlamerangGlobalItem.cs** uses: FlamerangProjectile, FlamerangTuning
+  class FlamerangGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**FlamerangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, FlamerangBlastProjectile, FlamerangFx, FlamerangTuning, MoltenBoomerangProjectile, ObsidianShardProjectile, RemoteHitTracker
+  class FlamerangProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Outbound, Settling, Spent}
+**FlamerangTuning.cs**
+  static class FlamerangTuning
+    +ThrowSpeed:float[s] +MinThrowRange:float[s] +MaxThrowRange:float[s] +SettleTicks:int[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +FlightMaxTicks:int[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastLifeTicks:int[s] +MoltenDamageMultiplier:float[s] +MoltenArcSpeed:float[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +MoltenHitCooldownTicks:int[s] +SpinSpeed:float[s] +TrailLifeTicks:int[s] +TrailRadius:float[s] +BurnCheckInterval:int[s] +BurnTicks:int[s] +BurnRefreshBelowTicks:int[s] +TrailWidth:float[s] +TrailJitter:float[s] +TrailBurnFade:float[s] +ShardCount:int[s] +ShardDamageMultiplier:float[s] +ShardMinSpeed:float[s] +ShardMaxSpeed:float[s] +ShardSpreadDeg:float[s] +ShardGravity:float[s] +ShardMaxFallSpeed:float[s] +ShardLingerTicks:int[s] +ShardMaxHits:int[s] +ShardMaxAlive:int[s] +ShardCoolTicks:int[s] +ShardHitCooldownTicks:int[s] +PixelSize:float[s] +HotColor:Color[s] +FireColor:Color[s] +EmberColor:Color[s] +ObsidianColor:Color[s]
+  static class FlamerangBurn
+    +Apply(NPC)[s]
+**MoltenBoomerangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, FlamerangBurn, FlamerangFx, FlamerangTuning, MoltenTrailStyle, PixelTrail, RemoteHitTracker
+  class MoltenBoomerangProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnKill(int)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +PreDraw(ref Color)[ov]
+**MoltenTrail.cs** uses: FlamerangBurn, FlamerangFx, FlamerangTuning, PixelTrail, PixelTrailStyle
+  class MoltenTrailStyle : PixelTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov] +Update(PixelTrail)[ov] +Create(bool)[s]
+**ObsidianShardProjectile.cs** uses: FlamerangFx, FlamerangTuning, RemoteHitTracker
+  class ObsidianShardProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +Break() +MakeRoom(int,int)[s] +CanHitNPC(NPC)[ov] +OnKill(int)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+
+### Content/Weapons/Melee/PreHardmode/Boomerangs/IceBoomerang/
+**IceBoomerangFx.cs** uses: IceFx
+  static class IceBoomerangFx
+    +Burst(Vector2,int,float,float)[s] +Ring(Vector2,int,float,float)[s] +Gather(Vector2,float)[s] +PlayFormed(Vector2)[s] +PlayBlast(Vector2,int)[s] +PlayCatch(Vector2)[s] +PlayShatter(Vector2)[s]
+**IceBoomerangGlobalItem.cs** uses: IceBoomerangProjectile, IceBoomerangTuning
+  class IceBoomerangGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**IceBoomerangProjectile.cs** uses: AfterimageTrail, DetachedTrails, IceBoomerangFx, IceBoomerangTuning, IceCrystalBlastProjectile, IceCrystalProjectile, RemoteHitTracker
+  class IceBoomerangProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Outbound, Settling, Chain, Returning, Spent}
+**IceBoomerangTuning.cs**
+  static class IceBoomerangTuning
+    +ThrowSpeed:float[s] +MinThrowRange:float[s] +MaxThrowRange:float[s] +SettleTicks:int[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ChainSpeedGainPerLevel:float[s] +ChainMaxSpeed:float[s] +ChainMaxTargetDistance:float[s] +DamageGainPerLevel:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastLifeTicks:int[s] +BlastFlashTicks:int[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +MaxCrystals:int[s] +CrystalLifeTicks:int[s] +CrystalPopTicks:int[s] +ExpiryWarnTicks:int[s] +CrystalSheetFrames:int[s] +CrystalBounceLifeLossTicks:int[s] +HaloIntervalTicks:int[s] +HaloLifeTicks:int[s] +HaloMaxScale:float[s] +HaloAlpha:float[s] +ChillTicks:int[s] +ChillRefreshBelowTicks:int[s] +ChillCheckInterval:int[s]
+  static class IceBoomerangChill
+    +Apply(NPC)[s]
+**IceCrystalBlastProjectile.cs** uses: IceBoomerangChill, IceBoomerangFx, IceBoomerangTuning, IceCrystalProjectile, RemoteHitTracker
+  class IceCrystalBlastProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**IceCrystalProjectile.cs** uses: IceBoomerangChill, IceBoomerangFx, IceBoomerangTuning
+  class IceCrystalProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +RandomFrame()[s] +RegisterBounce(Projectile)[s] +EvictForNewCrystal(int)[s] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+
+### Content/Weapons/Melee/PreHardmode/Boomerangs/Shroomerang/
+**ShroomerangBurstProjectile.cs** uses: IceFx, RemoteHitTracker, ShroomerangFx, ShroomerangTuning
+  class ShroomerangBurstProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**ShroomerangFx.cs** uses: ShroomerangTuning
+  static class ShroomerangFx
+    +FlightDust(Vector2,Vector2)[s] +SporePuff(Vector2,int,float,float)[s] +HitSparks(Vector2)[s] +SporeRing(Vector2,int,float,float)[s] +SporeCloud(Vector2,float,int)[s] +Trail(Vector2,Vector2,float)[s] +Catch(Vector2)[s] +PlayPop(Vector2)[s] +CloudPuff(Vector2,float)[s] +PlayPuff(Vector2)[s]
+**ShroomerangGlobalItem.cs** uses: ShroomerangProjectile, ShroomerangTuning
+  class ShroomerangGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**ShroomerangMushroomProjectile.cs** uses: ShroomerangBurstProjectile, ShroomerangFx, ShroomerangTuning
+  class ShroomerangMushroomProjectile : ModProjectile
+    +Texture:string[ov] +EvictForNewMushroom(int)[s] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**ShroomerangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, RemoteHitTracker, ShroomerangFx, ShroomerangMushroomProjectile, ShroomerangTuning
+  class ShroomerangProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Outbound, Returning}
+**ShroomerangTuning.cs**
+  static class ShroomerangTuning
+    +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +SpinSpeed:float[s] +AfterimageTicks:int[s] +FirstSpawnDelayTicks:int[s] +SpawnIntervalTicks:int[s] +MaxMushrooms:int[s] +MushroomLifeTicks:int[s] +PopTicks:int[s] +WarnTicks:int[s] +InheritVelocity:float[s] +ScatterSpeed:float[s] +Drag:float[s] +MushroomSpinSpeed:float[s] +ArmTicks:int[s] +TriggerPadding:float[s] +TriggerCheckInterval:int[s] +BurstRadius:float[s] +BurstDamageMultiplier:float[s] +BurstLifeTicks:int[s] +GlowColor:Color[s] +CloudColor:Color[s]
+
+### Content/Weapons/Melee/PreHardmode/Boomerangs/ThornChakram/
+**ThornChakramFx.cs** uses: ThornChakramTuning
+  static class ThornChakramFx
+    +Puff(Vector2,int,float,float)[s] +HitSparks(Vector2)[s] +Ring(Vector2,int,float,float)[s] +Trail(Vector2,Vector2,float)[s] +Shred(Vector2,int)[s] +Catch(Vector2)[s] +PlayBurst(Vector2)[s] +PlayLatch(Vector2)[s] +PlayShred(Vector2,float)[s] +PlayExplosion(Vector2)[s]
+**ThornChakramGlobalItem.cs** uses: ThornChakramProjectile, ThornChakramTuning
+  class ThornChakramGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**ThornChakramProjectile.cs** uses: AfterimageTrail, BoomerangFlight, Contact, DetachedTrails, RemoteHitTracker, ThornChakramFx, ThornChakramStingerProjectile, ThornChakramTuning
+  class ThornChakramProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Outbound, Returning, Latched, Spent}
+**ThornChakramStingerProjectile.cs** uses: ThornChakramFx, ThornChakramTuning
+  class ThornChakramStingerProjectile : ModProjectile
+    +Texture:string[ov] +AI()[ov] +CanHitNPC(NPC)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov]
+**ThornChakramTuning.cs**
+  static class ThornChakramTuning
+    +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +SpinSpeed:float[s] +BurstFirstDelayTicks:int[s] +BurstIntervalTicks:int[s] +BurstCount:int[s] +BurstRadius:float[s] +BurstSpeed:float[s] +BurstStingerLifeTicks:int[s] +BurstDamageMultiplier:float[s] +LatchTicks:int[s] +LatchOffset:float[s] +ShredIntervalTicks:int[s] +ShredDamageMultiplier:float[s] +LatchSpinMaxMultiplier:float[s] +ExplosionCount:int[s] +ExplosionSpeed:float[s] +ExplosionStingerLifeTicks:int[s] +ExplosionDamageMultiplier:float[s] +ExplosionHitCooldownTicks:int[s] +ExplosionSecondDelayTicks:int[s] +AfterimageTicks:int[s] +GlowColor:Color[s] +StingerSpriteRotationOffset:float[s] +StingerSpriteId:int[s] +LeafDust:int[s] +PoisonDust:int[s] +BloodDust:int[s]
+
+### Content/Weapons/Melee/PreHardmode/Boomerangs/Trimarang/
+**TrimarangEtherealProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, RemoteHitTracker, TrimarangFx, TrimarangTuning
+  class TrimarangEtherealProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +BeginDying() +AI()[ov] +FindTarget(Vector2,int,Projectile)[s] +CanHitNPC(NPC)[ov] +CanDamage()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**TrimarangFx.cs**
+  static class TrimarangFx
+    +Spinning(Vector2,float,int)[s] +HitSparks(Vector2)[s] +Catch(Vector2)[s] +EtherealSpawn(Vector2,Vector2)[s] +EtherealTrail(Vector2,Vector2)[s] +EtherealExplode(Vector2)[s]
+**TrimarangGlobalItem.cs** uses: TrimarangProjectile, TrimarangTuning
+  class TrimarangGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**TrimarangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, RemoteHitTracker, TrimarangEtherealProjectile, TrimarangFx, TrimarangTuning
+  class TrimarangProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Outbound, Hold, Returning}
+**TrimarangTuning.cs**
+  static class TrimarangTuning
+    +ThrowSpeed:float[s] +HoldRange:float[s] +MinThrowSpeed:float[s] +StopSnapDistance:float[s] +LeashDistance:float[s] +FlightMaxTicks:int[s] +SteerTurn:float[s] +HoldSteerSpeed:float[s] +HoldSteerSmoothing:float[s] +HoldSteerDeadzone:float[s] +SteerSyncTicks:int[s] +SpinStart:float[s] +SpinCap:float[s] +SpinRampTicks:int[s] +HitCooldownSlow:int[s] +HitCooldownFast:int[s] +HitRadius:float[s] +HoldKnockbackMultiplier:float[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +HitsPerEthereal:int[s] +EtherealDamageMultiplier:float[s] +EtherealMaxAlive:int[s] +EtherealHitsToExplode:int[s] +EtherealLaunchSpeed:float[s] +EtherealLaunchTicks:int[s] +EtherealHomingSpeed:float[s] +EtherealTurn:float[s] +EtherealSearchRange:float[s] +EtherealRetargetTicks:int[s] +EtherealReturnAcceleration:float[s] +EtherealReturnDrag:float[s] +EtherealReturnMaxSpeed:float[s] +EtherealHitCooldownTicks:int[s] +EtherealLifeTicks:int[s] +GoldenAngleDeg:float[s] +MainColor:Color[s] +EtherealColor:Color[s] +EtherealOpacity:float[s]
+
+### Content/Weapons/Melee/PreHardmode/Boomerangs/WoodenBoomerang/
+**WoodenBoomerangFx.cs** uses: WoodenBoomerangTuning
+  static class WoodenBoomerangFx
+    +Splinters(Vector2,int,float,float)[s] +HitSparks(Vector2)[s] +Trail(Vector2,Vector2,float)[s] +Catch(Vector2)[s] +PlayShardBreak(Vector2)[s] +PlayBreak(Vector2)[s]
+**WoodenBoomerangGlobalItem.cs** uses: WoodenBoomerangProjectile, WoodenBoomerangTuning
+  class WoodenBoomerangGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**WoodenBoomerangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, WoodenBoomerangFx, WoodenBoomerangShardProjectile, WoodenBoomerangTuning
+  class WoodenBoomerangProjectile : ModProjectile
+    +Texture:string[ov] +Art()[s] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Outbound, Returning, Broken}
+**WoodenBoomerangShardProjectile.cs** uses: RemoteHitTracker, WoodenBoomerangFx, WoodenBoomerangProjectile, WoodenBoomerangTuning
+  class WoodenBoomerangShardProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**WoodenBoomerangTuning.cs**
+  static class WoodenBoomerangTuning
+    +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +SpinSpeed:float[s] +AfterimageTicks:int[s] +ShardDamageMultiplier:float[s] +ShardMaxHits:int[s] +ShardLifeTicks:int[s] +ShardHitCooldownTicks:int[s] +ShardSpeed:float[s] +ShardSpreadAngle:float[s] +ShardHop:float[s] +ShardGravity:float[s] +ShardMaxFallSpeed:float[s] +ShardDrag:float[s] +BreakOnTilesWhileReturning:bool[s] +GlowColor:Color[s] +WoodDust:int[s]
+
+### Content/Weapons/Melee/PreHardmode/Broadsword/BeeKeeper/
 **BeeKeeperBeeProjectile.cs** uses: BeeKeeperFx, BeeKeeperPlayer, BeeKeeperTuning
   enum BeeState
     {Idle, Leaving, Travel, Latched, Return}
@@ -336,7 +475,7 @@ tModLoader/other bases -> project types:
   static class BeeKeeperTuning
     +BladeLength:float[s] +SwordScale:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboTicks:int[s] +HitLengthScale:float[s] +HitWidth:float[s] +HitShake:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailOpacity:float[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +HoneyColor:Color[s] +DeepColor:Color[s] +MaxBig:int[s] +MaxSmall:int[s] +SpawnIntervalTicks:int[s] +LingerTicks:int[s] +LeaveTicks:int[s] +BigSize:int[s] +SmallSize:int[s] +BigScale:float[s] +SmallScale:float[s] +PopTicks:int[s] +FlapTicks:int[s] +ArtFrames:int[s] +VanillaBeeFacesRight:bool[s] +HoverHeight:float[s] +BigRadiusX:float[s] +SmallRadiusX:float[s] +HoverRadiusY:float[s] +FlutterSpeed:float[s] +Spring:float[s] +Damping:float[s] +MaxSpeed:float[s] +BuzzJitter:float[s] +SnapDistance:float[s] +MaxBeesPerEnemy:int[s] +BeesPerHit:int[s] +HitsForFullSwarm:int[s] +HitMemoryTicks:int[s] +RecruitKick:float[s] +RecruitKickSpread:float[s] +TravelSpeed:float[s] +TravelTurn:float[s] +TravelWeave:float[s] +TravelArriveDistance:float[s] +TravelTimeoutTicks:int[s] +LatchSpread:float[s] +LatchMaxSpread:float[s] +LatchWobble:float[s] +LatchWobbleSpeed:float[s] +StingIntervalTicks:int[s] +StingDamageFraction:float[s] +StingPoisonTicks:int[s] +MaxLatchTicks:int[s] +StingJab:float[s] +StingJabTicks:int[s] +StingSoundChance:float[s] +HoneyFillTicks:int[s] +HoneyMinCarry:float[s] +HoneyGlowAlpha:float[s] +HoneyOutlineEase:float[s] +HoneyOutlineWidth:float[s] +HoneyOutlineCoreFraction:float[s] +HoneyOutlinePulseTicks:int[s] +HoneyOutlineMin:float[s] +HoneyOutlineMax:float[s] +HoneyGlowScale:float[s] +HoneyOutlineColor:Color[s] +HoneyOutlineCoreColor:Color[s] +HoneyDripChance:float[s] +HoneyReturnDripChance:float[s] +HoneyDripGravity:float[s] +HoneyDripLifeMin:int[s] +HoneyDripLifeMax:int[s] +HoneyDripSizeMin:float[s] +HoneyDripSizeMax:float[s] +HoneyPixelSize:float[s] +HoneyMerge:float[s] +HoneyBlobOutline:float[s] +HoneyGlow:float[s] +HoneyDripHeat:float[s] +HoneyFillDark:Color[s] +HoneyFillLight:Color[s] +HoneyFillShine:Color[s] +HoneyDripOutlineColor:Color[s] +HoneyGlowColor:Color[s] +HoneyFill(float)[s] +HoneyBlobRadius:float[s] +HoneyBlobMinScale:float[s] +HoneyBlobSmallScale:float[s] +HoneyBlobOffset:float[s] +HoneyBlobHeat:float[s] +ReturnSpeed:float[s] +ReturnTurn:float[s] +ReturnWeave:float[s] +ReturnArriveDistance:float[s] +ReturnTimeoutTicks:int[s] +HealPerHoneyBee:float[s] +HealMaxPerBatch:int[s] +HoneyBuffTicksPerBee:int[s] +HoneyBuffMaxTicks:int[s] +DeliveryBatchTicks:int[s] +DeliverSoundChance:float[s]
 
-### Content/Weapons/BladeOfGrass/
+### Content/Weapons/Melee/PreHardmode/Broadsword/BladeOfGrass/
 **BladeOfGrassFx.cs**
   static class BladeOfGrassFx
     +ChargeLeaf(Vector2,float)[s] +Lock(Vector2)[s] +BreakOff(Vector2,float)[s] +SpineTick(Vector2)[s] +SpineHit(Vector2)[s] +Unwind(Vector2,int,int)[s] +Release(Vector2)[s]
@@ -358,7 +497,7 @@ tModLoader/other bases -> project types:
   static class BladeOfGrassTuning
     +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +ChargeTicks:int[s] +ShakeCurve:float[s] +ShakeArmDeg:float[s] +ShakeHandPx:float[s] +ChargeDustInterval:int[s] +VineCount:int[s] +PointsPerVine:int[s] +RootStart:float[s] +RootEnd:float[s] +StartTicks:int[s] +StaggerTicks:int[s] +GrowTicks:int[s] +MinLength:float[s] +MaxLength:float[s] +GrowSpeed:float[s] +SpreadDeg:float[s] +FreeSlackPx:float[s] +VineVariation:float[s] +Damping:float[s] +Stiffness:float[s] +Gravity:float[s] +WrigglePx:float[s] +WriggleSpeed:float[s] +WriggleWaves:float[s] +WriggleTargetFactor:float[s] +WriggleChargeBoost:float[s] +MaxPointSpeed:float[s] +ConstraintPasses:int[s] +RootInfluenceFloor:float[s] +TipInfluencePower:float[s] +TargetStiffnessBoost:float[s] +TipMaxSpeed:float[s] +TipAccel:float[s] +TipArrive:float[s] +TargetRadius:float[s] +ReachSlack:float[s] +LoseTargetFactor:float[s] +RetargetInterval:int[s] +SamePenalty:float[s] +LoopTicks:int[s] +LoopSpeed:float[s] +WrapRadiusScale:float[s] +WrapRadiusPad:float[s] +WrapTighten:float[s] +WrapTurns:float[s] +WrapSpanTicks:int[s] +WrapSpiral:float[s] +WrapSlackPx:float[s] +ShownEase:float[s] +CoilStiffness:float[s] +WrapCooldownTicks:int[s] +MaxWrapFraction:float[s] +MinWrapFraction:float[s] +MinWrapPixels:float[s] +MinRemainPixels:float[s] +SegmentLifeTicks:int[s] +SegmentFadeTicks:int[s] +HitIntervalTicks:int[s] +PoisonTicks:int[s] +SegmentDamageScale:float[s] +SegmentMinLengthFactor:float[s] +SegmentMaxLengthFactor:float[s] +MaxSegments:int[s] +EnemyCapFraction:float[s] +MinEnemyRoomPx:float[s] +CoilGrowTicks:int[s] +SpineGrowTicks:int[s] +CoilRadiusScale:float[s] +CoilRadiusPad:float[s] +CoilDrift:float[s] +MaxLoops:float[s] +CoilSamples:int[s] +VineChainName:string[s] +SpineChainName:string[s] +HeadForwardPx:float[s] +VineScale:float[s] +VineTipScale:float[s] +SpineScale:float[s] +HeadScale:float[s] +ChainSpacing:float[s] +ChainEndTrimPx:float[s] +RetractSpeed:float[s] +SyncIntervalTicks:int[s] +GlowColor:Color[s]
 
-### Content/Weapons/BloodButcherer/
+### Content/Weapons/Melee/PreHardmode/Broadsword/BloodButcherer/
 **BloodButchererFx.cs** uses: BloodButchererTuning, IceFx
   static class BloodButchererFx
     +PlayLunge(Vector2)[s] +PlayOpen(Vector2)[s] +PlayBite(Vector2)[s] +PlayClamp(Vector2)[s] +PlaySpin(Vector2,float)[s] +PlayThrow(Vector2)[s] +ThrowBurst(Vector2,Vector2)[s] +GripDrip(Vector2)[s] +SpinFling(Vector2,Vector2)[s] +TetherDrip(Vector2)[s] +MouthMist(Vector2,Vector2)[s] +Drool(Vector2)[s] +BiteSnap(Vector2)[s] +ClampBurst(Vector2)[s] +ChompSnap(Vector2)[s] +PlayChomp(Vector2)[s] +ImpactBurst(Vector2,Vector2,float)[s] +PlayImpact(Vector2,float)[s] +HitBlood(Vector2)[s] +DrawTeeth(Vector2,Vector2,float,Vector2,float,float,Color)[s]
@@ -386,91 +525,7 @@ tModLoader/other bases -> project types:
   static class BloodButchererTuning
     +BladeLength:float[s] +HandleLength:float[s] +SwordScale:float[s] +WindupTicks:int[s] +ThrustTicks:int[s] +OpenTicks:int[s] +GapeTicks:int[s] +BiteTicks:int[s] +ChompCount:int[s] +ChompTicks:int[s] +ChompOpenAmount:float[s] +ChompDamageMultiplier:float[s] +ChompShake:float[s] +RecoverTicks:int[s] +DecideWaitTicks:int[s] +AttackSpeedInfluence:float[s] +SpeedScaleMin:float[s] +SpeedScaleMax:float[s] +PullTicks:int[s] +SpinTicks:int[s] +LockTicks:int[s] +SpinTopSpeed:float[s] +ChompTurnSpeed:float[s] +WindDownTicks:int[s] +WindDownRecoverTicks:int[s] +ReleaseHoldTicks:int[s] +ReleaseOpenTicks:int[s] +SpinOffset:float[s] +PinRatio:float[s] +LaunchSpeed:float[s] +LaunchAiOffTicks:int[s] +LaunchGravity:float[s] +LaunchMaxFall:float[s] +GripTickDamageMultiplier:float[s] +GripTickInterval:int[s] +LaunchDamageMultiplier:float[s] +MaxGrabSize:float[s] +LaunchShake:float[s] +SpinWhooshPitchLow:float[s] +SpinWhooshPitchHigh:float[s] +JawTrailCutTicks:int[s] +SpinSweepDamageMultiplier:float[s] +SpinSweepHitInterval:int[s] +SpinSweepMinSpeed:float[s] +SpinSweepWidth:float[s] +ImpactMinSpeed:float[s] +ImpactDamageMultiplier:float[s] +ImpactMaxMultiplier:float[s] +ImpactShake:float[s] +ImpactCooldownTicks:int[s] +TrailFullSpeed:float[s] +TrailFillTo:float[s] +SpinTrailLifeTicks:int[s] +SpinTrailRails:int[s] +SpinTrailOpacity:float[s] +SpinTrailSamplesPerTick:int[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TetherRestLength:float[s] +TetherWidth:float[s] +TetherThinWidth:float[s] +TetherSag:float[s] +TetherMaxSag:float[s] +TetherTrailing:float[s] +TetherMaxTrailing:float[s] +TetherWobble:float[s] +TetherSegments:int[s] +TetherDarkColor:Color[s] +TetherMidColor:Color[s] +TetherGlowColor:Color[s] +WindupPullback:float[s] +ThrustDistance:float[s] +BiteLungeDistance:float[s] +JawOpenDeg:float[s] +CatchPadding:float[s] +BiteDamageMultiplier:float[s] +OtherDamageMultiplier:float[s] +ClampShake:float[s] +PixelSize:float[s] +TeethCount:int[s] +ToothLength:float[s] +FlashTicks:int[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +TrailSamplesPerTick:int[s] +CrimsonColor:Color[s] +BrightColor:Color[s] +BoneColor:Color[s]
 
-### Content/Weapons/BlueMoon/
-**BlueMoonBlastProjectile.cs** uses: BlueMoonFx, BlueMoonTuning, IceFx, RemoteHitTracker
-  class BlueMoonBlastProjectile : ModProjectile
-    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
-**BlueMoonFlailProjectile.cs** uses: BlueMoonBlastProjectile, BlueMoonFx, BlueMoonTuning, FlailFx, FlailProjectile, FlailTuning, Phase
-  class BlueMoonFlailProjectile : FlailProjectile
-    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
-**BlueMoonFx.cs** uses: FlailFx
-  class BlueMoonFx : FlailFx
-    +Instance:BlueMoonFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +WaterBlast(Vector2,float)
-**BlueMoonGlobalItem.cs** uses: BlueMoonFlailProjectile, FlailGlobalItem
-  class BlueMoonGlobalItem : FlailGlobalItem
-    #ItemType:int[ov] #ProjectileType:int[ov]
-**BlueMoonTuning.cs** uses: FlailTuning
-  class BlueMoonTuning : FlailTuning
-    +Instance:BlueMoonTuning[s] +ThrowSpeed(int)[ov] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +MinReach:float[ov] +MaxReach:float[ov] +SpecialThrows:int +SpecialThrowTicks:int +SpecialRetargets:bool +SpecialHitCooldownTicks:int +BlastRadius:float +BlastDamageMultiplier:float +BlastKnockbackMultiplier:float +BlastLifeTicks:int +BlastWetTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
-
-### Content/Weapons/DarkLance/
-**DarkLanceBlastProjectile.cs** uses: AreaEffect, DarkLanceFx, DarkLanceTuning, IceFx, RemoteHitTracker, ThrustFx, ThrustPalette
-  class DarkLanceBlastProjectile : ModProjectile
-    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
-**DarkLanceChargeProjectile.cs** uses: DarkLanceFx, DarkLanceOrbProjectile, DarkLancePlayer, DarkLanceStrikeProjectile, DarkLanceTuning, HeldAim, SpearPose, ThrustPalette, ThrustPlayer
-  class DarkLanceChargeProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**DarkLanceEmbers.cs** uses: DarkLanceTuning, MetaballLayer, MetaballLayers, MetaballStyle, ThrustPalette
-  class DarkLanceBlobStyle : MetaballStyle
-    +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +Rise:float[ov] +Drag:float[ov] +Wobble:float[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]
-  static class DarkLanceEmbers
-    +Ball(Vector2,float,float,float)[s] +Spawn(Vector2,Vector2)[s] +Shed(Vector2,Vector2)[s] +TipCharge(Vector2,int,float)[s] +Burst(Vector2,float,float)[s]
-**DarkLanceFlameEmberProjectile.cs** uses: DarkLanceBlastProjectile, DarkLanceEmbers, DarkLanceFx, DarkLanceOrbTrailStyle, DarkLanceTuning, DetachedTrails, PixelTrail
-  class DarkLanceEmberTrailStyle : DarkLanceOrbTrailStyle
-    +GetWidth(int,float)[ov]
-  class DarkLanceFlameEmberProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov] +PostAI()[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**DarkLanceFx.cs** uses: CameraShake, DarkLanceEmbers, DarkLanceTuning, OrbitRing, PixelShaderFx, PixelShaderParams, ThrustPalette
-  static class DarkLanceFx
-    +Glow(Color)[s] +DrawGlow(Vector2,float,float)[s] +SweepStart(Vector2)[s] +SweepWhoosh(Vector2)[s] +Flecks(Vector2,Vector2,float,ThrustPalette)[s] +CollectPing(Vector2,int)[s] +Absorb(Vector2)[s] +ThrustStart(Vector2,int)[s] +Blast(Vector2,float,float)[s] +Primed(Vector2)[s] +ChargeStart(Vector2)[s] +Gather(Vector2,float)[s] +Ring(Vector2,int,float,float)[s] +OrbBorn(Vector2,int,int)[s] +Shed(Vector2)[s] +Pop(Vector2,float)[s] +Fizzle(Vector2)[s]
-**DarkLanceGlobalItem.cs** uses: DarkLanceChargeProjectile, DarkLanceStrikeProjectile, DarkLanceTuning, HeldAim, ThrustPlayer
-  class DarkLanceGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**DarkLanceOrbProjectile.cs** uses: AreaEffect, CameraShake, DarkLanceEmbers, DarkLanceFx, DarkLancePlayer, DarkLanceTuning, DetachedTrails, OrbitRing, PixelTrail
-  class DarkLanceOrbProjectile : ModProjectile
-    +Texture:string[ov] +PreviousCenter:Vector2 +OnSpawn(IEntitySource)[ov] +AI()[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**DarkLanceOrbTrail.cs** uses: DarkLanceFx, DarkLanceTuning, PixelTrailStyle, ThrustPalette
-  class DarkLanceOrbTrailStyle : PixelTrailStyle
-    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
-**DarkLancePlayer.cs** uses: DarkLanceOrbProjectile
-  class DarkLancePlayer : ModPlayer
-    +OrbTurn:float +Serial:int +LanceTip:Vector2 +NextPing() +PostUpdate()[ov]
-**DarkLanceStrikeProjectile.cs** uses: CameraShake, DarkLanceBlastProjectile, DarkLanceEmbers, DarkLanceFlameEmberProjectile, DarkLanceFx, DarkLanceOrbProjectile, DarkLancePlayer, DarkLanceStrikeTrailStyle, DarkLanceTuning, DetachedTrails, HeldAim, HeldSwordPose, Mode, PixelTrail, RemoteHitTracker, SegmentHit, SpearPose, ThrustFx, ThrustPalette, ThrustPlayer
-  class DarkLanceStrikeProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov] +FindPrimed(Player)[s] +Ready:bool +Release() +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**DarkLanceStrikeTrail.cs** uses: DarkLanceFx, DarkLanceTuning, PixelTrailStyle, ThrustPalette
-  class DarkLanceStrikeTrailStyle : PixelTrailStyle
-    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Smoothing:bool[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
-**DarkLanceTuning.cs** uses: ThrustPalette
-  static class DarkLanceTuning
-    +ChargeIntervalTicks:int[s] +MaxOrbs:int[s] +ChargeWindDownTicks:int[s] +ChargeCooldownTicks:int[s] +LanceScale:float[s] +LanceTilt:float[s] +ArmRaise:float[s] +HandOffsetX:float[s] +HandOffsetY:float[s] +TremblePerOrb:float[s] +AnticipationTicks:int[s] +AnticipationAngle:float[s] +AnticipationDraw:float[s] +SweepTicks:int[s] +SweepAccelPower:float[s] +DecelTicks:int[s] +SweepOvershoot:float[s] +CoilTicks:int[s] +CoilDraw:float[s] +ThrustRetarget:bool[s] +StrikeCooldownTicks:int[s] +SweepDamageMultiplier:float[s] +SweepScale:float[s] +SweepGrip:float[s] +SweepHitWidth:float[s] +SweepMinHitSpeed:float[s] +SweepSpeedRef:float[s] +SweepPunch:float[s] +SweepSpriteRotation:float[s] +CollectTicks:int[s] +SweepEmberChance:float[s] +SweepHitCooldownTicks:int[s] +ChargePumpDown:float[s] +ChargePumpUp:float[s] +ChargeKickDecay:float[s] +ChargeTipFlare:float[s] +ChargeAutoSweepDelayTicks:int[s] +PrimedOutlineWidth:float[s] +PrimedPulseTicks:int[s] +PrimedOutlineMin:float[s] +PrimedOutlineMax:float[s] +PrimedOutlineFade:float[s] +PrimedGlowScale:float[s] +PrimedOutlineColor:Color[s] +PrimedOutlineCoreColor:Color[s] +PrimedPunch:float[s] +PrimedAimFollow:float[s] +PrimedAimSyncDelta:float[s] +StrikeTrailGrid:float[s] +StrikeTrailLifeTicks:int[s] +StrikeTrailWidth:float[s] +StrikeTrailThrustScale:float[s] +StrikeTrailMinSpeed:float[s] +StrikeTrailSmoothing:bool[s] +StrikeTrailSubSteps:int[s] +ThrustTicks:int[s] +ThrustEasePower:float[s] +ThrustOvershoot:float[s] +ThrustHoldTicks:int[s] +RecoverTicks:int[s] +ThrustSpeedRef:float[s] +ThrustReach:float[s] +ThrustScale:float[s] +ThrustGrip:float[s] +ThrustHitWidth:float[s] +ThrustDamageMultiplier:float[s] +SizePerOrb:float[s] +DamagePerOrb:float[s] +EmberBurstMinOrbs:int[s] +FlameEmberMin:int[s] +FlameEmberMax:int[s] +FlameEmberFanDegrees:float[s] +FlameEmberSpeedMin:float[s] +FlameEmberSpeedMax:float[s] +FlameEmberGravity:float[s] +FlameEmberMaxFall:float[s] +FlameEmberDrag:float[s] +FlameEmberLifeTicks:int[s] +FlameEmberArmTicks:int[s] +FlameEmberTriggerSize:float[s] +FlameEmberBlastScale:float[s] +FlameEmberDamageMultiplier:float[s] +FlameEmberBallScale:float[s] +FlameEmberTrailScale:float[s] +BlastRadius:float[s] +BlastMinScale:float[s] +BlastScale(int)[s] +BlastDamageMultiplier:float[s] +BlastLifeTicks:int[s] +BlastShake:float[s] +BlastBuffTicks:int[s] +OrbRadius:float[s] +OrbBob:float[s] +OrbSpin:float[s] +OrbEase:float[s] +OrbFollow:float[s] +OrbSnapDistance:float[s] +OrbSpawnTicks:int[s] +OrbLifeTicks:int[s] +OrbHitSize:float[s] +OrbPopGraceTicks:int[s] +PopRadius:float[s] +PopBuffTicks:int[s] +PopShake:float[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +PixelSize:float[s] +ColorBands:int[s] +OrbUnitPx:float[s] +HaloReach:float[s] +HaloStrength:float[s] +EmberSpawnTicks:int[s] +EmberLifeTicks:int[s] +EmberSize:float[s] +EmberMerge:float[s] +EmberOutline:float[s] +EmberRise:float[s] +EmberDrag:float[s] +EmberKick:float[s] +EmberInherit:float[s] +EmberWobble:float[s] +EmberGlow:float[s] +EmberMax:int[s] +EmberHeat:float[s] +BallRadius:float[s] +BallBodyHeat:float[s] +BallCoreHeat:float[s] +TipGlowMinRadius:float[s] +TipGlowMaxRadius:float[s] +TipGlowFalloff:float[s] +TipGlowStrength:float[s] +Palette:ThrustPalette[s]
-
-### Content/Weapons/EnchantedBoomerang/
-**EnchantedBoomerangBase.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, EnchantedBoomerangFx, EnchantedBoomerangTuning, EtherealBoomerangProjectile, RemoteHitTracker, StardustBurstProjectile
-  abstract class EnchantedBoomerangBase : ModProjectile
-    +Texture:string[ov] #Ethereal:bool[ab] +Load()[ov] +Unload()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-    enum Phase
-      {Outbound, Returning, Bounced}
-**EnchantedBoomerangFx.cs**
-  static class EnchantedBoomerangFx
-    +FlightDust(Vector2,Vector2,bool)[s] +HitSparks(Vector2,bool)[s] +Catch(Vector2,bool)[s] +BounceSparks(Vector2)[s] +Burst(Vector2,float)[s]
-**EnchantedBoomerangGlobalItem.cs** uses: EnchantedBoomerangProjectile, EnchantedBoomerangTuning, EtherealBoomerangProjectile
-  class EnchantedBoomerangGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**EnchantedBoomerangProjectile.cs** uses: EnchantedBoomerangBase
-  class EnchantedBoomerangProjectile : EnchantedBoomerangBase
-    #Ethereal:bool[ov]
-**EnchantedBoomerangTuning.cs**
-  static class EnchantedBoomerangTuning
-    +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +SpinSpeed:float[s] +CollideRadius:float[s] +BounceSpeed:float[s] +BurstRadius:float[s] +BurstDamageMultiplier:float[s] +BurstLifeTicks:int[s] +NormalColor:Color[s] +EtherealColor:Color[s] +EtherealOpacity:float[s] +PixelSize:float[s]
-**EtherealBoomerangProjectile.cs** uses: EnchantedBoomerangBase
-  class EtherealBoomerangProjectile : EnchantedBoomerangBase
-    #Ethereal:bool[ov]
-**StardustBurstProjectile.cs** uses: EnchantedBoomerangFx, EnchantedBoomerangTuning, IceFx, RemoteHitTracker
-  class StardustBurstProjectile : ModProjectile
-    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
-
-### Content/Weapons/EnchantedSword/
+### Content/Weapons/Melee/PreHardmode/Broadsword/EnchantedSword/
 **EnchantedSwordBladeProjectile.cs** uses: CameraShake, DetachedTrails, EnchantedSwordFx, EnchantedSwordPlayer, EnchantedSwordSweepTrailStyle, EnchantedSwordTuning, EtherealBeamProjectile, HeldAim, HeldSwordPose, PixelFan, PixelOutline, RemoteHitTracker, SegmentHit, Stage, SweepTrail
   class EnchantedSwordBladeProjectile : ModProjectile
     +Texture:string[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
@@ -499,57 +554,7 @@ tModLoader/other bases -> project types:
   class EtherealSwordProjectile : ModProjectile
     +Texture:string[ov] +Spawn(Player,NPC,Vector2,int,float,IEntitySource,float)[s] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 
-### Content/Weapons/Flamerang/
-**FlamerangBlastProjectile.cs** uses: FlamerangBurn, FlamerangFx, FlamerangTuning, IceFx, RemoteHitTracker
-  class FlamerangBlastProjectile : ModProjectile
-    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
-**FlamerangFx.cs** uses: FlamerangTuning
-  static class FlamerangFx
-    +FlightDust(Vector2,Vector2,float)[s] +Gather(Vector2,float)[s] +HitSparks(Vector2)[s] +Catch(Vector2)[s] +Blast(Vector2,float)[s] +MoltenBorn(Vector2,Vector2)[s] +TrailEmber(Vector2)[s] +ShardLand(Vector2)[s] +ShardShatter(Vector2)[s] +ShardGlow(Vector2,float)[s]
-**FlamerangGlobalItem.cs** uses: FlamerangProjectile, FlamerangTuning
-  class FlamerangGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**FlamerangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, FlamerangBlastProjectile, FlamerangFx, FlamerangTuning, MoltenBoomerangProjectile, ObsidianShardProjectile, RemoteHitTracker
-  class FlamerangProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-    enum Phase
-      {Outbound, Settling, Spent}
-**FlamerangTuning.cs**
-  static class FlamerangTuning
-    +ThrowSpeed:float[s] +MinThrowRange:float[s] +MaxThrowRange:float[s] +SettleTicks:int[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +FlightMaxTicks:int[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastLifeTicks:int[s] +MoltenDamageMultiplier:float[s] +MoltenArcSpeed:float[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +MoltenHitCooldownTicks:int[s] +SpinSpeed:float[s] +TrailLifeTicks:int[s] +TrailRadius:float[s] +BurnCheckInterval:int[s] +BurnTicks:int[s] +BurnRefreshBelowTicks:int[s] +TrailWidth:float[s] +TrailJitter:float[s] +TrailBurnFade:float[s] +ShardCount:int[s] +ShardDamageMultiplier:float[s] +ShardMinSpeed:float[s] +ShardMaxSpeed:float[s] +ShardSpreadDeg:float[s] +ShardGravity:float[s] +ShardMaxFallSpeed:float[s] +ShardLingerTicks:int[s] +ShardMaxHits:int[s] +ShardMaxAlive:int[s] +ShardCoolTicks:int[s] +ShardHitCooldownTicks:int[s] +PixelSize:float[s] +HotColor:Color[s] +FireColor:Color[s] +EmberColor:Color[s] +ObsidianColor:Color[s]
-  static class FlamerangBurn
-    +Apply(NPC)[s]
-**MoltenBoomerangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, FlamerangBurn, FlamerangFx, FlamerangTuning, MoltenTrailStyle, PixelTrail, RemoteHitTracker
-  class MoltenBoomerangProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnKill(int)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +PreDraw(ref Color)[ov]
-**MoltenTrail.cs** uses: FlamerangBurn, FlamerangFx, FlamerangTuning, PixelTrail, PixelTrailStyle
-  class MoltenTrailStyle : PixelTrailStyle
-    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov] +Update(PixelTrail)[ov] +Create(bool)[s]
-**ObsidianShardProjectile.cs** uses: FlamerangFx, FlamerangTuning, RemoteHitTracker
-  class ObsidianShardProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +Break() +MakeRoom(int,int)[s] +CanHitNPC(NPC)[ov] +OnKill(int)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
-
-### Content/Weapons/FlamingMace/
-**FlamingMaceBlastProjectile.cs** uses: FlamingMaceFx, FlamingMaceTuning, IceFx, RemoteHitTracker
-  class FlamingMaceBlastProjectile : ModProjectile
-    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
-**FlamingMaceFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, FlamingMaceBlastProjectile, FlamingMaceFx, FlamingMaceTrailStyle, FlamingMaceTuning, Phase, PixelTrailStyle
-  class FlamingMaceFlailProjectile : FlailProjectile
-    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #CreateTrailStyle(int)[ov] #SweepsPath:bool[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
-**FlamingMaceFx.cs** uses: CameraShake, FlailFx, FlamingMaceTuning
-  class FlamingMaceFx : FlailFx
-    +Instance:FlamingMaceFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +FireBlast(Vector2,float)
-**FlamingMaceGlobalItem.cs** uses: FlailGlobalItem, FlamingMaceFlailProjectile
-  class FlamingMaceGlobalItem : FlailGlobalItem
-    #ItemType:int[ov] #ProjectileType:int[ov]
-**FlamingMaceTrailStyle.cs** uses: FlamingMaceTuning, PixelTrailStyle
-  class FlamingMaceTrailStyle : PixelTrailStyle
-    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
-**FlamingMaceTuning.cs** uses: FlailTuning
-  class FlamingMaceTuning : FlailTuning
-    +Instance:FlamingMaceTuning[s] +MinReach:float[ov] +MaxReach:float[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +TrailWidth(int)[ov] +SpinOmegaStart(int)[ov] +SpinOmegaEnd(int)[ov] +AfterimageTicks:int[ov] +SpecialThrowSpeed:float +SpecialMinTicks:int +SpecialHitCooldownFraction:float +SpecialTrailLifeTicks:int +SpecialTrailJitter:float +BlastRadius:float +BlastDamageMultiplier:float +BlastKnockbackMultiplier:float +BlastLifeTicks:int +BlastBurnTicks:int +BlastShake:float +BurnTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +EmberColor:Color +ChainName:string[ov]
-
-### Content/Weapons/IceBlade/
+### Content/Weapons/Melee/PreHardmode/Broadsword/IceBlade/
 **IceBladeFx.cs** uses: IceFx
   static class IceBladeFx
     +PlayClick(Vector2,int)[s] +PlayFreezeClick(Vector2)[s] +PlayFreeze(Vector2)[s] +PlayTapSwing(Vector2)[s] +PlaySlash(Vector2,int)[s] +PlayWaveShatter(Vector2)[s] +ClickBurst(Vector2,int)[s] +FreezeClickBurst(Vector2)[s] +ChargeGather(Vector2,int)[s] +BladeSparkle(Vector2,Vector2,int)[s] +FrostOnHand(Vector2,float)[s] +FreezeShatter(Vector2)[s] +SlashDust(Vector2,Vector2,int)[s] +WaveBorn(Vector2,Vector2,int)[s] +WaveFog(Vector2,Vector2,float)[s] +WaveSpark(Vector2,Vector2,float)[s]
@@ -571,31 +576,7 @@ tModLoader/other bases -> project types:
   class IceBladeWaveProjectile : ModProjectile
     +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 
-### Content/Weapons/IceBoomerang/
-**IceBoomerangFx.cs** uses: IceFx
-  static class IceBoomerangFx
-    +Burst(Vector2,int,float,float)[s] +Ring(Vector2,int,float,float)[s] +Gather(Vector2,float)[s] +PlayFormed(Vector2)[s] +PlayBlast(Vector2,int)[s] +PlayCatch(Vector2)[s] +PlayShatter(Vector2)[s]
-**IceBoomerangGlobalItem.cs** uses: IceBoomerangProjectile, IceBoomerangTuning
-  class IceBoomerangGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**IceBoomerangProjectile.cs** uses: AfterimageTrail, DetachedTrails, IceBoomerangFx, IceBoomerangTuning, IceCrystalBlastProjectile, IceCrystalProjectile, RemoteHitTracker
-  class IceBoomerangProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-    enum Phase
-      {Outbound, Settling, Chain, Returning, Spent}
-**IceBoomerangTuning.cs**
-  static class IceBoomerangTuning
-    +ThrowSpeed:float[s] +MinThrowRange:float[s] +MaxThrowRange:float[s] +SettleTicks:int[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ChainSpeedGainPerLevel:float[s] +ChainMaxSpeed:float[s] +ChainMaxTargetDistance:float[s] +DamageGainPerLevel:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastLifeTicks:int[s] +BlastFlashTicks:int[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +MaxCrystals:int[s] +CrystalLifeTicks:int[s] +CrystalPopTicks:int[s] +ExpiryWarnTicks:int[s] +CrystalSheetFrames:int[s] +CrystalBounceLifeLossTicks:int[s] +HaloIntervalTicks:int[s] +HaloLifeTicks:int[s] +HaloMaxScale:float[s] +HaloAlpha:float[s] +ChillTicks:int[s] +ChillRefreshBelowTicks:int[s] +ChillCheckInterval:int[s]
-  static class IceBoomerangChill
-    +Apply(NPC)[s]
-**IceCrystalBlastProjectile.cs** uses: IceBoomerangChill, IceBoomerangFx, IceBoomerangTuning, IceCrystalProjectile, RemoteHitTracker
-  class IceCrystalBlastProjectile : ModProjectile
-    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
-**IceCrystalProjectile.cs** uses: IceBoomerangChill, IceBoomerangFx, IceBoomerangTuning
-  class IceCrystalProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +RandomFrame()[s] +RegisterBounce(Projectile)[s] +EvictForNewCrystal(int)[s] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-
-### Content/Weapons/Katana/
+### Content/Weapons/Melee/PreHardmode/Broadsword/Katana/
 **KatanaBladeProjectile.cs** uses: AfterimageTrail, CameraShake, DashSettings, DetachedTrails, HeldAim, HeldSwordPose, KatanaFx, KatanaPlayer, KatanaSlashProjectile, KatanaStanceProjectile, KatanaTuning, PixelLine, PlayerDash
   class KatanaBladeProjectile : ModProjectile
     +Texture:string[ov] +Throw(Player,IEntitySource)[s] +AI()[ov] +CanDamage()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
@@ -621,7 +602,7 @@ tModLoader/other bases -> project types:
   static class KatanaTuning
     +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +SheathArmDeg:float[s] +SheathTiltDeg:float[s] +SheathEaseTicks:int[s] +ClickKickDeg:float[s] +ClickFlashTicks:int[s] +ClickDustCount:int[s] +ClickShake:float[s] +MaxRangeTiles:float[s] +MaxChargeTicks:int[s] +MinRangePixels:float[s] +ReachEasePower:float[s] +StepPixels:float[s] +SinkDepth:float[s] +EmbedShake:float[s] +EmbedShakeDecay:float[s] +EmbedCameraShake:float[s] +VanishTicks:int[s] +CooldownTicks:int[s] +DashSpeed:float[s] +MinDashPixels:float[s] +DashGraze:float[s] +ImmuneTailTicks:int[s] +DashArrivePixels:float[s] +DashStuckTicks:int[s] +DashImpulseKeep:float[s] +VanillaShadow:bool[s] +DashShadowTicks:int[s] +SlashDamageMultiplier:float[s] +SlashWidth:float[s] +SlashHitTicks:int[s] +TrailFollowTicks:int[s] +SlashLingerTicks:int[s] +SlashLineWidth:float[s] +SlashShake:float[s] +SlashHitShake:float[s] +ReadyOutlineWidth:float[s] +ReadyPulseTicks:int[s] +ReadyOutlineMin:float[s] +ReadyOutlineMax:float[s] +ReadyFade:float[s] +ReadyGlowScale:float[s] +ReadyFlashTicks:int[s] +ReadySparkleChance:float[s] +ReadyOutlineColor:Color[s] +ReadyCoreColor:Color[s] +AfterimageSpacing:float[s] +PlayerAfterimageTicks:int[s] +AfterimageShadow:float[s] +HitStopTicks:int[s] +HitStopFlash:float[s] +HitMarkTicks:int[s] +HitMarkCount:int[s] +HitMarkLength:float[s] +HitMarkWidth:float[s] +HitMarkAngleDeg:float[s] +MaxHitMarks:int[s] +HitMarkCoverage:float[s] +HitMarkWidthGrow:float[s] +HitMarkMaxScale:float[s] +HitMarks:HitMarkStyle[s] +EmbedStayTicks:int[s] +EmbedFadeTicks:int[s] +EmbedVanishTicks:int[s] +DropGravity:float[s] +DropMaxFallSpeed:float[s] +DropKick:float[s] +DropSpin:float[s] +DropBounceKeep:float[s] +DropMaxBounces:int[s] +DropMaxTicks:int[s] +DropFadeTicks:int[s] +PixelSize:float[s] +AfterimageTicks:int[s] +CoreColor:Color[s] +GlowColor:Color[s] +EdgeColor:Color[s]
 
-### Content/Weapons/LightsBane/
+### Content/Weapons/Melee/PreHardmode/Broadsword/LightsBane/
 **LightsBaneBladeProjectile.cs** uses: ChargedBladeProjectile, ChargedBladeTrailStyle, IChargedBladeTuning, LightsBaneBladeTune, LightsBaneFx, LightsBaneImbueBuff, LightsBanePlayer, LightsBaneSweepTrailStyle, LightsBaneTuning
   class LightsBaneBladeProjectile : ChargedBladeProjectile
     +Texture:string[ov] #Tune:IChargedBladeTuning[ov] #ItemType:int[ov] #OwnerCharge(Player)[ov] #AddOwnerCharge(Player,float)[ov] #CreateTrailStyle()[ov] #StabAvailable(Player)[ov] #OnStabImpacted(Player)[ov] #FxPlaySwing(Vector2,float)[ov] #FxSwingDust(Vector2,Vector2,float)[ov] #FxHitSpark(Vector2,float)[ov] #FxChargeHit(Vector2)[ov] #FxCharged(Vector2,Vector2)[ov] #FxPlayStabWindup(Vector2)[ov] #FxStabImpact(Vector2)[ov] #FxSparkle(Vector2,Vector2)[ov]
@@ -647,54 +628,7 @@ tModLoader/other bases -> project types:
   static class LightsBaneTuning
     +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +ShowBladeDebug:bool[s] +DamageMultiplier:float[s] +KnockbackMultiplier:float[s] +HitLengthScale:float[s] +HitWidth:float[s] +SweepHitSteps:int[s] +HitsToFull:int[s] +ChargePerHit:float[s] +ChargeHoldTicks:int[s] +ChargeDecayPerTick:float[s] +ChargedAt:float[s] +ChargeShowEase:float[s] +ChargeSyncStep:float[s] +MaxSpeedScale:float[s] +SpeedCurvePower:float[s] +AttackSpeedInfluence:float[s] +MinSpeed:float[s] +MaxSpeed:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +ChainAnticipateTicks:int[s] +ChainAnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +IdleBobDeg:float[s] +IdleBobTicks:int[s] +IdleEase:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInnerLow:float[s] +TrailInnerHigh:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailSamplesPerTick:int[s] +TrailOpacityLow:float[s] +TrailOpacityHigh:float[s] +GlowMaxAlpha:float[s] +GlowScale:float[s] +OutlineWidth:float[s] +OutlinePulseTicks:int[s] +OutlineMin:float[s] +OutlineMax:float[s] +OutlineFade:float[s] +FlashTicks:int[s] +HitShake:float[s] +SparkleChance:float[s] +StabTurnTicks:int[s] +StabAimTicks:int[s] +StabPlungeTicks:int[s] +StabHoldTicks:int[s] +StabBufferTicks:int[s] +StabArmDeg:float[s] +StabAimDistance:float[s] +StabDepth:float[s] +StabChestOffsetY:float[s] +StabShake:float[s] +StabBlendOut:float[s] +StabHitShake:float[s] +ImbueTicks:int[s] +ImbueFadeTicks:int[s] +ImbueSpeedMultiplier:float[s] +ImbueAccelMultiplier:float[s] +ImbueDustChance:float[s] +ImbueDustMinSpeed:float[s] +ImbueFlickerCycles:int[s] +ImbueAfterimageSpacing:float[s] +ImbueAfterimageTicks:int[s] +ImbueAfterimageShadow:float[s] +ImbueBuffGraceTicks:int[s] +OutlineColor:Color[s] +OutlineCoreColor:Color[s] +CoreColor:Color[s] +PurpleColor:Color[s] +DeepColor:Color[s]
 
-### Content/Weapons/Mace/
-**MaceFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, MaceFx, MaceShrapnelProjectile, MaceTuning, Phase
-  class MaceFlailProjectile : FlailProjectile
-    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #HeadHidden:bool[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
-**MaceFx.cs** uses: CameraShake, FlailFx
-  class MaceFx : FlailFx
-    +Instance:MaceFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +Explosion(Vector2) +ShardFlight(Vector2,Vector2) +ShardHit(Vector2) +ShardBounce(Vector2,float) +ShardBreak(Vector2)
-**MaceGlobalItem.cs** uses: FlailGlobalItem, MaceFlailProjectile
-  class MaceGlobalItem : FlailGlobalItem
-    #ItemType:int[ov] #ProjectileType:int[ov]
-**MaceShrapnelProjectile.cs** uses: DetachedTrails, MaceFx, MaceTuning, PixelTrail, PixelTrailStyle, RemoteHitTracker
-  class MaceShrapnelProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanHitNPC(NPC)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-  class MaceShardTrailStyle : PixelTrailStyle
-    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
-**MaceTuning.cs** uses: FlailTuning
-  class MaceTuning : FlailTuning
-    +Instance:MaceTuning[s] +TrailWidth(int)[ov] +SpinOmegaStart(int)[ov] +SpinOmegaEnd(int)[ov] +MinReach:float[ov] +MaxReach:float[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +AfterimageTicks:int[ov] +TierDamageMultiplier(int)[ov] +SpecialPathDamageMultiplier:float[ov] +ShardDamageMultiplier:float +ShardKnockbackMultiplier:float +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialHangTicks:int[ov] +SpecialSpeed:float +SpecialMinTicks:int +ShardColumns:int +ShardRows:int +ShardLaunchSpeedMin:float +ShardLaunchSpeedMax:float +ShardLaunchUp:float +ShardGravity:float +ShardMaxFallSpeed:float +ShardAirDrag:float +ShardBounceDamp:float +ShardRestSpeed:float +ShardGroundFriction:float +ShardSpin:float +ShardPierce:int +ShardLifeTicks:int +ShardGraceTicks:int +ShardBoxPx:float +ShardTrailWidth:float +ShardTrailLifeTicks:int +ShardTrailMinSpeed:float +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
-
-### Content/Weapons/Meatball/
-**MeatballFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, MeatballFx, MeatballHeadProjectile, MeatballPlayer, MeatballSwedish, MeatballTuning, Phase
-  class MeatballFlailProjectile : FlailProjectile
-    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #HeadHidden:bool[ov] #RestartsOnHold:bool[ov] #HeadTextureOverride()[ov] #ChainTextureOverride()[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov]
-**MeatballFx.cs** uses: CameraShake, FlailFx, MeatballBloodStyle, MeatballSwedish, MeatballTuning, MetaballLayer, MetaballLayers
-  class MeatballFx : FlailFx
-    +Instance:MeatballFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +Detach(Vector2,Vector2) +BallFlight(Vector2,Vector2) +Attach(Vector2) +Beat(Vector2,float) +Drip(Vector2) +Explode(Vector2,float)
-**MeatballGlobalItem.cs** uses: FlailGlobalItem, MeatballFlailProjectile, MeatballPlayer, MeatballSwedish
-  class MeatballGlobalItem : FlailGlobalItem
-    #ItemType:int[ov] #ProjectileType:int[ov] +CanUseItem(Item,Player)[ov] +Unload()[ov] +PreDrawInInventory(Item,SpriteBatch,Vector2,Rectangle,Color,Color,Vector2,float)[ov] +PreDrawInWorld(Item,SpriteBatch,Color,Color,ref float,ref float,int)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**MeatballHeadProjectile.cs** uses: AreaEffect, Contact, DetachedTrails, FlailTrailStyle, MeatballFx, MeatballSwedish, MeatballTuning, PixelTrail, Snarable
-  class MeatballHeadProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov] +MakeRoom(int,int)[s] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-    enum Phase
-      {Flying, Attached, Spent}
-**MeatballPlayer.cs**
-  class MeatballPlayer : ModPlayer
-    +RegrowTicks:int +PostUpdate()[ov]
-**MeatballStyles.cs** uses: MeatballTuning, MetaballStyle
-  class MeatballBloodStyle : MetaballStyle
-    +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +DrawInProjectile:bool[ov] +Rise:float[ov] +Drag:float[ov] +SizeOverLife(float)[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]
-**MeatballSwedish.cs** uses: EasterEgg
-  static class MeatballSwedish
-    +Active:bool[s] +Texture(string,ref Asset<Texture2D>,ref bool)[s]
-**MeatballTuning.cs** uses: FlailTuning, MeatballSwedish
-  class MeatballTuning : FlailTuning
-    +Instance:MeatballTuning[s] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +MinReach:float[ov] +MaxReach:float[ov] +SpecialSpeed:float +RegrowTicks:int +BallSpeed:float +BallRangePx:float +BallGravity:float +BallMaxFall:float +BallMaxLifeTicks:int +BallHitRadius:float +MaxBalls:int +ImpactDamageMultiplier:float +ImpactKnockbackMultiplier:float +FuseTicks:int +PulsePeriodStart:float +PulsePeriodEnd:float +PulseCurve:float +SwellMax:float +PulseSwell:float +ShakePx:float +DripChanceStart:int +DripChanceEnd:int +BlastRadius:float +BlastDamageMultiplier:float +BlastKnockback:float +BleedTicks:int +ExplosionShake:float +SpentLingerTicks:int +ExplosionCores:int +ExplosionCoreSizeMin:float +ExplosionCoreSizeMax:float +ExplosionCoreSpeed:float +ExplosionDroplets:int +ExplosionSpeedMin:float +ExplosionSpeedMax:float +ExplosionDropMin:float +ExplosionDropMax:float +BloodMerge:float +BloodGravity:float +BloodDrag:float +BloodHeat:float +BloodGlow:float +BloodFill(float) +GlowColor(int)[ov] +HotColor(int)[ov] +SmokeTint:Color +SwellTint:Color +TintLight(Vector3)[ov] +ChainName:string[ov]
-
-### Content/Weapons/Muramasa/
+### Content/Weapons/Melee/PreHardmode/Broadsword/Muramasa/
 **MuramasaDrawState.cs** uses: MuramasaFx, MuramasaTuning, PixelLine
   class MuramasaDrawState
     +Finished:bool +PathLength:float +Strokes:IList<Vector2> +Begin(Player) +Tick(Player,bool) +Draw()
@@ -729,7 +663,7 @@ tModLoader/other bases -> project types:
   static class MuramasaTuning
     +BladeLength:float[s] +SwordScale:float[s] +GripOffset:float[s] +SheathTicks:int[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +SheathArmDeg:float[s] +SheathTiltDeg:float[s] +ScrapeAt:float[s] +ClickKickDeg:float[s] +ClickFlashTicks:int[s] +ClickDustCount:int[s] +ClickShake:float[s] +OutlineWidth:float[s] +OutlinePulseTicks:int[s] +OutlineMin:float[s] +OutlineMax:float[s] +OutlineFade:float[s] +GlowScale:float[s] +OutlineColor:Color[s] +OutlineCoreColor:Color[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +HitShake:float[s] +FlashTicks:int[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOpacity:float[s] +TrailSamplesPerTick:int[s] +CoreColor:Color[s] +BlueColor:Color[s] +DeepColor:Color[s] +TintLight(Vector3)[s] +TrailLagTicks:float[s] +TrailLengthScale:float[s] +ShowBladeDebug:bool[s] +DrawWindowTicks:int[s] +DrawSampleSpacing:float[s] +DrawMinPathPixels:float[s] +DrawMaxStrokes:int[s] +DrawSimplifyTolerance:float[s] +DrawLineWidth:float[s] +DrawRingMax:float[s] +DrawRingMin:float[s] +DrawWarnFraction:float[s] +IaidoDrawTicks:int[s] +IaidoRecoverTicks:int[s] +SlashGapTicks:int[s] +SlashSpeed:float[s] +SlashMinTravelTicks:int[s] +SlashMaxTravelTicks:int[s] +SlashEasePower:float[s] +SlashDamageMultiplier:float[s] +SlashWidth:float[s] +SlashLineWidth:float[s] +SlashLingerTicks:int[s] +SlashAfterimageTicks:int[s] +SlashShake:float[s] +SlashHitShake:float[s] +SlashPitchLow:float[s] +SlashPitchHigh:float[s] +HitMarkTicks:int[s] +HitMarkCount:int[s] +HitMarkLength:float[s] +HitMarkWidth:float[s] +HitMarkAngleDeg:float[s] +MaxHitMarks:int[s] +HitMarkCoverage:float[s] +HitMarkWidthGrow:float[s] +HitMarkMaxScale:float[s] +HitMarks:HitMarkStyle[s]
 
-### Content/Weapons/NightsEdge/
+### Content/Weapons/Melee/PreHardmode/Broadsword/NightsEdge/
 **NightsEdgeBladeProjectile.cs** uses: ChargedBladePose, ChargedBladeProjectile, ChargedBladeTrailStyle, IChargedBladeTuning, IImpaleTuning, LightsBaneImbueBuff, NightsEdgeBladeTune, NightsEdgeBlastProjectile, NightsEdgeDropProjectile, NightsEdgeFlameState, NightsEdgeFlames, NightsEdgeFx, NightsEdgeImpaleTune, NightsEdgeMask, NightsEdgePlayer, NightsEdgeShadowArmorBuff, NightsEdgeSweepTrailStyle, NightsEdgeTuning, NightsEdgeWaveProjectile
   class NightsEdgeBladeProjectile : ChargedBladeProjectile
     +Texture:string[ov] #Tune:IChargedBladeTuning[ov] #ItemType:int[ov] #OwnerCharge(Player)[ov] #AddOwnerCharge(Player,float)[ov] #CreateTrailStyle()[ov] #StabAvailable(Player)[ov] #OnStabImpacted(Player)[ov] #ImpaleTune:IImpaleTuning[ov] #ImpaleAvailable(Player)[ov] #FxImpaleWindup(Vector2)[ov] #FxImpalePierce(Vector2,Vector2,bool)[ov] #FxImpaleBeat(Vector2,int)[ov] #FxImpaleHold(Vector2,Vector2,Vector2,float,int)[ov] #FxImpaleFinish(Vector2)[ov] #OnImpaleFinish(Player,Vector2)[ov] #ChargeSpeedScale(Player,float)[ov] #OnOwnerStrikeStart(Vector2,Vector2)[ov] #FxPlaySwing(Vector2,float)[ov] #FxSwingDust(Vector2,Vector2,float)[ov] #FxHitSpark(Vector2,float)[ov] #FxChargeHit(Vector2)[ov] #FxCharged(Vector2,Vector2)[ov] #FxPlayStabWindup(Vector2)[ov] #FxStabImpact(Vector2)[ov] #FxSparkle(Vector2,Vector2)[ov] #TickVisuals(ChargedBladePose)[ov] #DrawAfterBlade(ChargedBladePose)[ov] #OnOwnerHit(NPC,HitInfo,bool)[ov]
@@ -757,7 +691,7 @@ tModLoader/other bases -> project types:
     +PlaySwing(Vector2,float)[s] +PlayHit(Vector2,float)[s] +PlayCharged(Vector2)[s] +SwingDust(Vector2,Vector2,float)[s] +HitSpark(Vector2,float)[s] +ChargeHit(Vector2)[s] +Charged(Vector2,Vector2)[s] +Sparkle(Vector2,Vector2)[s] +Ember(Vector2,Vector2)[s] +DrawLayers()[s] +PlayWave(Vector2)[s] +WaveBreak(Vector2,Vector2)[s] +WaveShed(Vector2,Vector2,float,bool,bool)[s] +ArmorLook(Player,float)[s] +ArmorIgnite(Player)[s] +DropLand(Vector2,float)[s] +DropHiss(Vector2,bool)[s] +Blast(Vector2,float)[s] +ImpaleWindup(Vector2)[s] +ImpalePierce(Vector2,Vector2,bool)[s] +ImpaleBeat(Vector2,int)[s] +ImpaleStream(Vector2,Vector2,Vector2,float,int)[s] +ImpaleFinish(Vector2)[s] +PlayStabWindup(Vector2)[s] +StabImpact(Vector2)[s]
 **NightsEdgeGlobalItem.cs**
   class NightsEdgeGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov]
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **NightsEdgeImpaleTune.cs** uses: IImpaleTuning, NightsEdgeTuning
   class NightsEdgeImpaleTune : IImpaleTuning
     +ImpaleBufferTicks:int +ImpaleWindupTicks:int +ImpaleWindupArmDeg:float +ImpaleSwingEndDeg:float +ImpaleBladeAngleDeg:float +ImpaleWindupPull:float +ImpaleSwingTicks:int +ImpaleSwingLerp:float +ImpaleReach:float +ImpaleMaxSize:float +ImpaleWaitTicks:int +ImpaleMissTicks:int +ImpaleSeatTicks:int +ImpaleAnchorFraction:float +ImpaleBeats:int +ImpaleBeatTicks:int +ImpaleRisePortion:float +ImpaleHeldAngleDeg:float +ImpaleShake:float +ImpaleShakeGrowth:float +ImpaleFinishTicks:int +ImpaleHitShake:float +ImpaleBeatShake:float +ImpaleStabDamageMultiplier:float +ImpaleBeatDamageMultiplier:float
@@ -785,7 +719,7 @@ tModLoader/other bases -> project types:
   class NightsEdgeWaveTipTrailStyle : PixelTrailStyle
     +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
 
-### Content/Weapons/Phaseblade/
+### Content/Weapons/Melee/PreHardmode/Broadsword/Phaseblade/
 **PhasebladeFx.cs** uses: CameraShake, PhasebladeTuning, TileSound
   static class PhasebladeFx
     +PlaySwing(Vector2,bool,bool)[s] +PlayLoop(Vector2)[s] +SlashDust(Vector2,Vector2,Color)[s] +SpinDust(Vector2,Vector2,Color)[s] +PlayPlantLift(Vector2)[s] +PlayPlant(Vector2)[s] +PlantImpact(Vector2,Color)[s] +PlantEmber(Vector2,Color)[s] +PullOut(Vector2,Color)[s] +Catch(Vector2,Color)[s] +Retract(Vector2,Color)[s] +HitSpark(Vector2,Color)[s]
@@ -810,60 +744,7 @@ tModLoader/other bases -> project types:
   static class PhasebladeTuning
     +SwingDownDamageMultiplier:float[s] +SpinDamageMultiplier:float[s] +SwingDownKnockbackMultiplier:float[s] +SpinKnockbackMultiplier:float[s] +PlantedDamageMultiplier:float[s] +PlantedKnockbackMultiplier:float[s] +PlantedHitCooldownTicks:int[s] +ReturnDamageFactor:float[s] +SpinHitCooldownTicks:int[s] +BladeLength:float[s] +SwordScale:float[s] +HitWidth:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +LoopTicks:int[s] +MinLoopDeg:float[s] +SwingTicks:int[s] +SpinSwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SpinTurns:int[s] +SweepHitSteps:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboTicks:int[s] +ChainEarlyTicks:int[s] +RemoteLingerTicks:int[s] +FlashTicks:int[s] +PlantLiftTicks:int[s] +PlantStabTicks:int[s] +PlantRecoverTicks:int[s] +PlantRestArmDeg:float[s] +PlantRaisedArmDeg:float[s] +PlantSinkPx:float[s] +PlantReachPx:float[s] +PlantGroundedDropPx:float[s] +PlantDropSpeed:float[s] +PlantedMaxDistancePx:float[s] +PlantedEmberChance:float[s] +PlantShake:float[s] +ReturnPopSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +ReturnCatchDistance:float[s] +ReturnSpinSpeed:float[s] +ReturnHitCooldownTicks:int[s] +ReturnHitboxPx:int[s] +ReturnTimeoutTicks:int[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailOpacity:float[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailSamplesPerTick:int[s] +IsPhaseblade(int)[s] +ColorOf(int)[s] +CoreOf(Color)[s]
 
-### Content/Weapons/RottedFork/
-**RottedForkFx.cs** uses: CameraShake, OrbitRing, RottedForkTuning, ThrustPalette
-  static class RottedForkFx
-    +SpinUp(Vector2,float)[s] +Whoosh(Vector2,float)[s] +Throw(Vector2)[s] +Impale(Vector2,Vector2)[s] +Drip(Vector2)[s] +Explode(Vector2,float)[s] +Flecks(Vector2,Vector2,float,ThrustPalette)[s]
-**RottedForkGlobalItem.cs** uses: HeldAim, RottedForkJavelinProjectile, RottedForkSpinProjectile, RottedForkTuning, ThrustPlayer
-  class RottedForkGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +Throw(Player,IEntitySource,int,float)[s] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**RottedForkJavelinProjectile.cs** uses: AreaEffect, CarriedNPC, DetachedTrails, RemoteHitTracker, RottedForkFx, RottedForkPlayer, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
-  class RottedForkJavelinProjectile : ModProjectile
-    +Texture:string[ov] +OnSpawn(IEntitySource)[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**RottedForkPlayer.cs** uses: RottedForkGlobalItem, RottedForkJavelinProjectile, RottedForkSpinProjectile, ThrustPlayer
-  class RottedForkPlayer : ModPlayer
-    +AutoThrow:bool +PreUpdate()[ov]
-**RottedForkSpinProjectile.cs** uses: DetachedTrails, HeldAim, RemoteHitTracker, RottedForkFx, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
-  class RottedForkSpinProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**RottedForkTuning.cs** uses: ThrustPalette
-  static class RottedForkTuning
-    +SpinSpeed:float[s] +RampTicks:int[s] +StartSpeedFraction:float[s] +WindDownTicks:int[s] +MinSpinTicks:int[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +HitCooldownTicks:int[s] +MinHitSpeed:float[s] +HitWidth:float[s] +SpearScale:float[s] +JointOffset:float[s] +JavelinSpeed:float[s] +JavelinLifeTicks:int[s] +JavelinDamageMultiplier:float[s] +JavelinHitWidth:float[s] +JavelinCooldownTicks:int[s] +MaxImpaled:int[s] +MaxCarrySize:float[s] +CarryFollow:float[s] +CarryFrontGap:float[s] +CarryGap:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +CarriedBlastMultiplier:float[s] +BlastKnockback:float[s] +CarriedKnockback:float[s] +BlastShake:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailInnerFraction:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +PixelSize:float[s] +JavelinTrailTaper:float[s] +Palette:ThrustPalette[s]
-
-### Content/Weapons/Shroomerang/
-**ShroomerangBurstProjectile.cs** uses: IceFx, RemoteHitTracker, ShroomerangFx, ShroomerangTuning
-  class ShroomerangBurstProjectile : ModProjectile
-    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
-**ShroomerangFx.cs** uses: ShroomerangTuning
-  static class ShroomerangFx
-    +FlightDust(Vector2,Vector2)[s] +SporePuff(Vector2,int,float,float)[s] +HitSparks(Vector2)[s] +SporeRing(Vector2,int,float,float)[s] +SporeCloud(Vector2,float,int)[s] +Trail(Vector2,Vector2,float)[s] +Catch(Vector2)[s] +PlayPop(Vector2)[s] +CloudPuff(Vector2,float)[s] +PlayPuff(Vector2)[s]
-**ShroomerangGlobalItem.cs** uses: ShroomerangProjectile, ShroomerangTuning
-  class ShroomerangGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**ShroomerangMushroomProjectile.cs** uses: ShroomerangBurstProjectile, ShroomerangFx, ShroomerangTuning
-  class ShroomerangMushroomProjectile : ModProjectile
-    +Texture:string[ov] +EvictForNewMushroom(int)[s] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**ShroomerangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, RemoteHitTracker, ShroomerangFx, ShroomerangMushroomProjectile, ShroomerangTuning
-  class ShroomerangProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-    enum Phase
-      {Outbound, Returning}
-**ShroomerangTuning.cs**
-  static class ShroomerangTuning
-    +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +SpinSpeed:float[s] +AfterimageTicks:int[s] +FirstSpawnDelayTicks:int[s] +SpawnIntervalTicks:int[s] +MaxMushrooms:int[s] +MushroomLifeTicks:int[s] +PopTicks:int[s] +WarnTicks:int[s] +InheritVelocity:float[s] +ScatterSpeed:float[s] +Drag:float[s] +MushroomSpinSpeed:float[s] +ArmTicks:int[s] +TriggerPadding:float[s] +TriggerCheckInterval:int[s] +BurstRadius:float[s] +BurstDamageMultiplier:float[s] +BurstLifeTicks:int[s] +GlowColor:Color[s] +CloudColor:Color[s]
-
-### Content/Weapons/Spear/
-**SpearGlobalItem.cs** uses: HeldAim, SpearThrustProjectile, SpearTuning, ThrustPlayer
-  class SpearGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**SpearThrustProjectile.cs** uses: HeldSpearProjectile, SpearTuning, ThrustChain, ThrustPalette
-  class SpearThrustProjectile : HeldSpearProjectile
-    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov]
-**SpearTuning.cs** uses: ThrustChain, ThrustPalette, ThrustTimeline
-  static class SpearTuning
-    +Thrusts:int[s] +WindupTicks:int[s] +ThrustTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +GapTicks:int[s] +SpreadDeg:float[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +Chain:ThrustChain[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +Palette:ThrustPalette[s]
-
-### Content/Weapons/Starfury/
+### Content/Weapons/Melee/PreHardmode/Broadsword/Starfury/
 **StarfuryBlastProjectile.cs** uses: CameraShake, StarfuryFx, StarfuryTuning
   class StarfuryBlastProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +PreDraw(ref Color)[ov]
@@ -893,119 +774,7 @@ tModLoader/other bases -> project types:
   static class StarfuryTuning
     +BladeLength:float[s] +SwordScale:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +RestArmDeg:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +ComboTicks:int[s] +CallLiftTicks:int[s] +CallSpawnTick:int[s] +CallTicks:int[s] +CallArmDeg:float[s] +CallTiltDeg:float[s] +CallKickDeg:float[s] +CallCooldownTicks:int[s] +CallFrontDistance:float[s] +CallTargetHeight:float[s] +CallRestArmDeg:float[s] +FlashTicks:int[s] +CallHopHeight:float[s] +CallBlockGraceTicks:int[s] +CalledStarDamageMultiplier:float[s] +CalledStarKnockbackMultiplier:float[s] +StarLifeTicks:int[s] +StarSize:int[s] +StarSpin:float[s] +AfterimageCount:int[s] +GenerationGrowth:float[s] +MaxBats:int[s] +MaxStars:int[s] +BatPadding:float[s] +BatGraceTicks:int[s] +BatTargetRange:float[s] +BatPrefersBosses:bool[s] +LaunchSpeed(int)[s] +LaunchDamageMultiplier(int)[s] +LaunchKnockbackMultiplier:float[s] +LaunchLifeTicks:int[s] +BounceFrontDistance:float[s] +BounceTargetHeight:float[s] +BounceSpeedTarget:float[s] +BounceMinTicks:int[s] +BounceMaxTicks:int[s] +BounceLead:float[s] +ArcMaxFallSpeed:float[s] +Gravity:float[s] +MaxFallSpeed:float[s] +BounceImmunityTicks:int[s] +BouncedLifeTicks:int[s] +BlastSize:int[s] +BlastTicks:int[s] +BlastDamageMultiplier:float[s] +BlastKnockbackMultiplier:float[s] +BlastShake:float[s] +HitsPerLevel:int[s] +MaxLevel:int[s] +MaxHits:int[s] +LevelOf(int)[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailOpacityLow:float[s] +TrailOpacityMid:float[s] +TrailOpacityHigh:float[s] +TrailOpacityAt(float)[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInnerLow:float[s] +TrailInnerMid:float[s] +TrailInnerHigh:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TrailInnerAt(float)[s] +TrailSamplesPerTick:int[s] +GoldColor:Color[s] +PinkColor:Color[s] +CoreColor:Color[s] +GenerationColor(int)[s]
 
-### Content/Weapons/StormSpear/
-**StormSpearFx.cs** uses: ArcBolt, ArcBoltStyle, StormSpearTuning, ThrustPalette
-  static class StormSpearFx
-    +DashStart(Vector2,Vector2)[s] +BodyTrail(Vector2,Vector2,Vector2)[s] +Zap(Vector2,Vector2,bool)[s]
-**StormSpearGlobalItem.cs** uses: HeldAim, StormSpearThrustProjectile, StormSpearTuning, ThrustPlayer
-  class StormSpearGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**StormSpearThrustProjectile.cs** uses: Afterimage, HeldSpearProjectile, PlayerDash, StormSpearFx, StormSpearTuning, ThrustChain, ThrustPalette
-  class StormSpearThrustProjectile : HeldSpearProjectile
-    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov] #ThrustPitch(int)[ov] #OnStrikeStart(int)[ov] #OnTipStep(Vector2,Vector2,float)[ov] #OnTipHit(NPC,HitInfo,int)[ov]
-**StormSpearTuning.cs** uses: DashSettings, ThrustChain, ThrustPalette, ThrustTimeline
-  static class StormSpearTuning
-    +DashSpeed:float[s] +DashTicks:int[s] +GrazeCos:float[s] +ImmuneTicks:int[s] +ImmuneTailTicks:int[s] +DamageMultiplier:float[s] +ElectrifiedTicks:int[s] +WindupTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +CooldownTicks:int[s] +Chain:ThrustChain[s] +Dash:DashSettings[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +BoltLifeTicks:int[s] +BoltWidth:float[s] +BoltJag:float[s] +BoltCore:Color[s] +BoltGlow:Color[s] +Palette:ThrustPalette[s]
-
-### Content/Weapons/Sunfury/
-**SunfuryBlastProjectile.cs** uses: IceFx, PixelLine, RemoteHitTracker, SunfuryFx, SunfuryTuning
-  class SunfuryBlastProjectile : ModProjectile
-    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
-**SunfuryFlailFx.cs** uses: FlailFx, SunfuryFx
-  class SunfuryFlailFx : FlailFx
-    +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov]
-**SunfuryFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, PixelTrailStyle, SunfuryBlastProjectile, SunfuryFlailFx, SunfuryFlailTuning, SunfuryFx, SunfuryTrailStyle, SunfuryTuning
-  class SunfuryFlailProjectile : FlailProjectile
-    +Texture:string[ov] #ItemType:int[ov] #CreateTrailStyle(int)[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
-**SunfuryFlailTuning.cs** uses: FlailTuning, SunfuryTuning
-  class SunfuryFlailTuning : FlailTuning
-    +ChargeTicks(int)[ov] +MinReach:float[ov] +MaxReach:float[ov] +EllipseWidthRatio:float[ov] +ThrowSpeed(int)[ov] +ReleaseBlendTicks:int[ov] +MinHalfTicks:int[ov] +TierDamageMultiplier(int)[ov] +HitCooldownTicks:int[ov] +SpinHitPeriodFraction:float[ov] +SpinDamageMultiplier(int)[ov] +HeadSize:float[ov] +SpinRadiusMin:float[ov] +SpinRadiusMax:float[ov] +SpinRadiusSmoothing:float[ov] +SpinOmegaStart(int)[ov] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +CatchDistance:float[ov] +FailRetractSpeed:float[ov] +PixelSize:float[ov] +TrailLifeTicks:int[ov] +TrailWidth(int)[ov] +TrailJitter:float[ov] +AfterimageTicks:int[ov] +FlashTicks:int[ov] +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
-**SunfuryFx.cs** uses: CameraShake, MetaballLayer, MetaballLayers, SunfuryBurstStyle, SunfuryTuning
-  static class SunfuryFx
-    +ChargeGather(Vector2,int,float)[s] +SpinEmbers(Vector2,Vector2,int,float)[s] +TierComplete(Vector2,int)[s] +ThrowWhoosh(Vector2,int)[s] +ApexJingle(Vector2,int)[s] +Caught(Vector2,int)[s] +Fizzle(Vector2)[s] +LockedChain(Vector2)[s] +Mistimed(Vector2)[s] +CatchHead(Vector2)[s] +FlightDust(Vector2,Vector2,int)[s] +SpecialLaunch(Vector2)[s] +HitSparks(Vector2,int)[s] +SunBlast(Vector2,float)[s] +DrawLayers()[s] +DrawDisc(Vector2,float,Color,float)[s]
-**SunfuryGlobalItem.cs** uses: FlailGlobalItem, SunfuryFlailProjectile
-  class SunfuryGlobalItem : FlailGlobalItem
-    #ItemType:int[ov] #ProjectileType:int[ov]
-**SunfuryStyles.cs** uses: MetaballStyle, SunfuryTuning
-  class SunfuryBurstStyle : MetaballStyle
-    +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +DrawInProjectile:bool[ov] +Rise:float[ov] +Drag:float[ov] +SizeOverLife(float)[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]
-**SunfuryTrail.cs** uses: PixelTrailStyle, SunfuryTuning
-  class SunfuryTrailStyle : PixelTrailStyle
-    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
-**SunfuryTuning.cs**
-  static class SunfuryTuning
-    +ChargeTicks(int)[s] +MinReach:float[s] +MaxReach:float[s] +EllipseWidthRatio:float[s] +ThrowSpeed(int)[s] +ReleaseBlendTicks:int[s] +MinHalfTicks:int[s] +TierDamageMultiplier(int)[s] +HitCooldownTicks:int[s] +SpinHitPeriodFraction:float[s] +SpinDamageMultiplier(int)[s] +HeadSize:float[s] +BurnTicks:int[s] +SpinRadiusMin:float[s] +SpinRadiusMax:float[s] +SpinRadiusSmoothing:float[s] +SpinOmegaStart(int)[s] +SpinOmegaEnd(int)[s] +SpecialSpeed:float[s] +SpecialMinReach:float[s] +SpecialMaxReach:float[s] +SpecialStopsOnTiles:bool[s] +SpecialPathDamageMultiplier:float[s] +SpecialHangTicks:int[s] +RetractSpeed:float[s] +CatchDistance:float[s] +FailRetractSpeed:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastKnockbackMultiplier:float[s] +BlastLifeTicks:int[s] +BlastBurnTicks:int[s] +ShakeStrength:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailWidth(int)[s] +TrailJitter:float[s] +AfterimageTicks:int[s] +FlashTicks:int[s] +GlowColor(int)[s] +HotColor(int)[s] +ChainName:string[s] +FireMerge:float[s] +FireGlow:float[s] +FireGravity:float[s] +FireDrag:float[s] +FireHeat:float[s] +FireOutline:Color[s] +FireFill(float)[s] +CompleteDroplets(int)[s] +CompleteSpeed(int)[s] +CompleteDropSize(int)[s] +CompleteCoreSize(int)[s] +SunCores:int[s] +SunCoreSizeMin:float[s] +SunCoreSizeMax:float[s] +SunCoreSpeed:float[s] +SunDroplets:int[s] +SunSpeedMin:float[s] +SunSpeedMax:float[s] +SunDropMin:float[s] +SunDropMax:float[s]
-
-### Content/Weapons/Swordfish/
-**SwordfishFx.cs**
-  static class SwordfishFx
-    +RageBurst(Vector2)[s] +RageTip(Vector2,Vector2)[s]
-**SwordfishGlobalItem.cs** uses: HeldAim, LiquidState, SwordfishThrustProjectile, SwordfishTuning, ThrustPlayer
-  class SwordfishGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**SwordfishThrustProjectile.cs** uses: HeldSpearProjectile, LiquidState, Mode, SwordfishFx, SwordfishTuning, ThrustChain, ThrustPalette
-  class SwordfishThrustProjectile : HeldSpearProjectile
-    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov] #ShouldContinue(int)[ov] #ThrustPitch(int)[ov] #OnThrustStart(int)[ov] #OnTipStep(Vector2,Vector2,float)[ov]
-**SwordfishTuning.cs** uses: ThrustChain, ThrustPalette, ThrustTimeline
-  static class SwordfishTuning
-    +Thrusts:int[s] +WindupTicks:int[s] +ThrustTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +GapTicks:int[s] +SpreadDeg:float[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +Chain:ThrustChain[s] +RageWindupTicks:int[s] +RageThrustTicks:int[s] +RageHoldTicks:int[s] +RageRecoverTicks:int[s] +RagePullBack:float[s] +RageSpreadDeg:float[s] +RageCooldownTicks:int[s] +RageDamageMultiplier:float[s] +RageChain:ThrustChain[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +Palette:ThrustPalette[s] +RagePalette:ThrustPalette[s]
-
-### Content/Weapons/ThornChakram/
-**ThornChakramFx.cs** uses: ThornChakramTuning
-  static class ThornChakramFx
-    +Puff(Vector2,int,float,float)[s] +HitSparks(Vector2)[s] +Ring(Vector2,int,float,float)[s] +Trail(Vector2,Vector2,float)[s] +Shred(Vector2,int)[s] +Catch(Vector2)[s] +PlayBurst(Vector2)[s] +PlayLatch(Vector2)[s] +PlayShred(Vector2,float)[s] +PlayExplosion(Vector2)[s]
-**ThornChakramGlobalItem.cs** uses: ThornChakramProjectile, ThornChakramTuning
-  class ThornChakramGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**ThornChakramProjectile.cs** uses: AfterimageTrail, BoomerangFlight, Contact, DetachedTrails, RemoteHitTracker, ThornChakramFx, ThornChakramStingerProjectile, ThornChakramTuning
-  class ThornChakramProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-    enum Phase
-      {Outbound, Returning, Latched, Spent}
-**ThornChakramStingerProjectile.cs** uses: ThornChakramFx, ThornChakramTuning
-  class ThornChakramStingerProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov] +CanHitNPC(NPC)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov]
-**ThornChakramTuning.cs**
-  static class ThornChakramTuning
-    +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +HitCooldownTicks:int[s] +SpinSpeed:float[s] +BurstFirstDelayTicks:int[s] +BurstIntervalTicks:int[s] +BurstCount:int[s] +BurstRadius:float[s] +BurstSpeed:float[s] +BurstStingerLifeTicks:int[s] +BurstDamageMultiplier:float[s] +LatchTicks:int[s] +LatchOffset:float[s] +ShredIntervalTicks:int[s] +ShredDamageMultiplier:float[s] +LatchSpinMaxMultiplier:float[s] +ExplosionCount:int[s] +ExplosionSpeed:float[s] +ExplosionStingerLifeTicks:int[s] +ExplosionDamageMultiplier:float[s] +ExplosionHitCooldownTicks:int[s] +ExplosionSecondDelayTicks:int[s] +AfterimageTicks:int[s] +GlowColor:Color[s] +StingerSpriteRotationOffset:float[s] +StingerSpriteId:int[s] +LeafDust:int[s] +PoisonDust:int[s] +BloodDust:int[s]
-
-### Content/Weapons/Trident/
-**TridentFx.cs** uses: BounceMath, CameraShake, ThrustPalette, TileSound, TridentTuning
-  static class TridentFx
-    +DashStart(Vector2,Vector2,bool)[s] +DashBody(Vector2,Vector2,bool)[s] +Bounce(Vector2,Vector2,bool)[s]
-**TridentGlobalItem.cs** uses: HeldAim, LiquidState, ThrustPlayer, TridentThrustProjectile, TridentTuning
-  class TridentGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**TridentPlayer.cs** uses: LiquidState, TridentTuning
-  class TridentPlayer : ModPlayer
-    +PostUpdateEquips()[ov]
-**TridentThrustProjectile.cs** uses: Afterimage, BounceMath, HeldSpearProjectile, Mode, PlayerDash, ThrustChain, ThrustPalette, TridentFx, TridentTuning
-  class TridentThrustProjectile : HeldSpearProjectile
-    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov] #TrailTaper:float[ov] #ThrustPitch(int)[ov] #OnStrikeStart(int)[ov] #OnTipStep(Vector2,Vector2,float)[ov] #OnTipHit(NPC,HitInfo,int)[ov]
-**TridentTuning.cs** uses: DashSettings, ThrustChain, ThrustPalette, ThrustTimeline
-  static class TridentTuning
-    +DashSpeed:float[s] +DashTicks:int[s] +LiquidDashMultiplier:float[s] +LiquidDashTicks:int[s] +BounceSpeed:float[s] +HitStopTicks:int[s] +BounceTicks:int[s] +BounceDrag:float[s] +GrazeCos:float[s] +BounceShake:float[s] +DamageMultiplier:float[s] +WindupTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +CooldownTicks:int[s] +Chain:ThrustChain[s] +LiquidChain:ThrustChain[s] +Dash:DashSettings[s] +LiquidDash:DashSettings[s] +BuffRefreshTicks:int[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +TrailTaper:float[s] +Palette:ThrustPalette[s]
-
-### Content/Weapons/Trimarang/
-**TrimarangEtherealProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, RemoteHitTracker, TrimarangFx, TrimarangTuning
-  class TrimarangEtherealProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +BeginDying() +AI()[ov] +FindTarget(Vector2,int,Projectile)[s] +CanHitNPC(NPC)[ov] +CanDamage()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**TrimarangFx.cs**
-  static class TrimarangFx
-    +Spinning(Vector2,float,int)[s] +HitSparks(Vector2)[s] +Catch(Vector2)[s] +EtherealSpawn(Vector2,Vector2)[s] +EtherealTrail(Vector2,Vector2)[s] +EtherealExplode(Vector2)[s]
-**TrimarangGlobalItem.cs** uses: TrimarangProjectile, TrimarangTuning
-  class TrimarangGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**TrimarangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, RemoteHitTracker, TrimarangEtherealProjectile, TrimarangFx, TrimarangTuning
-  class TrimarangProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +AI()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-    enum Phase
-      {Outbound, Hold, Returning}
-**TrimarangTuning.cs**
-  static class TrimarangTuning
-    +ThrowSpeed:float[s] +HoldRange:float[s] +MinThrowSpeed:float[s] +StopSnapDistance:float[s] +LeashDistance:float[s] +FlightMaxTicks:int[s] +SteerTurn:float[s] +HoldSteerSpeed:float[s] +HoldSteerSmoothing:float[s] +HoldSteerDeadzone:float[s] +SteerSyncTicks:int[s] +SpinStart:float[s] +SpinCap:float[s] +SpinRampTicks:int[s] +HitCooldownSlow:int[s] +HitCooldownFast:int[s] +HitRadius:float[s] +HoldKnockbackMultiplier:float[s] +ReturnStartSpeed:float[s] +ReturnAcceleration:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +HitsPerEthereal:int[s] +EtherealDamageMultiplier:float[s] +EtherealMaxAlive:int[s] +EtherealHitsToExplode:int[s] +EtherealLaunchSpeed:float[s] +EtherealLaunchTicks:int[s] +EtherealHomingSpeed:float[s] +EtherealTurn:float[s] +EtherealSearchRange:float[s] +EtherealRetargetTicks:int[s] +EtherealReturnAcceleration:float[s] +EtherealReturnDrag:float[s] +EtherealReturnMaxSpeed:float[s] +EtherealHitCooldownTicks:int[s] +EtherealLifeTicks:int[s] +GoldenAngleDeg:float[s] +MainColor:Color[s] +EtherealColor:Color[s] +EtherealOpacity:float[s]
-
-### Content/Weapons/Volcano/
+### Content/Weapons/Melee/PreHardmode/Broadsword/Volcano/
 **VolcanoBlade.cs** uses: HeldSwordPose, MetaballLayer, MetaballLayers, VolcanoBlobStyle, VolcanoDripStyle, VolcanoFx, VolcanoTuning
   static class VolcanoBlade
     +DrawHandle(Asset<Texture2D>,Texture2D,Vector2,Vector2,float,int,float,Color,float,float)[s] +Feed(Vector2,Vector2,float,float,float,float,float,Vector2,float,float)[s]
@@ -1047,26 +816,257 @@ tModLoader/other bases -> project types:
   static class VolcanoTuning
     +HandleLength:float[s] +BladeLength:float[s] +SwordScale:float[s] +HandleCrop:float[s] +ShowBladeDebug:bool[s] +HeatPerHit:float[s] +HeatHoldTicks:int[s] +HeatDecayPerTick:float[s] +HeatShowEase:float[s] +HeatSyncStep:float[s] +ChargedAt:float[s] +AnticipateTicks:int[s] +AnticipateDeg:float[s] +AnticipateTiltDeg:float[s] +SwingTicks:int[s] +SwingEasePower:float[s] +OvershootDeg:float[s] +RecoverTicks:int[s] +SweepHitSteps:int[s] +HitWidth:float[s] +SwingHighDeg:float[s] +SwingLowDeg:float[s] +TiltHighDeg:float[s] +TiltLowDeg:float[s] +MinSpeed:float[s] +MaxSpeed:float[s] +HeavyTimeScale:float[s] +HeavyDamageMultiplier:float[s] +HeavyKnockbackMultiplier:float[s] +TurnNoInheritTicks:int[s] +ChargedReadyArmDeg:float[s] +ChargedReadyTiltDeg:float[s] +ReadyArmDeg:float[s] +ReadyTiltDeg:float[s] +IdleBobDeg:float[s] +IdleBobTicks:int[s] +IdleEase:float[s] +OnFireTicks:int[s] +OnFireHeatBonusTicks:int[s] +HitShake:float[s] +FlashTicks:int[s] +PixelSize:float[s] +BlobSpacing:float[s] +BlobMerge:float[s] +BlobOutline:float[s] +BlobGlow:float[s] +EdgeCool:float[s] +EdgeRadiusLow:float[s] +EdgeRadiusHigh:float[s] +WobbleLow:float[s] +WobbleHigh:float[s] +WobbleSpeedLow:float[s] +WobbleSpeedHigh:float[s] +HeatLow:float[s] +HeatHigh:float[s] +HeatFlicker:float[s] +CoreFrom:float[s] +CoreHeat:float[s] +FlameHeat:float[s] +BodyStart:float[s] +BodyEndLow:float[s] +BodyEndHigh:float[s] +BodyScatter:float[s] +CoreScatter:float[s] +FlameStart:float[s] +FlameEnd:float[s] +DripStart:float[s] +DripEnd:float[s] +SpitStart:float[s] +SpitEnd:float[s] +FlameRise:float[s] +FlameDrag:float[s] +FlameWobble:float[s] +FlameRateLow:float[s] +FlameRateHigh:float[s] +FlameSize:float[s] +FlameSizeHeat:float[s] +FlameLifeMin:int[s] +FlameLifeMax:int[s] +DripGravity:float[s] +DripHeat:float[s] +DripMerge:float[s] +DripFrom:float[s] +DripRateHigh:float[s] +DripSizeMin:float[s] +DripSizeMax:float[s] +SpitFrom:float[s] +SpitRateHigh:float[s] +SpitSpeedMin:float[s] +SpitSpeedMax:float[s] +EmberDustFrom:float[s] +EmberDustChance:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailExpandBy:float[s] +TrailInner:float[s] +TrailSamplesPerTick:int[s] +TrailLagTicks:float[s] +TrailLengthScale:float[s] +TrailOpacityLow:float[s] +TrailOpacityHigh:float[s] +ThrowSpeed:float[s] +ThrowMaxTicks:int[s] +ThrowHitWidth:float[s] +ThrowDamageMultiplier:float[s] +ThrowKnockbackMultiplier:float[s] +ThrowShake:float[s] +ThrowArmTicks:int[s] +FlightDripRate:float[s] +FuseTicks:int[s] +MeltPower:float[s] +SinkDepth:float[s] +FuseShake:float[s] +FuseSwell:float[s] +FuseBrighten:float[s] +PoolRadiusStart:float[s] +PoolRadiusEnd:float[s] +FuseDripRate:float[s] +SizzleTicks:int[s] +StickSizzleVolume:float[s] +StickShake:float[s] +RegrowTicks:int[s] +BlastSize:int[s] +BlastTicks:int[s] +BlastDamageMultiplier:float[s] +BlastOnFireTicks:int[s] +BlastShake:float[s] +BlastCores:int[s] +BlastCoreSizeMin:float[s] +BlastCoreSizeMax:float[s] +BlastCoreSpeed:float[s] +BlastDroplets:int[s] +BlastSpeedMin:float[s] +BlastSpeedMax:float[s] +BlastDropMin:float[s] +BlastDropMax:float[s] +BurstMerge:float[s] +BurstGravity:float[s] +BurstDrag:float[s] +BurstHeat:float[s] +EruptionSize:int[s] +EruptionDamageMultiplier:float[s] +EruptionOnFireTicks:int[s] +EruptionShake:float[s] +EruptionCores:int[s] +EruptionDroplets:int[s] +EruptionDrops:int[s] +EruptionFanDeg:float[s] +DropSpeedMin:float[s] +DropSpeedMax:float[s] +DropGravity:float[s] +DropRadius:float[s] +DropDamageMultiplier:float[s] +DropHitCooldown:int[s] +DropOnFireTicks:int[s] +DropFlightMaxTicks:int[s] +DropLingerTicks:int[s] +DropFadeTicks:int[s] +DropMax:int[s] +DropHeat:float[s] +DropColdHeat:float[s] +HandleSpinOffset:float[s] +BounceKickSpeed:float[s] +BounceKickUp:float[s] +BounceArcTicks:int[s] +BounceGravity:float[s] +BounceDrag:float[s] +BounceSpinDeg:float[s] +ReturnAccel:float[s] +ReturnSpeedMax:float[s] +ReturnTurn:float[s] +CatchDistance:float[s] +ReturnMaxTicks:int[s] +ReturnCoolTicks:int[s] +CoreColor:Color[s] +OrangeColor:Color[s] +DeepColor:Color[s] +OutlineColor:Color[s] +GlowColor:Color[s] +HandleGlowColor:Color[s] +LavaFill(float)[s]
 
-### Content/Weapons/WoodenBoomerang/
-**WoodenBoomerangFx.cs** uses: WoodenBoomerangTuning
-  static class WoodenBoomerangFx
-    +Splinters(Vector2,int,float,float)[s] +HitSparks(Vector2)[s] +Trail(Vector2,Vector2,float)[s] +Catch(Vector2)[s] +PlayShardBreak(Vector2)[s] +PlayBreak(Vector2)[s]
-**WoodenBoomerangGlobalItem.cs** uses: WoodenBoomerangProjectile, WoodenBoomerangTuning
-  class WoodenBoomerangGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**WoodenBoomerangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, WoodenBoomerangFx, WoodenBoomerangShardProjectile, WoodenBoomerangTuning
-  class WoodenBoomerangProjectile : ModProjectile
-    +Texture:string[ov] +Art()[s] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +Colliding(Rectangle,Rectangle)[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-    enum Phase
-      {Outbound, Returning, Broken}
-**WoodenBoomerangShardProjectile.cs** uses: RemoteHitTracker, WoodenBoomerangFx, WoodenBoomerangProjectile, WoodenBoomerangTuning
-  class WoodenBoomerangShardProjectile : ModProjectile
-    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanDamage()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**WoodenBoomerangTuning.cs**
-  static class WoodenBoomerangTuning
-    +ThrowSpeed:float[s] +ThrowRange:float[s] +BrakeDistance:float[s] +BrakeMinSpeed:float[s] +ReturnAcceleration:float[s] +ReturnDrag:float[s] +ReturnMaxSpeed:float[s] +CatchDistance:float[s] +FlightMaxTicks:int[s] +SpinSpeed:float[s] +AfterimageTicks:int[s] +ShardDamageMultiplier:float[s] +ShardMaxHits:int[s] +ShardLifeTicks:int[s] +ShardHitCooldownTicks:int[s] +ShardSpeed:float[s] +ShardSpreadAngle:float[s] +ShardHop:float[s] +ShardGravity:float[s] +ShardMaxFallSpeed:float[s] +ShardDrag:float[s] +BreakOnTilesWhileReturning:bool[s] +GlowColor:Color[s] +WoodDust:int[s]
+### Content/Weapons/Melee/PreHardmode/Flails/BallOHurt/
+**BallOHurtBallProjectile.cs** uses: AfterimageTrail, BallOHurtFx, BallOHurtTuning, DetachedTrails, FlailTrailStyle, PixelTrail, RemoteHitTracker, Snarable
+  class BallOHurtBallProjectile : ModProjectile
+    +Texture:string[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +MakeRoom(int,int)[s] +Colliding(Rectangle,Rectangle)[ov] +CanDamage()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Stage
+      {Free, Hop, Return}
+**BallOHurtFlailProjectile.cs** uses: BallOHurtBallProjectile, BallOHurtFx, BallOHurtTuning, FlailFx, FlailProjectile, FlailTuning, Phase
+  class BallOHurtFlailProjectile : FlailProjectile
+    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #HeadHidden:bool[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov]
+**BallOHurtFx.cs** uses: FlailFx
+  class BallOHurtFx : FlailFx
+    +Instance:BallOHurtFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +Detach(Vector2,Vector2) +TileBounce(Vector2) +Hop(Vector2,int) +Recall(Vector2)
+**BallOHurtGlobalItem.cs** uses: BallOHurtFlailProjectile, FlailGlobalItem
+  class BallOHurtGlobalItem : FlailGlobalItem
+    #ItemType:int[ov] #ProjectileType:int[ov]
+**BallOHurtTuning.cs** uses: FlailTuning
+  class BallOHurtTuning : FlailTuning
+    +Instance:BallOHurtTuning[s] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +AfterimageTicks:int[ov] +TrailLifeTicks:int[ov] +MinReach:float[ov] +MaxReach:float[ov] +SpecialSpeed:float +BallSpeed:float +BallDamageMultiplier:float +BallHitCooldownTicks:int +BallBoxPx:float +FreeMaxTicks:int +ResyncTicks:int +MaxBalls:int +BallReturnSpeed:float +MaxHops:int +HopRangePx:float +ArriveRadiusPx:float +ReboundPx:float +HopMaxTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
 
-### Content/Weapons/Yoyos/
+### Content/Weapons/Melee/PreHardmode/Flails/BlueMoon/
+**BlueMoonBlastProjectile.cs** uses: BlueMoonFx, BlueMoonTuning, IceFx, RemoteHitTracker
+  class BlueMoonBlastProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**BlueMoonFlailProjectile.cs** uses: BlueMoonBlastProjectile, BlueMoonFx, BlueMoonTuning, FlailFx, FlailProjectile, FlailTuning, Phase
+  class BlueMoonFlailProjectile : FlailProjectile
+    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
+**BlueMoonFx.cs** uses: FlailFx
+  class BlueMoonFx : FlailFx
+    +Instance:BlueMoonFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +WaterBlast(Vector2,float)
+**BlueMoonGlobalItem.cs** uses: BlueMoonFlailProjectile, FlailGlobalItem
+  class BlueMoonGlobalItem : FlailGlobalItem
+    #ItemType:int[ov] #ProjectileType:int[ov]
+**BlueMoonTuning.cs** uses: FlailTuning
+  class BlueMoonTuning : FlailTuning
+    +Instance:BlueMoonTuning[s] +ThrowSpeed(int)[ov] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +MinReach:float[ov] +MaxReach:float[ov] +SpecialThrows:int +SpecialThrowTicks:int +SpecialRetargets:bool +SpecialHitCooldownTicks:int +BlastRadius:float +BlastDamageMultiplier:float +BlastKnockbackMultiplier:float +BlastLifeTicks:int +BlastWetTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
+
+### Content/Weapons/Melee/PreHardmode/Flails/FlamingMace/
+**FlamingMaceBlastProjectile.cs** uses: FlamingMaceFx, FlamingMaceTuning, IceFx, RemoteHitTracker
+  class FlamingMaceBlastProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**FlamingMaceFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, FlamingMaceBlastProjectile, FlamingMaceFx, FlamingMaceTrailStyle, FlamingMaceTuning, Phase, PixelTrailStyle
+  class FlamingMaceFlailProjectile : FlailProjectile
+    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #CreateTrailStyle(int)[ov] #SweepsPath:bool[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
+**FlamingMaceFx.cs** uses: CameraShake, FlailFx, FlamingMaceTuning
+  class FlamingMaceFx : FlailFx
+    +Instance:FlamingMaceFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +FireBlast(Vector2,float)
+**FlamingMaceGlobalItem.cs** uses: FlailGlobalItem, FlamingMaceFlailProjectile
+  class FlamingMaceGlobalItem : FlailGlobalItem
+    #ItemType:int[ov] #ProjectileType:int[ov]
+**FlamingMaceTrailStyle.cs** uses: FlamingMaceTuning, PixelTrailStyle
+  class FlamingMaceTrailStyle : PixelTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
+**FlamingMaceTuning.cs** uses: FlailTuning
+  class FlamingMaceTuning : FlailTuning
+    +Instance:FlamingMaceTuning[s] +MinReach:float[ov] +MaxReach:float[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +TrailWidth(int)[ov] +SpinOmegaStart(int)[ov] +SpinOmegaEnd(int)[ov] +AfterimageTicks:int[ov] +SpecialThrowSpeed:float +SpecialMinTicks:int +SpecialHitCooldownFraction:float +SpecialTrailLifeTicks:int +SpecialTrailJitter:float +BlastRadius:float +BlastDamageMultiplier:float +BlastKnockbackMultiplier:float +BlastLifeTicks:int +BlastBurnTicks:int +BlastShake:float +BurnTicks:int +GlowColor(int)[ov] +HotColor(int)[ov] +EmberColor:Color +ChainName:string[ov]
+
+### Content/Weapons/Melee/PreHardmode/Flails/Mace/
+**MaceFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, MaceFx, MaceShrapnelProjectile, MaceTuning, Phase
+  class MaceFlailProjectile : FlailProjectile
+    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #HeadHidden:bool[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
+**MaceFx.cs** uses: CameraShake, FlailFx
+  class MaceFx : FlailFx
+    +Instance:MaceFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +Explosion(Vector2) +ShardFlight(Vector2,Vector2) +ShardHit(Vector2) +ShardBounce(Vector2,float) +ShardBreak(Vector2)
+**MaceGlobalItem.cs** uses: FlailGlobalItem, MaceFlailProjectile
+  class MaceGlobalItem : FlailGlobalItem
+    #ItemType:int[ov] #ProjectileType:int[ov]
+**MaceShrapnelProjectile.cs** uses: DetachedTrails, MaceFx, MaceTuning, PixelTrail, PixelTrailStyle, RemoteHitTracker
+  class MaceShrapnelProjectile : ModProjectile
+    +Texture:string[ov] +Load()[ov] +Unload()[ov] +CanHitNPC(NPC)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+  class MaceShardTrailStyle : PixelTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
+**MaceTuning.cs** uses: FlailTuning
+  class MaceTuning : FlailTuning
+    +Instance:MaceTuning[s] +TrailWidth(int)[ov] +SpinOmegaStart(int)[ov] +SpinOmegaEnd(int)[ov] +MinReach:float[ov] +MaxReach:float[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +AfterimageTicks:int[ov] +TierDamageMultiplier(int)[ov] +SpecialPathDamageMultiplier:float[ov] +ShardDamageMultiplier:float +ShardKnockbackMultiplier:float +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialHangTicks:int[ov] +SpecialSpeed:float +SpecialMinTicks:int +ShardColumns:int +ShardRows:int +ShardLaunchSpeedMin:float +ShardLaunchSpeedMax:float +ShardLaunchUp:float +ShardGravity:float +ShardMaxFallSpeed:float +ShardAirDrag:float +ShardBounceDamp:float +ShardRestSpeed:float +ShardGroundFriction:float +ShardSpin:float +ShardPierce:int +ShardLifeTicks:int +ShardGraceTicks:int +ShardBoxPx:float +ShardTrailWidth:float +ShardTrailLifeTicks:int +ShardTrailMinSpeed:float +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
+
+### Content/Weapons/Melee/PreHardmode/Flails/Meatball/
+**MeatballFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, MeatballFx, MeatballHeadProjectile, MeatballPlayer, MeatballSwedish, MeatballTuning, Phase
+  class MeatballFlailProjectile : FlailProjectile
+    +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #HeadHidden:bool[ov] #RestartsOnHold:bool[ov] #HeadTextureOverride()[ov] #ChainTextureOverride()[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov]
+**MeatballFx.cs** uses: CameraShake, FlailFx, MeatballBloodStyle, MeatballSwedish, MeatballTuning, MetaballLayer, MetaballLayers
+  class MeatballFx : FlailFx
+    +Instance:MeatballFx[s] +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov] +Detach(Vector2,Vector2) +BallFlight(Vector2,Vector2) +Attach(Vector2) +Beat(Vector2,float) +Drip(Vector2) +Explode(Vector2,float)
+**MeatballGlobalItem.cs** uses: FlailGlobalItem, MeatballFlailProjectile, MeatballPlayer, MeatballSwedish
+  class MeatballGlobalItem : FlailGlobalItem
+    #ItemType:int[ov] #ProjectileType:int[ov] +CanUseItem(Item,Player)[ov] +Unload()[ov] +PreDrawInInventory(Item,SpriteBatch,Vector2,Rectangle,Color,Color,Vector2,float)[ov] +PreDrawInWorld(Item,SpriteBatch,Color,Color,ref float,ref float,int)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**MeatballHeadProjectile.cs** uses: AreaEffect, Contact, DetachedTrails, FlailTrailStyle, MeatballFx, MeatballSwedish, MeatballTuning, PixelTrail, Snarable
+  class MeatballHeadProjectile : ModProjectile
+    +Texture:string[ov] +AI()[ov] +MakeRoom(int,int)[s] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Flying, Attached, Spent}
+**MeatballPlayer.cs**
+  class MeatballPlayer : ModPlayer
+    +RegrowTicks:int +PostUpdate()[ov]
+**MeatballStyles.cs** uses: MeatballTuning, MetaballStyle
+  class MeatballBloodStyle : MetaballStyle
+    +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +DrawInProjectile:bool[ov] +Rise:float[ov] +Drag:float[ov] +SizeOverLife(float)[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]
+**MeatballSwedish.cs** uses: EasterEgg
+  static class MeatballSwedish
+    +Active:bool[s] +Texture(string,ref Asset<Texture2D>,ref bool)[s]
+**MeatballTuning.cs** uses: FlailTuning, MeatballSwedish
+  class MeatballTuning : FlailTuning
+    +Instance:MeatballTuning[s] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +MinReach:float[ov] +MaxReach:float[ov] +SpecialSpeed:float +RegrowTicks:int +BallSpeed:float +BallRangePx:float +BallGravity:float +BallMaxFall:float +BallMaxLifeTicks:int +BallHitRadius:float +MaxBalls:int +ImpactDamageMultiplier:float +ImpactKnockbackMultiplier:float +FuseTicks:int +PulsePeriodStart:float +PulsePeriodEnd:float +PulseCurve:float +SwellMax:float +PulseSwell:float +ShakePx:float +DripChanceStart:int +DripChanceEnd:int +BlastRadius:float +BlastDamageMultiplier:float +BlastKnockback:float +BleedTicks:int +ExplosionShake:float +SpentLingerTicks:int +ExplosionCores:int +ExplosionCoreSizeMin:float +ExplosionCoreSizeMax:float +ExplosionCoreSpeed:float +ExplosionDroplets:int +ExplosionSpeedMin:float +ExplosionSpeedMax:float +ExplosionDropMin:float +ExplosionDropMax:float +BloodMerge:float +BloodGravity:float +BloodDrag:float +BloodHeat:float +BloodGlow:float +BloodFill(float) +GlowColor(int)[ov] +HotColor(int)[ov] +SmokeTint:Color +SwellTint:Color +TintLight(Vector3)[ov] +ChainName:string[ov]
+
+### Content/Weapons/Melee/PreHardmode/Flails/Sunfury/
+**SunfuryBlastProjectile.cs** uses: IceFx, PixelLine, RemoteHitTracker, SunfuryFx, SunfuryTuning
+  class SunfuryBlastProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**SunfuryFlailFx.cs** uses: FlailFx, SunfuryFx
+  class SunfuryFlailFx : FlailFx
+    +ChargeGather(Vector2,int,float)[ov] +SpinEmbers(Vector2,Vector2,int,float)[ov] +TierComplete(Vector2,int)[ov] +ThrowWhoosh(Vector2,int)[ov] +ApexJingle(Vector2,int)[ov] +Caught(Vector2,int)[ov] +Fizzle(Vector2)[ov] +LockedChain(Vector2)[ov] +Mistimed(Vector2)[ov] +CatchHead(Vector2)[ov] +FlightDust(Vector2,Vector2,int)[ov] +SpecialLaunch(Vector2)[ov] +HitSparks(Vector2,int)[ov] +DrawLayers()[ov]
+**SunfuryFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, PixelTrailStyle, SunfuryBlastProjectile, SunfuryFlailFx, SunfuryFlailTuning, SunfuryFx, SunfuryTrailStyle, SunfuryTuning
+  class SunfuryFlailProjectile : FlailProjectile
+    +Texture:string[ov] #ItemType:int[ov] #CreateTrailStyle(int)[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov] #OnFlailHit(NPC,HitInfo,int)[ov]
+**SunfuryFlailTuning.cs** uses: FlailTuning, SunfuryTuning
+  class SunfuryFlailTuning : FlailTuning
+    +ChargeTicks(int)[ov] +MinReach:float[ov] +MaxReach:float[ov] +EllipseWidthRatio:float[ov] +ThrowSpeed(int)[ov] +ReleaseBlendTicks:int[ov] +MinHalfTicks:int[ov] +TierDamageMultiplier(int)[ov] +HitCooldownTicks:int[ov] +SpinHitPeriodFraction:float[ov] +SpinDamageMultiplier(int)[ov] +HeadSize:float[ov] +SpinRadiusMin:float[ov] +SpinRadiusMax:float[ov] +SpinRadiusSmoothing:float[ov] +SpinOmegaStart(int)[ov] +SpinOmegaEnd(int)[ov] +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialPathDamageMultiplier:float[ov] +SpecialHangTicks:int[ov] +RetractSpeed:float[ov] +CatchDistance:float[ov] +FailRetractSpeed:float[ov] +PixelSize:float[ov] +TrailLifeTicks:int[ov] +TrailWidth(int)[ov] +TrailJitter:float[ov] +AfterimageTicks:int[ov] +FlashTicks:int[ov] +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
+**SunfuryFx.cs** uses: CameraShake, MetaballLayer, MetaballLayers, SunfuryBurstStyle, SunfuryTuning
+  static class SunfuryFx
+    +ChargeGather(Vector2,int,float)[s] +SpinEmbers(Vector2,Vector2,int,float)[s] +TierComplete(Vector2,int)[s] +ThrowWhoosh(Vector2,int)[s] +ApexJingle(Vector2,int)[s] +Caught(Vector2,int)[s] +Fizzle(Vector2)[s] +LockedChain(Vector2)[s] +Mistimed(Vector2)[s] +CatchHead(Vector2)[s] +FlightDust(Vector2,Vector2,int)[s] +SpecialLaunch(Vector2)[s] +HitSparks(Vector2,int)[s] +SunBlast(Vector2,float)[s] +DrawLayers()[s] +DrawDisc(Vector2,float,Color,float)[s]
+**SunfuryGlobalItem.cs** uses: FlailGlobalItem, SunfuryFlailProjectile
+  class SunfuryGlobalItem : FlailGlobalItem
+    #ItemType:int[ov] #ProjectileType:int[ov]
+**SunfuryStyles.cs** uses: MetaballStyle, SunfuryTuning
+  class SunfuryBurstStyle : MetaballStyle
+    +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +DrawInProjectile:bool[ov] +Rise:float[ov] +Drag:float[ov] +SizeOverLife(float)[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]
+**SunfuryTrail.cs** uses: PixelTrailStyle, SunfuryTuning
+  class SunfuryTrailStyle : PixelTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
+**SunfuryTuning.cs**
+  static class SunfuryTuning
+    +ChargeTicks(int)[s] +MinReach:float[s] +MaxReach:float[s] +EllipseWidthRatio:float[s] +ThrowSpeed(int)[s] +ReleaseBlendTicks:int[s] +MinHalfTicks:int[s] +TierDamageMultiplier(int)[s] +HitCooldownTicks:int[s] +SpinHitPeriodFraction:float[s] +SpinDamageMultiplier(int)[s] +HeadSize:float[s] +BurnTicks:int[s] +SpinRadiusMin:float[s] +SpinRadiusMax:float[s] +SpinRadiusSmoothing:float[s] +SpinOmegaStart(int)[s] +SpinOmegaEnd(int)[s] +SpecialSpeed:float[s] +SpecialMinReach:float[s] +SpecialMaxReach:float[s] +SpecialStopsOnTiles:bool[s] +SpecialPathDamageMultiplier:float[s] +SpecialHangTicks:int[s] +RetractSpeed:float[s] +CatchDistance:float[s] +FailRetractSpeed:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +BlastKnockbackMultiplier:float[s] +BlastLifeTicks:int[s] +BlastBurnTicks:int[s] +ShakeStrength:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TrailWidth(int)[s] +TrailJitter:float[s] +AfterimageTicks:int[s] +FlashTicks:int[s] +GlowColor(int)[s] +HotColor(int)[s] +ChainName:string[s] +FireMerge:float[s] +FireGlow:float[s] +FireGravity:float[s] +FireDrag:float[s] +FireHeat:float[s] +FireOutline:Color[s] +FireFill(float)[s] +CompleteDroplets(int)[s] +CompleteSpeed(int)[s] +CompleteDropSize(int)[s] +CompleteCoreSize(int)[s] +SunCores:int[s] +SunCoreSizeMin:float[s] +SunCoreSizeMax:float[s] +SunCoreSpeed:float[s] +SunDroplets:int[s] +SunSpeedMin:float[s] +SunSpeedMax:float[s] +SunDropMin:float[s] +SunDropMax:float[s]
+
+### Content/Weapons/Melee/PreHardmode/Spears/DarkLance/
+**DarkLanceBlastProjectile.cs** uses: AreaEffect, DarkLanceFx, DarkLanceTuning, IceFx, RemoteHitTracker, ThrustFx, ThrustPalette
+  class DarkLanceBlastProjectile : ModProjectile
+    +Texture:string[ov] +Colliding(Rectangle,Rectangle)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
+**DarkLanceChargeProjectile.cs** uses: DarkLanceFx, DarkLanceOrbProjectile, DarkLancePlayer, DarkLanceStrikeProjectile, DarkLanceTuning, HeldAim, SpearPose, ThrustPalette, ThrustPlayer
+  class DarkLanceChargeProjectile : ModProjectile
+    +Texture:string[ov] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**DarkLanceEmbers.cs** uses: DarkLanceTuning, MetaballLayer, MetaballLayers, MetaballStyle, ThrustPalette
+  class DarkLanceBlobStyle : MetaballStyle
+    +Grid:float[ov] +Merge:float[ov] +OutlineWidth:float[ov] +Bands:int[ov] +GlowStrength:float[ov] +MaxParticles:int[ov] +Rise:float[ov] +Drag:float[ov] +Wobble:float[ov] +HeatOverLife(float)[ov] +GetFill(float)[ov] +GetOutline()[ov] +GetGlow()[ov]
+  static class DarkLanceEmbers
+    +Ball(Vector2,float,float,float)[s] +Spawn(Vector2,Vector2)[s] +Shed(Vector2,Vector2)[s] +TipCharge(Vector2,int,float)[s] +Burst(Vector2,float,float)[s]
+**DarkLanceFlameEmberProjectile.cs** uses: DarkLanceBlastProjectile, DarkLanceEmbers, DarkLanceFx, DarkLanceOrbTrailStyle, DarkLanceTuning, DetachedTrails, PixelTrail
+  class DarkLanceEmberTrailStyle : DarkLanceOrbTrailStyle
+    +GetWidth(int,float)[ov]
+  class DarkLanceFlameEmberProjectile : ModProjectile
+    +Texture:string[ov] +AI()[ov] +PostAI()[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**DarkLanceFx.cs** uses: CameraShake, DarkLanceEmbers, DarkLanceTuning, OrbitRing, PixelShaderFx, PixelShaderParams, ThrustPalette
+  static class DarkLanceFx
+    +Glow(Color)[s] +DrawGlow(Vector2,float,float)[s] +SweepStart(Vector2)[s] +SweepWhoosh(Vector2)[s] +Flecks(Vector2,Vector2,float,ThrustPalette)[s] +CollectPing(Vector2,int)[s] +Absorb(Vector2)[s] +ThrustStart(Vector2,int)[s] +Blast(Vector2,float,float)[s] +Primed(Vector2)[s] +ChargeStart(Vector2)[s] +Gather(Vector2,float)[s] +Ring(Vector2,int,float,float)[s] +OrbBorn(Vector2,int,int)[s] +Shed(Vector2)[s] +Pop(Vector2,float)[s] +Fizzle(Vector2)[s]
+**DarkLanceGlobalItem.cs** uses: DarkLanceChargeProjectile, DarkLanceStrikeProjectile, DarkLanceTuning, HeldAim, ThrustPlayer
+  class DarkLanceGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**DarkLanceOrbProjectile.cs** uses: AreaEffect, CameraShake, DarkLanceEmbers, DarkLanceFx, DarkLancePlayer, DarkLanceTuning, DetachedTrails, OrbitRing, PixelTrail
+  class DarkLanceOrbProjectile : ModProjectile
+    +Texture:string[ov] +PreviousCenter:Vector2 +OnSpawn(IEntitySource)[ov] +AI()[ov] +PostAI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**DarkLanceOrbTrail.cs** uses: DarkLanceFx, DarkLanceTuning, PixelTrailStyle, ThrustPalette
+  class DarkLanceOrbTrailStyle : PixelTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
+**DarkLancePlayer.cs** uses: DarkLanceOrbProjectile
+  class DarkLancePlayer : ModPlayer
+    +OrbTurn:float +Serial:int +LanceTip:Vector2 +NextPing() +PostUpdate()[ov]
+**DarkLanceStrikeProjectile.cs** uses: CameraShake, DarkLanceBlastProjectile, DarkLanceEmbers, DarkLanceFlameEmberProjectile, DarkLanceFx, DarkLanceOrbProjectile, DarkLancePlayer, DarkLanceStrikeTrailStyle, DarkLanceTuning, DetachedTrails, HeldAim, HeldSwordPose, Mode, PixelTrail, RemoteHitTracker, SegmentHit, SpearPose, ThrustFx, ThrustPalette, ThrustPlayer
+  class DarkLanceStrikeProjectile : ModProjectile
+    +Texture:string[ov] +AI()[ov] +FindPrimed(Player)[s] +Ready:bool +Release() +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**DarkLanceStrikeTrail.cs** uses: DarkLanceFx, DarkLanceTuning, PixelTrailStyle, ThrustPalette
+  class DarkLanceStrikeTrailStyle : PixelTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Smoothing:bool[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
+**DarkLanceTuning.cs** uses: ThrustPalette
+  static class DarkLanceTuning
+    +ChargeIntervalTicks:int[s] +MaxOrbs:int[s] +ChargeWindDownTicks:int[s] +ChargeCooldownTicks:int[s] +LanceScale:float[s] +LanceTilt:float[s] +ArmRaise:float[s] +HandOffsetX:float[s] +HandOffsetY:float[s] +TremblePerOrb:float[s] +AnticipationTicks:int[s] +AnticipationAngle:float[s] +AnticipationDraw:float[s] +SweepTicks:int[s] +SweepAccelPower:float[s] +DecelTicks:int[s] +SweepOvershoot:float[s] +CoilTicks:int[s] +CoilDraw:float[s] +ThrustRetarget:bool[s] +StrikeCooldownTicks:int[s] +SweepDamageMultiplier:float[s] +SweepScale:float[s] +SweepGrip:float[s] +SweepHitWidth:float[s] +SweepMinHitSpeed:float[s] +SweepSpeedRef:float[s] +SweepPunch:float[s] +SweepSpriteRotation:float[s] +CollectTicks:int[s] +SweepEmberChance:float[s] +SweepHitCooldownTicks:int[s] +ChargePumpDown:float[s] +ChargePumpUp:float[s] +ChargeKickDecay:float[s] +ChargeTipFlare:float[s] +ChargeAutoSweepDelayTicks:int[s] +PrimedOutlineWidth:float[s] +PrimedPulseTicks:int[s] +PrimedOutlineMin:float[s] +PrimedOutlineMax:float[s] +PrimedOutlineFade:float[s] +PrimedGlowScale:float[s] +PrimedOutlineColor:Color[s] +PrimedOutlineCoreColor:Color[s] +PrimedPunch:float[s] +PrimedAimFollow:float[s] +PrimedAimSyncDelta:float[s] +StrikeTrailGrid:float[s] +StrikeTrailLifeTicks:int[s] +StrikeTrailWidth:float[s] +StrikeTrailThrustScale:float[s] +StrikeTrailMinSpeed:float[s] +StrikeTrailSmoothing:bool[s] +StrikeTrailSubSteps:int[s] +ThrustTicks:int[s] +ThrustEasePower:float[s] +ThrustOvershoot:float[s] +ThrustHoldTicks:int[s] +RecoverTicks:int[s] +ThrustSpeedRef:float[s] +ThrustReach:float[s] +ThrustScale:float[s] +ThrustGrip:float[s] +ThrustHitWidth:float[s] +ThrustDamageMultiplier:float[s] +SizePerOrb:float[s] +DamagePerOrb:float[s] +EmberBurstMinOrbs:int[s] +FlameEmberMin:int[s] +FlameEmberMax:int[s] +FlameEmberFanDegrees:float[s] +FlameEmberSpeedMin:float[s] +FlameEmberSpeedMax:float[s] +FlameEmberGravity:float[s] +FlameEmberMaxFall:float[s] +FlameEmberDrag:float[s] +FlameEmberLifeTicks:int[s] +FlameEmberArmTicks:int[s] +FlameEmberTriggerSize:float[s] +FlameEmberBlastScale:float[s] +FlameEmberDamageMultiplier:float[s] +FlameEmberBallScale:float[s] +FlameEmberTrailScale:float[s] +BlastRadius:float[s] +BlastMinScale:float[s] +BlastScale(int)[s] +BlastDamageMultiplier:float[s] +BlastLifeTicks:int[s] +BlastShake:float[s] +BlastBuffTicks:int[s] +OrbRadius:float[s] +OrbBob:float[s] +OrbSpin:float[s] +OrbEase:float[s] +OrbFollow:float[s] +OrbSnapDistance:float[s] +OrbSpawnTicks:int[s] +OrbLifeTicks:int[s] +OrbHitSize:float[s] +OrbPopGraceTicks:int[s] +PopRadius:float[s] +PopBuffTicks:int[s] +PopShake:float[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +PixelSize:float[s] +ColorBands:int[s] +OrbUnitPx:float[s] +HaloReach:float[s] +HaloStrength:float[s] +EmberSpawnTicks:int[s] +EmberLifeTicks:int[s] +EmberSize:float[s] +EmberMerge:float[s] +EmberOutline:float[s] +EmberRise:float[s] +EmberDrag:float[s] +EmberKick:float[s] +EmberInherit:float[s] +EmberWobble:float[s] +EmberGlow:float[s] +EmberMax:int[s] +EmberHeat:float[s] +BallRadius:float[s] +BallBodyHeat:float[s] +BallCoreHeat:float[s] +TipGlowMinRadius:float[s] +TipGlowMaxRadius:float[s] +TipGlowFalloff:float[s] +TipGlowStrength:float[s] +Palette:ThrustPalette[s]
+
+### Content/Weapons/Melee/PreHardmode/Spears/RottedFork/
+**RottedForkFx.cs** uses: CameraShake, OrbitRing, RottedForkTuning, ThrustPalette
+  static class RottedForkFx
+    +SpinUp(Vector2,float)[s] +Whoosh(Vector2,float)[s] +Throw(Vector2)[s] +Impale(Vector2,Vector2)[s] +Drip(Vector2)[s] +Explode(Vector2,float)[s] +Flecks(Vector2,Vector2,float,ThrustPalette)[s]
+**RottedForkGlobalItem.cs** uses: HeldAim, RottedForkJavelinProjectile, RottedForkSpinProjectile, RottedForkTuning, ThrustPlayer
+  class RottedForkGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +Throw(Player,IEntitySource,int,float)[s] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**RottedForkJavelinProjectile.cs** uses: AreaEffect, CarriedNPC, DetachedTrails, RemoteHitTracker, RottedForkFx, RottedForkPlayer, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
+  class RottedForkJavelinProjectile : ModProjectile
+    +Texture:string[ov] +OnSpawn(IEntitySource)[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**RottedForkPlayer.cs** uses: RottedForkGlobalItem, RottedForkJavelinProjectile, RottedForkSpinProjectile, ThrustPlayer
+  class RottedForkPlayer : ModPlayer
+    +AutoThrow:bool +PreUpdate()[ov]
+**RottedForkSpinProjectile.cs** uses: DetachedTrails, HeldAim, RemoteHitTracker, RottedForkFx, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
+  class RottedForkSpinProjectile : ModProjectile
+    +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**RottedForkTuning.cs** uses: ThrustPalette
+  static class RottedForkTuning
+    +SpinSpeed:float[s] +RampTicks:int[s] +StartSpeedFraction:float[s] +WindDownTicks:int[s] +MinSpinTicks:int[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +HitCooldownTicks:int[s] +MinHitSpeed:float[s] +HitWidth:float[s] +SpearScale:float[s] +JointOffset:float[s] +JavelinSpeed:float[s] +JavelinLifeTicks:int[s] +JavelinDamageMultiplier:float[s] +JavelinHitWidth:float[s] +JavelinCooldownTicks:int[s] +MaxImpaled:int[s] +MaxCarrySize:float[s] +CarryFollow:float[s] +CarryFrontGap:float[s] +CarryGap:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +CarriedBlastMultiplier:float[s] +BlastKnockback:float[s] +CarriedKnockback:float[s] +BlastShake:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailInnerFraction:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +PixelSize:float[s] +JavelinTrailTaper:float[s] +Palette:ThrustPalette[s]
+
+### Content/Weapons/Melee/PreHardmode/Spears/Spear/
+**SpearGlobalItem.cs** uses: HeldAim, SpearThrustProjectile, SpearTuning, ThrustPlayer
+  class SpearGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**SpearThrustProjectile.cs** uses: HeldSpearProjectile, SpearTuning, ThrustChain, ThrustPalette
+  class SpearThrustProjectile : HeldSpearProjectile
+    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov]
+**SpearTuning.cs** uses: ThrustChain, ThrustPalette, ThrustTimeline
+  static class SpearTuning
+    +Thrusts:int[s] +WindupTicks:int[s] +ThrustTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +GapTicks:int[s] +SpreadDeg:float[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +Chain:ThrustChain[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +Palette:ThrustPalette[s]
+
+### Content/Weapons/Melee/PreHardmode/Spears/StormSpear/
+**StormSpearFx.cs** uses: ArcBolt, ArcBoltStyle, StormSpearTuning, ThrustPalette
+  static class StormSpearFx
+    +DashStart(Vector2,Vector2)[s] +BodyTrail(Vector2,Vector2,Vector2)[s] +Zap(Vector2,Vector2,bool)[s]
+**StormSpearGlobalItem.cs** uses: HeldAim, StormSpearThrustProjectile, StormSpearTuning, ThrustPlayer
+  class StormSpearGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**StormSpearThrustProjectile.cs** uses: Afterimage, HeldSpearProjectile, PlayerDash, StormSpearFx, StormSpearTuning, ThrustChain, ThrustPalette
+  class StormSpearThrustProjectile : HeldSpearProjectile
+    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov] #ThrustPitch(int)[ov] #OnStrikeStart(int)[ov] #OnTipStep(Vector2,Vector2,float)[ov] #OnTipHit(NPC,HitInfo,int)[ov]
+**StormSpearTuning.cs** uses: DashSettings, ThrustChain, ThrustPalette, ThrustTimeline
+  static class StormSpearTuning
+    +DashSpeed:float[s] +DashTicks:int[s] +GrazeCos:float[s] +ImmuneTicks:int[s] +ImmuneTailTicks:int[s] +DamageMultiplier:float[s] +ElectrifiedTicks:int[s] +WindupTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +CooldownTicks:int[s] +Chain:ThrustChain[s] +Dash:DashSettings[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +BoltLifeTicks:int[s] +BoltWidth:float[s] +BoltJag:float[s] +BoltCore:Color[s] +BoltGlow:Color[s] +Palette:ThrustPalette[s]
+
+### Content/Weapons/Melee/PreHardmode/Spears/Swordfish/
+**SwordfishFx.cs**
+  static class SwordfishFx
+    +RageBurst(Vector2)[s] +RageTip(Vector2,Vector2)[s]
+**SwordfishGlobalItem.cs** uses: HeldAim, LiquidState, SwordfishThrustProjectile, SwordfishTuning, ThrustPlayer
+  class SwordfishGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**SwordfishThrustProjectile.cs** uses: HeldSpearProjectile, LiquidState, Mode, SwordfishFx, SwordfishTuning, ThrustChain, ThrustPalette
+  class SwordfishThrustProjectile : HeldSpearProjectile
+    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov] #ShouldContinue(int)[ov] #ThrustPitch(int)[ov] #OnThrustStart(int)[ov] #OnTipStep(Vector2,Vector2,float)[ov]
+**SwordfishTuning.cs** uses: ThrustChain, ThrustPalette, ThrustTimeline
+  static class SwordfishTuning
+    +Thrusts:int[s] +WindupTicks:int[s] +ThrustTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +GapTicks:int[s] +SpreadDeg:float[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +Chain:ThrustChain[s] +RageWindupTicks:int[s] +RageThrustTicks:int[s] +RageHoldTicks:int[s] +RageRecoverTicks:int[s] +RagePullBack:float[s] +RageSpreadDeg:float[s] +RageCooldownTicks:int[s] +RageDamageMultiplier:float[s] +RageChain:ThrustChain[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +Palette:ThrustPalette[s] +RagePalette:ThrustPalette[s]
+
+### Content/Weapons/Melee/PreHardmode/Spears/Trident/
+**TridentFx.cs** uses: BounceMath, CameraShake, ThrustPalette, TileSound, TridentTuning
+  static class TridentFx
+    +DashStart(Vector2,Vector2,bool)[s] +DashBody(Vector2,Vector2,bool)[s] +Bounce(Vector2,Vector2,bool)[s]
+**TridentGlobalItem.cs** uses: HeldAim, LiquidState, ThrustPlayer, TridentThrustProjectile, TridentTuning
+  class TridentGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**TridentPlayer.cs** uses: LiquidState, TridentTuning
+  class TridentPlayer : ModPlayer
+    +PostUpdateEquips()[ov]
+**TridentThrustProjectile.cs** uses: Afterimage, BounceMath, HeldSpearProjectile, Mode, PlayerDash, ThrustChain, ThrustPalette, TridentFx, TridentTuning
+  class TridentThrustProjectile : HeldSpearProjectile
+    #ItemType:int[ov] #Chain:ThrustChain[ov] #Reach:float[ov] #Palette:ThrustPalette[ov] #SpearScale:float[ov] #GripFraction:float[ov] #HitWidth:float[ov] #TrailLifeTicks:int[ov] #TrailRails:int[ov] #TrailOpacity:float[ov] #PixelSize:float[ov] #TrailTaper:float[ov] #ThrustPitch(int)[ov] #OnStrikeStart(int)[ov] #OnTipStep(Vector2,Vector2,float)[ov] #OnTipHit(NPC,HitInfo,int)[ov]
+**TridentTuning.cs** uses: DashSettings, ThrustChain, ThrustPalette, ThrustTimeline
+  static class TridentTuning
+    +DashSpeed:float[s] +DashTicks:int[s] +LiquidDashMultiplier:float[s] +LiquidDashTicks:int[s] +BounceSpeed:float[s] +HitStopTicks:int[s] +BounceTicks:int[s] +BounceDrag:float[s] +GrazeCos:float[s] +BounceShake:float[s] +DamageMultiplier:float[s] +WindupTicks:int[s] +HoldTicks:int[s] +RecoverTicks:int[s] +PullBack:float[s] +EasePower:float[s] +CooldownTicks:int[s] +Chain:ThrustChain[s] +LiquidChain:ThrustChain[s] +Dash:DashSettings[s] +LiquidDash:DashSettings[s] +BuffRefreshTicks:int[s] +Reach:float[s] +SpearScale:float[s] +GripFraction:float[s] +HitWidth:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +PixelSize:float[s] +TrailTaper:float[s] +Palette:ThrustPalette[s]
+
+### Content/Weapons/Melee/PreHardmode/Yoyos/
 **AroundTheWorldTrick.cs** uses: YoyoContact, YoyoProjectile, YoyoTrick, YoyoTuning
   interface IAroundTheWorldTuning
     +AroundSpins:int +AroundReachMargin:float +AroundStartRadiusPx:float +AroundFlingTicks:int +AroundStartSpeed:float +AroundTopSpeed:float +AroundAccelTicks:int +AroundEndSpeed:float +AroundCatchRadiusPx:float +AroundArmBaseDeg:float +AroundArmUpDeg:float +AroundArmDownDeg:float +AroundSpriteSpin:float +AroundThroughBlocks:bool +AroundWhooshPerTurn:int
@@ -1156,7 +1156,7 @@ tModLoader/other bases -> project types:
   class YoyoTuning
     +TexturePath:string[v] +RopeLengthPx:float[v] +RopeLength() +RopePoints:int[v] +RopeSlackFactor:float[v] +RopeExtraSlack:float[v] +RopeGravity:float[v] +RopeTightenSpeed:float[v] +RopeMinLength:float[v] +RopeDamping:float[v] +RopeIterations:int[v] +RopeCollides:bool[v] +RopeSubdivisions:int[v] +RopeWidth:float[v] +RopeOutlineWidth:float[v] +RopeColor:Color[v] +RopeAltColor:Color[v] +RopeOutlineColor:Color[v] +HitboxSize:int[v] +HitCooldownTicks:int[v] +ArmFollow:float[v] +SyncEveryTicks:int[v] +UseSlopes:bool[v] +CollisionStepPx:float[v] +SweepHits:bool[v] +RopeWraps:bool[v] +RopeWrapMaxPivots:int[v] +RopeWrapClearancePx:float[v] +RopeWrapSnapSpeed:float[v] +IdleRestTicks:int[v] +IdleDropTicks:int[v] +IdleSpinTicks:int[v] +IdleRaiseTicks:int[v] +IdleDropPx:float[v] +IdleSwayPx:float[v] +IdleSpinRestSpeed:float[v] +IdleSpinSpeed:float[v] +IdleArmRestDeg:float[v] +IdleArmDropDeg:float[v] +ThrowArmStartDeg:float[v] +ThrowArmBlendTicks:int[v] +CatchArmDeg:float[v] +CatchArmBlendDistance:float[v] +ReleaseGraceTicks:int[v] +RethrowDelayTicks:int[v] +ReturnStartSpeed:float[v] +ReturnAccel:float[v] +ReturnMaxSpeed:float[v] +CatchDistance:float[v] +ReturnSpinSpeed:float[v] +SpinPerPixel:float[v] +HitShake:float[v] +Afterimages:bool[v] +AfterimageTicks:int[v] +AfterimageMinScale:float[v] +AfterimageMinSpeed:float[v] +AfterimageColor:Color[v]
 
-### Content/Weapons/Yoyos/Amazon/
+### Content/Weapons/Melee/PreHardmode/Yoyos/Amazon/
 **AmazonBarbedCoilProjectile.cs** uses: AmazonFx, AmazonTuning, VineCoil, VineCoilStyle
   class AmazonBarbedCoilProjectile : ModProjectile
     +Texture:string[ov] +CanHitNPC(NPC)[ov] +AI()[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
@@ -1185,7 +1185,7 @@ tModLoader/other bases -> project types:
   class AmazonWalkTheDogTrick : WalkTheDogTrick
     +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov]
 
-### Content/Weapons/Yoyos/Artery/
+### Content/Weapons/Melee/PreHardmode/Yoyos/Artery/
 **ArteryBleedNPC.cs** uses: ArteryTuning
   class ArteryBleedNPC : GlobalNPC
     +UpdateLifeRegen(NPC,ref int)[ov] +DrawEffects(NPC,ref Color)[ov]
@@ -1205,7 +1205,7 @@ tModLoader/other bases -> project types:
   class ArteryTuning : YoyoTuning, IForwardPassTuning, ILoopTuning
     +TexturePath:string[ov] +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +CollisionStepPx:float[ov] +SweepHits:bool[ov] +RopeWraps:bool[ov] +RopeWrapMaxPivots:int[ov] +RopeWrapClearancePx:float[ov] +RopeWrapSnapSpeed:float[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool +LassoMinReachPx:float +LassoTouchPaddingPx:float +LoopCatchTicks:int +LoopConstrictTicks:int +LoopWalkSpeedPx:float +LoopGapPx:float +LoopMinHandDistancePx:float +LoopRadiusPadPx:float +LoopMinRadiusPx:float +LoopMaxRadiusPx:float +LoopCloseRadiusPx:float +LoopSpinSpeed:float +LoopStringStepPx:float +LoopArcSamples:int +SnareMaxSizePx:float +ShredIntervalTicks:int +ShredDamageFraction:float +ShredShake:float +ExplosionRadiusPx:float +ExplosionDamageFraction:float +ExplosionKnockback:float +ExplosionShake:float +BleedingTicks:int +BleedDamagePerSecond:float
 
-### Content/Weapons/Yoyos/Cascade/
+### Content/Weapons/Melee/PreHardmode/Yoyos/Cascade/
 **CascadeBlastProjectile.cs** uses: CameraShake, CascadeTuning
   class CascadeBlastProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +CanHitNPC(NPC)[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
@@ -1225,7 +1225,7 @@ tModLoader/other bases -> project types:
   class CascadeTuning : YoyoTuning, IPopTheClutchTuning, IForwardPassTuning, ISleeperTuning, IChargeOutlineTuning
     +TexturePath:string[ov] +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +CollisionStepPx:float[ov] +SweepHits:bool[ov] +RopeWraps:bool[ov] +RopeWrapMaxPivots:int[ov] +RopeWrapClearancePx:float[ov] +RopeWrapSnapSpeed:float[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +PopWindupTicks:int +PopDangleBackPx:float +PopDangleDownPx:float +PopDangleSwayPx:float +PopDangleDropTicks:int +PopWindupArmDeg:float +PopWindupSpinStart:float +PopWindupSpinMax:float +PopWindupSpinCurve:float +PopPasses:int +PopPassTicks:int +PopThrowBlendTicks:int +PopRecallStartSpeed:float +PopRecallAccel:float +PopRecallMaxSpeed:float +PopRecallArrivePx:float +PopResetHitsPerPass:bool +PopHoldToWindup:bool +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool +SleeperDropPx:float +SleeperDropTicks:int +SleeperSwayPx:float +SleeperChargeTicks:int +SleeperStartSpin:float +SleeperMaxSpin:float +SleeperSpinCurve:float +SleeperArmDeg:float +OutlineWidth:float +OutlinePulseTicks:int +OutlineMin:float +OutlineMax:float +OutlineEase:float +GlowScale:float +GlowAlpha:float +OutlineColor:Color +OutlineCoreColor:Color +ChargedRopeColor:Color +ChargedRopeAltColor:Color +ChargedRopeOutlineColor:Color +FireRopeFlickerSpeed:float +EmberChanceWaiting:float +EmberChanceFlying:float +LightRed:float +LightGreen:float +LightBlue:float +PopOnFireTicks:int +BlastDamageFraction:float +BlastKnockbackScale:float +BlastRadiusPx:float +BlastTicks:int +BlastOnFireTicks:int +BlastShake:float +BlastSparks:int +BlastSmoke:int
 
-### Content/Weapons/Yoyos/Code1/
+### Content/Weapons/Melee/PreHardmode/Yoyos/Code1/
 **Code1Fx.cs** uses: YoyoFx
   class Code1Fx : YoyoFx
     #ChipDust:int[ov] +Throw(Vector2,int)[ov]
@@ -1241,7 +1241,7 @@ tModLoader/other bases -> project types:
   class Code1Tuning : YoyoTuning, IForwardPassTuning
     +TexturePath:string[ov] +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +CollisionStepPx:float[ov] +SweepHits:bool[ov] +RopeWraps:bool[ov] +RopeWrapMaxPivots:int[ov] +RopeWrapClearancePx:float[ov] +RopeWrapSnapSpeed:float[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool
 
-### Content/Weapons/Yoyos/HiveFive/
+### Content/Weapons/Melee/PreHardmode/Yoyos/HiveFive/
 **HiveFiveFx.cs** uses: YoyoFx
   class HiveFiveFx : YoyoFx
     #ChipDust:int[ov] +SpinWhoosh(Vector2,float)[ov] +Charging(Vector2,float)[ov] +ChargeReady(Vector2)[ov] +ChargedDrip(Vector2) +BeeBurst(Vector2) +SpinTrail(Vector2,Vector2,float)[ov]
@@ -1261,7 +1261,7 @@ tModLoader/other bases -> project types:
   class HiveFiveTuning : YoyoTuning, IAroundTheWorldTuning, ISleeperTuning, IChargeOutlineTuning
     +TexturePath:string[ov] +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +CollisionStepPx:float[ov] +SweepHits:bool[ov] +RopeWraps:bool[ov] +RopeWrapMaxPivots:int[ov] +RopeWrapClearancePx:float[ov] +RopeWrapSnapSpeed:float[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +AroundSpins:int +AroundReachMargin:float +AroundStartRadiusPx:float +AroundFlingTicks:int +AroundStartSpeed:float +AroundTopSpeed:float +AroundAccelTicks:int +AroundEndSpeed:float +AroundCatchRadiusPx:float +AroundArmBaseDeg:float +AroundArmUpDeg:float +AroundArmDownDeg:float +AroundSpriteSpin:float +AroundThroughBlocks:bool +AroundWhooshPerTurn:int +ChargedSpins:int +SleeperDropPx:float +SleeperDropTicks:int +SleeperSwayPx:float +SleeperChargeTicks:int +SleeperStartSpin:float +SleeperMaxSpin:float +SleeperSpinCurve:float +SleeperArmDeg:float +HoneyTrailGrid:float +HoneyTrailLifeTicks:int +HoneyTrailWidth:float +HoneyTrailSamplesPerTick:int +HoneyTrailJitter:float +HoneyTrailDripChance:float +HoneyTrailOuterColor:Color +HoneyTrailCoreColor:Color +BeeIntervalTicks:int +BeeMaxPerSpin:int +BeeSpeed:float +BeeDamageFraction:float +GiantBeeChance:float +GiantBeeDamageFraction:float +HoneyPerHitTicks:int +HoneyBuffMaxTicks:int +OutlineWidth:float +OutlinePulseTicks:int +OutlineMin:float +OutlineMax:float +OutlineEase:float +GlowScale:float +GlowAlpha:float +OutlineColor:Color +OutlineCoreColor:Color +ChargedRopeColor:Color +ChargedRopeAltColor:Color +ChargedRopeOutlineColor:Color
 
-### Content/Weapons/Yoyos/Malaise/
+### Content/Weapons/Melee/PreHardmode/Yoyos/Malaise/
 **MalaiseFx.cs** uses: CameraShake, LoopYoyoFx
   class MalaiseFx : LoopYoyoFx
     #ChipDust:int[ov] +Throw(Vector2,int)[ov] +LoopCatch(Vector2)[ov] +LoopShred(Vector2,float)[ov] +LoopClose(Vector2)[ov] +RockTriangle(Vector2,Vector2,Vector2) +RockSwingEnd(Vector2,float) +RockSwingTrail(Vector2,Vector2,float) +RockRelease(Vector2,Vector2,bool)
@@ -1281,7 +1281,7 @@ tModLoader/other bases -> project types:
   class MalaiseTuning : YoyoTuning, IForwardPassTuning, ILoopTuning
     +TexturePath:string[ov] +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +CollisionStepPx:float[ov] +SweepHits:bool[ov] +RopeWraps:bool[ov] +RopeWrapMaxPivots:int[ov] +RopeWrapClearancePx:float[ov] +RopeWrapSnapSpeed:float[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool +LassoMinReachPx:float +LassoTouchPaddingPx:float +LoopCatchTicks:int +LoopConstrictTicks:int +LoopWalkSpeedPx:float +LoopGapPx:float +LoopMinHandDistancePx:float +LoopRadiusPadPx:float +LoopMinRadiusPx:float +LoopMaxRadiusPx:float +LoopCloseRadiusPx:float +LoopSpinSpeed:float +LoopStringStepPx:float +LoopArcSamples:int +SnareMaxSizePx:float +ShredIntervalTicks:int +ShredDamageFraction:float +ShredShake:float +ConfusedTicks:int +SeekRadiusPx:float +SeekMinRadiusFraction:float +SeekReachMarginPx:float +SeekTicks:int +SeekStartSpeedPx:float +SeekSpeedPx:float +SeekAccelPx:float +SeekTurnRate:float +SeekTouchPadPx:float +WrapRadiusScale:float +WrapRadiusMinPx:float +WrapRadiusMaxPx:float +WrapGrowTicks:int +HookTicks:int +HookArriveScale:float +PendulumStartTicks:int +PendulumEndTicks:int +PendulumSpeedUpTicks:int +PendulumRampInTicks:int +PendulumSwing:float +PendulumMinTicks:int +MaxHoldTicks:int +BreakStretch:float +RockSpinSpeed:float +FaceDeadzonePx:float +FliesThroughBlocks:bool +HoldEnemies:bool
 
-### Content/Weapons/Yoyos/Rally/
+### Content/Weapons/Melee/PreHardmode/Yoyos/Rally/
 **RallyFx.cs** uses: YoyoFx
   class RallyFx : YoyoFx
     #ChipDust:int[ov] +Throw(Vector2,int)[ov] +Crack(Vector2,int)[v] +Break(Vector2)[v] +ShardTrail(Vector2,Vector2)[v] +ShardBounce(Vector2,float)[v] +ShardHit(Vector2)[v] +ShardBreak(Vector2)[v]
@@ -1301,7 +1301,7 @@ tModLoader/other bases -> project types:
   class RallyTuning : YoyoTuning, IForwardPassTuning
     +TexturePath:string[ov] +Crack1TexturePath:string +Crack2TexturePath:string +ShardTexturePath:string +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +CollisionStepPx:float[ov] +SweepHits:bool[ov] +RopeWraps:bool[ov] +RopeWrapMaxPivots:int[ov] +RopeWrapClearancePx:float[ov] +RopeWrapSnapSpeed:float[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool +CrackHitsToBreak:int +MaxCountedHitsPerSwing:int +BreakShake:float +ShellShardCount:int +ShardDamageFactor:float +ShardMaxHits:int +ShardLaunchSpeedMin:float +ShardLaunchSpeedMax:float +ShardLaunchUp:float +ShardInheritVelocity:float +ShardGravity:float +ShardMaxFallSpeed:float +ShardAirDrag:float +ShardBounceDamp:float +ShardRestSpeed:float +ShardGroundFriction:float +ShardSpin:float +ShardLifeTicks:int +ShardFadeTicks:int +ShardSize:int
 
-### Content/Weapons/Yoyos/Valor/
+### Content/Weapons/Melee/PreHardmode/Yoyos/Valor/
 **ValorAroundTheWorldTrick.cs** uses: AroundTheWorldTrick, YoyoTuning
   class ValorAroundTheWorldTrick : AroundTheWorldTrick
 **ValorFx.cs** uses: YoyoFx
@@ -1319,7 +1319,7 @@ tModLoader/other bases -> project types:
   class ValorTuning : YoyoTuning, IPopTheClutchTuning, IForwardPassTuning, IAroundTheWorldTuning
     +TexturePath:string[ov] +RopeLengthPx:float[ov] +RopePoints:int[ov] +RopeSlackFactor:float[ov] +RopeExtraSlack:float[ov] +RopeGravity:float[ov] +RopeTightenSpeed:float[ov] +RopeMinLength:float[ov] +RopeDamping:float[ov] +RopeIterations:int[ov] +RopeCollides:bool[ov] +RopeSubdivisions:int[ov] +RopeWidth:float[ov] +RopeOutlineWidth:float[ov] +RopeColor:Color[ov] +RopeAltColor:Color[ov] +RopeOutlineColor:Color[ov] +HitboxSize:int[ov] +HitCooldownTicks:int[ov] +ArmFollow:float[ov] +SyncEveryTicks:int[ov] +UseSlopes:bool[ov] +CollisionStepPx:float[ov] +SweepHits:bool[ov] +RopeWraps:bool[ov] +RopeWrapMaxPivots:int[ov] +RopeWrapClearancePx:float[ov] +RopeWrapSnapSpeed:float[ov] +IdleRestTicks:int[ov] +IdleDropTicks:int[ov] +IdleSpinTicks:int[ov] +IdleRaiseTicks:int[ov] +IdleDropPx:float[ov] +IdleSwayPx:float[ov] +IdleSpinRestSpeed:float[ov] +IdleSpinSpeed:float[ov] +IdleArmRestDeg:float[ov] +IdleArmDropDeg:float[ov] +ThrowArmStartDeg:float[ov] +ThrowArmBlendTicks:int[ov] +CatchArmDeg:float[ov] +CatchArmBlendDistance:float[ov] +ReleaseGraceTicks:int[ov] +RethrowDelayTicks:int[ov] +ReturnStartSpeed:float[ov] +ReturnAccel:float[ov] +ReturnMaxSpeed:float[ov] +CatchDistance:float[ov] +ReturnSpinSpeed:float[ov] +SpinPerPixel:float[ov] +HitShake:float[ov] +Afterimages:bool[ov] +AfterimageTicks:int[ov] +AfterimageMinScale:float[ov] +AfterimageMinSpeed:float[ov] +AfterimageColor:Color[ov] +PopWindupTicks:int +PopDangleBackPx:float +PopDangleDownPx:float +PopDangleSwayPx:float +PopDangleDropTicks:int +PopWindupArmDeg:float +PopWindupSpinStart:float +PopWindupSpinMax:float +PopWindupSpinCurve:float +PopPasses:int +PopPassTicks:int +PopThrowBlendTicks:int +PopRecallStartSpeed:float +PopRecallAccel:float +PopRecallMaxSpeed:float +PopRecallArrivePx:float +PopResetHitsPerPass:bool +PopHoldToWindup:bool +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool +AroundSpins:int +AroundReachMargin:float +AroundStartRadiusPx:float +AroundFlingTicks:int +AroundStartSpeed:float +AroundTopSpeed:float +AroundAccelTicks:int +AroundEndSpeed:float +AroundCatchRadiusPx:float +AroundArmBaseDeg:float +AroundArmUpDeg:float +AroundArmDownDeg:float +AroundSpriteSpin:float +AroundThroughBlocks:bool +AroundWhooshPerTurn:int
 
-### Content/Weapons/Yoyos/WoodenYoyo/
+### Content/Weapons/Melee/PreHardmode/Yoyos/WoodenYoyo/
 **WoodenYoyoFx.cs** uses: YoyoFx
   class WoodenYoyoFx : YoyoFx
     #ChipDust:int[ov]

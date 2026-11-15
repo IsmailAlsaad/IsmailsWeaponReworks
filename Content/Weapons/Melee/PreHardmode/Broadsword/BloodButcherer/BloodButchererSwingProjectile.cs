@@ -1,0 +1,1135 @@
+﻿using IsmailsWeaponReworks.Common;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
+using System;
+using Terraria;
+using Terraria.GameContent;
+using Terraria.ID;
+using Terraria.ModLoader;
+
+namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BloodButcherer
+{
+    /// <summary>
+    /// The held Blood Butcherer. It draws the jawed blade, poses the owner's arm and runs the bite (left click): WINDUP (pull back),
+    /// THRUST (lunge along the aim, jaws shut so it looks like a normal sword), OPEN (the two halves pivot open on the handle and
+    /// show their teeth), GAPE (hangs open), BITE (the jaws slam shut). The bite is the only part that damages. At the start of the
+    /// bite the owner checks the catch wedge (the triangle between the pivot and the two open jaw tips): an enemy inside is CAUGHT,
+    /// otherwise it is a MISS (which recovers). A caught enemy that can be gripped is pinned in the shut jaws (GRIP: the blade drags it
+    /// in, spins it for as long as the button is held and throws it at the cursor when the button is released, see BloodButchererGripNPC); one that cannot (boss, worm, immovable, too big)
+    /// is CHOMPED (the jaws snap open and shut very fast six times, see ChompStep). A blood tether ties the blade's handle to the player's real hand the whole time.
+    /// MULTIPLAYER: the owner's client decides everything (the click, the aim, the catch) and passes what the other machines need in
+    /// the spawn packet: ai[2] = the aim angle (the player's own frame; the owner rewrites it when the player releases the button during
+    /// a grip, and the last value is the throw direction, and at the end of every chomp so the jaws turn to the cursor). The decision
+    /// travels in ai[0] (0 undecided, 1 miss, 2 clamp, 3 grip; once the button is released during a grip, ai[0] = 3 + 10 * the timeline
+    /// tick of the release) and ai[1] (caught enemy index + 1) with netUpdate. Every machine runs the same timers for the pose, jaws, sounds,
+    /// dust and trails; at the end of the bite a non-owner waits in the shut pose for the decision (BloodButchererTuning.DecideWaitTicks)
+    /// and assumes a miss if it never arrives. Hits are detected by the owner's client like any projectile. No custom packets.
+    /// </summary>
+    public class BloodButchererSwingProjectile : ModProjectile
+    {
+        // The vanilla item sprite is the fallback projectile sprite (until the three art files exist).
+        public override string Texture => "Terraria/Images/Item_" + ItemID.BloodButcherer;
+
+        public enum Branch { Undecided = 0, Miss = 1, Clamp = 2, Grip = 3 }
+
+        static Asset<Texture2D> handleArt;
+        static Asset<Texture2D> upperArt;
+        static Asset<Texture2D> lowerArt;
+
+        Branch Decision => (Branch)((int)Projectile.ai[0] % 10); // ai[0] = the branch + 10 * the release tick during a grip (see ReleaseAt)
+        int CaughtIndex => (int)Projectile.ai[1] - 1;
+        float Aim => Projectile.ai[2];
+        Player Owner => Main.player[Projectile.owner];
+        bool IsOwner => Projectile.owner == Main.myPlayer;
+        int Facing => facing != 0 ? facing : (Math.Cos(Projectile.ai[2]) >= 0.0 ? 1 : -1); // a bite faces the side of its first aim on every machine, also while the blade spins behind the player
+
+        // Per-machine state: counters and visuals, never synced.
+        int ticks;               // ticks this machine has run this projectile
+        float timer;             // ticks along the timeline (frozen while waiting for the owner's decision)
+        float speedScale = 1f;   // timeline ticks per real tick (melee attack speed), read from the spawn velocity on the first tick
+        int waited;              // ticks spent waiting for it
+        bool decided;            // owner only: the catch decision has been made
+        bool clampPlayed;        // the clamp effects have played
+        float flash;             // 1 right after a bite or a clamp, fades to 0
+        float jawOpen;           // 0..1: how far the jaws are open on this tick
+        Vector2 handPos;         // the hand, pushed along the aim by the lunge (also Projectile.Center)
+        Vector2 pivot;           // where the jaws pivot
+        Vector2 bladeDir;        // the blade's direction (a unit vector)
+        float jawLength;         // pivot to the jaw tips, in pixels (scaled)
+        int facing;              // set on the first tick: the side the first aim pointed to
+        float startAim;          // the aim the bite started with (the player's own frame)
+        float prevTimer = -1f;   // the timeline value of the previous tick
+        float throwAt = -1f;     // the timeline time of the throw, computed on every machine from the release the owner synced; -1 while the button is still held
+        float chompAngle;        // the blade's angle during the chomps: it turns toward ai[2], which the owner rewrites at the end of every chomp
+        float lastBlade;         // last tick's blade angle, for the angular speed
+        float angularSpeed;      // radians per tick the blade turned this tick
+        bool bladeKnown;
+        float windStart = -1f;   // the timeline time the spin ended (the throw, or the enemy dying first); -1 while it is still spinning
+        float windAngle;         // the blade's angle at that moment (the player's own frame)
+        float windOmega;         // its angular speed then (radians per tick, signed)
+        float windOffset;        // how far out it was pushed then
+        bool thrown;             // the enemy really was thrown (so the jaws fly open)
+        SweepTrail spinTrail;    // the fan the spinning blade leaves (null until the spin starts)
+        bool grabbed;            // the pin has started on this machine
+        Vector2 grabFrom;        // where the enemy was when it was caught (the pull starts here)
+        int gripClock;           // ticks spent gripping (owner: paces the periodic hits)
+        int launchUntil = -1;    // owner: the throw hit may land until this tick
+        int spinSoundClock;
+        Vector2 armHand;         // the owner's real hand: where the tether starts
+        Vector2 tetherBend;
+        float tetherStretch;
+        BloodButchererTether tether;
+        Vector2 lastOwnerCenter; // the trail interpolates the owner's movement from it
+        PixelTrail jawA;         // the line each jaw tip leaves (null until the thrust starts)
+        PixelTrail jawB;
+        Vector2 lastTipA;
+        Vector2 lastTipB;
+        bool hasTips;
+        bool jawTrailsCut;       // the bite's two jaw lines were told to vanish when the spin started
+        Vector2 prevBladeDir;    // last tick's blade direction and hand: the spinning blade tests the whole area it swept since then
+        Vector2 prevHandPos;
+        int sweepClock;          // owner: paces the spinning blade's repeat hits
+        int lastChompCycle = -1; // the chomp cycle whose hit re-arm has run
+        int lastChompClose = -1; // the chomp cycle whose closing effects have run
+        float chompStop = -1f;   // the timeline time the chomps end early (the enemy died), -1 while they run their full count
+
+        // ---- timeline ----
+
+        static int ThrustStart => BloodButchererTuning.WindupTicks;
+        static int OpenStart => ThrustStart + BloodButchererTuning.ThrustTicks;
+        static int GapeStart => OpenStart + BloodButchererTuning.OpenTicks;
+        static int BiteStart => GapeStart + BloodButchererTuning.GapeTicks;
+        static int BiteEnd => BiteStart + BloodButchererTuning.BiteTicks;
+        static int PullEnd => BiteEnd + BloodButchererTuning.PullTicks;        // grip: the enemy is dragged to the middle of the mouth
+        // grip: the spin has no fixed end. The owner releases the button, the aim is locked then, and the throw comes when the blade next
+        // points at it (throwAt). Until then the end is infinitely far away.
+        float SpinEndTime => windStart >= 0f ? windStart : (throwAt >= 0f ? throwAt : float.PositiveInfinity);
+        int ReleaseAt => (int)Projectile.ai[0] / 10; // grip: the timeline tick the owner released the button at (0 = still held)
+
+        // What this machine believes happened: a non-owner that never hears the decision assumes a miss.
+        Branch Resolved
+        {
+            get
+            {
+                Branch branch = Decision;
+                return branch == Branch.Undecided && waited >= BloodButchererTuning.DecideWaitTicks ? Branch.Miss : branch;
+            }
+        }
+
+        // Timeline times are floats: the timeline advances by speedScale per tick, so it does not land on whole numbers any more.
+        float RecoverStart
+        {
+            get
+            {
+                switch (Resolved)
+                {
+                    case Branch.Clamp: return chompStop >= 0f ? chompStop : BiteEnd + BloodButchererTuning.ChompCount * BloodButchererTuning.ChompTicks;
+                    case Branch.Grip: return SpinEndTime + BloodButchererTuning.WindDownTicks; // no end while the button is held; after the throw the blade keeps spinning and slows down until then
+                    default: return BiteEnd;
+                }
+            }
+        }
+        float TotalTicks => RecoverStart + (Resolved == Branch.Grip ? BloodButchererTuning.WindDownRecoverTicks : BloodButchererTuning.RecoverTicks);
+
+        // The timeline stepped over this time during this tick (one-shot effects use it: a fast timeline can skip whole ticks).
+        bool Crossed(float at)
+        {
+            return prevTimer < at && timer >= at;
+        }
+        bool Caught => Resolved == Branch.Clamp || Resolved == Branch.Grip;
+        // The bite, then (grip) the held ticks until the spin ends, then only the throw's own tick or two. An enemy that died first ends it at once.
+        bool BiteDamaging => timer >= BiteStart && timer < BiteEnd;
+        // The pinned enemy takes its hits while it is held and for the throw's own tick or two. An enemy that died first closes it at once.
+        bool CaughtDamaging => Resolved == Branch.Grip && timer >= BiteEnd && (windStart < 0f || (thrown && timer < windStart + 2f));
+        // The spinning blade cuts any other enemy it passes through while it is fast (also during the wind-down, also if the gripped enemy died).
+        bool SweepHitting => Resolved == Branch.Grip && timer >= PullEnd && timer < RecoverStart && Math.Abs(RealOmegaAt(timer)) >= BloodButchererTuning.SpinSweepMinSpeed;
+        // The chomps only damage while one is closing.
+        bool ChompClosing => Resolved == Branch.Clamp && timer >= BiteEnd && timer < RecoverStart && ChompPhase(timer) >= 0.5f;
+        bool Damaging => BiteDamaging || CaughtDamaging || SweepHitting || ChompClosing;
+
+        // 0..1 along the current chomp cycle (the first half opens, the second half closes).
+        float ChompPhase(float time)
+        {
+            float length = Math.Max(1, BloodButchererTuning.ChompTicks);
+            return (time - BiteEnd) % length / length;
+        }
+
+        NPC CaughtNpc
+        {
+            get
+            {
+                int index = CaughtIndex;
+                return index >= 0 && index < Main.maxNPCs && Main.npc[index].active ? Main.npc[index] : null;
+            }
+        }
+
+        // An enemy the jaws can pin and throw: not a boss, not a worm segment, not immovable, not huge. Anything else is chomped (the jaws chew it six times).
+        static bool CanGrip(NPC npc)
+        {
+            return Snarable.CanGrip(npc, BloodButchererTuning.MaxGrabSize);
+        }
+
+        // The world direction of an aim given in the player's own frame.
+        Vector2 WorldDir(float aim)
+        {
+            return (Owner.gravDir == -1f ? -aim : aim).ToRotationVector2();
+        }
+
+        // The blade's angle (the player's own frame) at a time on the timeline: the first aim until the spin (a chomp: it turns toward the
+        // cursor after every chomp); then the spin turns the blade toward the side the first aim faced, accelerating over SpinTicks to one full
+        // circle at top speed and then holding that speed for as long as the button is held; after the throw (or when the enemy died first)
+        // it keeps that speed and slows down evenly to a stop.
+        float AngleAt(float time)
+        {
+            if (Resolved == Branch.Clamp)
+                return time >= BiteEnd ? chompAngle : startAim;
+            if (Resolved != Branch.Grip)
+                return startAim;
+            if (windStart >= 0f && time >= windStart)
+            {
+                float span = Math.Max(1, BloodButchererTuning.WindDownTicks);
+                float s = MathHelper.Clamp((time - windStart) / span, 0f, 1f);
+                return windAngle + windOmega * span * (s - 0.5f * s * s);
+            }
+            return SpinAngleAt(time);
+        }
+
+        // Angular speed (radians per tick, signed) at a time: the same two phases as AngleAt.
+        float OmegaAt(float time)
+        {
+            if (Resolved != Branch.Grip)
+                return 0f;
+            if (windStart >= 0f && time >= windStart)
+                return windOmega * (1f - MathHelper.Clamp((time - windStart) / Math.Max(1, BloodButchererTuning.WindDownTicks), 0f, 1f));
+            return SpinOmegaAt(time);
+        }
+
+        // The same in radians per REAL tick (the timeline may run faster or slower than one tick per tick): what trails, dust, sounds and the
+        // cutting threshold care about.
+        float RealOmegaAt(float time)
+        {
+            return OmegaAt(time) * speedScale;
+        }
+
+        // How far the blade has turned in the spin (radians, unsigned) at a time: it eases in over SpinTicks (linear speed-up) and is then at
+        // exactly one full circle and at top speed; from there it turns at that speed for as long as the button is held. No cap.
+        static float SpinSweepAt(float time)
+        {
+            float span = Math.Max(1, BloodButchererTuning.SpinTicks);
+            float t = Math.Max(0f, time - PullEnd);
+            float top = BloodButchererTuning.SpinTopSpeed;
+            if (t <= span)
+                return top * t * t / (2f * span);
+            return MathHelper.TwoPi + top * (t - span);
+        }
+
+        float SpinAngleAt(float time)
+        {
+            if (time <= PullEnd)
+                return startAim;
+            return startAim + Facing * SpinSweepAt(time);
+        }
+
+        float SpinOmegaAt(float time)
+        {
+            if (time <= PullEnd)
+                return 0f;
+            float span = Math.Max(1, BloodButchererTuning.SpinTicks);
+            return Facing * BloodButchererTuning.SpinTopSpeed * Math.Min(time - PullEnd, span) / span;
+        }
+
+        // Every machine, from the release the owner synced (ReleaseAt, and ai[2] = the aim locked then): the first moment after the release
+        // (and after the first full circle) at which the blade points exactly at that aim. The blade turns by SpinSweepAt, so the sweep has
+        // to be 'ahead' (the angle from the first aim to the locked aim, in the spin direction) plus a whole number of circles, at least one.
+        float ComputeThrowTime()
+        {
+            float span = Math.Max(1, BloodButchererTuning.SpinTicks);
+            float earliest = Math.Max(ReleaseAt + BloodButchererTuning.LockTicks, PullEnd + span);
+            float ahead = Facing * (Projectile.ai[2] - startAim);
+            ahead -= MathHelper.TwoPi * (float)Math.Floor(ahead / MathHelper.TwoPi); // 0 to 360 degrees
+            float circles = Math.Max(1f, (float)Math.Ceiling((SpinSweepAt(earliest) - ahead) / MathHelper.TwoPi));
+            float sweep = ahead + MathHelper.TwoPi * circles; // at least one circle, so it is in the constant-speed part
+            return PullEnd + span + (sweep - MathHelper.TwoPi) / Math.Max(0.001f, BloodButchererTuning.SpinTopSpeed);
+        }
+
+        // The spin is over (the throw, or the enemy is gone): from here on the blade keeps its angle, speed and reach and slows down from them.
+        void BeginWindDown(float at)
+        {
+            windAngle = SpinAngleAt(at);
+            windOmega = SpinOmegaAt(at);
+            windOffset = OffsetAt(at);
+            windStart = at;
+        }
+
+        // How far the blade is pushed along the aim from the hand (negative = pulled back).
+        float OffsetAt(float time)
+        {
+            float pull = BloodButchererTuning.WindupPullback;
+            float thrust = BloodButchererTuning.ThrustDistance;
+            float held = thrust + BloodButchererTuning.BiteLungeDistance;
+            if (time < ThrustStart)
+                return MathHelper.Lerp(0f, -pull, MathHelper.SmoothStep(0f, 1f, time / Math.Max(1, ThrustStart)));
+            if (time < OpenStart)
+            {
+                float u = (time - ThrustStart) / Math.Max(1, BloodButchererTuning.ThrustTicks);
+                return MathHelper.Lerp(-pull, thrust, 1f - (float)Math.Pow(1f - u, 3)); // fast out, slowing at the end
+            }
+            if (time < BiteStart)
+                return thrust;
+            if (time < BiteEnd)
+            {
+                float u = (time - BiteStart) / Math.Max(1, BloodButchererTuning.BiteTicks);
+                return MathHelper.Lerp(thrust, held, 1f - (float)Math.Pow(1f - u, 2));
+            }
+            if (time < RecoverStart)
+            {
+                if (Resolved != Branch.Grip)
+                    return held;
+                float spin = BloodButchererTuning.SpinOffset;
+                if (windStart >= 0f && time >= windStart) // the wind-down: it comes back in to the player while it slows
+                    return MathHelper.Lerp(windOffset, 0f, MathHelper.SmoothStep(0f, 1f, (time - windStart) / Math.Max(1, BloodButchererTuning.WindDownTicks)));
+                if (time < PullEnd) // the blade comes back in, dragging the enemy
+                    return MathHelper.Lerp(held, spin, MathHelper.SmoothStep(0f, 1f, (time - BiteEnd) / Math.Max(1, BloodButchererTuning.PullTicks)));
+                return spin;
+            }
+            if (Resolved == Branch.Grip)
+                return 0f; // the blade is back in the hand
+            return MathHelper.Lerp(held, 0f, MathHelper.SmoothStep(0f, 1f, (time - RecoverStart) / Math.Max(1, BloodButchererTuning.RecoverTicks)));
+        }
+
+        // 0 = shut, 1 = fully open: eases open, hangs, then slams shut with an ease-in so the bite lands hard.
+        float OpenAt(float time)
+        {
+            if (time < OpenStart)
+                return 0f;
+            if (time < GapeStart)
+            {
+                float u = (time - OpenStart) / Math.Max(1, BloodButchererTuning.OpenTicks);
+                return 1f - (float)Math.Pow(1f - u, 3);
+            }
+            if (time < BiteStart)
+                return 1f;
+            if (time < BiteEnd)
+            {
+                float u = (time - BiteStart) / Math.Max(1, BloodButchererTuning.BiteTicks);
+                return 1f - (float)Math.Pow(u, 2.5);
+            }
+            if (Resolved == Branch.Clamp && time < RecoverStart)
+            {
+                // The chomps: every cycle the jaws snap open over its first half and slam shut over the second.
+                float phase = ChompPhase(time);
+                float amount = BloodButchererTuning.ChompOpenAmount;
+                if (phase < 0.5f)
+                {
+                    float u = phase / 0.5f;
+                    return amount * (1f - (1f - u) * (1f - u));
+                }
+                return amount * (1f - (float)Math.Pow((phase - 0.5f) / 0.5f, 2.5));
+            }
+            if (Resolved != Branch.Grip || !thrown || windStart < 0f || time < windStart)
+                return 0f; // shut: the bite, the grip and the spin, and a blade whose enemy died before the throw
+            // The throw: the jaws fly open, hang open for a moment, then close again while the blade slows down.
+            float since = time - windStart;
+            if (since < BloodButchererTuning.ReleaseOpenTicks)
+            {
+                float u = since / Math.Max(1, BloodButchererTuning.ReleaseOpenTicks);
+                return 1f - (1f - u) * (1f - u);
+            }
+            float holdEnd = BloodButchererTuning.ReleaseOpenTicks + BloodButchererTuning.ReleaseHoldTicks;
+            if (since < holdEnd)
+                return 1f;
+            return 1f - MathHelper.SmoothStep(0f, 1f, (since - holdEnd) / Math.Max(1f, BloodButchererTuning.WindDownTicks - holdEnd));
+        }
+
+        // ---- AI ----
+
+        public override void SetDefaults()
+        {
+            Projectile.width = 40;
+            Projectile.height = 40;
+            Projectile.aiStyle = -1;
+            Projectile.friendly = true;
+            Projectile.DamageType = DamageClass.Melee;
+            Projectile.penetrate = -1;
+            Projectile.tileCollide = false;
+            Projectile.ignoreWater = true;
+            Projectile.timeLeft = 10000; // ended by the AI, never by this countdown
+            Projectile.usesLocalNPCImmunity = true;
+            Projectile.localNPCHitCooldown = -1; // every enemy once per bite
+            Projectile.ownerHitCheck = true;
+        }
+
+        public override void Load()
+        {
+            if (Main.dedServ)
+                return;
+            ModContent.RequestIfExists<Texture2D>("IsmailsWeaponReworks/Content/Weapons/Melee/PreHardmode/Broadsword/BloodButcherer/BloodButchererHandle", out handleArt);
+            ModContent.RequestIfExists<Texture2D>("IsmailsWeaponReworks/Content/Weapons/Melee/PreHardmode/Broadsword/BloodButcherer/BloodButchererJawUpper", out upperArt);
+            ModContent.RequestIfExists<Texture2D>("IsmailsWeaponReworks/Content/Weapons/Melee/PreHardmode/Broadsword/BloodButcherer/BloodButchererJawLower", out lowerArt);
+        }
+
+        public override void Unload()
+        {
+            handleArt = null;
+            upperArt = null;
+            lowerArt = null;
+        }
+
+        public override void AI()
+        {
+            Player owner = Owner;
+
+            // Gone with the player, with the item in their hand, or when they get crowd-controlled (a stun or a freeze).
+            if (!owner.active || owner.dead || owner.noItems || owner.CCed || owner.HeldItem.type != ItemID.BloodButcherer)
+            {
+                Projectile.Kill();
+                return;
+            }
+
+            if (timer >= TotalTicks)
+            {
+                owner.itemAnimation = 0; // the next use may start on the very next tick
+                owner.itemTime = 0;
+                Projectile.Kill();
+                return;
+            }
+
+            if (ticks == 0)
+            {
+                lastOwnerCenter = owner.Center;
+                startAim = Projectile.ai[2]; // the spawn packet carries it, so every machine starts from the same aim
+                chompAngle = startAim;
+                speedScale = Projectile.velocity.X > 0.01f ? MathHelper.Clamp(Projectile.velocity.X, BloodButchererTuning.SpeedScaleMin, BloodButchererTuning.SpeedScaleMax) : 1f; // also from the spawn packet
+                Projectile.velocity = Vector2.Zero;
+                facing = Math.Cos(startAim) >= 0.0 ? 1 : -1;
+                if (IsOwner)
+                    owner.ChangeDir(Facing);
+            }
+
+            Projectile.timeLeft = 10000; // a held spin has no fixed end, so the countdown is refilled every tick
+            Projectile.scale = BloodButchererTuning.SwordScale * owner.GetAdjustedItemScale(owner.HeldItem);
+            UpdateAim();
+            jawOpen = OpenAt(timer);
+
+            owner.itemAnimation = 2; // keeps the item "in use" for as long as the blade is out
+            owner.itemTime = 2;
+            ApplyPose(owner);
+
+            if (IsOwner && !decided && timer >= BiteStart)
+                Decide();
+
+            GripStep();
+            ChompStep();
+            SweepStep();
+            UpdateTether();
+            Effects();
+            LayTrail();
+
+            flash = Math.Max(0f, flash - 1f / Math.Max(1, BloodButchererTuning.FlashTicks));
+            jawA?.Tick();
+            jawB?.Tick();
+            spinTrail?.Tick();
+            lastOwnerCenter = owner.Center;
+            ticks++;
+
+            // At the end of the bite a machine that has not heard the owner's decision yet holds the shut pose for a moment.
+            // The timeline advances by speedScale per tick and arrives exactly on the end of the bite while it waits.
+            bool undecided = Decision == Branch.Undecided && waited < BloodButchererTuning.DecideWaitTicks;
+            prevTimer = timer;
+            if (undecided && timer >= BiteEnd)
+                waited++;
+            else if (undecided && timer + speedScale >= BiteEnd)
+                timer = BiteEnd;
+            else if (Resolved == Branch.Grip && windStart < 0f && throwAt >= 0f && timer < throwAt && timer + speedScale >= throwAt)
+                timer = throwAt; // lands exactly on the throw, so the blade points exactly at the aim even on a fast timeline
+            else
+                timer += speedScale;
+        }
+
+        // ---- grip: aim, spin, pin and throw ----
+
+        // The aim, once the bite has caught something.
+        // GRIP: the blade spins for as long as the owner holds the button. On the release the owner locks the aim at the cursor and writes
+        // the release tick into ai[0] (with netUpdate); every machine then works out the same throw time from those two numbers (the first
+        // moment the blade points at the aim, after at least one full circle and LockTicks) and throws then. A machine that hears about it
+        // late throws at once. The player faces the cursor for the whole spin and the wind-down.
+        // CHOMP: the jaws turn toward ai[2], which the owner rewrites at the end of every chomp.
+        void UpdateAim()
+        {
+            if (Resolved == Branch.Clamp)
+            {
+                UpdateChompAim();
+                return;
+            }
+            if (Resolved != Branch.Grip || timer < BiteEnd)
+                return;
+
+            if (IsOwner)
+                Owner.ChangeDir(Main.MouseWorld.X >= Owner.Center.X ? 1 : -1);
+            if (windStart >= 0f)
+                return; // the throw is done (or the enemy died), the aim is final
+
+            if (IsOwner && ReleaseAt == 0 && timer >= PullEnd && !Owner.controlUseItem)
+            {
+                AimAtCursor();
+                Projectile.ai[0] = (float)Branch.Grip + 10f * (float)Math.Ceiling(timer);
+                Projectile.netUpdate = true;
+            }
+            if (throwAt < 0f && ReleaseAt > 0)
+                throwAt = ComputeThrowTime();
+        }
+
+        // The chomps: the blade's angle eases toward the aim the owner last synced (every machine).
+        void UpdateChompAim()
+        {
+            if (timer < BiteEnd)
+                return;
+            float difference = MathHelper.WrapAngle(Projectile.ai[2] - chompAngle);
+            float step = BloodButchererTuning.ChompTurnSpeed * speedScale;
+            chompAngle += MathHelper.Clamp(difference, -step, step);
+        }
+
+        // Owner only: the aim becomes the direction to the cursor (in the player's own frame), the player faces it, and it is synced.
+        void AimAtCursor()
+        {
+            Vector2 toMouse = Main.MouseWorld - Owner.MountedCenter;
+            if (toMouse.LengthSquared() <= 1f)
+                return;
+            float aim = toMouse.ToRotation();
+            if (Owner.gravDir == -1f)
+                aim = -aim;
+            Projectile.ai[2] = aim;
+            Projectile.netUpdate = true;
+            Owner.ChangeDir(Main.MouseWorld.X >= Owner.Center.X ? 1 : -1);
+        }
+
+        // Every machine: pin the enemy in the mouth while it is gripped, drip and whoosh, and throw it at the end of the spin. If it dies (or
+        // leaves) first there is no throw: the blade just carries on spinning from where it is, slowing down, and comes back to the player.
+        void GripStep()
+        {
+            if (Resolved != Branch.Grip || windStart >= 0f || timer < BiteEnd)
+                return;
+
+            NPC npc = CaughtNpc;
+            if (npc == null)
+            {
+                BeginWindDown(timer);
+                return;
+            }
+            if (throwAt >= 0f && timer >= throwAt)
+            {
+                Launch(npc);
+                BeginWindDown(timer);
+                return;
+            }
+
+            Pin(npc);
+            gripClock++;
+            if (IsOwner && gripClock % Math.Max(1, BloodButchererTuning.GripTickInterval) == 0)
+                Projectile.localNPCImmunity[npc.whoAmI] = 0; // the next periodic hit may land
+            if (Main.rand.NextBool(3))
+                BloodButchererFx.GripDrip(npc.Center);
+            if (timer >= PullEnd && spinSoundClock++ % 8 == 0)
+                BloodButchererFx.PlaySpin(npc.Center, MathHelper.Lerp(BloodButchererTuning.SpinWhooshPitchLow, BloodButchererTuning.SpinWhooshPitchHigh, MathHelper.Clamp((timer - PullEnd) / Math.Max(1, BloodButchererTuning.SpinTicks), 0f, 1f)));
+        }
+
+        // The enemy sits in the middle of the shut jaws: dragged in from where it was caught during the pull, then carried around by the spin.
+        // The spot is clamped along the ray from the player so the enemy never ends up inside tiles.
+        void Pin(NPC npc)
+        {
+            if (!grabbed)
+            {
+                grabbed = true;
+                grabFrom = npc.Center;
+            }
+            float pull = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp((timer - BiteEnd) / Math.Max(1, BloodButchererTuning.PullTicks), 0f, 1f));
+            Vector2 mouth = pivot + bladeDir * (jawLength * BloodButchererTuning.PinRatio);
+            Vector2 target = ClampToOpenAir(Owner.Center, Vector2.Lerp(grabFrom, mouth, pull), npc);
+
+            npc.Center = target;
+            npc.velocity = Vector2.Zero;
+            BloodButchererGripNPC grip = npc.GetGlobalNPC<BloodButchererGripNPC>();
+            grip.HoldTick = (long)Main.GameUpdateCount;
+            grip.LaunchTick = -1000;
+            if (Main.netMode == NetmodeID.Server && ticks % 3 == 0)
+                npc.netUpdate = true; // the server's copy is the authority
+        }
+
+        static Vector2 ClampToOpenAir(Vector2 from, Vector2 target, NPC npc)
+        {
+            Vector2 delta = target - from;
+            float length = delta.Length();
+            if (length < 1f)
+                return target;
+            Vector2 direction = delta / length;
+            Vector2 half = new Vector2(npc.width, npc.height) * 0.5f;
+            Vector2 safe = from;
+            for (float d = 8f; ; d += 8f)
+            {
+                float at = Math.Min(d, length);
+                Vector2 p = from + direction * at;
+                if (Collision.SolidCollision(p - half, npc.width, npc.height))
+                    return safe;
+                safe = p;
+                if (at >= length)
+                    return safe;
+            }
+        }
+
+        // The end of the spin: the jaws fly open and the enemy leaves toward the cursor.
+        void Launch(NPC npc)
+        {
+            if (IsOwner)
+                Mod.Logger.Info($"Blood Butcherer spin: facing {Facing}, first aim {MathHelper.ToDegrees(startAim):0}, throw aim {MathHelper.ToDegrees(Projectile.ai[2]):0}, sweep {MathHelper.ToDegrees(SpinSweepAt(timer)):0} degrees");
+            Vector2 direction = WorldDir(Projectile.ai[2]);
+            Vector2 where = npc != null ? npc.Center : pivot + bladeDir * jawLength * 0.6f;
+            if (npc != null)
+            {
+                npc.velocity = direction * BloodButchererTuning.LaunchSpeed;
+                BloodButchererGripNPC grip = npc.GetGlobalNPC<BloodButchererGripNPC>();
+                grip.HoldTick = -1000;
+                grip.LaunchTick = (long)Main.GameUpdateCount;
+                grip.BeginImpact(Projectile.owner, Projectile.damage);
+                if (Main.netMode == NetmodeID.Server)
+                    npc.netUpdate = true;
+                if (IsOwner)
+                {
+                    Projectile.localNPCImmunity[npc.whoAmI] = 0; // the throw hit
+                    launchUntil = ticks + 1;
+                }
+            }
+            thrown = npc != null;
+            flash = 1f;
+            BloodButchererFx.PlayThrow(where);
+            BloodButchererFx.ThrowBurst(where, direction);
+            CameraShake.Punch(where, BloodButchererTuning.LaunchShake, 18, "BloodButchererLaunch");
+        }
+
+        // ---- chomp: a boss, a worm, an immovable or too big enemy is not pinned, the jaws chew it ----
+
+        // Every machine: the closing effects of each chomp. The owner re-arms the hit once per cycle. If the enemy is gone the chewing stops
+        // at the end of the current cycle.
+        void ChompStep()
+        {
+            if (Resolved != Branch.Clamp || timer < BiteEnd || timer >= RecoverStart)
+                return;
+
+            float length = Math.Max(1, BloodButchererTuning.ChompTicks);
+            int cycle = (int)((timer - BiteEnd) / length);
+            if (chompStop < 0f && CaughtNpc == null)
+                chompStop = BiteEnd + (cycle + 1) * length;
+
+            if (cycle != lastChompCycle)
+            {
+                lastChompCycle = cycle;
+                if (IsOwner)
+                {
+                    for (int i = 0; i < Main.maxNPCs; i++)
+                        Projectile.localNPCImmunity[i] = 0; // this cycle's close may hit again
+                    if (cycle > 0)
+                        AimAtCursor(); // the previous chomp has finished: the jaws turn to where the cursor is now
+                }
+            }
+
+            if (ChompPhase(timer) >= 0.5f && cycle != lastChompClose)
+            {
+                lastChompClose = cycle;
+                Vector2 mouth = pivot + bladeDir * jawLength * 0.6f;
+                flash = Math.Max(flash, 0.6f);
+                BloodButchererFx.ChompSnap(mouth);
+                BloodButchererFx.PlayChomp(mouth);
+                CameraShake.Punch(mouth, BloodButchererTuning.ChompShake, 8, "BloodButchererChomp");
+            }
+        }
+
+        // ---- the spinning blade as a weapon ----
+
+        // Owner: every few ticks the blade may cut any enemy but the pinned one again (it passes an enemy once per turn, so this only matters
+        // for an enemy it keeps touching or meets again on the next turn).
+        void SweepStep()
+        {
+            if (!IsOwner || !SweepHitting)
+                return;
+            if (sweepClock++ % Math.Max(1, BloodButchererTuning.SpinSweepHitInterval) != 0)
+                return;
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                if (i != CaughtIndex)
+                    Projectile.localNPCImmunity[i] = 0;
+            }
+        }
+
+        // Does the spinning blade touch this box? The hit line runs from the player's center all the way to the blade tip, so everything
+        // along the blade AND between the player and the blade is cut. The blade turns up to about 20 degrees a tick, so the lines between
+        // last tick's angle and this tick's are tested too, or a fast blade would jump over enemies.
+        bool SpinBladeTouches(Rectangle box)
+        {
+            float length = BloodButchererTuning.BladeLength * Projectile.scale;
+            Vector2 fromDir = prevBladeDir == Vector2.Zero ? bladeDir : prevBladeDir;
+            Vector2 fromHand = prevBladeDir == Vector2.Zero ? handPos : prevHandPos;
+            float delta = MathHelper.WrapAngle(bladeDir.ToRotation() - fromDir.ToRotation());
+            int steps = Math.Max(1, (int)Math.Ceiling(Math.Abs(delta) / 0.15f));
+            Vector2 center = Owner.Center;
+            for (int s = 0; s <= steps; s++)
+            {
+                float u = s / (float)steps;
+                Vector2 start = Vector2.Lerp(fromHand, handPos, u);
+                Vector2 end = start + fromDir.RotatedBy(delta * u) * length;
+                float point = 0f;
+                if (Collision.CheckAABBvLineCollision(box.TopLeft(), box.Size(), center, end, BloodButchererTuning.SpinSweepWidth, ref point))
+                    return true;
+            }
+            return false;
+        }
+
+        // ---- blood tether ----
+
+        // Ties the handle to the real hand: slack it droops under gravity (and drips), taut and spinning it is pulled straight and trails
+        // behind the blade. Pure function of the pose, so every machine builds the same one.
+        void UpdateTether()
+        {
+            float distance = Vector2.Distance(armHand, handPos);
+            float rest = BloodButchererTuning.TetherRestLength;
+            float taut = MathHelper.Clamp(Math.Abs(angularSpeed) / 0.12f, 0f, 1f); // a fast spin pulls it straight
+            float sag = (float)Math.Sqrt(3f * Math.Max(distance, 4f) * Math.Max(0f, rest - distance) / 8f) * BloodButchererTuning.TetherSag * (1f - taut);
+            sag = Math.Min(sag, BloodButchererTuning.TetherMaxSag);
+
+            Vector2 down = new Vector2(0f, Owner.gravDir);
+            Vector2 trailDirection = bladeDir.RotatedBy(-Math.Sign(angularSpeed) * MathHelper.PiOver2);
+            float trailing = Math.Min(Math.Abs(angularSpeed) * BloodButchererTuning.TetherTrailing, BloodButchererTuning.TetherMaxTrailing);
+            tetherBend = down * sag + trailDirection * trailing;
+            tetherStretch = MathHelper.Clamp(distance / Math.Max(1f, rest), 0f, 1f);
+
+            if (sag > 1.5f && distance > 3f && Main.rand.NextBool(5))
+                BloodButchererFx.TetherDrip((armHand + handPos) * 0.5f + tetherBend);
+        }
+
+        // Moves the owner's arm to the aim and puts the projectile in the hand, pushed along the aim by the lunge.
+        void ApplyPose(Player owner)
+        {
+            prevBladeDir = bladeKnown ? bladeDir : Vector2.Zero;
+            prevHandPos = handPos;
+            float aim = AngleAt(timer);
+            owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, aim - MathHelper.PiOver2);
+            Vector2 hand = HeldSwordPose.HandWorld(owner, aim);
+            float blade = owner.gravDir == -1f ? -aim : aim;
+            bladeDir = blade.ToRotationVector2();
+            armHand = hand;
+            angularSpeed = bladeKnown ? MathHelper.WrapAngle(blade - lastBlade) : 0f;
+            lastBlade = blade;
+            bladeKnown = true;
+
+            Vector2 position = hand + bladeDir * OffsetAt(timer);
+            // The chomps make the whole blade tremble.
+            if (Resolved == Branch.Clamp && timer >= BiteEnd && timer < RecoverStart)
+                position += Main.rand.NextVector2Circular(1.5f, 1.5f);
+
+            Projectile.rotation = blade;
+            Projectile.Center = position;
+            Projectile.spriteDirection = Facing;
+            handPos = position;
+            pivot = position + bladeDir * (BloodButchererTuning.HandleLength * Projectile.scale);
+            jawLength = (BloodButchererTuning.BladeLength - BloodButchererTuning.HandleLength) * Projectile.scale;
+            owner.heldProj = Projectile.whoAmI; // also ends the projectile when the player swaps items
+        }
+
+        // ---- the catch (owner only) ----
+
+        // Any enemy that can be damaged. NOT NPC.CanBeChasedBy: it is false for the target dummy (and for critters), so those were never caught.
+        static bool CanBite(NPC npc)
+        {
+            return Snarable.CanBite(npc);
+        }
+
+        // At the start of the bite: the nearest enemy (to the middle of the mouth) inside the catch wedge is caught. The decision
+        // reaches the other machines through ai[0], ai[1] and netUpdate.
+        void Decide()
+        {
+            decided = true;
+            Vector2 mouth = pivot + bladeDir * jawLength * 0.6f;
+            int best = -1;
+            int bestRank = -1;
+            float bestDistance = float.MaxValue;
+            int candidates = 0;
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC npc = Main.npc[i];
+                if (!CanBite(npc))
+                    continue;
+                Rectangle box = npc.Hitbox;
+                box.Inflate((int)BloodButchererTuning.CatchPadding, (int)BloodButchererTuning.CatchPadding);
+                if (!WedgeTouches(box))
+                    continue;
+                candidates++;
+                // A boss in the mouth always wins, then anything that cannot be gripped (so it is always chomped, never swapped for a small
+                // enemy next to it), then whatever is nearest to the middle of the mouth.
+                int rank = npc.boss ? 2 : (CanGrip(npc) ? 0 : 1);
+                float distance = Vector2.DistanceSquared(npc.Center, mouth);
+                if (rank > bestRank || (rank == bestRank && distance < bestDistance))
+                {
+                    best = i;
+                    bestRank = rank;
+                    bestDistance = distance;
+                }
+            }
+
+            Projectile.ai[0] = (float)(best >= 0 ? (CanGrip(Main.npc[best]) ? Branch.Grip : Branch.Clamp) : Branch.Miss);
+            if (best >= 0)
+            {
+                NPC caught = Main.npc[best];
+                Mod.Logger.Info($"Blood Butcherer catch: {caught.TypeName} (type {caught.type}, boss {caught.boss}, knockBackResist {caught.knockBackResist:0.##}, size {caught.width}x{caught.height}, realLife {caught.realLife}) -> {(CanGrip(caught) ? "grip" : "chomp")}, {candidates} in the mouth");
+            }
+            else
+            {
+                Mod.Logger.Info("Blood Butcherer catch: nothing in the mouth");
+            }
+            Projectile.ai[1] = best + 1;
+            Projectile.netUpdate = true;
+        }
+
+        // The catch wedge: the triangle between the pivot and the two jaw tips at full gape. The bite is quick, so it is tested against
+        // the full gape for the whole bite: forgiving on purpose.
+        bool WedgeTouches(Rectangle box)
+        {
+            float spread = MathHelper.ToRadians(BloodButchererTuning.JawOpenDeg);
+            Vector2 a = pivot;
+            Vector2 b = pivot + bladeDir.RotatedBy(spread) * jawLength;
+            Vector2 c = pivot + bladeDir.RotatedBy(-spread) * jawLength;
+
+            // A boss's hitbox can swallow the whole wedge (the player stands inside it): none of its corners is in the triangle then, so the
+            // triangle's own corners are tested against the box too.
+            if (box.Contains(a.ToPoint()) || box.Contains(b.ToPoint()) || box.Contains(c.ToPoint()))
+                return true;
+
+            if (InTriangle(box.Center.ToVector2(), a, b, c)
+                || InTriangle(box.TopLeft(), a, b, c) || InTriangle(box.TopRight(), a, b, c)
+                || InTriangle(box.BottomLeft(), a, b, c) || InTriangle(box.BottomRight(), a, b, c))
+                return true;
+
+            // A thin enemy can cross an edge without having a corner inside.
+            float point = 0f;
+            return Collision.CheckAABBvLineCollision(box.TopLeft(), box.Size(), a, b, 4f, ref point)
+                || Collision.CheckAABBvLineCollision(box.TopLeft(), box.Size(), b, c, 4f, ref point)
+                || Collision.CheckAABBvLineCollision(box.TopLeft(), box.Size(), c, a, 4f, ref point);
+        }
+
+        static bool InTriangle(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
+        {
+            float d1 = Side(p, a, b);
+            float d2 = Side(p, b, c);
+            float d3 = Side(p, c, a);
+            bool negative = d1 < 0f || d2 < 0f || d3 < 0f;
+            bool positive = d1 > 0f || d2 > 0f || d3 > 0f;
+            return !(negative && positive);
+        }
+
+        static float Side(Vector2 p, Vector2 a, Vector2 b)
+        {
+            return (p.X - b.X) * (a.Y - b.Y) - (a.X - b.X) * (p.Y - b.Y);
+        }
+
+        // ---- effects and trails (every machine) ----
+
+        Vector2 CaughtCenter(Vector2 fallback)
+        {
+            int index = CaughtIndex;
+            if (index >= 0 && index < Main.maxNPCs && Main.npc[index].active)
+                return Main.npc[index].Center;
+            return fallback;
+        }
+
+        void Effects()
+        {
+            Vector2 mouth = pivot + bladeDir * jawLength * 0.6f;
+
+            // The one-shot effects fire when the timeline crosses their time.
+            if (Crossed(ThrustStart))
+                BloodButchererFx.PlayLunge(handPos);
+            if (Crossed(OpenStart))
+            {
+                BloodButchererFx.PlayOpen(pivot);
+                BloodButchererFx.MouthMist(pivot, bladeDir);
+            }
+            if (Crossed(BiteStart))
+            {
+                flash = 1f;
+                BloodButchererFx.PlayBite(mouth);
+                BloodButchererFx.BiteSnap(mouth);
+            }
+
+            // The clamp lands once the bite is over and the decision says something was caught.
+            if (!clampPlayed && timer >= BiteEnd && Caught)
+            {
+                clampPlayed = true;
+                flash = 1f;
+                Vector2 where = CaughtCenter(mouth);
+                BloodButchererFx.ClampBurst(where);
+                BloodButchererFx.PlayClamp(where);
+                CameraShake.Punch(where, BloodButchererTuning.ClampShake, 18, "BloodButchererClamp");
+            }
+
+            float angle = MathHelper.ToRadians(BloodButchererTuning.JawOpenDeg) * jawOpen;
+            if (jawOpen > 0.5f && Main.rand.NextBool(4))
+                BloodButchererFx.Drool(pivot + bladeDir.RotatedBy(Main.rand.NextBool() ? angle : -angle) * jawLength);
+
+            // The spin and the wind-down: blood flies off the tip along the tangent, and the blade whooshes while it is still fast.
+            if (Resolved == Branch.Grip && timer >= PullEnd && timer < RecoverStart)
+            {
+                float omega = RealOmegaAt(timer);
+                float speed = Math.Abs(omega);
+                if (speed > 0.12f && Main.rand.NextBool(2))
+                    BloodButchererFx.SpinFling(pivot + bladeDir * jawLength, bladeDir.RotatedBy(Math.Sign(omega) * MathHelper.PiOver2) * (speed * jawLength * 0.7f));
+                if (windStart >= 0f && speed > 0.1f && spinSoundClock++ % 8 == 0)
+                    BloodButchererFx.PlaySpin(pivot, MathHelper.Clamp(MathHelper.Lerp(BloodButchererTuning.SpinWhooshPitchLow, BloodButchererTuning.SpinWhooshPitchHigh, speed / 0.5f) - 0.3f, -1f, 1f));
+            }
+
+            Lighting.AddLight(mouth, 0.45f + 0.5f * flash, 0.05f + 0.1f * flash, 0.05f + 0.1f * flash);
+        }
+
+        // Both jaw tips lay a line from the start of the thrust to the end of the bite: one line while the jaws are shut (the tips
+        // coincide), forking into two arcs when they open and meeting again in the bite. Several points per tick, laid between the
+        // previous tick's pose and this one, so the pixel line follows a smooth arc.
+        void LayTrail()
+        {
+            if (Main.dedServ)
+                return;
+            if (ticks == 0)
+                return;
+
+            // The spin starts: the two jaw lines left by the bite vanish quickly so the fan is the only trail.
+            if (!jawTrailsCut && Resolved == Branch.Grip && timer >= PullEnd)
+            {
+                jawTrailsCut = true;
+                jawA?.FadeWithin(BloodButchererTuning.JawTrailCutTicks);
+                jawB?.FadeWithin(BloodButchererTuning.JawTrailCutTicks);
+            }
+
+            int samples = Math.Max(1, (int)Math.Ceiling(BloodButchererTuning.TrailSamplesPerTick * speedScale));
+            for (int k = 1; k <= samples; k++)
+            {
+                float fraction = k / (float)samples;
+                float time = MathHelper.Lerp(prevTimer, timer, fraction);
+                if (TrailActive(time))
+                    AddJawSample(time, fraction);
+            }
+
+            // The spin and the wind-down leave a fan along the whole blade instead (a few more samples per tick: the tip moves fast).
+            if (Resolved == Branch.Grip)
+            {
+                int spinSamples = Math.Max(1, (int)Math.Ceiling(BloodButchererTuning.SpinTrailSamplesPerTick * speedScale));
+                for (int k = 1; k <= spinSamples; k++)
+                {
+                    float fraction = k / (float)spinSamples;
+                    float time = MathHelper.Lerp(prevTimer, timer, fraction);
+                    if (time >= PullEnd && time < RecoverStart)
+                        AddSpinSample(time, fraction);
+                }
+            }
+        }
+
+        // The thrust and the bite: the two jaw lines.
+        bool TrailActive(float time)
+        {
+            return time >= ThrustStart && time < (Resolved == Branch.Clamp ? RecoverStart : BiteEnd);
+        }
+
+        // One slice of the fan: the outer edge is the tip, the inner edge slides from the tip down the blade as the blade speeds up (like the
+        // Ice Blade's higher tiers covering more width) and back up again as it slows down. It works the same when the enemy died mid-spin.
+        void AddSpinSample(float time, float fraction)
+        {
+            time -= BloodButchererTuning.TrailLagTicks;
+            float aim = AngleAt(time);
+            Vector2 direction = WorldDir(aim);
+            Vector2 shift = Vector2.Lerp(lastOwnerCenter, Owner.Center, fraction) - Owner.Center;
+            Vector2 hand = HeldSwordPose.HandWorld(Owner, aim) + shift + direction * OffsetAt(time);
+            float length = BloodButchererTuning.BladeLength * Projectile.scale;
+            float outer = BloodButchererTuning.TrailOuter;
+            // The fan opens with the blade's angular speed (the speed is the "progress": full at TrailFullSpeed) and closes again as it slows down.
+            float inner = outer * PixelFan.Expand(Math.Abs(RealOmegaAt(time)), BloodButchererTuning.TrailFullSpeed, BloodButchererTuning.TrailFillTo);
+
+            spinTrail ??= new SweepTrail(new BloodButchererSpinTrailStyle(), IsOwner);
+            spinTrail.AddBlade(hand, direction, length, outer, inner);
+        }
+
+        void AddJawSample(float time, float fraction)
+        {
+            float aim = AngleAt(time);
+            Vector2 direction = WorldDir(aim);
+            Vector2 shift = Vector2.Lerp(lastOwnerCenter, Owner.Center, fraction) - Owner.Center;
+            Vector2 hand = HeldSwordPose.HandWorld(Owner, aim) + shift + direction * OffsetAt(time);
+            Vector2 axis = hand + direction * (BloodButchererTuning.HandleLength * Projectile.scale);
+            float angle = MathHelper.ToRadians(BloodButchererTuning.JawOpenDeg) * OpenAt(time);
+            Vector2 tipA = axis + direction.RotatedBy(angle) * jawLength;
+            Vector2 tipB = axis + direction.RotatedBy(-angle) * jawLength;
+
+            // Skip a sample that sits on the previous one (the gape holds still): a zero-length segment adds nothing.
+            if (hasTips && Vector2.DistanceSquared(tipA, lastTipA) < 0.25f && Vector2.DistanceSquared(tipB, lastTipB) < 0.25f)
+                return;
+
+            jawA ??= new PixelTrail(new BloodButchererJawTrailStyle(), IsOwner);
+            jawB ??= new PixelTrail(new BloodButchererJawTrailStyle(), IsOwner);
+            jawA.Add(tipA);
+            jawB.Add(tipB);
+            lastTipA = tipA;
+            lastTipB = tipB;
+            hasTips = true;
+        }
+
+        // ---- hits ----
+
+        public override bool? CanDamage()
+        {
+            return Damaging ? (bool?)null : false;
+        }
+
+        // After the bite: the pinned enemy takes its hits while it is held and for the throw; every other enemy only when the spinning blade
+        // cuts it or a chomp closes on it.
+        public override bool? CanHitNPC(NPC target)
+        {
+            if (timer < BiteEnd)
+                return null;
+            if (Resolved == Branch.Clamp)
+                return ChompClosing ? (bool?)null : false;
+            if (target.whoAmI == CaughtIndex)
+                return CaughtDamaging ? (bool?)null : false;
+            return SweepHitting ? (bool?)null : false;
+        }
+
+        public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
+        {
+            if (!Damaging)
+                return false;
+            if (timer < BiteEnd || Resolved == Branch.Clamp)
+                return WedgeTouches(targetHitbox); // the bite and the chomps hit what is inside the open mouth
+            // The pinned enemy sits in the jaws by construction; any other enemy has to be touched by the spinning blade.
+            NPC caught = CaughtNpc;
+            if (CaughtDamaging && caught != null && caught.Hitbox.Equals(targetHitbox))
+                return true;
+            return SweepHitting && SpinBladeTouches(targetHitbox);
+        }
+
+        public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
+        {
+            modifiers.HitDirectionOverride = target.Center.X > Owner.Center.X ? 1 : -1;
+            if (timer < BiteEnd)
+            {
+                modifiers.SourceDamage *= target.whoAmI == CaughtIndex ? BloodButchererTuning.BiteDamageMultiplier : BloodButchererTuning.OtherDamageMultiplier;
+                return;
+            }
+            if (Resolved == Branch.Clamp)
+            {
+                modifiers.Knockback *= 0f; // the jaws hold on
+                modifiers.SourceDamage *= BloodButchererTuning.ChompDamageMultiplier;
+                return;
+            }
+            if (target.whoAmI != CaughtIndex)
+            {
+                modifiers.SourceDamage *= BloodButchererTuning.SpinSweepDamageMultiplier; // the spinning blade cutting it: its knockback stays, it bats the enemy away
+                return;
+            }
+            // The gripped enemy stays where the jaws hold it: no knockback. A light hit every few ticks, one big hit for the throw.
+            modifiers.Knockback *= 0f;
+            modifiers.SourceDamage *= ticks <= launchUntil ? BloodButchererTuning.LaunchDamageMultiplier : BloodButchererTuning.GripTickDamageMultiplier;
+        }
+
+        public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+        {
+            BloodButchererFx.HitBlood(target.Center);
+        }
+
+        // The trails outlive the bite and keep fading on their own (DetachedTrails).
+        public override void OnKill(int timeLeft)
+        {
+            DetachedTrails.Hand(jawA);
+            DetachedTrails.Hand(jawB);
+            DetachedTrails.Hand(spinTrail);
+            jawA = null;
+            jawB = null;
+            spinTrail = null;
+        }
+
+        // ---- drawing ----
+
+        public override bool PreDraw(ref Color lightColor)
+        {
+            spinTrail?.Draw();
+            jawA?.Draw();
+            jawB?.Draw();
+
+            tether ??= new BloodButchererTether();
+            tether.Draw(armHand, handPos, tetherBend, tetherStretch, flash, ticks, lightColor);
+
+            float angle = MathHelper.ToRadians(BloodButchererTuning.JawOpenDeg) * jawOpen;
+            Color body = Color.Lerp(lightColor, Color.White, 0.25f + 0.4f * flash);
+            if (handleArt?.IsLoaded == true && upperArt?.IsLoaded == true && lowerArt?.IsLoaded == true)
+                DrawArt(body, angle);
+            else
+                DrawFallback(body, angle);
+            return false;
+        }
+
+        // Your art: three sprites drawn like a vanilla sword (tip to the upper right, 45 degrees). Each one's pivot is the centre of its own
+        // canvas, and every centre is put on the jaw joint, so the jaws swing about it and the handle (padded with transparent pixels) sticks
+        // out behind it. Facing left mirrors them like the vanilla sprite (HeldSwordPose.Sprite), so the upper jaw stays on top.
+        void DrawArt(Color body, float angle)
+        {
+            Vector2 position = pivot - Main.screenPosition;
+            HeldSwordPose.Sprite(handleArt.Value, Projectile.spriteDirection, out _, out float rotationOffset, out SpriteEffects effects);
+            float rotation = Projectile.rotation + rotationOffset;
+            float scale = Projectile.scale;
+
+            DrawPiece(handleArt.Value, position, rotation, scale, effects, body);
+            DrawPiece(lowerArt.Value, position, rotation + Facing * angle, scale, effects, body);
+            DrawPiece(upperArt.Value, position, rotation - Facing * angle, scale, effects, body);
+
+            if (flash > 0.01f)
+            {
+                Color glow = BloodButchererTuning.CrimsonColor * (0.9f * flash);
+                DrawPiece(lowerArt.Value, position, rotation + Facing * angle, scale * 1.06f, effects, glow);
+                DrawPiece(upperArt.Value, position, rotation - Facing * angle, scale * 1.06f, effects, glow);
+            }
+        }
+
+        static void DrawPiece(Texture2D texture, Vector2 position, float rotation, float scale, SpriteEffects effects, Color color)
+        {
+            Vector2 origin = new Vector2(texture.Width, texture.Height) * 0.5f;
+            Main.EntitySpriteDraw(texture, position, null, color, rotation, origin, scale, effects, 0);
+        }
+
+        // Until the art exists: the vanilla sprite. Shut, it is one normal sword. Open, two copies of it splay out on the pivot and the
+        // teeth are drawn as pixel spikes.
+        void DrawFallback(Color body, float angle)
+        {
+            Texture2D texture = TextureAssets.Projectile[Type].Value;
+            HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
+            float scale = Projectile.scale;
+
+            if (jawOpen < 0.01f)
+            {
+                DrawSword(texture, handPos, Projectile.rotation + rotationOffset, origin, scale, effects, body);
+                if (flash > 0.01f)
+                    DrawSword(texture, handPos, Projectile.rotation + rotationOffset, origin, scale * 1.06f, effects, BloodButchererTuning.CrimsonColor * (0.9f * flash));
+                return;
+            }
+
+            for (int jaw = 0; jaw < 2; jaw++)
+            {
+                float a = jaw == 0 ? angle : -angle;
+                Vector2 hilt = pivot + (handPos - pivot).RotatedBy(a);
+                DrawSword(texture, hilt, Projectile.rotation + a + rotationOffset, origin, scale, effects, body);
+                if (flash > 0.01f)
+                    DrawSword(texture, hilt, Projectile.rotation + a + rotationOffset, origin, scale * 1.06f, effects, BloodButchererTuning.CrimsonColor * (0.9f * flash));
+
+                Vector2 jawDirection = bladeDir.RotatedBy(a);
+                Vector2 inward = jawDirection.RotatedBy(-Math.Sign(a) * MathHelper.PiOver2); // toward the blade's axis
+                BloodButchererFx.DrawTeeth(pivot, jawDirection, jawLength, inward, jawOpen, scale, body);
+            }
+        }
+
+        static void DrawSword(Texture2D texture, Vector2 worldPosition, float rotation, Vector2 origin, float scale, SpriteEffects effects, Color color)
+        {
+            Main.EntitySpriteDraw(texture, worldPosition - Main.screenPosition, null, color, rotation, origin, scale, effects, 0);
+        }
+    }
+}

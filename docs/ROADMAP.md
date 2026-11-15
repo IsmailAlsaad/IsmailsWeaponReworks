@@ -22,10 +22,11 @@ and a variable like this one
 and when making the Tuning.cs for a weapon
 always include all variables relating to damage in their own section
 
-Layout: one folder per weapon, `Content/Weapons/<Weapon>/` (GlobalItem, projectiles, Tuning, Fx, art). Namespace always equals the folder path. Shared code goes into `Common/` only when a second weapon needs it.
+Layout (from 2026-11-15): every reworked weapon lives in `Content/Weapons/Melee/PreHardmode/<Subclass>/<Weapon>/` (GlobalItem, projectiles, Tuning, Fx, art), with the subclass taken from the wiki Weapons page: `Broadsword`, `Shortsword` (none yet), `Spears`, `Boomerangs`, `Flails`, `Yoyos` (the shared yoyo files plus one folder per yoyo), `Others` (none yet). Hardmode weapons will go in `Melee/Hardmode/<Subclass>/<Weapon>/`; other damage classes get their own top folder (`Ranged/`, `Magic/`, `Summon/`) with the same PreHardmode/Hardmode split. Namespace always equals the folder path. Shared code goes into `Common/` only when a second weapon needs it. Roadmap text written before 2026-11-15 still shows the old flat paths (`Content/Weapons/<Weapon>/`); read them as `Content/Weapons/Melee/PreHardmode/<Subclass>/<Weapon>/`.
 
 ## Progress
 
+- [~] Folder restructure (2026-11-15): all 31 weapon folders and `Yoyos` moved under `Content/Weapons/Melee/PreHardmode/<Subclass>/` (namespaces, usings and texture path strings patched by `patch_melee_prehardmode.ps1`, folders moved by the Move-Item block; applied, untested: full Build + Reload, no missing-texture warnings, one weapon per subclass plus the weapons with their own art still work)
 - [x] Migration: Ice Boomerang imported from Factorraria commit `183e77e` (tested alone and together with Factorraria, all checks passed)
 - [x] Migration: old copy removed from Factorraria (`patch_remove_weapons.ps1`); Factorraria lists this mod in `modReferences` (hard dependency); tested, disabling this mod while Factorraria is enabled is refused
 - [ ] R1: synced server config with one toggle per rework (checked in each GlobalItem's `AppliesToEntity`)

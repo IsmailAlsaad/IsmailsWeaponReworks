@@ -1,4 +1,4 @@
-﻿using IsmailsWeaponReworks.Content.Weapons.NightsEdge;
+﻿using IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.NightsEdge;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
