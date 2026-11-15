@@ -2,6 +2,7 @@
 using System;
 using Terraria;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Volcano
@@ -69,7 +70,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Volc
             if (Heat > 0f && sinceHit > VolcanoTuning.HeatHoldTicks)
                 Heat = Math.Max(0f, Heat - VolcanoTuning.HeatDecayPerTick);
 
-            if (Player.dead || Player.noItems || Player.CCed || Player.HeldItem.type != ItemID.FieryGreatsword)
+            if (Player.dead || Player.noItems || Player.CCed || !ReworkToggle.Holds(Player, ItemID.FieryGreatsword))
                 return;
             if (thrown || regrow > 0)
                 return; // no held blade while the sword is thrown (RegrowTicks 0 used to let one form during the fuse: it threw again at once)

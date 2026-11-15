@@ -1,5 +1,6 @@
 ﻿using Terraria;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
@@ -16,7 +17,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
 
         public override bool AppliesToEntity(Item entity, bool lateInstantiation)
         {
-            return entity.type == YoyoItemType;
+            return ReworkToggle.Applies(entity.type, entity.type == YoyoItemType);
         }
 
         public override void SetDefaults(Item item)

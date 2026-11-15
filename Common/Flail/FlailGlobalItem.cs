@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Common.Flail
@@ -19,7 +20,7 @@ namespace IsmailsWeaponReworks.Common.Flail
 
         public override bool AppliesToEntity(Item entity, bool lateInstantiation)
         {
-            return entity.type == ItemType;
+            return ReworkToggle.Applies(entity.type, entity.type == ItemType);
         }
 
         public override void SetDefaults(Item item)

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.Swordfish
@@ -18,7 +19,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.Swordfis
     {
         public override bool AppliesToEntity(Item entity, bool lateInstantiation)
         {
-            return entity.type == ItemID.Swordfish;
+            return ReworkToggle.Applies(entity.type, entity.type == ItemID.Swordfish);
         }
 
         public override void SetDefaults(Item item)

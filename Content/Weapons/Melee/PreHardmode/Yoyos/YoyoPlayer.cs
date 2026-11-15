@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
@@ -28,7 +29,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
                 return;
             Item item = Player.HeldItem;
             int type = YoyoRegistry.ProjectileFor(item.type);
-            if (type <= 0)
+            if (type <= 0 || !ReworkToggle.IsActive(item.type))
                 return;
             if (Find(Player.whoAmI, type) != null)
                 return;

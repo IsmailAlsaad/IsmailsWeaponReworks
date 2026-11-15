@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Terraria;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.LightsBane
@@ -14,7 +15,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Ligh
     {
         public override bool AppliesToEntity(Item entity, bool lateInstantiation)
         {
-            return entity.type == ItemID.LightsBane;
+            return ReworkToggle.Applies(entity.type, entity.type == ItemID.LightsBane);
         }
 
         public override void SetDefaults(Item item)

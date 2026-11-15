@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Terraria;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeKeeper
@@ -57,7 +58,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
 
             if (Player.dead)
                 Linger = 0;
-            else if (Player.HeldItem.type == ItemID.BeeKeeper)
+            else if (ReworkToggle.Holds(Player, ItemID.BeeKeeper))
                 Linger = BeeKeeperTuning.LingerTicks;
             else if (Linger > 0)
                 Linger--;
@@ -69,7 +70,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
             }
 
             spawnTimer++;
-            if (spawnTimer < BeeKeeperTuning.SpawnIntervalTicks || Player.HeldItem.type != ItemID.BeeKeeper)
+            if (spawnTimer < BeeKeeperTuning.SpawnIntervalTicks || !ReworkToggle.Holds(Player, ItemID.BeeKeeper))
                 return;
             spawnTimer = 0;
             SpawnBee();

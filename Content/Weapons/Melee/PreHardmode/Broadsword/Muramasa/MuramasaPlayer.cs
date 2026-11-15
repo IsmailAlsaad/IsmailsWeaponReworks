@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Muramasa
@@ -29,7 +30,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Mura
         {
             if (Player.whoAmI != Main.myPlayer)
                 return;
-            if (Player.dead || Player.noItems || Player.CCed || Player.HeldItem.type != ItemID.Muramasa)
+            if (Player.dead || Player.noItems || Player.CCed || !ReworkToggle.Holds(Player, ItemID.Muramasa))
                 return;
             if (Find(Player.whoAmI, ModContent.ProjectileType<MuramasaStanceProjectile>()) != null)
                 return;

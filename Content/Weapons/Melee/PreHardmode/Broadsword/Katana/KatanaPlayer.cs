@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Katana
@@ -66,7 +67,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
             else if (CooldownTicks > 0)
                 CooldownTicks--;
 
-            if (Player.dead || Player.noItems || Player.CCed || Player.HeldItem.type != ItemID.Katana)
+            if (Player.dead || Player.noItems || Player.CCed || !ReworkToggle.Holds(Player, ItemID.Katana))
                 return;
             if (Find(Player.whoAmI, ModContent.ProjectileType<KatanaStanceProjectile>()) != null)
                 return;

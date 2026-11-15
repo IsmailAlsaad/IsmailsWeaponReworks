@@ -1,5 +1,6 @@
 ﻿using Terraria;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 using System.Collections.Generic;
 
@@ -14,7 +15,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Volc
     {
         public override bool AppliesToEntity(Item entity, bool lateInstantiation)
         {
-            return entity.type == ItemID.FieryGreatsword;
+            return ReworkToggle.Applies(entity.type, entity.type == ItemID.FieryGreatsword);
         }
 
         public override void SetDefaults(Item item)

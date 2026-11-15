@@ -4,6 +4,7 @@ using Terraria;
 using System.Collections.Generic;
 using Terraria.DataStructures;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phaseblade
@@ -17,7 +18,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
     {
         public override bool AppliesToEntity(Item entity, bool lateInstantiation)
         {
-            return PhasebladeTuning.IsPhaseblade(entity.type);
+            return ReworkToggle.Applies(entity.type, PhasebladeTuning.IsPhaseblade(entity.type));
         }
 
         public override void SetDefaults(Item item)

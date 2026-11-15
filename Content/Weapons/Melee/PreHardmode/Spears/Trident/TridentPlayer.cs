@@ -1,6 +1,7 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Terraria;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.Trident
@@ -15,7 +16,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.Trident
     {
         public override void PostUpdateEquips()
         {
-            if (Player.HeldItem.type != ItemID.Trident)
+            if (!ReworkToggle.Holds(Player, ItemID.Trident))
                 return;
             if (!LiquidState.HeadUnder(Player) || Player.lavaWet || Player.honeyWet)
                 return;

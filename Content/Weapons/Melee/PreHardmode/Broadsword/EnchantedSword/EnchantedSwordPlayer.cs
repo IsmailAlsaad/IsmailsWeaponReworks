@@ -2,6 +2,7 @@
 using System;
 using Terraria;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.EnchantedSword
@@ -71,7 +72,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Ench
             if (Player.whoAmI != Main.myPlayer)
                 return;
 
-            if (Player.dead || Player.HeldItem.type != ItemID.EnchantedSword)
+            if (Player.dead || !ReworkToggle.Holds(Player, ItemID.EnchantedSword))
             {
                 Hits = 0;
                 pendingHits = 0;
@@ -87,7 +88,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Ench
                 }
             }
 
-            if (Player.dead || Player.noItems || Player.CCed || Player.HeldItem.type != ItemID.EnchantedSword)
+            if (Player.dead || Player.noItems || Player.CCed || !ReworkToggle.Holds(Player, ItemID.EnchantedSword))
                 return;
             int type = ModContent.ProjectileType<EnchantedSwordBladeProjectile>();
             if (Find(Player.whoAmI, type) != null)

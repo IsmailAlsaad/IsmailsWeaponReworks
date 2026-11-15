@@ -5,6 +5,7 @@ using Terraria;
 using Terraria.DataStructures;
 using Terraria.Graphics.Shaders;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.LightsBane
@@ -132,7 +133,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Ligh
                 sinceHit = 0;
             }
 
-            if (Player.dead || (!imbued && Player.HeldItem.type != ItemID.LightsBane))
+            if (Player.dead || (!imbued && !ReworkToggle.Holds(Player, ItemID.LightsBane)))
             {
                 Charge = 0f;
                 sinceHit = 0;
@@ -144,7 +145,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Ligh
                     Charge = Math.Max(0f, Charge - LightsBaneTuning.ChargeDecayPerTick);
             }
 
-            if (Player.dead || Player.noItems || Player.CCed || Player.HeldItem.type != ItemID.LightsBane)
+            if (Player.dead || Player.noItems || Player.CCed || !ReworkToggle.Holds(Player, ItemID.LightsBane))
                 return;
             int type = ModContent.ProjectileType<LightsBaneBladeProjectile>();
             if (Find(Player.whoAmI, type) != null)

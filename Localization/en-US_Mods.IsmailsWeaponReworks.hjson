@@ -90,6 +90,12 @@ Projectiles: {
 	NightsEdgeWaveProjectile.DisplayName: Nights Edge Wave Projectile
 }
 
+Configs: {
+	ReworksToggleConfig.DisplayName: Reworks toggle config
+	ReworksToggleConfig.DisabledReworks.Label: Switched-off reworks
+	ReworksToggleConfig.DisabledReworks.Tooltip: Items in this list use their normal vanilla behavior. Everything else is reworked. Changes need a reload.
+}
+
 Buffs: {
 	LightsBaneImbueBuff: {
 		DisplayName: Shadow Speed

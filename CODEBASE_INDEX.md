@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-15 | 350 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-15 | 353 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-YoyoTuning(40) DetachedTrails(39) CameraShake(35) RemoteHitTracker(33) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(23) AfterimageTrail(21) HeldAim(19) YoyoFx(18) PixelTrail(16) PixelTrailStyle(15) YoyoTrick(14) SweepTrail(14) FlailTuning(14) NightsEdgeTuning(13) FlailFx(13) ThrustPlayer(12) PixelLine(12) IceFx(12)
+YoyoTuning(40) DetachedTrails(39) ReworkToggle(36) CameraShake(35) RemoteHitTracker(33) ThrustPalette(24) YoyoProjectile(23) HeldSwordPose(23) AfterimageTrail(21) HeldAim(19) YoyoFx(18) PixelTrail(16) PixelTrailStyle(15) YoyoTrick(14) SweepTrail(14) FlailTuning(14) NightsEdgeTuning(13) FlailFx(13) ThrustPlayer(12) PixelLine(12)
 
 ## Inheritance
 Project bases -> derived:
@@ -51,9 +51,10 @@ tModLoader/other bases -> project types:
 - GlobalItem (27): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, NightsEdgeGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, YoyoGlobalItem
 - ModPlayer (17): BeeKeeperPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, NightsEdgePlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, YoyoPlayer
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
-- ModSystem (3): DetachedTrails, MetaballLayers, YoyoRegistry
+- ModSystem (4): DetachedTrails, MetaballLayers, ReworkRegistry, YoyoRegistry
 - ModBuff (2): LightsBaneImbueBuff, NightsEdgeShadowArmorBuff
 - Mod (1): IsmailsWeaponReworks
+- ModConfig (1): ReworksToggleConfig
 - PlayerDrawLayer (1): BladeOfGrassSwordLayer
 
 ## Files
@@ -258,7 +259,7 @@ tModLoader/other bases -> project types:
 **FlailFx.cs**
   abstract class FlailFx
     +ChargeGather(Vector2,int,float)[ab] +SpinEmbers(Vector2,Vector2,int,float)[ab] +TierComplete(Vector2,int)[ab] +ThrowWhoosh(Vector2,int)[ab] +ApexJingle(Vector2,int)[ab] +Caught(Vector2,int)[ab] +Fizzle(Vector2)[ab] +LockedChain(Vector2)[ab] +Mistimed(Vector2)[ab] +CatchHead(Vector2)[ab] +FlightDust(Vector2,Vector2,int)[ab] +SpecialLaunch(Vector2)[ab] +HitSparks(Vector2,int)[ab] +DrawLayers()[ab] +SpinWhoosh(Vector2,int,float)[v]
-**FlailGlobalItem.cs** uses: FlailProjectile, Phase
+**FlailGlobalItem.cs** uses: FlailProjectile, Phase, ReworkToggle
   abstract class FlailGlobalItem : GlobalItem
     #ItemType:int[ab] #ProjectileType:int[ab] +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **FlailProjectile.cs** uses: AfterimageTrail, DetachedTrails, FlailFx, FlailTrailStyle, FlailTuning, PixelTrail, PixelTrailStyle, RemoteHitTracker
@@ -274,6 +275,17 @@ tModLoader/other bases -> project types:
 **FlailTuning.cs**
   abstract class FlailTuning
     +ChargeTicks(int)[v] +MinReach:float[v] +MaxReach:float[v] +EllipseWidthRatio:float[v] +ThrowSpeed(int)[v] +ReleaseBlendTicks:int[v] +MinHalfTicks:int[v] +TierDamageMultiplier(int)[v] +HitCooldownTicks:int[v] +SpinWhooshAngle:float[v] +SpinHitPeriodFraction:float[v] +SpinDamageMultiplier(int)[v] +HeadSize:float[v] +SpinRadiusMin:float[v] +SpinRadiusMax:float[v] +SpinRadiusSmoothing:float[v] +SpinOmegaStart(int)[v] +SpinOmegaEnd(int)[v] +SpecialMinReach:float[v] +SpecialMaxReach:float[v] +SpecialPathDamageMultiplier:float[v] +SpecialHangTicks:int[v] +RetractSpeed:float[v] +CatchDistance:float[v] +FailRetractSpeed:float[v] +PixelSize:float[v] +TrailLifeTicks:int[v] +TrailWidth(int)[v] +TrailJitter:float[v] +AfterimageTicks:int[v] +FlashTicks:int[v] +GlowColor(int)[ab] +HotColor(int)[ab] +TintLight(Vector3)[v] +ChainName:string[ab] #Pick<T>(int,T,T,T)[s]
+
+### Common/Rework/
+**ReworkRegistry.cs** uses: ReworksToggleConfig
+  class ReworkRegistry : ModSystem
+    +ItemTypes:HashSet<int> +Add(int) +IsDisabled(int) +PostSetupContent()[ov]
+**ReworkToggle.cs** uses: ReworkRegistry
+  static class ReworkToggle
+    +Applies(int,bool)[s] +IsActive(int)[s] +Holds(Player,int)[s]
+**ReworksToggleConfig.cs** uses: Mode
+  class ReworksToggleConfig : ModConfig
+    +Mode:ConfigScope[ov] +DisabledReworks:List<ItemDefinition>
 
 ### Content/Buffs/
 **LightsBaneImbueBuff.cs**
@@ -291,7 +303,7 @@ tModLoader/other bases -> project types:
 **EnchantedBoomerangFx.cs**
   static class EnchantedBoomerangFx
     +FlightDust(Vector2,Vector2,bool)[s] +HitSparks(Vector2,bool)[s] +Catch(Vector2,bool)[s] +BounceSparks(Vector2)[s] +Burst(Vector2,float)[s]
-**EnchantedBoomerangGlobalItem.cs** uses: EnchantedBoomerangProjectile, EnchantedBoomerangTuning, EtherealBoomerangProjectile
+**EnchantedBoomerangGlobalItem.cs** uses: EnchantedBoomerangProjectile, EnchantedBoomerangTuning, EtherealBoomerangProjectile, ReworkToggle
   class EnchantedBoomerangGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **EnchantedBoomerangProjectile.cs** uses: EnchantedBoomerangBase
@@ -314,7 +326,7 @@ tModLoader/other bases -> project types:
 **FlamerangFx.cs** uses: FlamerangTuning
   static class FlamerangFx
     +FlightDust(Vector2,Vector2,float)[s] +Gather(Vector2,float)[s] +HitSparks(Vector2)[s] +Catch(Vector2)[s] +Blast(Vector2,float)[s] +MoltenBorn(Vector2,Vector2)[s] +TrailEmber(Vector2)[s] +ShardLand(Vector2)[s] +ShardShatter(Vector2)[s] +ShardGlow(Vector2,float)[s]
-**FlamerangGlobalItem.cs** uses: FlamerangProjectile, FlamerangTuning
+**FlamerangGlobalItem.cs** uses: FlamerangProjectile, FlamerangTuning, ReworkToggle
   class FlamerangGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **FlamerangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, FlamerangBlastProjectile, FlamerangFx, FlamerangTuning, MoltenBoomerangProjectile, ObsidianShardProjectile, RemoteHitTracker
@@ -341,7 +353,7 @@ tModLoader/other bases -> project types:
 **IceBoomerangFx.cs** uses: IceFx
   static class IceBoomerangFx
     +Burst(Vector2,int,float,float)[s] +Ring(Vector2,int,float,float)[s] +Gather(Vector2,float)[s] +PlayFormed(Vector2)[s] +PlayBlast(Vector2,int)[s] +PlayCatch(Vector2)[s] +PlayShatter(Vector2)[s]
-**IceBoomerangGlobalItem.cs** uses: IceBoomerangProjectile, IceBoomerangTuning
+**IceBoomerangGlobalItem.cs** uses: IceBoomerangProjectile, IceBoomerangTuning, ReworkToggle
   class IceBoomerangGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **IceBoomerangProjectile.cs** uses: AfterimageTrail, DetachedTrails, IceBoomerangFx, IceBoomerangTuning, IceCrystalBlastProjectile, IceCrystalProjectile, RemoteHitTracker
@@ -368,7 +380,7 @@ tModLoader/other bases -> project types:
 **ShroomerangFx.cs** uses: ShroomerangTuning
   static class ShroomerangFx
     +FlightDust(Vector2,Vector2)[s] +SporePuff(Vector2,int,float,float)[s] +HitSparks(Vector2)[s] +SporeRing(Vector2,int,float,float)[s] +SporeCloud(Vector2,float,int)[s] +Trail(Vector2,Vector2,float)[s] +Catch(Vector2)[s] +PlayPop(Vector2)[s] +CloudPuff(Vector2,float)[s] +PlayPuff(Vector2)[s]
-**ShroomerangGlobalItem.cs** uses: ShroomerangProjectile, ShroomerangTuning
+**ShroomerangGlobalItem.cs** uses: ReworkToggle, ShroomerangProjectile, ShroomerangTuning
   class ShroomerangGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **ShroomerangMushroomProjectile.cs** uses: ShroomerangBurstProjectile, ShroomerangFx, ShroomerangTuning
@@ -387,7 +399,7 @@ tModLoader/other bases -> project types:
 **ThornChakramFx.cs** uses: ThornChakramTuning
   static class ThornChakramFx
     +Puff(Vector2,int,float,float)[s] +HitSparks(Vector2)[s] +Ring(Vector2,int,float,float)[s] +Trail(Vector2,Vector2,float)[s] +Shred(Vector2,int)[s] +Catch(Vector2)[s] +PlayBurst(Vector2)[s] +PlayLatch(Vector2)[s] +PlayShred(Vector2,float)[s] +PlayExplosion(Vector2)[s]
-**ThornChakramGlobalItem.cs** uses: ThornChakramProjectile, ThornChakramTuning
+**ThornChakramGlobalItem.cs** uses: ReworkToggle, ThornChakramProjectile, ThornChakramTuning
   class ThornChakramGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **ThornChakramProjectile.cs** uses: AfterimageTrail, BoomerangFlight, Contact, DetachedTrails, RemoteHitTracker, ThornChakramFx, ThornChakramStingerProjectile, ThornChakramTuning
@@ -409,7 +421,7 @@ tModLoader/other bases -> project types:
 **TrimarangFx.cs**
   static class TrimarangFx
     +Spinning(Vector2,float,int)[s] +HitSparks(Vector2)[s] +Catch(Vector2)[s] +EtherealSpawn(Vector2,Vector2)[s] +EtherealTrail(Vector2,Vector2)[s] +EtherealExplode(Vector2)[s]
-**TrimarangGlobalItem.cs** uses: TrimarangProjectile, TrimarangTuning
+**TrimarangGlobalItem.cs** uses: ReworkToggle, TrimarangProjectile, TrimarangTuning
   class TrimarangGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **TrimarangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, RemoteHitTracker, TrimarangEtherealProjectile, TrimarangFx, TrimarangTuning
@@ -425,7 +437,7 @@ tModLoader/other bases -> project types:
 **WoodenBoomerangFx.cs** uses: WoodenBoomerangTuning
   static class WoodenBoomerangFx
     +Splinters(Vector2,int,float,float)[s] +HitSparks(Vector2)[s] +Trail(Vector2,Vector2,float)[s] +Catch(Vector2)[s] +PlayShardBreak(Vector2)[s] +PlayBreak(Vector2)[s]
-**WoodenBoomerangGlobalItem.cs** uses: WoodenBoomerangProjectile, WoodenBoomerangTuning
+**WoodenBoomerangGlobalItem.cs** uses: ReworkToggle, WoodenBoomerangProjectile, WoodenBoomerangTuning
   class WoodenBoomerangGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **WoodenBoomerangProjectile.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, WoodenBoomerangFx, WoodenBoomerangShardProjectile, WoodenBoomerangTuning
@@ -453,10 +465,10 @@ tModLoader/other bases -> project types:
 **BeeKeeperFx.cs** uses: BeeKeeperHoneyStyle, BeeKeeperTuning, MetaballLayers
   static class BeeKeeperFx
     +PlaySwing(Vector2,bool)[s] +PlayHit(Vector2)[s] +PlayBeePop(Vector2)[s] +SlashDust(Vector2,Vector2)[s] +HitSpark(Vector2)[s] +BeeSpawn(Vector2)[s] +Launch(Vector2)[s] +TravelTrail(Vector2,Vector2)[s] +Sting(Vector2,bool)[s] +FinalSting(Vector2,bool)[s] +HoneyDrip(Vector2)[s] +HoneyBlob(Vector2,float,bool)[s] +Deliver(Vector2,float,bool)[s] +HoneyHeal(Vector2,float)[s]
-**BeeKeeperGlobalItem.cs** uses: BeeKeeperPlayer, BeeKeeperSwingProjectile, BeeKeeperTuning, Phase
+**BeeKeeperGlobalItem.cs** uses: BeeKeeperPlayer, BeeKeeperSwingProjectile, BeeKeeperTuning, Phase, ReworkToggle
   class BeeKeeperGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**BeeKeeperPlayer.cs** uses: BeeKeeperBeeProjectile, BeeKeeperBigBeeProjectile, BeeKeeperFx, BeeKeeperSmallBeeProjectile, BeeKeeperTuning
+**BeeKeeperPlayer.cs** uses: BeeKeeperBeeProjectile, BeeKeeperBigBeeProjectile, BeeKeeperFx, BeeKeeperSmallBeeProjectile, BeeKeeperTuning, ReworkToggle
   class BeeKeeperPlayer : ModPlayer
     +LastPhase:int +LastEndArm:float +LastEndTick:uint +Linger:int +OnRespawn()[ov] +PostUpdate()[ov] +RecruitBees(NPC,int) +Deliver(float)
     struct HitRecord
@@ -479,7 +491,7 @@ tModLoader/other bases -> project types:
 **BladeOfGrassFx.cs**
   static class BladeOfGrassFx
     +ChargeLeaf(Vector2,float)[s] +Lock(Vector2)[s] +BreakOff(Vector2,float)[s] +SpineTick(Vector2)[s] +SpineHit(Vector2)[s] +Unwind(Vector2,int,int)[s] +Release(Vector2)[s]
-**BladeOfGrassGlobalItem.cs** uses: BladeOfGrassHoldProjectile, HeldAim
+**BladeOfGrassGlobalItem.cs** uses: BladeOfGrassHoldProjectile, HeldAim, ReworkToggle
   class BladeOfGrassGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **BladeOfGrassHoldProjectile.cs** uses: BladeOfGrassFx, BladeOfGrassSpineProjectile, BladeOfGrassTuning, HeldAim, HeldSwordPose, VineDraw
@@ -501,7 +513,7 @@ tModLoader/other bases -> project types:
 **BloodButchererFx.cs** uses: BloodButchererTuning, IceFx
   static class BloodButchererFx
     +PlayLunge(Vector2)[s] +PlayOpen(Vector2)[s] +PlayBite(Vector2)[s] +PlayClamp(Vector2)[s] +PlaySpin(Vector2,float)[s] +PlayThrow(Vector2)[s] +ThrowBurst(Vector2,Vector2)[s] +GripDrip(Vector2)[s] +SpinFling(Vector2,Vector2)[s] +TetherDrip(Vector2)[s] +MouthMist(Vector2,Vector2)[s] +Drool(Vector2)[s] +BiteSnap(Vector2)[s] +ClampBurst(Vector2)[s] +ChompSnap(Vector2)[s] +PlayChomp(Vector2)[s] +ImpactBurst(Vector2,Vector2,float)[s] +PlayImpact(Vector2,float)[s] +HitBlood(Vector2)[s] +DrawTeeth(Vector2,Vector2,float,Vector2,float,float,Color)[s]
-**BloodButchererGlobalItem.cs** uses: BloodButchererSwingProjectile, BloodButchererTuning
+**BloodButchererGlobalItem.cs** uses: BloodButchererSwingProjectile, BloodButchererTuning, ReworkToggle
   class BloodButchererGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **BloodButchererGripNPC.cs** uses: BloodButchererFx, BloodButchererTuning, CameraShake
@@ -532,10 +544,10 @@ tModLoader/other bases -> project types:
 **EnchantedSwordFx.cs** uses: EnchantedBoomerangFx
   static class EnchantedSwordFx
     +PlaySwing(Vector2,bool)[s] +PlayHit(Vector2,float)[s] +SwingDust(Vector2,Vector2,float)[s] +HitSpark(Vector2,float)[s] +StageUp(Vector2,Vector2,int)[s] +Full(Vector2,Vector2)[s] +FullPulse(Vector2)[s] +NotReady(Vector2)[s] +Throw(Vector2,Vector2)[s] +BeamDust(Vector2,Vector2)[s] +BeamEnd(Vector2,bool)[s] +Sparkle(Vector2,Vector2)[s] +GhostAppear(Vector2)[s] +GhostDust(Vector2,Vector2)[s] +StabChargeStart(Vector2)[s] +StabCharge(Vector2,float)[s] +StabImpact(Vector2)[s] +GhostVanish(Vector2,float)[s]
-**EnchantedSwordGlobalItem.cs**
+**EnchantedSwordGlobalItem.cs** uses: ReworkToggle
   class EnchantedSwordGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**EnchantedSwordPlayer.cs** uses: EnchantedSwordBladeProjectile, EnchantedSwordTuning
+**EnchantedSwordPlayer.cs** uses: EnchantedSwordBladeProjectile, EnchantedSwordTuning, ReworkToggle
   class EnchantedSwordPlayer : ModPlayer
     +Hits:int +Find(int,int)[s] +AddHit(Player)[s] +IsFull(Player)[s] +Spend(Player)[s] +OnRespawn()[ov] +PostUpdate()[ov]
 **EnchantedSwordTrail.cs** uses: EnchantedSwordTuning, Stage, SweepFade, SweepTrailStyle
@@ -558,7 +570,7 @@ tModLoader/other bases -> project types:
 **IceBladeFx.cs** uses: IceFx
   static class IceBladeFx
     +PlayClick(Vector2,int)[s] +PlayFreezeClick(Vector2)[s] +PlayFreeze(Vector2)[s] +PlayTapSwing(Vector2)[s] +PlaySlash(Vector2,int)[s] +PlayWaveShatter(Vector2)[s] +ClickBurst(Vector2,int)[s] +FreezeClickBurst(Vector2)[s] +ChargeGather(Vector2,int)[s] +BladeSparkle(Vector2,Vector2,int)[s] +FrostOnHand(Vector2,float)[s] +FreezeShatter(Vector2)[s] +SlashDust(Vector2,Vector2,int)[s] +WaveBorn(Vector2,Vector2,int)[s] +WaveFog(Vector2,Vector2,float)[s] +WaveSpark(Vector2,Vector2,float)[s]
-**IceBladeGlobalItem.cs** uses: IceBladeSwingProjectile
+**IceBladeGlobalItem.cs** uses: IceBladeSwingProjectile, ReworkToggle
   class IceBladeGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +OnHitNPC(Item,Player,NPC,HitInfo,int)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **IceBladeSwingProjectile.cs** uses: DetachedTrails, HeldSwordPose, IceBladeFx, IceBladeTrailStyle, IceBladeTuning, IceBladeWaveProjectile, IceFx, PixelFan, SweepTrail
@@ -583,13 +595,13 @@ tModLoader/other bases -> project types:
 **KatanaFx.cs** uses: KatanaTuning
   static class KatanaFx
     +Click(Vector2,Vector2)[s] +Throw(Vector2,Vector2)[s] +FlightDust(Vector2,Vector2)[s] +Embed(Vector2,Vector2)[s] +DashStart(Vector2,Vector2)[s] +DashTrail(Vector2,Vector2)[s] +Ready(Vector2,Vector2)[s] +ReadySparkle(Vector2)[s] +Unstick(Vector2,Vector2)[s] +Drop(Vector2,Vector2)[s] +DropLand(Vector2,float)[s] +HitMark(Vector2,float)[s] +HitSpark(Vector2)[s]
-**KatanaGlobalItem.cs** uses: KatanaBladeProjectile, KatanaPlayer, KatanaStanceProjectile
+**KatanaGlobalItem.cs** uses: KatanaBladeProjectile, KatanaPlayer, KatanaStanceProjectile, ReworkToggle
   class KatanaGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **KatanaHitStopNPC.cs** uses: KatanaTuning
   class KatanaHitStopNPC : GlobalNPC
     +InstancePerEntity:bool[ov] +Apply(NPC,int)[s] +PreAI(NPC)[ov] +DrawEffects(NPC,ref Color)[ov]
-**KatanaPlayer.cs** uses: KatanaBladeProjectile, KatanaStanceProjectile, KatanaTuning
+**KatanaPlayer.cs** uses: KatanaBladeProjectile, KatanaStanceProjectile, KatanaTuning, ReworkToggle
   class KatanaPlayer : ModPlayer
     +CooldownTicks:int +Ready:bool +Find(int,int)[s] +BladeFlying(int)[s] +KillReleasedBlades(int)[s] +PostUpdate()[ov]
 **KatanaSlashProjectile.cs** uses: AfterimageTrail, CameraShake, HitMarkSet, KatanaFx, KatanaHitStopNPC, KatanaTuning, PixelLine
@@ -612,13 +624,13 @@ tModLoader/other bases -> project types:
 **LightsBaneFx.cs** uses: LightsBaneTuning
   static class LightsBaneFx
     +PlaySwing(Vector2,float)[s] +PlayHit(Vector2,float)[s] +PlayCharged(Vector2)[s] +SwingDust(Vector2,Vector2,float)[s] +HitSpark(Vector2,float)[s] +ChargeHit(Vector2)[s] +Charged(Vector2,Vector2)[s] +PlayStabWindup(Vector2)[s] +StabImpact(Vector2)[s] +ImbueTrail(Player,float)[s] +Sparkle(Vector2,Vector2)[s]
-**LightsBaneGlobalItem.cs**
+**LightsBaneGlobalItem.cs** uses: ReworkToggle
   class LightsBaneGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **LightsBaneImbueProjectile.cs** uses: AfterimageTrail, DetachedTrails, LightsBaneFx, LightsBaneImbueBuff, LightsBanePlayer, LightsBaneTuning
   class LightsBaneImbueProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +OnKill(int)[ov] +CanDamage()[ov] +PreDraw(ref Color)[ov]
-**LightsBanePlayer.cs** uses: LightsBaneBladeProjectile, LightsBaneImbueBuff, LightsBaneImbueProjectile, LightsBaneTuning
+**LightsBanePlayer.cs** uses: LightsBaneBladeProjectile, LightsBaneImbueBuff, LightsBaneImbueProjectile, LightsBaneTuning, ReworkToggle
   class LightsBanePlayer : ModPlayer
     +Charge:float +ImbueTicks:int +Find(int,int)[s] +AddCharge(Player,float)[s] +ImbueLook:bool +ResetEffects()[ov] +ModifyDrawInfo(ref PlayerDrawSet)[ov] +OnRespawn()[ov] +PostUpdateRunSpeeds()[ov] +PostUpdate()[ov]
 **LightsBaneTrail.cs** uses: ChargedBladeTrailStyle, LightsBaneTuning, SweepFade
@@ -635,7 +647,7 @@ tModLoader/other bases -> project types:
 **MuramasaFx.cs** uses: MuramasaGreen, MuramasaTuning
   static class MuramasaFx
     +PlayScrape(Vector2)[s] +PlayClick(Vector2)[s] +PlaySwing(Vector2,bool)[s] +Click(Vector2,Vector2,bool)[s] +BladeSparkle(Vector2,Vector2)[s] +DrawStart(Vector2)[s] +DrawDust(Vector2)[s] +DrawEnd(IList<Vector2>)[s] +PlaySlash(Vector2,int)[s] +SlashStart(Vector2,Vector2)[s] +SlashSweepDust(Vector2,Vector2)[s] +SlashEnd(Vector2,Vector2)[s] +IaidoDraw(Vector2,Vector2)[s] +SlashDust(Vector2,Vector2)[s] +HitSpark(Vector2)[s] +HitMark(Vector2,float)[s]
-**MuramasaGlobalItem.cs** uses: HeldAim, MuramasaGreen, MuramasaIaidoProjectile, MuramasaPlayer, MuramasaStanceProjectile, MuramasaSwingProjectile, MuramasaTuning
+**MuramasaGlobalItem.cs** uses: HeldAim, MuramasaGreen, MuramasaIaidoProjectile, MuramasaPlayer, MuramasaStanceProjectile, MuramasaSwingProjectile, MuramasaTuning, ReworkToggle
   class MuramasaGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +StartSwing(Player,IEntitySource,int,float)[s] +ModifyTooltips(Item,List<TooltipLine>)[ov] +Unload()[ov] +PreDrawInInventory(Item,SpriteBatch,Vector2,Rectangle,Color,Color,Vector2,float)[ov] +PreDrawInWorld(Item,SpriteBatch,Color,Color,ref float,ref float,int)[ov]
 **MuramasaGreen.cs** uses: EasterEgg
@@ -644,7 +656,7 @@ tModLoader/other bases -> project types:
 **MuramasaIaidoProjectile.cs** uses: CameraShake, HeldSwordPose, MuramasaFx, MuramasaGreen, MuramasaPlayer, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaTuning
   class MuramasaIaidoProjectile : ModProjectile
     +Texture:string[ov] +Launch(Player,IList<Vector2>)[s] +AI()[ov] +CanDamage()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
-**MuramasaPlayer.cs** uses: MuramasaIaidoProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, MuramasaTuning
+**MuramasaPlayer.cs** uses: MuramasaIaidoProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, MuramasaTuning, ReworkToggle
   class MuramasaPlayer : ModPlayer
     +Find(int,int)[s] +PostUpdate()[ov]
 **MuramasaSlashProjectile.cs** uses: AfterimageTrail, CameraShake, DetachedTrails, HeldSwordPose, HitMarkSet, MuramasaFx, MuramasaGreen, MuramasaTuning, PixelLine, RemoteHitTracker
@@ -689,13 +701,13 @@ tModLoader/other bases -> project types:
 **NightsEdgeFx.cs** uses: MetaballLayer, MetaballLayers, NightsEdgeBurstStyle, NightsEdgeEdgeStyle, NightsEdgeFlameStyle, NightsEdgeTuning
   static class NightsEdgeFx
     +PlaySwing(Vector2,float)[s] +PlayHit(Vector2,float)[s] +PlayCharged(Vector2)[s] +SwingDust(Vector2,Vector2,float)[s] +HitSpark(Vector2,float)[s] +ChargeHit(Vector2)[s] +Charged(Vector2,Vector2)[s] +Sparkle(Vector2,Vector2)[s] +Ember(Vector2,Vector2)[s] +DrawLayers()[s] +PlayWave(Vector2)[s] +WaveBreak(Vector2,Vector2)[s] +WaveShed(Vector2,Vector2,float,bool,bool)[s] +ArmorLook(Player,float)[s] +ArmorIgnite(Player)[s] +DropLand(Vector2,float)[s] +DropHiss(Vector2,bool)[s] +Blast(Vector2,float)[s] +ImpaleWindup(Vector2)[s] +ImpalePierce(Vector2,Vector2,bool)[s] +ImpaleBeat(Vector2,int)[s] +ImpaleStream(Vector2,Vector2,Vector2,float,int)[s] +ImpaleFinish(Vector2)[s] +PlayStabWindup(Vector2)[s] +StabImpact(Vector2)[s]
-**NightsEdgeGlobalItem.cs**
+**NightsEdgeGlobalItem.cs** uses: ReworkToggle
   class NightsEdgeGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **NightsEdgeImpaleTune.cs** uses: IImpaleTuning, NightsEdgeTuning
   class NightsEdgeImpaleTune : IImpaleTuning
     +ImpaleBufferTicks:int +ImpaleWindupTicks:int +ImpaleWindupArmDeg:float +ImpaleSwingEndDeg:float +ImpaleBladeAngleDeg:float +ImpaleWindupPull:float +ImpaleSwingTicks:int +ImpaleSwingLerp:float +ImpaleReach:float +ImpaleMaxSize:float +ImpaleWaitTicks:int +ImpaleMissTicks:int +ImpaleSeatTicks:int +ImpaleAnchorFraction:float +ImpaleBeats:int +ImpaleBeatTicks:int +ImpaleRisePortion:float +ImpaleHeldAngleDeg:float +ImpaleShake:float +ImpaleShakeGrowth:float +ImpaleFinishTicks:int +ImpaleHitShake:float +ImpaleBeatShake:float +ImpaleStabDamageMultiplier:float +ImpaleBeatDamageMultiplier:float
-**NightsEdgePlayer.cs** uses: NightsEdgeBladeProjectile, NightsEdgeDropProjectile, NightsEdgeFx, NightsEdgeShadowArmorBuff, NightsEdgeTuning
+**NightsEdgePlayer.cs** uses: NightsEdgeBladeProjectile, NightsEdgeDropProjectile, NightsEdgeFx, NightsEdgeShadowArmorBuff, NightsEdgeTuning, ReworkToggle
   class NightsEdgePlayer : ModPlayer
     +Charge:float +ShadowTicks:int +Find(int,int)[s] +AddCharge(Player,float)[s] +OnRespawn()[ov] +PostUpdate()[ov]
 **NightsEdgeStyles.cs** uses: MetaballStyle, NightsEdgeTuning
@@ -723,7 +735,7 @@ tModLoader/other bases -> project types:
 **PhasebladeFx.cs** uses: CameraShake, PhasebladeTuning, TileSound
   static class PhasebladeFx
     +PlaySwing(Vector2,bool,bool)[s] +PlayLoop(Vector2)[s] +SlashDust(Vector2,Vector2,Color)[s] +SpinDust(Vector2,Vector2,Color)[s] +PlayPlantLift(Vector2)[s] +PlayPlant(Vector2)[s] +PlantImpact(Vector2,Color)[s] +PlantEmber(Vector2,Color)[s] +PullOut(Vector2,Color)[s] +Catch(Vector2,Color)[s] +Retract(Vector2,Color)[s] +HitSpark(Vector2,Color)[s]
-**PhasebladeGlobalItem.cs** uses: HeldSwordPose, Phase, PhasebladePlantedProjectile, PhasebladePlayer, PhasebladeSwingProjectile, PhasebladeTuning
+**PhasebladeGlobalItem.cs** uses: HeldSwordPose, Phase, PhasebladePlantedProjectile, PhasebladePlayer, PhasebladeSwingProjectile, PhasebladeTuning, ReworkToggle
   class PhasebladeGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +StartCombo(Player,IEntitySource,int,float)[s] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **PhasebladePlantedProjectile.cs** uses: HeldSwordPose, PhasebladeFx, PhasebladeGlobalItem, PhasebladePlayer, PhasebladeTuning, RemoteHitTracker
@@ -751,7 +763,7 @@ tModLoader/other bases -> project types:
 **StarfuryFx.cs**
   static class StarfuryFx
     +PlaySwing(Vector2,bool)[s] +PlayCall(Vector2)[s] +PlayStarImpact(Vector2)[s] +PlayBat(Vector2,int)[s] +PlayBounce(Vector2)[s] +CallGather(Vector2)[s] +CallBurst(Vector2)[s] +SlashDust(Vector2,Vector2)[s] +BladeSparkle(Vector2,Vector2)[s] +HitSpark(Vector2)[s] +StarTrail(Vector2,Vector2,int)[s] +StarImpact(Vector2,int)[s] +BatBurst(Vector2,int)[s] +BounceBurst(Vector2,int)[s] +ChargeHit(Vector2,int)[s] +ChargeUp(Vector2,int)[s] +PlayChargeUp(Vector2,int)[s] +ChargeRelease(Vector2,int)[s] +ChargeSparkle(Vector2,Vector2,int)[s] +BlastBurst(Vector2)[s] +PlayBlast(Vector2)[s]
-**StarfuryGlobalItem.cs** uses: HeldSwordPose, Phase, StarfuryPlayer, StarfuryStarProjectile, StarfurySwingProjectile, StarfuryTuning
+**StarfuryGlobalItem.cs** uses: HeldSwordPose, Phase, ReworkToggle, StarfuryPlayer, StarfuryStarProjectile, StarfurySwingProjectile, StarfuryTuning
   class StarfuryGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **StarfuryPlayer.cs** uses: StarfuryTuning
@@ -787,7 +799,7 @@ tModLoader/other bases -> project types:
 **VolcanoFx.cs** uses: CameraShake, MetaballLayer, MetaballLayers, VolcanoBlobStyle, VolcanoBurstStyle, VolcanoDripStyle, VolcanoTuning
   static class VolcanoFx
     +PlaySwing(Vector2,float)[s] +PlayHit(Vector2,float)[s] +PlayCharged(Vector2)[s] +Ember(Vector2,Vector2)[s] +SwingEmbers(Vector2,Vector2,float)[s] +HitSpark(Vector2,float)[s] +PlayThrow(Vector2)[s] +Throw(Vector2,Vector2)[s] +Stick(Vector2,Vector2,bool)[s] +PlaySizzle(Vector2,float)[s] +DrawLayers()[s] +Eruption(Vector2)[s] +Catch(Vector2)[s] +Hiss(Vector2,bool)[s] +DropLand(Vector2,float)[s] +Blast(Vector2,float)[s] +Charged(Vector2,Vector2)[s]
-**VolcanoGlobalItem.cs**
+**VolcanoGlobalItem.cs** uses: ReworkToggle
   class VolcanoGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **VolcanoLavaDropProjectile.cs** uses: MetaballLayer, MetaballLayers, VolcanoBlobStyle, VolcanoDripStyle, VolcanoFx, VolcanoTuning
@@ -795,7 +807,7 @@ tModLoader/other bases -> project types:
     +Texture:string[ov] +Rain(Projectile,Vector2,Vector2)[s] +FreeSpot(Vector2,Vector2)[s] +FanAxis(Vector2,Vector2)[s] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
       {Falling, Landed, Gone}
-**VolcanoPlayer.cs** uses: VolcanoBladeProjectile, VolcanoThrownProjectile, VolcanoTuning
+**VolcanoPlayer.cs** uses: ReworkToggle, VolcanoBladeProjectile, VolcanoThrownProjectile, VolcanoTuning
   class VolcanoPlayer : ModPlayer
     +Heat:float +Find(int,int)[s] +AddHeat(Player,float)[s] +ResetHeat(Player)[s] +OnRespawn()[ov] +PostUpdate()[ov]
 **VolcanoStyles.cs** uses: MetaballParticle, MetaballStyle, SweepFade, SweepTrailStyle, VolcanoTuning
@@ -968,7 +980,7 @@ tModLoader/other bases -> project types:
 **DarkLanceFx.cs** uses: CameraShake, DarkLanceEmbers, DarkLanceTuning, OrbitRing, PixelShaderFx, PixelShaderParams, ThrustPalette
   static class DarkLanceFx
     +Glow(Color)[s] +DrawGlow(Vector2,float,float)[s] +SweepStart(Vector2)[s] +SweepWhoosh(Vector2)[s] +Flecks(Vector2,Vector2,float,ThrustPalette)[s] +CollectPing(Vector2,int)[s] +Absorb(Vector2)[s] +ThrustStart(Vector2,int)[s] +Blast(Vector2,float,float)[s] +Primed(Vector2)[s] +ChargeStart(Vector2)[s] +Gather(Vector2,float)[s] +Ring(Vector2,int,float,float)[s] +OrbBorn(Vector2,int,int)[s] +Shed(Vector2)[s] +Pop(Vector2,float)[s] +Fizzle(Vector2)[s]
-**DarkLanceGlobalItem.cs** uses: DarkLanceChargeProjectile, DarkLanceStrikeProjectile, DarkLanceTuning, HeldAim, ThrustPlayer
+**DarkLanceGlobalItem.cs** uses: DarkLanceChargeProjectile, DarkLanceStrikeProjectile, DarkLanceTuning, HeldAim, ReworkToggle, ThrustPlayer
   class DarkLanceGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **DarkLanceOrbProjectile.cs** uses: AreaEffect, CameraShake, DarkLanceEmbers, DarkLanceFx, DarkLancePlayer, DarkLanceTuning, DetachedTrails, OrbitRing, PixelTrail
@@ -994,7 +1006,7 @@ tModLoader/other bases -> project types:
 **RottedForkFx.cs** uses: CameraShake, OrbitRing, RottedForkTuning, ThrustPalette
   static class RottedForkFx
     +SpinUp(Vector2,float)[s] +Whoosh(Vector2,float)[s] +Throw(Vector2)[s] +Impale(Vector2,Vector2)[s] +Drip(Vector2)[s] +Explode(Vector2,float)[s] +Flecks(Vector2,Vector2,float,ThrustPalette)[s]
-**RottedForkGlobalItem.cs** uses: HeldAim, RottedForkJavelinProjectile, RottedForkSpinProjectile, RottedForkTuning, ThrustPlayer
+**RottedForkGlobalItem.cs** uses: HeldAim, ReworkToggle, RottedForkJavelinProjectile, RottedForkSpinProjectile, RottedForkTuning, ThrustPlayer
   class RottedForkGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +Throw(Player,IEntitySource,int,float)[s] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **RottedForkJavelinProjectile.cs** uses: AreaEffect, CarriedNPC, DetachedTrails, RemoteHitTracker, RottedForkFx, RottedForkPlayer, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
@@ -1011,7 +1023,7 @@ tModLoader/other bases -> project types:
     +SpinSpeed:float[s] +RampTicks:int[s] +StartSpeedFraction:float[s] +WindDownTicks:int[s] +MinSpinTicks:int[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +HitCooldownTicks:int[s] +MinHitSpeed:float[s] +HitWidth:float[s] +SpearScale:float[s] +JointOffset:float[s] +JavelinSpeed:float[s] +JavelinLifeTicks:int[s] +JavelinDamageMultiplier:float[s] +JavelinHitWidth:float[s] +JavelinCooldownTicks:int[s] +MaxImpaled:int[s] +MaxCarrySize:float[s] +CarryFollow:float[s] +CarryFrontGap:float[s] +CarryGap:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +CarriedBlastMultiplier:float[s] +BlastKnockback:float[s] +CarriedKnockback:float[s] +BlastShake:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailInnerFraction:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +PixelSize:float[s] +JavelinTrailTaper:float[s] +Palette:ThrustPalette[s]
 
 ### Content/Weapons/Melee/PreHardmode/Spears/Spear/
-**SpearGlobalItem.cs** uses: HeldAim, SpearThrustProjectile, SpearTuning, ThrustPlayer
+**SpearGlobalItem.cs** uses: HeldAim, ReworkToggle, SpearThrustProjectile, SpearTuning, ThrustPlayer
   class SpearGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **SpearThrustProjectile.cs** uses: HeldSpearProjectile, SpearTuning, ThrustChain, ThrustPalette
@@ -1025,7 +1037,7 @@ tModLoader/other bases -> project types:
 **StormSpearFx.cs** uses: ArcBolt, ArcBoltStyle, StormSpearTuning, ThrustPalette
   static class StormSpearFx
     +DashStart(Vector2,Vector2)[s] +BodyTrail(Vector2,Vector2,Vector2)[s] +Zap(Vector2,Vector2,bool)[s]
-**StormSpearGlobalItem.cs** uses: HeldAim, StormSpearThrustProjectile, StormSpearTuning, ThrustPlayer
+**StormSpearGlobalItem.cs** uses: HeldAim, ReworkToggle, StormSpearThrustProjectile, StormSpearTuning, ThrustPlayer
   class StormSpearGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **StormSpearThrustProjectile.cs** uses: Afterimage, HeldSpearProjectile, PlayerDash, StormSpearFx, StormSpearTuning, ThrustChain, ThrustPalette
@@ -1039,7 +1051,7 @@ tModLoader/other bases -> project types:
 **SwordfishFx.cs**
   static class SwordfishFx
     +RageBurst(Vector2)[s] +RageTip(Vector2,Vector2)[s]
-**SwordfishGlobalItem.cs** uses: HeldAim, LiquidState, SwordfishThrustProjectile, SwordfishTuning, ThrustPlayer
+**SwordfishGlobalItem.cs** uses: HeldAim, LiquidState, ReworkToggle, SwordfishThrustProjectile, SwordfishTuning, ThrustPlayer
   class SwordfishGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **SwordfishThrustProjectile.cs** uses: HeldSpearProjectile, LiquidState, Mode, SwordfishFx, SwordfishTuning, ThrustChain, ThrustPalette
@@ -1053,10 +1065,10 @@ tModLoader/other bases -> project types:
 **TridentFx.cs** uses: BounceMath, CameraShake, ThrustPalette, TileSound, TridentTuning
   static class TridentFx
     +DashStart(Vector2,Vector2,bool)[s] +DashBody(Vector2,Vector2,bool)[s] +Bounce(Vector2,Vector2,bool)[s]
-**TridentGlobalItem.cs** uses: HeldAim, LiquidState, ThrustPlayer, TridentThrustProjectile, TridentTuning
+**TridentGlobalItem.cs** uses: HeldAim, LiquidState, ReworkToggle, ThrustPlayer, TridentThrustProjectile, TridentTuning
   class TridentGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**TridentPlayer.cs** uses: LiquidState, TridentTuning
+**TridentPlayer.cs** uses: LiquidState, ReworkToggle, TridentTuning
   class TridentPlayer : ModPlayer
     +PostUpdateEquips()[ov]
 **TridentThrustProjectile.cs** uses: Afterimage, BounceMath, HeldSpearProjectile, Mode, PlayerDash, ThrustChain, ThrustPalette, TridentFx, TridentTuning
@@ -1119,7 +1131,7 @@ tModLoader/other bases -> project types:
 **YoyoFx.cs**
   class YoyoFx
     #ChipDust:int[v] #Chip(Vector2,Vector2,float) +Throw(Vector2,int)[v] +Land(Vector2,float,int)[v] +Impact(Vector2,Vector2,float)[v] +Hit(Vector2,int)[v] +Charging(Vector2,float)[v] +ChargeReady(Vector2)[v] +SpinWhoosh(Vector2,float)[v] +SpinTrail(Vector2,Vector2,float)[v] +Retract(Vector2)[v] +ClutchPop(Vector2,Vector2)[v] +ClutchSwing(Vector2,int)[v] +Catch(Vector2)[v]
-**YoyoGlobalItem.cs**
+**YoyoGlobalItem.cs** uses: ReworkToggle
   abstract class YoyoGlobalItem : GlobalItem
     #YoyoItemType:int[ab] +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov]
 **YoyoJuice.cs** uses: AfterimageTrail, CameraShake, DetachedTrails, YoyoTuning
@@ -1130,7 +1142,7 @@ tModLoader/other bases -> project types:
 **YoyoLoop.cs**
   static class YoyoLoop
     +Bezier(Vector2,Vector2,Vector2,Vector2,float)[s] +Smooth(float)[s] +AddLine(List<Vector2>,Vector2,Vector2,float)[s] +AddNoose(List<Vector2>,Vector2,Vector2,float,float,int)[s] +AddWrapped(List<Vector2>,Vector2,float,int,float,int)[s]
-**YoyoPlayer.cs** uses: YoyoRegistry
+**YoyoPlayer.cs** uses: ReworkToggle, YoyoRegistry
   class YoyoPlayer : ModPlayer
     +Find(int,int)[s] +PostUpdate()[ov]
 **YoyoProjectile.cs** uses: HeldAim, HeldSwordPose, YoyoAfterimages, YoyoFx, YoyoRegistry, YoyoRope, YoyoRopeWrap, YoyoShake, YoyoTrick, YoyoTuning

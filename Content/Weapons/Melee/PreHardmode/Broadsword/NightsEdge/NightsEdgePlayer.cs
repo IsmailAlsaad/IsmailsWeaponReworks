@@ -4,6 +4,7 @@ using System;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
+using IsmailsWeaponReworks.Common.Rework;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.NightsEdge
@@ -102,7 +103,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Nigh
                 }
             }
 
-            if (Player.dead || Player.HeldItem.type != ItemID.NightsEdge)
+            if (Player.dead || !ReworkToggle.Holds(Player, ItemID.NightsEdge))
             {
                 if (!armored)
                 {
