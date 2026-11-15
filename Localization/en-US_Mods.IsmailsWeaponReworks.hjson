@@ -91,9 +91,14 @@ Projectiles: {
 }
 
 Configs: {
-	ReworksToggleConfig.DisplayName: Reworks toggle config
-	ReworksToggleConfig.DisabledReworks.Label: Switched-off reworks
-	ReworksToggleConfig.DisabledReworks.Tooltip: Items in this list use their normal vanilla behavior. Everything else is reworked. Changes need a reload.
+	ReworksToggleConfig: {
+		DisplayName: Reworks toggle config
+
+		DisabledReworks: {
+			Label: Switched-off reworks
+			Tooltip: Items in this list use their normal vanilla behavior. Everything else is reworked. Changes need a reload.
+		}
+	}
 }
 
 Buffs: {
