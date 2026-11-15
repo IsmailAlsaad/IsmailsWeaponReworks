@@ -91,11 +91,17 @@ Projectiles: {
 }
 
 Configs: {
-	ReworksToggleConfig.DisplayName: Reworks toggle config
-	ReworksToggleConfig.DisabledReworks.Label: Reworks
-	ReworksToggleConfig.DisabledReworks.Tooltip: Click a weapon to switch its rework on or off. A crossed-out weapon uses its normal vanilla behavior. Save, then reload for the change to take effect.
-	ReworksToggleConfig.Active: Active
-	ReworksToggleConfig.Inactive: Inactive
+	ReworksToggleConfig: {
+		DisplayName: Reworks toggle config
+
+		DisabledReworks: {
+			Label: Reworks
+			Tooltip: Click a weapon to switch its rework on or off. A crossed-out weapon uses its normal vanilla behavior. Save, then reload for the change to take effect.
+		}
+
+		Active: Active
+		Inactive: Inactive
+	}
 }
 
 Buffs: {
