@@ -35,7 +35,7 @@ namespace IsmailsWeaponReworks.Common.Rework
         public static int HeaderTextOffsetY => 4;      // moves the header text DOWN this many pixels (negative = up)
         public static float HeaderScale(int level) => level == 0 ? 1.15f : level == 1 ? 0.95f : 0.8f;
         // The collapse triangle next to a header name is a text glyph (U+25BC down, U+25B6 right) drawn like the header text itself.
-        public static float TriangleScale(int level) => HeaderScale(level) * 1f; // 1f = as big as the header text; change the factor to resize
+        public static float TriangleScale(int level) => HeaderScale(level) * 0.5f; // 1f = as big as the header text; change the factor to resize
         public static int TriangleGap => 6;                      // pixels between the header name and the triangle
         public static int TriangleOffsetX => 0;                  // nudges the triangle (positive = right)
         public static int TriangleOffsetY => 0;                  // nudges the triangle (positive = down)

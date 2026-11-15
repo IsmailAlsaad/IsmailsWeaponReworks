@@ -519,7 +519,7 @@ namespace IsmailsWeaponReworks.Common.Rework
                 if (filterRect.Contains(mouse))
                     ShowTip(Text("FilterTip", "Click to show all, only active or only inactive reworks"));
                 else if (allRect.Contains(mouse))
-                    ShowTip(Text("ToggleAllTip", "Switches every rework off, or every rework on when all are off. Search and filter are ignored."));
+                    ShowTip(Text("ToggleAllTip", "Switches every rework off, or every rework on when all are off."));
             }
         }
 
@@ -624,8 +624,8 @@ namespace IsmailsWeaponReworks.Common.Rework
             // Hovering a header also lights up the part of the panel behind it (the same area that can be clicked).
             if (hovered)
             {
-                int inset = ReworkGridTuning.HeaderBackgroundInset;
-                Rectangle band = new Rectangle(hit.X + inset, hit.Y, hit.Width - 2 * inset, hit.Height);
+                Rectangle band = new Rectangle(hit.X + ReworkGridTuning.HeaderBackgroundInset, hit.Y,
+                hit.Width - ReworkGridTuning.HeaderBackgroundInset - 16, hit.Height);
                 spriteBatch.Draw(TextureAssets.MagicPixel.Value, band, ReworkGridTuning.HeaderBackgroundColor * ReworkGridTuning.HeaderBackgroundAlpha);
             }
             int rowHeight = ReworkGridTuning.CellSize + ReworkGridTuning.CellGap;
