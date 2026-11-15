@@ -106,8 +106,10 @@ namespace IsmailsWeaponReworks.Common.Rework
             int rowHeight = ReworkGridTuning.CellSize + ReworkGridTuning.CellGap;
             int x = (int)dims.X + ReworkGridTuning.EdgePadding + line.Level * ReworkGridTuning.HeaderIndent;
             int y = (int)dims.Y + ReworkGridTuning.GridTop + row * rowHeight;
-            int size = ReworkGridTuning.TriangleSize(line.Level);
-            triangleCenter = new Point(x + (int)textWidth + 10 + size, y + ReworkGridTuning.CellSize / 2);
+            float glyphWidth = font.MeasureString("\u25BC").X * ReworkGridTuning.TriangleScale(line.Level);
+            triangleCenter = new Point(
+                x + (int)(textWidth + ReworkGridTuning.TriangleGap + glyphWidth * 0.5f) + ReworkGridTuning.TriangleOffsetX,
+                y + ReworkGridTuning.CellSize / 2 + ReworkGridTuning.HeaderTextOffsetY + ReworkGridTuning.TriangleOffsetY);
             return new Rectangle((int)dims.X, y + 2, (int)dims.Width, ReworkGridTuning.CellSize - 6);
         }
 
@@ -633,32 +635,9 @@ namespace IsmailsWeaponReworks.Common.Rework
             Vector2 position = new Vector2(x, y + ReworkGridTuning.CellSize * 0.5f + ReworkGridTuning.HeaderTextOffsetY);
             Utils.DrawBorderString(spriteBatch, line.Label, position, color, ReworkGridTuning.HeaderScale(line.Level), 0f, 0.5f);
 
-            // The triangle: one pixel row (down) or column (right) at a time.
+            // The triangle is a text glyph too, so it is as soft as the header name and has the same color and black outline.
             Texture2D pixel = TextureAssets.MagicPixel.Value;
-            int size = ReworkGridTuning.TriangleSize(line.Level);
-            void DrawTriangle(int offsetX, int offsetY, Color tint)
-            {
-                for (int i = 0; i < size; i++)
-                {
-                    int half = size - i;
-                    if (line.Collapsed)
-                        spriteBatch.Draw(pixel, new Rectangle(triangleCenter.X - size / 2 + i + offsetX, triangleCenter.Y - half + 1 + offsetY, 1, 2 * half - 1), tint);
-                    else
-                        spriteBatch.Draw(pixel, new Rectangle(triangleCenter.X - half + 1 + offsetX, triangleCenter.Y - size / 2 + i + offsetY, 2 * half - 1, 1), tint);
-                }
-            }
-
-            // The outline first (the triangle shifted in every direction), then the fill on top.
-            int outline = ReworkGridTuning.TriangleOutline;
-            for (int dx = -outline; dx <= outline; dx++)
-            {
-                for (int dy = -outline; dy <= outline; dy++)
-                {
-                    if (dx != 0 || dy != 0)
-                        DrawTriangle(dx, dy, ReworkGridTuning.TriangleOutlineColor);
-                }
-            }
-            DrawTriangle(0, 0, color);
+            Utils.DrawBorderString(spriteBatch, line.Collapsed ? "\u25B6" : "\u25BC", triangleCenter.ToVector2(), color, ReworkGridTuning.TriangleScale(line.Level), 0.5f, 0.5f);
 
             int lineRight = (int)(dims.X + dims.Width) - ReworkGridTuning.EdgePadding - ReworkGridTuning.ScrollbarSpace + ReworkGridTuning.CellGap;
             spriteBatch.Draw(pixel, new Rectangle(x, y + ReworkGridTuning.CellSize - 1, Math.Max(0, lineRight - x), 1), Color.White * ReworkGridTuning.HeaderLineAlpha(line.Level));

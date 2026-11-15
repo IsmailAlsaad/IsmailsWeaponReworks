@@ -34,9 +34,11 @@ namespace IsmailsWeaponReworks.Common.Rework
         public static int HeaderIndent => 0;          // every header level is indented this much more than the one above
         public static int HeaderTextOffsetY => 4;      // moves the header text DOWN this many pixels (negative = up)
         public static float HeaderScale(int level) => level == 0 ? 1.15f : level == 1 ? 0.95f : 0.8f;
-        public static int TriangleSize(int level) => 7 - level; // the collapse triangle next to a header name
-        public static int TriangleOutline => 1;                  // outline thickness of that triangle in pixels (0 = no outline)
-        public static Color TriangleOutlineColor => Color.Black;
+        // The collapse triangle next to a header name is a text glyph (U+25BC down, U+25B6 right) drawn like the header text itself.
+        public static float TriangleScale(int level) => HeaderScale(level) * 1f; // 1f = as big as the header text; change the factor to resize
+        public static int TriangleGap => 6;                      // pixels between the header name and the triangle
+        public static int TriangleOffsetX => 0;                  // nudges the triangle (positive = right)
+        public static int TriangleOffsetY => 0;                  // nudges the triangle (positive = down)
         public static float HeaderLineAlpha(int level) => level == 0 ? 0.6f : level == 1 ? 0.4f : 0.25f; // the thin line under a header
 
         // --- Order of the sections (folder names; anything not listed comes after the listed ones, alphabetically) ---
