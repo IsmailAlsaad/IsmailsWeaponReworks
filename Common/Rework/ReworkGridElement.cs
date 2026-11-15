@@ -48,7 +48,6 @@ namespace IsmailsWeaponReworks.Common.Rework
         private string search = "";
         private bool searchFocused;
         private int blinkTimer;
-        private Func<string> fieldTooltip;
         private Asset<Texture2D> crossArt;
 
         private static string ActiveText => Language.GetOrRegister("Mods.IsmailsWeaponReworks.Configs.ReworksToggleConfig.Active", () => "Active").Value;
@@ -57,7 +56,7 @@ namespace IsmailsWeaponReworks.Common.Rework
         public override void OnBind()
         {
             base.OnBind();
-            fieldTooltip = TooltipFunction;
+            TooltipFunction = null; // the field has no hover text (this also removes tModLoader's orange "reload required" tooltip line)
 
             ReworkRegistry registry = ModContent.GetInstance<ReworkRegistry>();
             allTypes = registry.ItemTypes.OrderBy(type => type).ToList();
@@ -99,7 +98,7 @@ namespace IsmailsWeaponReworks.Common.Rework
             return new Rectangle(x, y, ReworkGridTuning.CellSize, ReworkGridTuning.CellSize);
         }
 
-        /// <summary>The clickable area of a header (its name and its triangle) and where the triangle is centered.</summary>
+        /// <summary>The clickable area of a header (the full width of the panel, one line tall) and where its triangle is centered.</summary>
         private Rectangle HeaderRect(CalculatedStyle dims, int row, GridLine line, out Point triangleCenter)
         {
             var font = FontAssets.MouseText.Value;
@@ -109,8 +108,7 @@ namespace IsmailsWeaponReworks.Common.Rework
             int y = (int)dims.Y + ReworkGridTuning.GridTop + row * rowHeight;
             int size = ReworkGridTuning.TriangleSize(line.Level);
             triangleCenter = new Point(x + (int)textWidth + 10 + size, y + ReworkGridTuning.CellSize / 2);
-            int right = triangleCenter.X + size + 6;
-            return new Rectangle(x - 4, y + 2, right - x + 4, ReworkGridTuning.CellSize - 6);
+            return new Rectangle((int)dims.X, y + 2, (int)dims.Width, ReworkGridTuning.CellSize - 6);
         }
 
         /// <summary>What is under the mouse: a header (type = -1, lineIndex = its line) or a cell (type = its item).</summary>
@@ -118,6 +116,8 @@ namespace IsmailsWeaponReworks.Common.Rework
         {
             lineIndex = -1;
             type = -1;
+            if (scrollbar.ContainsPoint(new Vector2(Main.mouseX, Main.mouseY)))
+                return false; // a header now spans the whole panel width, so the scroll bar on top of it must keep its own clicks
             int first = FirstLine();
             for (int row = 0; row < ReworkGridTuning.VisibleRows; row++)
             {
@@ -267,13 +267,6 @@ namespace IsmailsWeaponReworks.Common.Rework
 
             int left = (int)dims.X + ReworkGridTuning.EdgePadding;
             searchRect = new Rectangle(left, y, Math.Max(ReworkGridTuning.SearchMinWidth, filterRect.X - gap - left), height);
-        }
-
-        private bool OverControls(CalculatedStyle dims)
-        {
-            ControlRects(dims, out Rectangle searchRect, out Rectangle filterRect, out Rectangle allRect);
-            Point mouse = new Point(Main.mouseX, Main.mouseY);
-            return searchRect.Contains(mouse) || filterRect.Contains(mouse) || allRect.Contains(mouse);
         }
 
         public override void Update(GameTime gameTime)
@@ -514,8 +507,10 @@ namespace IsmailsWeaponReworks.Common.Rework
             }
 
             bool allOff = allTypes.All(disabled.Contains);
-            DrawButton(spriteBatch, filterRect, Text("ShowLabel", "Show") + ": " + FilterName, over && filterRect.Contains(mouse));
-            DrawButton(spriteBatch, allRect, allOff ? Text("EnableAll", "Enable all") : Text("DisableAll", "Disable all"), over && allRect.Contains(mouse));
+            DrawButton(spriteBatch, filterRect, null, over && filterRect.Contains(mouse));
+            DrawFilterLabel(spriteBatch, filterRect);
+            DrawButton(spriteBatch, allRect, allOff ? Text("EnableAll", "Enable all") : Text("DisableAll", "Disable all"), over && allRect.Contains(mouse),
+                allOff ? ReworkGridTuning.ActiveColor : ReworkGridTuning.InactiveColor);
 
             if (over)
             {
@@ -526,7 +521,25 @@ namespace IsmailsWeaponReworks.Common.Rework
             }
         }
 
-        private void DrawButton(SpriteBatch spriteBatch, Rectangle rect, string label, bool hovered)
+        /// <summary>The filter button's text: "Show: " in white, then the mode (Active green, Inactive red, All white), centered as a whole.</summary>
+        private void DrawFilterLabel(SpriteBatch spriteBatch, Rectangle rect)
+        {
+            var font = FontAssets.MouseText.Value;
+            float scale = ReworkGridTuning.ControlTextScale;
+            string prefix = Text("ShowLabel", "Show") + ": ";
+            string value = FilterName;
+            Color valueColor = filter == FilterMode.Active ? ReworkGridTuning.ActiveColor
+                : filter == FilterMode.Inactive ? ReworkGridTuning.InactiveColor
+                : Color.White;
+
+            float prefixWidth = font.MeasureString(prefix).X * scale;
+            float totalWidth = prefixWidth + font.MeasureString(value).X * scale;
+            Vector2 position = new Vector2(rect.Center.X - totalWidth * 0.5f, rect.Center.Y + ReworkGridTuning.ButtonTextOffsetY);
+            Utils.DrawBorderString(spriteBatch, prefix, position, Color.White, scale, 0f, 0.5f);
+            Utils.DrawBorderString(spriteBatch, value, position + new Vector2(prefixWidth, 0f), valueColor, scale, 0f, 0.5f);
+        }
+
+        private void DrawButton(SpriteBatch spriteBatch, Rectangle rect, string label, bool hovered, Color? textColor = null)
         {
             Color background = ReworkGridTuning.ControlColor;
             if (hovered)
@@ -535,7 +548,7 @@ namespace IsmailsWeaponReworks.Common.Rework
             if (label != null)
             {
                 Vector2 position = rect.Center.ToVector2() + new Vector2(0f, ReworkGridTuning.ButtonTextOffsetY);
-                Utils.DrawBorderString(spriteBatch, label, position, Color.White, ReworkGridTuning.ControlTextScale, 0.5f, 0.5f);
+                Utils.DrawBorderString(spriteBatch, label, position, textColor ?? Color.White, ReworkGridTuning.ControlTextScale, 0.5f, 0.5f);
             }
         }
 
@@ -555,8 +568,7 @@ namespace IsmailsWeaponReworks.Common.Rework
             int hoverType = -1;
             bool hovering = IsMouseHovering && HoverAt(dims, out hoverLine, out hoverType);
 
-            // The panel, the label and the field's own tooltip. While a cell, a header or a control is hovered the field tooltip is switched off.
-            TooltipFunction = hovering || (IsMouseHovering && OverControls(dims)) ? null : fieldTooltip;
+            // The panel and the label (the field has no tooltip of its own).
             base.DrawSelf(spriteBatch);
 
             int activeCount = allTypes.Count(type => !disabled.Contains(type));
@@ -604,7 +616,16 @@ namespace IsmailsWeaponReworks.Common.Rework
         private void DrawHeader(SpriteBatch spriteBatch, CalculatedStyle dims, int row, GridLine line, bool hovered)
         {
             Rectangle hit = HeaderRect(dims, row, line, out Point triangleCenter);
-            Color color = hovered ? ReworkGridTuning.HeaderHoverColor : ReworkGridTuning.HeaderColor;
+            Color baseColor = ReworkGridTuning.HeaderColor(line.Key.Split('/')[0], line.Level);
+            Color color = hovered ? ReworkGridTuning.HeaderHoverColor : baseColor;
+
+            // Hovering a header also lights up the part of the panel behind it (the same area that can be clicked).
+            if (hovered)
+            {
+                int inset = ReworkGridTuning.HeaderBackgroundInset;
+                Rectangle band = new Rectangle(hit.X + inset, hit.Y, hit.Width - 2 * inset, hit.Height);
+                spriteBatch.Draw(TextureAssets.MagicPixel.Value, band, baseColor * ReworkGridTuning.HeaderBackgroundAlpha);
+            }
             int rowHeight = ReworkGridTuning.CellSize + ReworkGridTuning.CellGap;
             int x = (int)dims.X + ReworkGridTuning.EdgePadding + line.Level * ReworkGridTuning.HeaderIndent;
             int y = (int)dims.Y + ReworkGridTuning.GridTop + row * rowHeight;

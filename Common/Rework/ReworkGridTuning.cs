@@ -52,8 +52,16 @@ namespace IsmailsWeaponReworks.Common.Rework
         public static Color InactiveCell => new Color(80, 45, 55) * 0.8f;
         public static Color FallbackCross => new Color(220, 40, 40); // the X drawn in code until ReworkOffX.png exists
         public static Color ControlColor => new Color(63, 82, 151) * 0.8f;       // buttons and the search box
-        public static Color HeaderColor => Color.White;
         public static Color HeaderHoverColor => new Color(255, 240, 150);
+        public static Color ActiveColor => new Color(85, 255, 85);       // green text: "Active" in the filter button, "Enable all"
+        public static Color InactiveColor => new Color(255, 85, 85);     // red text: "Inactive" in the filter button, "Disable all"
+        public static Color MeleeColor => new Color(230, 50, 50);        // the Melee header (a class without a color here stays white)
+        public static Color SubHeaderTint => new Color(255, 225, 235);   // pinkish white: the lower header levels lerp toward it
+        public static float HeaderBackgroundAlpha => 0.22f;              // the band behind a hovered header: the header's color times this
+        public static int HeaderBackgroundInset => 2;                    // the band stops this many pixels short of the panel's left and right edge
+        public static Color ClassColor(string className) => className == "Melee" ? MeleeColor : Color.White;
+        public static float SubHeaderLerp(int level) => level == 0 ? 0f : level == 1 ? 0.45f : 0.8f; // how far each level lerps toward SubHeaderTint
+        public static Color HeaderColor(string className, int level) => ClassColor(className) == Color.White ? Color.White : Color.Lerp(ClassColor(className), SubHeaderTint, SubHeaderLerp(level));
         public static Color SearchFocusedColor => new Color(95, 115, 190) * 0.9f; // the search box while typing
     }
 }
