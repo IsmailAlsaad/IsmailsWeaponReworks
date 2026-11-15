@@ -280,10 +280,14 @@ tModLoader/other bases -> project types:
 ### Common/Rework/
 **ReworkGridElement.cs** uses: ReworkGridTuning, ReworkRegistry
   class ReworkGridElement : ConfigElement<List<ItemDefinition>>
-    +OnBind()[ov] +LeftClick(UIMouseEvent)[ov] +ScrollWheel(UIScrollWheelEvent)[ov] #DrawSelf(SpriteBatch)[ov]
+    +OnBind()[ov] +LeftClick(UIMouseEvent)[ov] +ScrollWheel(UIScrollWheelEvent)[ov] +Update(GameTime)[ov] #DrawSelf(SpriteBatch)[ov]
+    enum SortKey
+      {Rarity, Damage, Id}
+    enum FilterMode
+      {All, Active, Inactive}
 **ReworkGridTuning.cs**
   static class ReworkGridTuning
-    +CellSize:int[s] +CellGap:int[s] +VisibleRows:int[s] +HeaderHeight:int[s] +EdgePadding:int[s] +ScrollbarSpace:int[s] +BottomPadding:int[s] +IconPadding:int[s] +InactiveIconAlpha:float[s] +HoverBrighten:float[s] +ActiveCell:Color[s] +InactiveCell:Color[s] +FallbackCross:Color[s]
+    +CellSize:int[s] +CellGap:int[s] +VisibleRows:int[s] +HeaderHeight:int[s] +EdgePadding:int[s] +ScrollbarSpace:int[s] +BottomPadding:int[s] +IconPadding:int[s] +ControlsHeight:int[s] +ButtonHeight:int[s] +ControlGap:int[s] +SortWidth:int[s] +DirectionWidth:int[s] +FilterWidth:int[s] +ToggleAllWidth:int[s] +SearchMinWidth:int[s] +SearchMaxLength:int[s] +ControlTextScale:float[s] +GridTop:int[s] +InactiveIconAlpha:float[s] +HoverBrighten:float[s] +ActiveCell:Color[s] +InactiveCell:Color[s] +FallbackCross:Color[s] +ControlColor:Color[s] +SearchFocusedColor:Color[s]
 **ReworkRegistry.cs** uses: ReworksToggleConfig
   class ReworkRegistry : ModSystem
     +ItemTypes:HashSet<int> +Add(int) +IsDisabled(int) +PostSetupContent()[ov]
