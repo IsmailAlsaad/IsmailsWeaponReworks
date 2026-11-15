@@ -281,22 +281,22 @@ tModLoader/other bases -> project types:
 **ReworkGridElement.cs** uses: ReworkGridTuning, ReworkRegistry
   class ReworkGridElement : ConfigElement<List<ItemDefinition>>
     +OnBind()[ov] +LeftClick(UIMouseEvent)[ov] +ScrollWheel(UIScrollWheelEvent)[ov] +Update(GameTime)[ov] #DrawSelf(SpriteBatch)[ov]
-    enum SortKey
-      {Rarity, Damage, Id}
     enum FilterMode
       {All, Active, Inactive}
+    class GridLine
+      +Level:int +Key:string +Label:string +Collapsed:bool +Cells:List<int>
 **ReworkGridTuning.cs**
   static class ReworkGridTuning
-    +CellSize:int[s] +CellGap:int[s] +VisibleRows:int[s] +HeaderHeight:int[s] +EdgePadding:int[s] +ScrollbarSpace:int[s] +BottomPadding:int[s] +IconPadding:int[s] +ControlsHeight:int[s] +ButtonHeight:int[s] +ControlGap:int[s] +SortWidth:int[s] +DirectionWidth:int[s] +FilterWidth:int[s] +ToggleAllWidth:int[s] +SearchMinWidth:int[s] +SearchMaxLength:int[s] +ControlTextScale:float[s] +GridTop:int[s] +InactiveIconAlpha:float[s] +HoverBrighten:float[s] +ActiveCell:Color[s] +InactiveCell:Color[s] +FallbackCross:Color[s] +ControlColor:Color[s] +SearchFocusedColor:Color[s]
+    +CellSize:int[s] +CellGap:int[s] +VisibleRows:int[s] +HeaderHeight:int[s] +EdgePadding:int[s] +ScrollbarSpace:int[s] +BottomPadding:int[s] +IconPadding:int[s] +ControlsHeight:int[s] +ButtonHeight:int[s] +ControlGap:int[s] +FilterWidth:int[s] +ToggleAllWidth:int[s] +SearchMinWidth:int[s] +SearchMaxLength:int[s] +ControlTextScale:float[s] +GridTop:int[s] +ButtonTextOffsetY:int[s] +HeaderIndent:int[s] +HeaderTextOffsetY:int[s] +HeaderScale(int)[s] +TriangleSize(int)[s] +HeaderLineAlpha(int)[s] +ClassOrder:string[s] +ProgressionOrder:string[s] +SubclassOrder:string[s] +SaveNoticeMilliseconds:int[s] +InactiveIconAlpha:float[s] +HoverBrighten:float[s] +ActiveCell:Color[s] +InactiveCell:Color[s] +FallbackCross:Color[s] +ControlColor:Color[s] +HeaderColor:Color[s] +HeaderHoverColor:Color[s] +SearchFocusedColor:Color[s]
 **ReworkRegistry.cs** uses: ReworksToggleConfig
   class ReworkRegistry : ModSystem
-    +ItemTypes:HashSet<int> +Add(int) +IsDisabled(int) +PostSetupContent()[ov]
+    +ItemTypes:HashSet<int> +Folders:Dictionary<int, string> +SaveNoticeAt:long +Add(int,string) +SameTypes(List<ItemDefinition>,List<ItemDefinition>)[s] +IsDisabled(int) +PostSetupContent()[ov]
 **ReworkToggle.cs** uses: ReworkRegistry
   static class ReworkToggle
-    +Applies(int,bool)[s] +IsActive(int)[s] +Holds(Player,int)[s]
-**ReworksToggleConfig.cs** uses: Mode, ReworkGridElement
+    +Applies(int,bool,string,string)[s] +WeaponFolder(string)[s] +IsActive(int)[s] +Holds(Player,int)[s]
+**ReworksToggleConfig.cs** uses: Mode, ReworkGridElement, ReworkRegistry
   class ReworksToggleConfig : ModConfig
-    +Mode:ConfigScope[ov] +DisabledReworks:List<ItemDefinition>
+    +Mode:ConfigScope[ov] +DisabledReworks:List<ItemDefinition> +Clone()[ov] +NeedsReload(ModConfig)[ov] +AcceptClientChanges(ModConfig,int,ref NetworkText)[ov] +OnChanged()[ov]
 
 ### Content/Buffs/
 **LightsBaneImbueBuff.cs**

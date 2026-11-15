@@ -101,20 +101,27 @@ Configs: {
 
 		Active: Active
 		Inactive: Inactive
-
 		SearchHint: Search...
-		SortLabel: Sort
-		SortRarity: Rarity
-		SortDamage: Damage
-		SortId: Item id
+		SavedNotice: Changes saved and will be applied on next reload
+		Section_Melee: Melee
+		Section_Ranged: Ranged
+		Section_Magic: Magic
+		Section_Summon: Summon
+		Section_PreHardmode: Pre-Hardmode
+		Section_Hardmode: Hardmode
+		Section_Broadsword: Broadswords
+		Section_Shortsword: Shortswords
+		Section_Spears: Spears
+		Section_Boomerangs: Boomerangs
+		Section_Flails: Flails
+		Section_Yoyos: Yoyos
+		Section_Others: Others
 		ShowLabel: Show
 		ShowAll: All
 		EnableAll: Enable all
 		DisableAll: Disable all
 		NoMatches: No reworks match
-		SortTip: Click to sort by rarity, damage or item id
-		AscendingTip: Lowest first (click to reverse)
-		DescendingTip: Highest first (click to reverse)
+
 		FilterTip: Click to show all, only active or only inactive reworks
 		ToggleAllTip: Switches every rework off, or every rework on when all are off. Search and filter are ignored.
 	}

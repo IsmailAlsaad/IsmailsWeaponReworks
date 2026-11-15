@@ -20,7 +20,7 @@ namespace IsmailsWeaponReworks.Common.Flail
 
         public override bool AppliesToEntity(Item entity, bool lateInstantiation)
         {
-            return ReworkToggle.Applies(entity.type, entity.type == ItemType);
+            return ReworkToggle.Applies(entity.type, entity.type == ItemType, GetType().Namespace);
         }
 
         public override void SetDefaults(Item item)

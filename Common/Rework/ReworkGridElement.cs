@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -26,14 +27,23 @@ namespace IsmailsWeaponReworks.Common.Rework
     /// </summary>
     public class ReworkGridElement : ConfigElement<List<ItemDefinition>>
     {
-        private enum SortKey { Rarity, Damage, Id }
         private enum FilterMode { All, Active, Inactive }
 
+        /// <summary>One line of the grid: a section header (Level 0 = class, 1 = progression, 2 = subclass) or a row of cells.</summary>
+        private class GridLine
+        {
+            public int Level = -1;                    // -1 = a row of cells
+            public string Key;                        // headers: "Melee", "Melee/PreHardmode", "Melee/PreHardmode/Flails"
+            public string Label;
+            public bool Collapsed;
+            public List<int> Cells = new List<int>(); // rows of cells: the item types in this row
+        }
+
         private readonly UIScrollbar scrollbar = new UIScrollbar();
-        private List<int> allTypes = new List<int>(); // every reworked item
-        private List<int> types = new List<int>();    // the cells currently shown (after search, filter and sort)
-        private SortKey sortKey = SortKey.Id;
-        private bool descending;
+        private List<int> allTypes = new List<int>();                       // every reworked item
+        private readonly List<GridLine> lines = new List<GridLine>();       // what the grid shows right now (rebuilt every frame)
+        private readonly HashSet<string> collapsed = new HashSet<string>(); // keys of the sections the player collapsed
+        private int shownCount;
         private FilterMode filter = FilterMode.All;
         private string search = "";
         private bool searchFocused;
@@ -51,7 +61,6 @@ namespace IsmailsWeaponReworks.Common.Rework
 
             ReworkRegistry registry = ModContent.GetInstance<ReworkRegistry>();
             allTypes = registry.ItemTypes.OrderBy(type => type).ToList();
-            types = new List<int>(allTypes);
 
             float rowHeight = ReworkGridTuning.CellSize + ReworkGridTuning.CellGap;
             Height.Set(ReworkGridTuning.GridTop + ReworkGridTuning.VisibleRows * rowHeight + ReworkGridTuning.BottomPadding, 0f);
@@ -75,7 +84,8 @@ namespace IsmailsWeaponReworks.Common.Rework
             return Math.Max(1, (int)(width / rowHeight));
         }
 
-        private int FirstRow()
+        /// <summary>The index of the first line shown (a header and a row of cells are both one line tall).</summary>
+        private int FirstLine()
         {
             float rowHeight = ReworkGridTuning.CellSize + ReworkGridTuning.CellGap;
             return Math.Max(0, (int)Math.Round(scrollbar.ViewPosition / rowHeight));
@@ -89,22 +99,54 @@ namespace IsmailsWeaponReworks.Common.Rework
             return new Rectangle(x, y, ReworkGridTuning.CellSize, ReworkGridTuning.CellSize);
         }
 
-        /// <summary>The index into types of the cell under this screen point, or -1.</summary>
-        private int CellAt(CalculatedStyle dims, int columns, int mouseX, int mouseY)
+        /// <summary>The clickable area of a header (its name and its triangle) and where the triangle is centered.</summary>
+        private Rectangle HeaderRect(CalculatedStyle dims, int row, GridLine line, out Point triangleCenter)
         {
-            int first = FirstRow();
+            var font = FontAssets.MouseText.Value;
+            float textWidth = font.MeasureString(line.Label).X * ReworkGridTuning.HeaderScale(line.Level);
+            int rowHeight = ReworkGridTuning.CellSize + ReworkGridTuning.CellGap;
+            int x = (int)dims.X + ReworkGridTuning.EdgePadding + line.Level * ReworkGridTuning.HeaderIndent;
+            int y = (int)dims.Y + ReworkGridTuning.GridTop + row * rowHeight;
+            int size = ReworkGridTuning.TriangleSize(line.Level);
+            triangleCenter = new Point(x + (int)textWidth + 10 + size, y + ReworkGridTuning.CellSize / 2);
+            int right = triangleCenter.X + size + 6;
+            return new Rectangle(x - 4, y + 2, right - x + 4, ReworkGridTuning.CellSize - 6);
+        }
+
+        /// <summary>What is under the mouse: a header (type = -1, lineIndex = its line) or a cell (type = its item).</summary>
+        private bool HoverAt(CalculatedStyle dims, out int lineIndex, out int type)
+        {
+            lineIndex = -1;
+            type = -1;
+            int first = FirstLine();
             for (int row = 0; row < ReworkGridTuning.VisibleRows; row++)
             {
-                for (int column = 0; column < columns; column++)
+                int index = first + row;
+                if (index >= lines.Count)
+                    return false;
+
+                GridLine line = lines[index];
+                if (line.Level >= 0)
                 {
-                    int index = (first + row) * columns + column;
-                    if (index >= types.Count)
-                        return -1;
-                    if (CellRect(dims, row, column).Contains(mouseX, mouseY))
-                        return index;
+                    if (HeaderRect(dims, row, line, out _).Contains(Main.mouseX, Main.mouseY))
+                    {
+                        lineIndex = index;
+                        return true;
+                    }
+                    continue;
+                }
+
+                for (int column = 0; column < line.Cells.Count; column++)
+                {
+                    if (CellRect(dims, row, column).Contains(Main.mouseX, Main.mouseY))
+                    {
+                        lineIndex = index;
+                        type = line.Cells[column];
+                        return true;
+                    }
                 }
             }
-            return -1;
+            return false;
         }
 
         private HashSet<int> DisabledSet()
@@ -129,7 +171,7 @@ namespace IsmailsWeaponReworks.Common.Rework
             base.LeftClick(evt);
 
             CalculatedStyle dims = GetDimensions();
-            ControlRects(dims, out Rectangle searchRect, out Rectangle sortRect, out Rectangle directionRect, out Rectangle filterRect, out Rectangle allRect);
+            ControlRects(dims, out Rectangle searchRect, out Rectangle filterRect, out Rectangle allRect);
             Point mouse = new Point(Main.mouseX, Main.mouseY);
 
             searchFocused = false;
@@ -137,18 +179,6 @@ namespace IsmailsWeaponReworks.Common.Rework
             {
                 searchFocused = true;
                 Main.clrInput(); // forget keys that were typed before the box was clicked
-                return;
-            }
-            if (sortRect.Contains(mouse))
-            {
-                sortKey = (SortKey)(((int)sortKey + 1) % 3);
-                ResetScroll();
-                return;
-            }
-            if (directionRect.Contains(mouse))
-            {
-                descending = !descending;
-                ResetScroll();
                 return;
             }
             if (filterRect.Contains(mouse))
@@ -163,14 +193,18 @@ namespace IsmailsWeaponReworks.Common.Rework
                 return;
             }
 
-            int index = CellAt(dims, Columns(dims), Main.mouseX, Main.mouseY);
-            if (index >= 0)
-                Toggle(types[index]);
+            if (HoverAt(dims, out int lineIndex, out int type))
+            {
+                if (type >= 0)
+                    Toggle(type);
+                else
+                    ToggleSection(lines[lineIndex].Key);
+            }
         }
 
         public override void ScrollWheel(UIScrollWheelEvent evt)
         {
-            // Scroll the grid one row per notch. When the grid is already at its end, the wheel goes on to the config page instead.
+            // Scroll the grid one line per notch. When the grid is already at its end, the wheel goes on to the config page instead.
             float rowHeight = ReworkGridTuning.CellSize + ReworkGridTuning.CellGap;
             float before = scrollbar.ViewPosition;
             scrollbar.ViewPosition -= Math.Sign(evt.ScrollWheelValue) * rowHeight;
@@ -189,24 +223,17 @@ namespace IsmailsWeaponReworks.Common.Rework
             Value = list; // marks the config as having pending changes (the Save button lights up)
         }
 
-        // ------------------------------------------------------------------ search, sort, filter, toggle all
+        private void ToggleSection(string key)
+        {
+            if (!collapsed.Remove(key))
+                collapsed.Add(key);
+        }
+
+        // ------------------------------------------------------------------ search, filter, toggle all
 
         private static string Text(string key, string fallback)
         {
             return Language.GetOrRegister("Mods.IsmailsWeaponReworks.Configs.ReworksToggleConfig." + key, () => fallback).Value;
-        }
-
-        private string SortName
-        {
-            get
-            {
-                switch (sortKey)
-                {
-                    case SortKey.Rarity: return Text("SortRarity", "Rarity");
-                    case SortKey.Damage: return Text("SortDamage", "Damage");
-                    default: return Text("SortId", "Item id");
-                }
-            }
         }
 
         private string FilterName
@@ -227,8 +254,8 @@ namespace IsmailsWeaponReworks.Common.Rework
             scrollbar.ViewPosition = 0f;
         }
 
-        /// <summary>The controls row, left to right: search box, sort button, direction button, filter button, toggle-all button.</summary>
-        private void ControlRects(CalculatedStyle dims, out Rectangle searchRect, out Rectangle sortRect, out Rectangle directionRect, out Rectangle filterRect, out Rectangle allRect)
+        /// <summary>The controls row, left to right: search box (fills the free width), filter button, toggle-all button.</summary>
+        private void ControlRects(CalculatedStyle dims, out Rectangle searchRect, out Rectangle filterRect, out Rectangle allRect)
         {
             int height = ReworkGridTuning.ButtonHeight;
             int gap = ReworkGridTuning.ControlGap;
@@ -237,28 +264,27 @@ namespace IsmailsWeaponReworks.Common.Rework
 
             allRect = new Rectangle(right - ReworkGridTuning.ToggleAllWidth, y, ReworkGridTuning.ToggleAllWidth, height);
             filterRect = new Rectangle(allRect.X - gap - ReworkGridTuning.FilterWidth, y, ReworkGridTuning.FilterWidth, height);
-            directionRect = new Rectangle(filterRect.X - gap - ReworkGridTuning.DirectionWidth, y, ReworkGridTuning.DirectionWidth, height);
-            sortRect = new Rectangle(directionRect.X - gap - ReworkGridTuning.SortWidth, y, ReworkGridTuning.SortWidth, height);
 
             int left = (int)dims.X + ReworkGridTuning.EdgePadding;
-            searchRect = new Rectangle(left, y, Math.Max(ReworkGridTuning.SearchMinWidth, sortRect.X - gap - left), height);
+            searchRect = new Rectangle(left, y, Math.Max(ReworkGridTuning.SearchMinWidth, filterRect.X - gap - left), height);
         }
 
         private bool OverControls(CalculatedStyle dims)
         {
-            ControlRects(dims, out Rectangle searchRect, out Rectangle sortRect, out Rectangle directionRect, out Rectangle filterRect, out Rectangle allRect);
+            ControlRects(dims, out Rectangle searchRect, out Rectangle filterRect, out Rectangle allRect);
             Point mouse = new Point(Main.mouseX, Main.mouseY);
-            return searchRect.Contains(mouse) || sortRect.Contains(mouse) || directionRect.Contains(mouse) || filterRect.Contains(mouse) || allRect.Contains(mouse);
+            return searchRect.Contains(mouse) || filterRect.Contains(mouse) || allRect.Contains(mouse);
         }
 
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+            ShowSavedNoticeIfRequested();
 
             // A press anywhere outside the search box ends typing.
             if (searchFocused && Main.mouseLeft)
             {
-                ControlRects(GetDimensions(), out Rectangle searchRect, out _, out _, out _, out _);
+                ControlRects(GetDimensions(), out Rectangle searchRect, out _, out _);
                 if (!searchRect.Contains(Main.mouseX, Main.mouseY))
                     searchFocused = false;
             }
@@ -291,43 +317,6 @@ namespace IsmailsWeaponReworks.Common.Rework
             }
         }
 
-        private int SortValue(int type)
-        {
-            Terraria.Item sample = Terraria.ID.ContentSamples.ItemsByType[type];
-            switch (sortKey)
-            {
-                case SortKey.Rarity: return sample.rare;
-                case SortKey.Damage: return sample.damage;
-                default: return type;
-            }
-        }
-
-        private int CompareTypes(int a, int b)
-        {
-            int result = SortValue(a).CompareTo(SortValue(b));
-            if (descending)
-                result = -result;
-            return result != 0 ? result : a.CompareTo(b); // ties always by item id, lowest first
-        }
-
-        /// <summary>Fills types (the shown cells) from allTypes: the search text, then the filter, then the sort.</summary>
-        private void RebuildTypes(HashSet<int> disabled)
-        {
-            string needle = search.Trim();
-            types.Clear();
-            foreach (int type in allTypes)
-            {
-                if (filter == FilterMode.Active && disabled.Contains(type))
-                    continue;
-                if (filter == FilterMode.Inactive && !disabled.Contains(type))
-                    continue;
-                if (needle.Length > 0 && Lang.GetItemNameValue(type).IndexOf(needle, StringComparison.CurrentCultureIgnoreCase) < 0)
-                    continue;
-                types.Add(type);
-            }
-            types.Sort(CompareTypes);
-        }
-
         /// <summary>Switches EVERY rework off, or, when every rework is already off, every rework on (the filter and the search do not matter).</summary>
         private void ToggleAll(HashSet<int> disabled)
         {
@@ -341,9 +330,167 @@ namespace IsmailsWeaponReworks.Common.Rework
             Value = list;
         }
 
+        // ------------------------------------------------------------------ saved inside a world
+
+        /// <summary>
+        /// After the config was saved inside a world (ReworksToggleConfig.OnChanged leaves a time stamp) the screen's notification line
+        /// says the changes wait for the next reload. tModLoader's own message is green "Config saved"; the line is reached through
+        /// reflection because its class is internal. If that ever fails, the same text goes to the chat instead.
+        /// </summary>
+        private void ShowSavedNoticeIfRequested()
+        {
+            ReworkRegistry registry = ModContent.GetInstance<ReworkRegistry>();
+            if (registry == null || registry.SaveNoticeAt < 0)
+                return;
+
+            long age = Environment.TickCount64 - registry.SaveNoticeAt;
+            registry.SaveNoticeAt = -1;
+            if (age > ReworkGridTuning.SaveNoticeMilliseconds)
+                return;
+
+            string text = Text("SavedNotice", "Changes saved and will be applied on next reload");
+            try
+            {
+                Type interfaceType = typeof(Mod).Assembly.GetType("Terraria.ModLoader.UI.Interface");
+                object screen = interfaceType?.GetField("modConfig", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(null);
+                MethodInfo setMessage = screen?.GetType().GetMethod("SetMessage", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (setMessage != null)
+                {
+                    setMessage.Invoke(screen, new object[] { text, Color.Orange });
+                    return;
+                }
+            }
+            catch (Exception)
+            {
+            }
+            Main.NewText(text, Color.Orange);
+        }
+
+        // ------------------------------------------------------------------ sections
+
+        private static int CompareNames(int a, int b)
+        {
+            int result = string.Compare(Lang.GetItemNameValue(a), Lang.GetItemNameValue(b), StringComparison.CurrentCultureIgnoreCase);
+            return result != 0 ? result : a.CompareTo(b);
+        }
+
+        private static string[] SplitFolder(string folder)
+        {
+            string[] raw = folder.Split('/');
+            return new[] { raw.Length > 0 ? raw[0] : "Melee", raw.Length > 1 ? raw[1] : "PreHardmode", raw.Length > 2 ? raw[2] : "Others" };
+        }
+
+        private static int OrderIndex(string[] order, string name)
+        {
+            int index = Array.IndexOf(order, name);
+            return index < 0 ? order.Length : index;
+        }
+
+        private static int CompareFolders(string a, string b)
+        {
+            string[] partsA = SplitFolder(a);
+            string[] partsB = SplitFolder(b);
+            string[][] orders = { ReworkGridTuning.ClassOrder, ReworkGridTuning.ProgressionOrder, ReworkGridTuning.SubclassOrder };
+            for (int level = 0; level < 3; level++)
+            {
+                int result = OrderIndex(orders[level], partsA[level]).CompareTo(OrderIndex(orders[level], partsB[level]));
+                if (result == 0)
+                    result = string.Compare(partsA[level], partsB[level], StringComparison.Ordinal);
+                if (result != 0)
+                    return result;
+            }
+            return 0;
+        }
+
+        /// <summary>"PreHardmode" becomes "Pre-Hardmode", "Broadsword" becomes "Broadswords", anything else gets spaces between its words.</summary>
+        private static string SectionLabel(string part)
+        {
+            string fallback;
+            switch (part)
+            {
+                case "PreHardmode": fallback = "Pre-Hardmode"; break;
+                case "Broadsword": fallback = "Broadswords"; break;
+                case "Shortsword": fallback = "Shortswords"; break;
+                default: fallback = System.Text.RegularExpressions.Regex.Replace(part, "(?<=[a-z])(?=[A-Z])", " "); break;
+            }
+            return Text("Section_" + part, fallback);
+        }
+
+        /// <summary>
+        /// Fills lines from allTypes: the search text and the filter pick the items, they are sorted by name, grouped into sections
+        /// (class, progression, subclass; a section with no matching item is left out), a collapsed section keeps only its header, and
+        /// the items of a section are cut into rows of columns cells.
+        /// </summary>
+        private void BuildLines(HashSet<int> disabled, int columns)
+        {
+            lines.Clear();
+            string needle = search.Trim();
+
+            List<int> shown = new List<int>();
+            foreach (int type in allTypes)
+            {
+                if (filter == FilterMode.Active && disabled.Contains(type))
+                    continue;
+                if (filter == FilterMode.Inactive && !disabled.Contains(type))
+                    continue;
+                if (needle.Length > 0 && Lang.GetItemNameValue(type).IndexOf(needle, StringComparison.CurrentCultureIgnoreCase) < 0)
+                    continue;
+                shown.Add(type);
+            }
+            shown.Sort(CompareNames);
+            shownCount = shown.Count;
+
+            ReworkRegistry registry = ModContent.GetInstance<ReworkRegistry>();
+            Dictionary<string, List<int>> byFolder = new Dictionary<string, List<int>>();
+            foreach (int type in shown)
+            {
+                if (!registry.Folders.TryGetValue(type, out string folder))
+                    folder = "Melee/PreHardmode/Others";
+                if (!byFolder.TryGetValue(folder, out List<int> items))
+                {
+                    items = new List<int>();
+                    byFolder[folder] = items;
+                }
+                items.Add(type);
+            }
+
+            List<string> folders = byFolder.Keys.ToList();
+            folders.Sort(CompareFolders);
+
+            string[] lastKey = new string[3];
+            foreach (string folder in folders)
+            {
+                string[] parts = SplitFolder(folder);
+                bool hidden = false; // a collapsed section above hides everything below it
+                for (int level = 0; level < 3; level++)
+                {
+                    string key = string.Join("/", parts.Take(level + 1));
+                    bool isCollapsed = collapsed.Contains(key);
+                    if (!hidden && key != lastKey[level])
+                        lines.Add(new GridLine { Level = level, Key = key, Label = SectionLabel(parts[level]), Collapsed = isCollapsed });
+                    lastKey[level] = key;
+                    hidden |= isCollapsed;
+                }
+
+                if (hidden)
+                    continue;
+
+                List<int> sectionItems = byFolder[folder];
+                for (int start = 0; start < sectionItems.Count; start += columns)
+                {
+                    GridLine row = new GridLine();
+                    for (int i = start; i < Math.Min(sectionItems.Count, start + columns); i++)
+                        row.Cells.Add(sectionItems[i]);
+                    lines.Add(row);
+                }
+            }
+        }
+
+        // ------------------------------------------------------------------ controls row
+
         private void DrawControls(SpriteBatch spriteBatch, CalculatedStyle dims, HashSet<int> disabled)
         {
-            ControlRects(dims, out Rectangle searchRect, out Rectangle sortRect, out Rectangle directionRect, out Rectangle filterRect, out Rectangle allRect);
+            ControlRects(dims, out Rectangle searchRect, out Rectangle filterRect, out Rectangle allRect);
             Point mouse = new Point(Main.mouseX, Main.mouseY);
             bool over = IsMouseHovering;
             float scale = ReworkGridTuning.ControlTextScale;
@@ -352,7 +499,7 @@ namespace IsmailsWeaponReworks.Common.Rework
             // Search box: the hint while empty, the text with a blinking bar while typing; a long text shows its end.
             Utils.DrawInvBG(spriteBatch, searchRect, searchFocused ? ReworkGridTuning.SearchFocusedColor : ReworkGridTuning.ControlColor);
             blinkTimer++;
-            Vector2 textPosition = new Vector2(searchRect.X + 8f, searchRect.Center.Y);
+            Vector2 textPosition = new Vector2(searchRect.X + 8f, searchRect.Center.Y + ReworkGridTuning.ButtonTextOffsetY);
             if (search.Length == 0 && !searchFocused)
             {
                 Utils.DrawBorderString(spriteBatch, Text("SearchHint", "Search..."), textPosition, Color.Gray, scale, 0f, 0.5f);
@@ -367,27 +514,12 @@ namespace IsmailsWeaponReworks.Common.Rework
             }
 
             bool allOff = allTypes.All(disabled.Contains);
-            DrawButton(spriteBatch, sortRect, Text("SortLabel", "Sort") + ": " + SortName, over && sortRect.Contains(mouse));
-            DrawButton(spriteBatch, directionRect, null, over && directionRect.Contains(mouse));
             DrawButton(spriteBatch, filterRect, Text("ShowLabel", "Show") + ": " + FilterName, over && filterRect.Contains(mouse));
             DrawButton(spriteBatch, allRect, allOff ? Text("EnableAll", "Enable all") : Text("DisableAll", "Disable all"), over && allRect.Contains(mouse));
 
-            // Direction arrow: points up for lowest first, down for highest first.
-            Texture2D pixel = TextureAssets.MagicPixel.Value;
-            Point center = directionRect.Center;
-            for (int row = 0; row < 6; row++)
-            {
-                int half = descending ? 6 - row : row + 1;
-                spriteBatch.Draw(pixel, new Rectangle(center.X - half, center.Y - 3 + row, half * 2, 1), Color.White);
-            }
-
             if (over)
             {
-                if (sortRect.Contains(mouse))
-                    ShowTip(Text("SortTip", "Click to sort by rarity, damage or item id"));
-                else if (directionRect.Contains(mouse))
-                    ShowTip(descending ? Text("DescendingTip", "Highest first (click to reverse)") : Text("AscendingTip", "Lowest first (click to reverse)"));
-                else if (filterRect.Contains(mouse))
+                if (filterRect.Contains(mouse))
                     ShowTip(Text("FilterTip", "Click to show all, only active or only inactive reworks"));
                 else if (allRect.Contains(mouse))
                     ShowTip(Text("ToggleAllTip", "Switches every rework off, or every rework on when all are off. Search and filter are ignored."));
@@ -401,7 +533,10 @@ namespace IsmailsWeaponReworks.Common.Rework
                 background = Color.Lerp(background, Color.White, ReworkGridTuning.HoverBrighten);
             Utils.DrawInvBG(spriteBatch, rect, background);
             if (label != null)
-                Utils.DrawBorderString(spriteBatch, label, rect.Center.ToVector2(), Color.White, ReworkGridTuning.ControlTextScale, 0.5f, 0.5f);
+            {
+                Vector2 position = rect.Center.ToVector2() + new Vector2(0f, ReworkGridTuning.ButtonTextOffsetY);
+                Utils.DrawBorderString(spriteBatch, label, position, Color.White, ReworkGridTuning.ControlTextScale, 0.5f, 0.5f);
+            }
         }
 
         // ------------------------------------------------------------------ drawing
@@ -411,16 +546,17 @@ namespace IsmailsWeaponReworks.Common.Rework
             CalculatedStyle dims = GetDimensions();
             TypeIntoSearch();
             HashSet<int> disabled = DisabledSet();
-            RebuildTypes(disabled);
             int columns = Columns(dims);
-            int rows = (types.Count + columns - 1) / columns;
+            BuildLines(disabled, columns);
             float rowHeight = ReworkGridTuning.CellSize + ReworkGridTuning.CellGap;
-            scrollbar.SetView(ReworkGridTuning.VisibleRows * rowHeight, Math.Max(rows, ReworkGridTuning.VisibleRows) * rowHeight);
+            scrollbar.SetView(ReworkGridTuning.VisibleRows * rowHeight, Math.Max(lines.Count, ReworkGridTuning.VisibleRows) * rowHeight);
 
-            int hovered = IsMouseHovering ? CellAt(dims, columns, Main.mouseX, Main.mouseY) : -1;
+            int hoverLine = -1;
+            int hoverType = -1;
+            bool hovering = IsMouseHovering && HoverAt(dims, out hoverLine, out hoverType);
 
-            // The panel, the label and the field's own tooltip. While a cell is hovered the field tooltip is switched off so only the cell's text shows.
-            TooltipFunction = hovered >= 0 || (IsMouseHovering && OverControls(dims)) ? null : fieldTooltip;
+            // The panel, the label and the field's own tooltip. While a cell, a header or a control is hovered the field tooltip is switched off.
+            TooltipFunction = hovering || (IsMouseHovering && OverControls(dims)) ? null : fieldTooltip;
             base.DrawSelf(spriteBatch);
 
             int activeCount = allTypes.Count(type => !disabled.Contains(type));
@@ -429,32 +565,67 @@ namespace IsmailsWeaponReworks.Common.Rework
 
             DrawControls(spriteBatch, dims, disabled);
 
-            if (types.Count == 0)
+            if (lines.Count == 0)
             {
                 Utils.DrawBorderString(spriteBatch, Text("NoMatches", "No reworks match"),
                     new Vector2(dims.X + dims.Width * 0.5f, dims.Y + ReworkGridTuning.GridTop + 20f), Color.Gray, 0.9f, 0.5f, 0f);
             }
 
-            int first = FirstRow();
+            int first = FirstLine();
             for (int row = 0; row < ReworkGridTuning.VisibleRows; row++)
             {
-                for (int column = 0; column < columns; column++)
+                int index = first + row;
+                if (index >= lines.Count)
+                    break;
+
+                GridLine line = lines[index];
+                if (line.Level >= 0)
                 {
-                    int index = (first + row) * columns + column;
-                    if (index >= types.Count)
-                        break;
-                    int type = types[index];
-                    DrawCell(spriteBatch, CellRect(dims, row, column), type, !disabled.Contains(type), index == hovered);
+                    DrawHeader(spriteBatch, dims, row, line, index == hoverLine);
+                    continue;
+                }
+
+                for (int column = 0; column < line.Cells.Count; column++)
+                {
+                    int type = line.Cells[column];
+                    DrawCell(spriteBatch, CellRect(dims, row, column), type, !disabled.Contains(type), index == hoverLine && type == hoverType);
                 }
             }
 
-            if (hovered >= 0)
+            if (hovering && hoverType >= 0)
             {
-                int type = types[hovered];
-                bool active = !disabled.Contains(type);
+                bool active = !disabled.Contains(hoverType);
                 string state = active ? $"[c/55FF55:{ActiveText}]" : $"[c/FF5555:{InactiveText}]";
-                ShowTip(Lang.GetItemNameValue(type) + "\n" + state);
+                ShowTip(Lang.GetItemNameValue(hoverType) + "\n" + state);
             }
+        }
+
+        /// <summary>A section header: its name, a triangle to the right of it (pointing down while open, right while collapsed) and a thin line under it.</summary>
+        private void DrawHeader(SpriteBatch spriteBatch, CalculatedStyle dims, int row, GridLine line, bool hovered)
+        {
+            Rectangle hit = HeaderRect(dims, row, line, out Point triangleCenter);
+            Color color = hovered ? ReworkGridTuning.HeaderHoverColor : ReworkGridTuning.HeaderColor;
+            int rowHeight = ReworkGridTuning.CellSize + ReworkGridTuning.CellGap;
+            int x = (int)dims.X + ReworkGridTuning.EdgePadding + line.Level * ReworkGridTuning.HeaderIndent;
+            int y = (int)dims.Y + ReworkGridTuning.GridTop + row * rowHeight;
+
+            Vector2 position = new Vector2(x, y + ReworkGridTuning.CellSize * 0.5f + ReworkGridTuning.HeaderTextOffsetY);
+            Utils.DrawBorderString(spriteBatch, line.Label, position, color, ReworkGridTuning.HeaderScale(line.Level), 0f, 0.5f);
+
+            // The triangle: one pixel row (down) or column (right) at a time.
+            Texture2D pixel = TextureAssets.MagicPixel.Value;
+            int size = ReworkGridTuning.TriangleSize(line.Level);
+            for (int i = 0; i < size; i++)
+            {
+                int half = size - i;
+                if (line.Collapsed)
+                    spriteBatch.Draw(pixel, new Rectangle(triangleCenter.X - size / 2 + i, triangleCenter.Y - half + 1, 1, 2 * half - 1), color);
+                else
+                    spriteBatch.Draw(pixel, new Rectangle(triangleCenter.X - half + 1, triangleCenter.Y - size / 2 + i, 2 * half - 1, 1), color);
+            }
+
+            int lineRight = (int)(dims.X + dims.Width) - ReworkGridTuning.EdgePadding - ReworkGridTuning.ScrollbarSpace + ReworkGridTuning.CellGap;
+            spriteBatch.Draw(pixel, new Rectangle(x, y + ReworkGridTuning.CellSize - 1, Math.Max(0, lineRight - x), 1), Color.White * ReworkGridTuning.HeaderLineAlpha(line.Level));
         }
 
         private void DrawCell(SpriteBatch spriteBatch, Rectangle rect, int type, bool active, bool hovered)

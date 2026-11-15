@@ -17,7 +17,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
 
         public override bool AppliesToEntity(Item entity, bool lateInstantiation)
         {
-            return ReworkToggle.Applies(entity.type, entity.type == YoyoItemType);
+            return ReworkToggle.Applies(entity.type, entity.type == YoyoItemType, GetType().Namespace);
         }
 
         public override void SetDefaults(Item item)

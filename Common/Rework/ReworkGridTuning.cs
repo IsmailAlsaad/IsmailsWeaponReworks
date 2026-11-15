@@ -22,14 +22,28 @@ namespace IsmailsWeaponReworks.Common.Rework
         public static int ControlsHeight => 38;        // the row's height
         public static int ButtonHeight => 28;
         public static int ControlGap => 6;
-        public static int SortWidth => 132;
-        public static int DirectionWidth => 30;
         public static int FilterWidth => 140;
         public static int ToggleAllWidth => 112;
         public static int SearchMinWidth => 100;
         public static int SearchMaxLength => 40;
         public static float ControlTextScale => 0.8f;
         public static int GridTop => HeaderHeight + ControlsHeight; // where the first row of cells starts
+        public static int ButtonTextOffsetY => 4;      // moves the text of the buttons and the search box DOWN this many pixels (negative = up)
+
+        // --- Section headers (class, progression, subclass) ---
+        public static int HeaderIndent => 14;          // every header level is indented this much more than the one above
+        public static int HeaderTextOffsetY => 4;      // moves the header text DOWN this many pixels (negative = up)
+        public static float HeaderScale(int level) => level == 0 ? 1.15f : level == 1 ? 0.95f : 0.8f;
+        public static int TriangleSize(int level) => 7 - level; // the collapse triangle next to a header name
+        public static float HeaderLineAlpha(int level) => level == 0 ? 0.6f : level == 1 ? 0.4f : 0.25f; // the thin line under a header
+
+        // --- Order of the sections (folder names; anything not listed comes after the listed ones, alphabetically) ---
+        public static string[] ClassOrder => new[] { "Melee", "Ranged", "Magic", "Summon" };
+        public static string[] ProgressionOrder => new[] { "PreHardmode", "Hardmode" };
+        public static string[] SubclassOrder => new[] { "Broadsword", "Shortsword", "Spears", "Boomerangs", "Flails", "Yoyos", "Others" };
+
+        // --- Saving inside a world ---
+        public static int SaveNoticeMilliseconds => 3000; // the orange "saved" notification is only shown for a save made this recently
 
         // --- Look ---
         public static float InactiveIconAlpha => 0.4f; // a switched-off weapon's icon is dimmed
@@ -38,6 +52,8 @@ namespace IsmailsWeaponReworks.Common.Rework
         public static Color InactiveCell => new Color(80, 45, 55) * 0.8f;
         public static Color FallbackCross => new Color(220, 40, 40); // the X drawn in code until ReworkOffX.png exists
         public static Color ControlColor => new Color(63, 82, 151) * 0.8f;       // buttons and the search box
+        public static Color HeaderColor => Color.White;
+        public static Color HeaderHoverColor => new Color(255, 240, 150);
         public static Color SearchFocusedColor => new Color(95, 115, 190) * 0.9f; // the search box while typing
     }
 }

@@ -15,9 +15,37 @@ namespace IsmailsWeaponReworks.Common.Rework
 
         private HashSet<int> disabledTypes;
 
-        public void Add(int itemType)
+        /// <summary>Where each reworked item lives, as "Class/Progression/Subclass" (for example "Melee/PreHardmode/Flails"); the config grid sorts its sections by it.</summary>
+        public readonly Dictionary<int, string> Folders = new Dictionary<int, string>();
+
+        /// <summary>Set (Environment.TickCount64) when the config was saved inside a world, so the config screen can show its orange notification.</summary>
+        public long SaveNoticeAt = -1;
+
+        public void Add(int itemType, string folder)
         {
             ItemTypes.Add(itemType);
+            if (!string.IsNullOrEmpty(folder))
+                Folders[itemType] = folder;
+        }
+
+        /// <summary>True when both lists switch off exactly the same items (order and duplicates do not matter).</summary>
+        public static bool SameTypes(List<ItemDefinition> a, List<ItemDefinition> b)
+        {
+            return TypesOf(a).SetEquals(TypesOf(b));
+        }
+
+        private static HashSet<int> TypesOf(List<ItemDefinition> list)
+        {
+            HashSet<int> set = new HashSet<int>();
+            if (list != null)
+            {
+                foreach (ItemDefinition definition in list)
+                {
+                    if (definition != null && definition.Type > 0)
+                        set.Add(definition.Type);
+                }
+            }
+            return set;
         }
 
         public bool IsDisabled(int itemType)

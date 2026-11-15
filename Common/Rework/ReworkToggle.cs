@@ -1,4 +1,6 @@
-﻿using Terraria;
+﻿using System;
+using System.Runtime.CompilerServices;
+using Terraria;
 using Terraria.ModLoader;
 
 namespace IsmailsWeaponReworks.Common.Rework
@@ -10,13 +12,36 @@ namespace IsmailsWeaponReworks.Common.Rework
     /// </summary>
     public static class ReworkToggle
     {
-        public static bool Applies(int itemType, bool isRework)
+        /// <summary>
+        /// folder is only needed from a GlobalItem that lives outside its weapon's folder (a shared base class): pass GetType().Namespace.
+        /// Otherwise the compiler fills in the source file's path, and the folder (class / progression / subclass) is read from it.
+        /// </summary>
+        public static bool Applies(int itemType, bool isRework, string folder = null, [CallerFilePath] string callerFile = "")
         {
             if (!isRework)
                 return false;
 
-            ModContent.GetInstance<ReworkRegistry>()?.Add(itemType);
+            ModContent.GetInstance<ReworkRegistry>()?.Add(itemType, WeaponFolder(folder ?? callerFile));
             return IsActive(itemType);
+        }
+
+        /// <summary>
+        /// ".../Content/Weapons/Melee/PreHardmode/Broadsword/Starfury/StarfuryGlobalItem.cs" or the namespace
+        /// "IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Flails.Mace" gives "Melee/PreHardmode/Broadsword" / "Melee/PreHardmode/Flails".
+        /// Null when the text has no Content/Weapons part (the grid then files the item under Others).
+        /// </summary>
+        public static string WeaponFolder(string source)
+        {
+            if (string.IsNullOrEmpty(source))
+                return null;
+
+            string[] parts = source.Replace('\\', '/').Replace('.', '/').Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 1; i + 3 < parts.Length; i++)
+            {
+                if (parts[i] == "Weapons" && parts[i - 1] == "Content")
+                    return parts[i + 1] + "/" + parts[i + 2] + "/" + parts[i + 3];
+            }
+            return null;
         }
 
         public static bool IsActive(int itemType)
