@@ -96,6 +96,7 @@ Configs: {
 
 		DisabledReworks: {
 			Label: Reworks
+			Tooltip: ""
 		}
 
 		Active: Active
@@ -120,7 +121,6 @@ Configs: {
 		EnableAll: Enable all
 		DisableAll: Disable all
 		NoMatches: No reworks match
-
 		FilterTip: Click to show all, only active or only inactive reworks
 		ToggleAllTip: Switches every rework off, or every rework on when all are off. Search and filter are ignored.
 	}
