@@ -10,10 +10,15 @@ The mod is currently in beta stage and only cover ***pre-hm*** content
 
 **Melee:**
 all broadswords
+
 all shortswords
+
 all flails
+
 all yoyos
+
 all spears
+
 all boomerangs
 
 #### Team credit:
