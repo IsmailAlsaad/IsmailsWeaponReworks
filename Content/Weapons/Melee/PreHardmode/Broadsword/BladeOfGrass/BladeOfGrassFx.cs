@@ -75,7 +75,47 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                 Leaf(center + new Vector2(Main.rand.NextFloat(-0.5f, 0.5f) * width, Main.rand.NextFloat(-0.5f, 0.5f) * height), Main.rand.NextVector2Circular(2f, 2f), Main.rand.NextFloat(0.9f, 1.4f), DustID.Grass);
         }
 
-        // The button is released: the vines wither away.
+        // The swing of the blade (every machine); the vines make it a little more rustly the longer they are.
+        public static void PlaySwing(Vector2 position, float charge)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.8f, Pitch = -0.1f + 0.4f * charge, PitchVariance = 0.1f }, position);
+        }
+
+        // Leaves off the tip while the blade cuts.
+        public static void SwingDust(Vector2 tip, Vector2 motion, float charge)
+        {
+            if (Main.dedServ)
+                return;
+            int count = 1 + (int)(charge * 2.5f);
+            for (int i = 0; i < count; i++)
+                Leaf(tip + Main.rand.NextVector2Circular(5f, 5f), motion * Main.rand.NextFloat(0.1f, 0.3f) + Main.rand.NextVector2Circular(1.2f, 1.2f), Main.rand.NextFloat(0.9f, 1.5f),
+                    Main.rand.NextBool(3) ? DustID.JungleGrass : DustID.Grass);
+        }
+
+        // A true melee hit: a burst of leaves and a hit sound, bigger with longer vines.
+        public static void HitSpark(Vector2 position, float charge)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.4f + 0.15f * charge, Pitch = 0.2f + 0.3f * charge, PitchVariance = 0.15f }, position);
+            int count = 6 + (int)(charge * 8f);
+            for (int i = 0; i < count; i++)
+                Leaf(position, Main.rand.NextVector2Circular(1f, 1f) * Main.rand.NextFloat(2f, 5f + 3f * charge), Main.rand.NextFloat(1.1f, 1.8f), i % 3 == 0 ? DustID.JungleGrass : DustID.Grass);
+        }
+
+        // The hit that made the vines longer: a rustle and a few leaves shoot off the tip.
+        public static void ChargeHit(Vector2 tip)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item17 with { Volume = 0.45f, Pitch = 0.3f }, tip);
+            for (int i = 0; i < 6; i++)
+                Leaf(tip, Main.rand.NextVector2Circular(3f, 3f), 1.2f, DustID.GreenTorch);
+        }
+
+        // The sword was put away: the vines wither away.
         public static void Release(Vector2 position)
         {
             if (Main.dedServ)

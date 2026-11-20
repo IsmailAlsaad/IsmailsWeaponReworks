@@ -10,9 +10,11 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BladeOfGrass
 {
     /// <summary>
-    /// Overhauls the vanilla Blade of Grass (ItemID.BladeofGrass): the item itself hits and fires nothing. Holding left click starts a
-    /// BladeOfGrassHoldProjectile that points the blade at the cursor and grows three whip-like vines from its edge; the vines loop around
-    /// enemies near the cursor and the looped sections break off as BladeOfGrassSpineProjectile. Recipe, drops and base stats stay vanilla.
+    /// Overhauls the vanilla Blade of Grass (ItemID.BladeofGrass): the item itself swings nothing. While it is held, a BladeOfGrassBladeProjectile
+    /// (spawned by BladeOfGrassPlayer) holds the sword for as long as it is in the hand and swings it while the left button is down (the
+    /// shared charged blade, like the Light's Bane). Every swing that hits something makes the three vines growing from the blade longer; the vines
+    /// float around the player searching, loop enemies in reach and the looped sections break off as BladeOfGrassSpineProjectile.
+    /// Recipe, drops and base stats stay vanilla.
     /// </summary>
     public class BladeOfGrassGlobalItem : GlobalItem
     {
@@ -23,46 +25,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
 
         public override void SetDefaults(Item item)
         {
-            item.shoot = ModContent.ProjectileType<BladeOfGrassHoldProjectile>();
-            item.shootSpeed = 1f;
-            item.useStyle = ItemUseStyleID.Shoot; // the held projectile poses the arm itself
-            item.noMelee = true;                  // the projectiles are the weapon
-            item.noUseGraphic = true;             // the held projectile draws the sword
-            item.channel = true;                  // held while the button is down
-            item.autoReuse = false;
+            item.useStyle = ItemUseStyleID.Shoot; // the held projectile moves the arm itself
+            item.noMelee = true;                  // the projectile is the weapon
+            item.noUseGraphic = true;             // the projectile draws the sword
+            item.channel = false;
             item.UseSound = null;                 // the projectiles play their own sounds
         }
 
-        // One held blade at a time. (A manual scan instead of ownedProjectileCounts, which lags a tick behind a projectile that was just killed.)
+        // The item is never "used": the held blade watches the button itself.
         public override bool CanUseItem(Item item, Player player)
         {
-            int type = ModContent.ProjectileType<BladeOfGrassHoldProjectile>();
-            for (int i = 0; i < Main.maxProjectiles; i++)
-            {
-                Projectile projectile = Main.projectile[i];
-                if (projectile.active && projectile.owner == player.whoAmI && projectile.type == type)
-                {
-                    if (projectile.ModProjectile is BladeOfGrassHoldProjectile hold && hold.Retracting && !hold.KeepsHolding)
-                        continue; // its vines are still shrinking away and the blade left the hand (weapon swapped): that does not stop a new hold
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public override bool Shoot(Item item, Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)
-        {
-            // Shoot only runs on the attacking player's own client; the projectile is then synced to everyone else.
-            // ai[0] = the aim in the player's own frame (the first sync; the owner then keeps it up to date through SendExtraAI).
-            Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, damage, knockback, player.whoAmI, HeldAim.Capture(player));
             return false;
         }
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
             tooltips.RemoveAll(line => line.Mod == "Terraria" && line.Name.StartsWith("Tooltip"));
-            tooltips.Add(new TooltipLine(Mod, "BladeOfGrass1", "Hold to grow vines toward the cursor"));
-            //tooltips.Add(new TooltipLine(Mod, "BladeOfGrass2", "Vines loop around enemies near the cursor and break off as thorny coils that keep hurting them"));
+            tooltips.Add(new TooltipLine(Mod, "BladeOfGrass1", "Hitting enemies makes the vines longer"));
+            tooltips.Add(new TooltipLine(Mod, "BladeOfGrass2", "The vines search around you and loop nearby enemies, breaking off as thorny coils that keep hurting them"));
         }
     }
 }

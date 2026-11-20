@@ -13,25 +13,97 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static float SwordScale => 1f;
         public static float GripOffset => 4f;          // where the hand holds the sword: pixels up from the end of the handle, at scale 1 (visual only)
 
-        // ---- the charge: holding makes the blade shake more and more ----
-        public static int ChargeTicks => 120;          // how long the shake takes to reach its maximum
-        public static float ShakeCurve => 2f;          // 1 = linear, 2 = the shake stays small for a while and then rises fast
-        public static float ShakeArmDeg => 1f;         // arm jitter at full charge
-        public static float ShakeHandPx => 0.5f;       // hand jitter at full charge
-        public static int ChargeDustInterval => 6;     // a leaf off the blade this often at full charge (rarer when less charged)
+        // ---- the swing: the shared charged blade (Common/ChargedBlade) reads everything below through BladeOfGrassBladeTune. A chop centered on the cursor,
+        // alternating up and down, flowing into each other while the button stays down; the same numbers as the Light's Bane. Arm angles are for a
+        // player facing right and RELATIVE TO THE AIM (0 = at the cursor, negative = above it, positive = below it); the ready pose is relative to
+        // the player (0 = forward, positive = down). The blade angle is arm + tilt. The charge is the length of the vines: ----
+        public static float ReadyArmDeg => 30f;
+        public static float ReadyTiltDeg => -60f;
+        public static float SwingLowDeg => 70f;  // bottom of the arc
+        public static float SwingHighDeg => -70f;  // top of the arc
+        public static float TiltLowDeg => 14f;  // ... and at the bottom
+        public static float TiltHighDeg => -14f;  // blade tilt relative to the arm at the top (wrist) ...
+        public static int ChainAnticipateTicks => 9;  // a swing that FLOWS out of the previous one: the previous strike carries on through this wind-up ...
+        public static int AnticipateTicks => 5;  // a swing that starts from the ready pose: the pull-back ...
+        public static float ChainAnticipateDeg => 24f;  // ... to this far past the end of the arc. Keep it above OvershootDeg, so the arm keeps drifting the way it was going
+        public static float AnticipateDeg => 18f;  // ... this far past the start of the arc
+        public static int SwingTicks => 10;  // the strike (the only part that damages)
+        public static int RecoverTicks => 7;  // only when the button is let go: the arm settles back to the end of the arc over this long
+        public static float SwingEasePower => 2f;  // 1 = even speed; higher = faster start and a longer deceleration
+        public static float OvershootDeg => 8f;  // the strike carries this far past the end of the arc
+        public static float AnticipateTiltDeg => 10f;  // the wrist cocks back this much before every strike
+        public static float ChargedAt => 2f;  // above 1: the blade never counts as fully charged (no outline, no stab)
+        public static float ChargeSyncStep => 0.04f;  // the owner tells the other machines when the charge moved this much
+        public static float ChargeShowEase => 0.15f;  // how fast the DRAWN charge follows the real one (per tick, 0..1)
+        public static float OutlineFade => 0.25f;  // how fast the outline fades in and out (per tick, 0..1)
+        public static int IdleBobTicks => 90;
+        public static float IdleBobDeg => 2f;
+        public static float IdleEase => 0.15f;  // how fast the arm settles into the ready pose after a swing (per tick, 0..1)
+        public static float StabBlendOut => 0.2f;  // after the stab the sword slides back out of the chest into the hand by this much per tick (0..1)
+        public static float SparkleChance => 0.25f;  // per tick, while fully charged: a mote somewhere along the blade
+        public static int FlashTicks => 12;  // the white flash when a strike starts and when the sword fills
+        public static int StabBufferTicks => 10;  // a right click during a strike is remembered this long and fires as soon as the strike is over
+        public static int StabTurnTicks => 12;  // the arm goes to StabArmDeg, the blade turns to point at the chest and slides back through the fist
+        public static int StabAimTicks => 5;  // a short held aim: the blade trembles and sparkles
+        public static int StabPlungeTicks => 3;  // the plunge (fast)
+        public static float StabArmDeg => -10f;  // the arm while stabbing (facing-local: 0 = forward, negative = up)
+        public static float StabChestOffsetY => -2f;  // the chest point the blade aims at, relative to the player's center (px, negative = up)
+        public static float StabAimDistance => 10f;  // while aiming, the tip stands this far in front of the chest (px)
+        public static float StabDepth => 6f;  // when plunged, the tip is this far PAST the center of the chest (px)
+        public static float StabShake => 1.2f;  // tremble of the blade while aiming and buried (px; half as much while aiming)
+        public static int StabHoldTicks => 7;  // the blade stays buried while the burst plays
+        public static float StabHitShake => 2.5f;  // camera punch of the impact
+        public static float MaxSpeedScale => 1f;  // no speed-up from long vines
+        public static float SpeedCurvePower => 1f;  // 1 = the speed rises evenly with the charge; above 1 it rises late
+        public static float AttackSpeedInfluence => 1f;  // 0 = ignore the player's melee attack speed, 1 = fully applied
+        public static float MinSpeed => 0.3f;  // the final speed (charge x melee speed) is clamped to this range
+        public static float MaxSpeed => 6f;
+        public static int TrailSamplesPerTick => 8;  // trail points laid per tick (the strike is fast, so many keep the fan smooth)
+        public static float TrailLagTicks => 0.4f;  // how many ticks the trail runs BEHIND the sprite (0 = exactly on it)
+        public static float TrailOuter => 1.25f;  // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
+        public static float TrailInnerLow => 0.8f;  // fully expanded, the fan reaches down the blade to this fraction of its length: with no charge ...
+        public static float TrailInnerHigh => 0.3f;  // ... and with a full charge
+        public static float TrailExpandBy => 0.8f;  // the fan has fully expanded this far into the strike (0..1)
+        public static int SweepHitSteps => 6;  // the hit test is checked at this many poses between two ticks (a fast strike needs more)
+        public static float HitLengthScale => 1.3f;  // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
+        public static float HitWidth => 18f;  // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
+        public static float DamageMultiplier => 1f;  // of the item's damage (the speed is the reward for charging, so 1)
+        public static float KnockbackMultiplier => 1f;
+        public static float HitShake => 0.6f;  // camera punch on a hit (grows with the charge)
+        public static float ChargePerHit => LengthPerHitPx / System.Math.Max(1f, MaxLength - MinLength);  // the first hit of a swing adds LengthPerHitPx to every vine (as a fraction of the span MinLength..MaxLength)
+        public static float GlowMaxAlpha => 0.45f;  // opacity of the soft green glow when the vines are nearly at MaxLength
+        public static Color OutlineColor => new Color(120, 255, 90, 0);
+        public static float GlowScale => 1.18f;  // the glow copy is this much bigger than the sword, grown from the MIDDLE of the sprite
+        public static int OutlinePulseTicks => 40;  // one full pulse
+        public static float OutlineMin => 0.5f;  // the pulse runs between these two strengths
+        public static float OutlineMax => 1f;
+        public static float OutlineWidth => 2f;  // screen pixels
+        public static Color OutlineCoreColor => new Color(215, 255, 190, 0);
+        public static Color CoreColor => new Color(225, 255, 205, 0);
+        public static bool ShowBladeDebug => false;  // true: a magenta square on the tip the hit test uses
+
+        // ---- swing trail (a SweepTrail fan) ----
+        public static float PixelSize => 2f;
+        public static int TrailLifeTicks => 16;
+        public static float TailLifeScale => 0.45f;     // the first point of a swing's trail lives this fraction as long as the last one
+        public static int TrailRails => 7;              // parallel pixel lines that fill the fan
+        public static float TrailOpacityLow => 0.3f;    // how strong the fan is with short vines ...
+        public static float TrailOpacityHigh => 0.75f;  // ... and with the longest
+        public static Color TrailCoreColor => new Color(215, 255, 175, 0);
+        public static Color TrailGreenColor => new Color(90, 220, 70, 0);
+        public static Color TrailDeepColor => new Color(25, 110, 40, 0);
+        public static float ChargeLeafChance => 0.06f;  // per tick at full length: a leaf off the blade (less with shorter vines)
 
         // ---- the vines ----
         public static int VineCount => 3;
         public static int PointsPerVine => 18;         // points of each rope (more = smoother and more lively)
         public static float RootStart => 0.45f;        // where along the blade the first vine grows from (fraction of BladeLength)
         public static float RootEnd => 0.9f;           // and the last
-        public static int StartTicks => 18;            // the first vine starts growing after this many ticks of holding
-        public static int StaggerTicks => 10;          // each next vine starts this much later
-        public static int GrowTicks => 360;            // ticks of holding (after its start) for a vine to reach MaxLength
-        public static float MinLength => 70f;          // length a vine starts with
+        public static float MinLength => 70f;          // length every vine starts with (and cools back to); a vine shorter than MinWrapPixels cannot attack
         public static float MaxLength => 460f;         // the longest a vine gets (about 29 tiles)
-        public static float GrowSpeed => 1.5f;           // how fast a vine gets longer, pixels per tick (also how fast it regrows after a cut)
-        public static float SpreadDeg => 9f;           // the three vines fan out by this much around the cursor direction
+        public static float LengthPerHitPx => 40f;     // a swing that hits something (the first enemy it touches) makes EVERY vine this much longer
+        public static int DecayHoldTicks => 480;       // the vines do not shorten for this long after the last counted hit (8 s) ...
+        public static float DecayPerTick => 0.15f;     // ... then they cool toward MinLength by this many pixels per tick (about 9 px per second)
         public static float FreeSlackPx => 16f;        // a free vine shows this much more than the straight distance to its goal (room for the wave); it only shows what it needs to put its tip on the cursor
         public static float VineVariation => 0.1f;    // how different the three vines are (wave, stiffness, speed, growth, length); 0 = identical copies
 
@@ -53,12 +125,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static float TipAccel => 1.7f;          // how fast the tip can change its velocity per tick (lower = heavier, more inertia and overshoot)
         public static float TipArrive => 0.3f;         // slows the tip down near the cursor (fraction of the distance per tick; lower = longer, floatier glide in)
 
-        // ---- targeting ----
-        public static float TargetRadius => 200f;      // an enemy this close to the cursor (pixels) can be targeted
+        // ---- targeting and searching ----
         public static float ReachSlack => 10f;         // an enemy may be this much farther than the vine's current length and still count as in reach
-        public static float LoseTargetFactor => 1.5f;  // a target is dropped when the cursor moves farther than TargetRadius times this from it
         public static int RetargetInterval => 5;       // ticks between target searches
         public static float SamePenalty => 100000f;    // added to an enemy's score per vine already on it, so vines spread out; the same enemy is only reused when nothing else is in reach
+        public static float SearchOrbitSpeed => 0.012f; // radians per tick the search direction turns around the player (a full turn in about 9 s); every other vine turns the other way
+        public static float SearchSweepDeg => 40f;     // on top of that a vine sweeps this far to each side ...
+        public static float SearchSweepSpeed => 0.03f; // ... at this speed (radians per tick of the sweep's own sine)
+        public static float SearchReachMin => 0.55f;   // the tip floats between these two fractions of the vine's length from the player ...
+        public static float SearchReachMax => 0.95f;
+        public static float SearchBreathSpeed => 0.025f; // ... breathing in and out at this speed
 
         // ---- looping and breaking off ----
         public static int LoopTicks => 36;             // how long a vine circles an enemy before the section breaks off
@@ -107,10 +183,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static float HeadScale => 1f;
         public static float ChainSpacing => 0.8f;          // distance between sprites along a vine, as a fraction of the sprite's height
         public static float ChainEndTrimPx => 4f;          // the chain stops this many pixels before each end (the head covers the rest), raise it if a link pokes out of a head
-        public static float RetractSpeed => 6f;            // pixels per tick the vines shrink after the button is released or the weapon is swapped
 
         // ---- netcode ----
-        public static int SyncIntervalTicks => 4;      // how often the owner sends the aim, the targets and the lengths
+        // The vines are sent (target and length of each) only when a target or a length changes; nothing to tune.
 
         // ---- colors (alpha 0 = additive) ----
         public static Color GlowColor => new Color(120, 255, 90, 0);
