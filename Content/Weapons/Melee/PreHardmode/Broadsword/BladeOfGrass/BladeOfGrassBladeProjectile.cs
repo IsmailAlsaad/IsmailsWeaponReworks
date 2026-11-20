@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using System;
 using System.IO;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BladeOfGrass
@@ -89,13 +90,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             Vector2 hand = pose.Hand;
             Vector2 direction = pose.Direction;
             float bladeLength = BladeOfGrassTuning.BladeLength * pose.Scale;
-            int count = Math.Max(1, BladeOfGrassTuning.VineCount);
 
+            // The roots sit in the middle of the player, not on the blade: the vines grow from the body and float around it.
             Vector2 Root(int index)
             {
-                float fraction = count <= 1 ? BladeOfGrassTuning.RootEnd
-                    : MathHelper.Lerp(BladeOfGrassTuning.RootStart, BladeOfGrassTuning.RootEnd, index / (float)(count - 1));
-                return hand + direction * (bladeLength * fraction);
+                return owner.MountedCenter;
             }
 
             vines.Tick(Projectile, owner.MountedCenter, Root, pose.Charge, mine ? BladeOfGrassPlayer.LengthsOf(owner) : null);
@@ -110,11 +109,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
 
         // ---------------------------------------------------------------- drawing
 
-        // The vines first, then the base draws the trail and the sword over them (the vines' roots are behind the sword).
-        public override bool PreDraw(ref Color lightColor)
+        // The vines are drawn by BladeOfGrassVineLayer (a player draw layer before the body, so they are behind the player); this projectile
+        // draws the trail and the sword. The layer asks for the sprites here.
+        public void AddVineDrawData(ref PlayerDrawSet drawInfo)
         {
-            vines.Draw();
-            return base.PreDraw(ref lightColor);
+            vines.AddDrawData(ref drawInfo);
         }
 
         public override void OnKill(int timeLeft)

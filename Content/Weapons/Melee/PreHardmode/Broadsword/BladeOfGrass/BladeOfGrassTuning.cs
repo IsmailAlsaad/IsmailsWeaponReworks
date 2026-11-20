@@ -9,7 +9,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
     public static class BladeOfGrassTuning
     {
         // ---- sword and pose ----
-        public static float BladeLength => 46f;        // hand to tip, in pixels at scale 1 (adjust to the real sprite)
+        public static float BladeLength => 70f;        // hand to tip, in pixels at scale 1 (adjust to the real sprite)
         public static float SwordScale => 1f;
         public static float GripOffset => 4f;          // where the hand holds the sword: pixels up from the end of the handle, at scale 1 (visual only)
 
@@ -129,7 +129,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static float ReachSlack => 10f;         // an enemy may be this much farther than the vine's current length and still count as in reach
         public static int RetargetInterval => 5;       // ticks between target searches
         public static float SamePenalty => 100000f;    // added to an enemy's score per vine already on it, so vines spread out; the same enemy is only reused when nothing else is in reach
-        public static float SearchOrbitSpeed => 0.012f; // radians per tick the search direction turns around the player (a full turn in about 9 s); every other vine turns the other way
+        public static float SearchOrbitSpeed => 0.006f; // radians per tick the search direction turns around the player (a full turn in about 9 s); every other vine turns the other way
         public static float SearchSweepDeg => 40f;     // on top of that a vine sweeps this far to each side ...
         public static float SearchSweepSpeed => 0.03f; // ... at this speed (radians per tick of the sweep's own sine)
         public static float SearchReachMin => 0.55f;   // the tip floats between these two fractions of the vine's length from the player ...

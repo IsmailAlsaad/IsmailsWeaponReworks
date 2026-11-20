@@ -5,6 +5,7 @@ using ReLogic.Content;
 using System;
 using System.IO;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -535,7 +536,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
 
         // ---------------------------------------------------------------- drawing
 
-        public void Draw()
+        // Called by BladeOfGrassVineLayer (a player draw layer before the vanilla ones): adds the chains and the heads to the player's draw data.
+        // The chain is stamped as sprites along each vine (a layer can only queue sprites): one every ChainSpacing of the sprite's height, turned
+        // along the vine and thinning toward the tip, so the stamps overlap and a bend leaves no gap.
+        public void AddDrawData(ref PlayerDrawSet drawInfo)
         {
             if (Main.dedServ || Vines == null)
                 return;
@@ -544,31 +548,61 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             Texture2D chain = chainAsset.Value;
             Texture2D head = headAsset.Value;
 
-            // All the chains first (as one mesh each, see VineDraw.DrawStrip), then the heads.
-            VineDraw.BeginMesh();
             for (int i = 0; i < Vines.Length; i++)
-                DrawVineBody(Vines[i], chain);
-            VineDraw.EndMesh();
+                AddVineSprites(ref drawInfo, Vines[i], chain);
             for (int i = 0; i < Vines.Length; i++)
-                DrawVineHead(Vines[i], head);
+                AddVineHead(ref drawInfo, Vines[i], head);
         }
 
-        void DrawVineBody(Vine vine, Texture2D chain)
+        float[] cumulative;
+
+        void AddVineSprites(ref PlayerDrawSet drawInfo, Vine vine, Texture2D chain)
         {
             if (!vine.Init || vine.P == null || vine.Length < 2f)
                 return;
-            VineDraw.DrawStrip(chain, vine.P, vine.P.Length, BladeOfGrassTuning.VineScale, BladeOfGrassTuning.VineScale * BladeOfGrassTuning.VineTipScale, 1f, 0f, BladeOfGrassTuning.ChainEndTrimPx);
+            Vector2[] points = vine.P;
+            int n = points.Length;
+            if (cumulative == null || cumulative.Length < n)
+                cumulative = new float[n];
+            cumulative[0] = 0f;
+            for (int i = 1; i < n; i++)
+                cumulative[i] = cumulative[i - 1] + Vector2.Distance(points[i], points[i - 1]);
+            float total = cumulative[n - 1];
+            float end = total - BladeOfGrassTuning.ChainEndTrimPx; // the head covers the last bit
+            if (end <= 0f)
+                return;
+
+            Vector2 origin = chain.Size() * 0.5f;
+            int segment = 0;
+            float at = 0f;
+            while (at <= end)
+            {
+                while (segment < n - 2 && at > cumulative[segment + 1])
+                    segment++;
+                float segmentLength = Math.Max(0.001f, cumulative[segment + 1] - cumulative[segment]);
+                Vector2 position = Vector2.Lerp(points[segment], points[segment + 1], MathHelper.Clamp((at - cumulative[segment]) / segmentLength, 0f, 1f));
+                Vector2 delta = points[segment + 1] - points[segment];
+                float angle = delta.LengthSquared() > 0.0001f ? delta.ToRotation() : 0f;
+                float scale = MathHelper.Lerp(BladeOfGrassTuning.VineScale, BladeOfGrassTuning.VineScale * BladeOfGrassTuning.VineTipScale, at / Math.Max(1f, total));
+                Color color = Lighting.GetColor(position.ToTileCoordinates());
+                // The chain sprite is vertical: its long axis is turned along the vine.
+                drawInfo.DrawDataCache.Add(new DrawData(chain, position - Main.screenPosition, null, color, angle - MathHelper.PiOver2, origin, scale, SpriteEffects.None, 0));
+                at += Math.Max(1f, chain.Height * scale * BladeOfGrassTuning.ChainSpacing);
+            }
         }
 
-        void DrawVineHead(Vine vine, Texture2D head)
+        void AddVineHead(ref PlayerDrawSet drawInfo, Vine vine, Texture2D head)
         {
             if (!vine.Init || vine.P == null || vine.Length < 2f)
                 return;
             int n = vine.P.Length;
-            // The Ivy Whip head over the end of the vine; its back covers the last links, so there is no gap.
+            // The Ivy Whip head over the end of the vine; its back covers the last links, so there is no gap (the same placement as VineDraw.DrawHead).
             Vector2 end = vine.P[n - 1];
             float angle = (end - vine.P[Math.Max(0, n - 3)]).ToRotation();
-            VineDraw.DrawHead(head, end, angle, BladeOfGrassTuning.HeadScale, Lighting.GetColor(end.ToTileCoordinates()), BladeOfGrassTuning.HeadForwardPx);
+            Vector2 direction = angle.ToRotationVector2();
+            Vector2 center = end - direction * (head.Height * 0.5f * BladeOfGrassTuning.HeadScale) + direction * BladeOfGrassTuning.HeadForwardPx;
+            Color color = Lighting.GetColor(end.ToTileCoordinates());
+            drawInfo.DrawDataCache.Add(new DrawData(head, center - Main.screenPosition, null, color, angle + MathHelper.PiOver2, head.Size() * 0.5f, BladeOfGrassTuning.HeadScale, SpriteEffects.None, 0));
         }
     }
 }
