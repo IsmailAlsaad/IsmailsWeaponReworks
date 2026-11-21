@@ -19,6 +19,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
     {
         public float[] Lengths = new float[0];
         int sinceHit;
+        bool rightWasDown; // the right button on the previous tick (a plant needs a fresh press)
 
         void EnsureLengths()
         {
@@ -79,6 +80,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             return null;
         }
 
+        // Owner only: right click drives the sword into the ground. The vines it has grown stay there as a planted set; the player starts a new set.
+        void TryPlant()
+        {
+            if (BladeOfGrassPlantedProjectile.HidesSword(Player.whoAmI))
+                return; // the sword is not in the hand
+            if (Find(Player.whoAmI, ModContent.ProjectileType<BladeOfGrassBladeProjectile>()) == null)
+                return; // the held blade has not formed yet
+            Item item = Player.HeldItem;
+            if (!BladeOfGrassPlantedProjectile.TryPlant(Player, Lengths, Player.GetSource_ItemUse(item), Player.GetWeaponDamage(item), Player.GetWeaponKnockback(item, item.knockBack)))
+                return; // no ground in reach
+            for (int i = 0; i < Lengths.Length; i++)
+                Lengths[i] = BladeOfGrassTuning.MinLength;
+            sinceHit = 0;
+        }
+
         public override void OnRespawn()
         {
             ResetLengths();
@@ -89,12 +105,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             if (Player.whoAmI != Main.myPlayer)
                 return;
             EnsureLengths();
+            bool pressed = Player.controlUseTile && !rightWasDown;
+            rightWasDown = Player.controlUseTile;
 
             if (Player.dead || !ReworkToggle.Holds(Player, ItemID.BladeofGrass))
             {
                 ResetLengths();
                 return;
             }
+
+            if (pressed && !Player.noItems && !Player.CCed && Player.gravDir == 1f)
+                TryPlant();
 
             sinceHit++;
             if (sinceHit > BladeOfGrassTuning.DecayHoldTicks)

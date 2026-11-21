@@ -64,21 +64,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
         // and the blade that is shot down from the air both use it.
         public static bool FindTileBelow(float x, float fromY, float distance, out Vector2 ground)
         {
-            for (float y = fromY; y <= fromY + distance; y += 2f)
-            {
-                int tileX = (int)(x / 16f);
-                int tileY = (int)(y / 16f);
-                if (!WorldGen.InWorld(tileX, tileY, 10))
-                    break;
-                Tile tile = Main.tile[tileX, tileY];
-                if (tile.HasTile && !tile.IsActuated && (Main.tileSolid[tile.TileType] || Main.tileSolidTop[tile.TileType]))
-                {
-                    ground = new Vector2(x, y);
-                    return true;
-                }
-            }
-            ground = default;
-            return false;
+            return TileProbe.FindTileBelow(x, fromY, distance, out ground);
         }
 
         // Standing: the ground below x, from a little above the player's feet down 'maxDrop' pixels below them.

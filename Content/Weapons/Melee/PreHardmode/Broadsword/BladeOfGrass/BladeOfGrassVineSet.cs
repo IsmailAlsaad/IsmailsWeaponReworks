@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Terraria;
 using Terraria.DataStructures;
@@ -51,6 +52,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
 
         public Vine[] Vines;
 
+        public float StartTrimPx;      // the chain is not drawn for this many pixels from the root (host sets it)
+        public bool Disabled;          // no targets, no break-offs (a planted set that is withering)
+        public float DrawFade = 1f;    // 0..1 multiplier on the drawn color (withering)
+        public bool SearchAbove;       // free vines search only above the center (a planted sword in the ground)
+
         Projectile host;
         Vector2 center;
         Func<int, Vector2> rootOf;
@@ -90,7 +96,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                 RollTraits();
             clock++;
 
-            if (isOwner && clock % Math.Max(1, BladeOfGrassTuning.RetargetInterval) == 0)
+            if (isOwner && !Disabled && clock % Math.Max(1, BladeOfGrassTuning.RetargetInterval) == 0)
                 AssignTargets();
             for (int i = 0; i < Vines.Length; i++)
                 StepVine(i, Vines[i]);
@@ -234,7 +240,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                 + (float)Math.Sin(t * BladeOfGrassTuning.SearchSweepSpeed * vine.WaveSpeed + vine.Seed) * MathHelper.ToRadians(BladeOfGrassTuning.SearchSweepDeg);
             float breath = 0.5f + 0.5f * (float)Math.Sin(t * BladeOfGrassTuning.SearchBreathSpeed * vine.WaveSpeed + vine.Seed * 1.7f);
             float reach = vine.Length * MathHelper.Lerp(BladeOfGrassTuning.SearchReachMin, BladeOfGrassTuning.SearchReachMax, breath);
-            return center + angle.ToRotationVector2() * reach;
+            Vector2 direction = angle.ToRotationVector2();
+            if (SearchAbove && direction.Y > 0f)
+                direction.Y = -direction.Y; // fold the lower half over the upper one (stays smooth)
+            return center + direction * reach;
         }
 
         // ---------------------------------------------------------------- the rope
@@ -274,7 +283,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             Vector2 goal = SearchGoal(vine);
             Vector2 freeDirection = (goal - root).SafeNormalize(Vector2.UnitX);
 
-            bool hasTarget = vine.Target >= 0 && vine.Target < Main.maxNPCs && Valid(Main.npc[vine.Target]);
+            bool hasTarget = !Disabled && vine.Target >= 0 && vine.Target < Main.maxNPCs && Valid(Main.npc[vine.Target]);
             if (!hasTarget && vine.Target >= 0)
             {
                 vine.Target = -1;
@@ -541,6 +550,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         // along the vine and thinning toward the tip, so the stamps overlap and a bend leaves no gap.
         public void AddDrawData(ref PlayerDrawSet drawInfo)
         {
+            BuildDrawData(drawList);
+            drawInfo.DrawDataCache.AddRange(drawList);
+        }
+
+        // A planted set draws itself: its host projectile calls this from PreDraw (a spritebatch is running).
+        public void DrawNow()
+        {
+            BuildDrawData(drawList);
+            for (int i = 0; i < drawList.Count; i++)
+                drawList[i].Draw(Main.spriteBatch);
+        }
+
+        readonly List<DrawData> drawList = new List<DrawData>();
+
+        void BuildDrawData(List<DrawData> list)
+        {
+            list.Clear();
             if (Main.dedServ || Vines == null)
                 return;
             chainAsset ??= ModContent.Request<Texture2D>("Terraria/Images/" + BladeOfGrassTuning.VineChainName);
@@ -549,14 +575,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             Texture2D head = headAsset.Value;
 
             for (int i = 0; i < Vines.Length; i++)
-                AddVineSprites(ref drawInfo, Vines[i], chain);
+                AddVineSprites(list, Vines[i], chain);
             for (int i = 0; i < Vines.Length; i++)
-                AddVineHead(ref drawInfo, Vines[i], head);
+                AddVineHead(list, Vines[i], head);
         }
 
         float[] cumulative;
 
-        void AddVineSprites(ref PlayerDrawSet drawInfo, Vine vine, Texture2D chain)
+        void AddVineSprites(List<DrawData> list, Vine vine, Texture2D chain)
         {
             if (!vine.Init || vine.P == null || vine.Length < 2f)
                 return;
@@ -574,7 +600,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
 
             Vector2 origin = chain.Size() * 0.5f;
             int segment = 0;
-            float at = 0f;
+            float at = Math.Min(Math.Max(0f, StartTrimPx), end); // the first StartTrimPx of the vine is not drawn
             while (at <= end)
             {
                 while (segment < n - 2 && at > cumulative[segment + 1])
@@ -584,14 +610,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                 Vector2 delta = points[segment + 1] - points[segment];
                 float angle = delta.LengthSquared() > 0.0001f ? delta.ToRotation() : 0f;
                 float scale = MathHelper.Lerp(BladeOfGrassTuning.VineScale, BladeOfGrassTuning.VineScale * BladeOfGrassTuning.VineTipScale, at / Math.Max(1f, total));
-                Color color = Lighting.GetColor(position.ToTileCoordinates());
+                Color color = Lighting.GetColor(position.ToTileCoordinates()) * DrawFade;
                 // The chain sprite is vertical: its long axis is turned along the vine.
-                drawInfo.DrawDataCache.Add(new DrawData(chain, position - Main.screenPosition, null, color, angle - MathHelper.PiOver2, origin, scale, SpriteEffects.None, 0));
+                list.Add(new DrawData(chain, position - Main.screenPosition, null, color, angle - MathHelper.PiOver2, origin, scale, SpriteEffects.None, 0));
                 at += Math.Max(1f, chain.Height * scale * BladeOfGrassTuning.ChainSpacing);
             }
         }
 
-        void AddVineHead(ref PlayerDrawSet drawInfo, Vine vine, Texture2D head)
+        void AddVineHead(List<DrawData> list, Vine vine, Texture2D head)
         {
             if (!vine.Init || vine.P == null || vine.Length < 2f)
                 return;
@@ -601,8 +627,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             float angle = (end - vine.P[Math.Max(0, n - 3)]).ToRotation();
             Vector2 direction = angle.ToRotationVector2();
             Vector2 center = end - direction * (head.Height * 0.5f * BladeOfGrassTuning.HeadScale) + direction * BladeOfGrassTuning.HeadForwardPx;
-            Color color = Lighting.GetColor(end.ToTileCoordinates());
-            drawInfo.DrawDataCache.Add(new DrawData(head, center - Main.screenPosition, null, color, angle + MathHelper.PiOver2, head.Size() * 0.5f, BladeOfGrassTuning.HeadScale, SpriteEffects.None, 0));
+            Color color = Lighting.GetColor(end.ToTileCoordinates()) * DrawFade;
+            list.Add(new DrawData(head, center - Main.screenPosition, null, color, angle + MathHelper.PiOver2, head.Size() * 0.5f, BladeOfGrassTuning.HeadScale, SpriteEffects.None, 0));
         }
     }
 }

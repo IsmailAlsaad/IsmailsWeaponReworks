@@ -89,6 +89,7 @@ Projectiles: {
 	NightsEdgeDropProjectile.DisplayName: Nights Edge Drop Projectile
 	NightsEdgeWaveProjectile.DisplayName: Nights Edge Wave Projectile
 	BladeOfGrassBladeProjectile.DisplayName: Blade Of Grass Blade Projectile
+	BladeOfGrassPlantedProjectile.DisplayName: Blade Of Grass Planted Projectile
 }
 
 Configs: {

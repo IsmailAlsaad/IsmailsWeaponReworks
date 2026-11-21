@@ -115,6 +115,61 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                 Leaf(tip, Main.rand.NextVector2Circular(3f, 3f), 1.2f, DustID.GreenTorch);
         }
 
+        // The sword leaves the hand (every machine, at the start of the drop).
+        public static void PlantStart(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.7f, Pitch = -0.5f }, position);
+            for (int i = 0; i < 6; i++)
+                Leaf(position + Main.rand.NextVector2Circular(8f, 8f), Main.rand.NextVector2Circular(1.5f, 1.5f), 1.1f, DustID.Grass);
+        }
+
+        // The sword lands in the ground.
+        public static void PlantImpact(Vector2 ground)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Dig with { Volume = 0.9f, Pitch = -0.3f }, ground);
+            SoundEngine.PlaySound(SoundID.Grass with { Volume = 0.8f, Pitch = -0.2f }, ground);
+            for (int i = 0; i < 14; i++)
+            {
+                Vector2 velocity = new Vector2(Main.rand.NextFloat(-3f, 3f), Main.rand.NextFloat(-4.5f, -1f));
+                Dust dirt = Dust.NewDustPerfect(ground + new Vector2(Main.rand.NextFloat(-8f, 8f), 0f), DustID.Dirt, velocity, 0, default, Main.rand.NextFloat(1f, 1.5f));
+                dirt.noGravity = false;
+            }
+            for (int i = 0; i < 10; i++)
+                Leaf(ground + new Vector2(Main.rand.NextFloat(-10f, 10f), -4f), new Vector2(Main.rand.NextFloat(-3f, 3f), Main.rand.NextFloat(-4f, -1f)), Main.rand.NextFloat(1f, 1.6f), Main.rand.NextBool(3) ? DustID.JungleGrass : DustID.Grass);
+        }
+
+        // A leaf drifts off the planted sword.
+        public static void PlantedLeaf(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            Leaf(position + Main.rand.NextVector2Circular(6f, 6f), new Vector2(Main.rand.NextFloat(-0.4f, 0.4f), Main.rand.NextFloat(-1f, -0.2f)), Main.rand.NextFloat(0.8f, 1.2f), Main.rand.NextBool(3) ? DustID.JungleGrass : DustID.Grass);
+        }
+
+        // The sword grows back in the hand.
+        public static void Regrow(Vector2 hand)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item17 with { Volume = 0.6f, Pitch = 0.7f }, hand);
+            for (int i = 0; i < 12; i++)
+                Leaf(hand + Main.rand.NextVector2Circular(14f, 14f), Main.rand.NextVector2Circular(2.5f, 2.5f), Main.rand.NextFloat(1f, 1.5f), Main.rand.NextBool(3) ? DustID.JungleGrass : DustID.GreenTorch);
+        }
+
+        // A planted set starts to wither (it is being replaced).
+        public static void Wither(Vector2 center)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Grass with { Volume = 0.6f, Pitch = -0.4f }, center);
+            for (int i = 0; i < 12; i++)
+                Leaf(center + Main.rand.NextVector2Circular(14f, 30f), Main.rand.NextVector2Circular(1.5f, 1.5f), Main.rand.NextFloat(1f, 1.4f), DustID.Grass);
+        }
+
         // The sword was put away: the vines wither away.
         public static void Release(Vector2 position)
         {

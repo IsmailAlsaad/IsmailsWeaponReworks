@@ -66,6 +66,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         protected virtual void OnOwnerHit(NPC target, NPC.HitInfo hit, bool fullBefore) { }
         /// <summary>Owner's client, once per swing at the moment the strike begins (the blade starts to cut): 'hand' is the owner's center, 'direction' the swing's aim as a unit vector. The Night's Edge throws its flame wave from here.</summary>
         protected virtual void OnOwnerStrikeStart(Vector2 hand, Vector2 direction) { }
+        /// <summary>Every machine: while true the sword is not drawn at all (the Blade of Grass hides it while the sword is driven into the ground and regrows).</summary>
+        protected virtual bool HideBlade => false;
 
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
@@ -785,6 +787,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
                 return false; // not posed yet (the first tick has not run)
             if (drawnByCarriedAt == (long)Main.GameUpdateCount)
                 return false; // the impaled enemy already drew the blade this tick, behind itself
+            if (HideBlade)
+                return false;
             DrawBlade(lightColor);
             return false;
         }

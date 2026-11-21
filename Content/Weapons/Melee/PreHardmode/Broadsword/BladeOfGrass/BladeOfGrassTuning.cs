@@ -183,6 +183,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static float HeadScale => 1f;
         public static float ChainSpacing => 0.8f;          // distance between sprites along a vine, as a fraction of the sprite's height
         public static float ChainEndTrimPx => 4f;          // the chain stops this many pixels before each end (the head covers the rest), raise it if a link pokes out of a head
+        public static float ChainStartTrimPx => 12f;       // the HELD vines' chain starts this many pixels out from the root (the first bit of each vine is not drawn)
+        public static float PlantedChainStartTrimPx => 0f; // the same for the planted set
+
+        // ---- the planted sword (right click, patch 8) ----
+        public static float PlantMinReachPx => 24f;        // the sword is planted at least this far in front of the player (toward the cursor's side) ...
+        public static float PlantMaxReachPx => 160f;       // ... and at most this far; in between it follows the cursor's x
+        public static float PlantMaxDropPx => 480f;        // no ground within this far below the hand: nothing is planted
+        public static float PlantDropSpeed => 26f;         // the sword's fall, pixels per tick
+        public static float PlantSinkPx => 14f;            // how far the tip sinks into the tile (the tile hides that part when PlantedDrawBehind is on)
+        public static int PlantRegrowTicks => 30;          // after landing the hand stays empty this long, then the sword grows back in it
+        public static float PlantShake => 3f;              // camera punch when the sword lands
+        public static int PlantedLifeTicks => 3600;        // how long the planted set lives after landing (1 minute)
+        public static float PlantedRootDownPx => 8f;       // the vines grow from this far below the top (hilt) of the planted sword
+        public static float PlantedGrowPerTick => 0.05f;   // every planted vine grows this many pixels per tick (3 px per second) ...
+        public static float PlantedMaxLength => MaxLength; // ... up to this length (break-offs are never regrown by anything else)
+        public static int PlantedSyncTicks => 30;          // while growing, the owner sends the lengths this often
+        public static int WitherTicks => 30;               // a planted set that is replaced fades out over this long
+        public static bool PlantedSearchAbove => true;     // the planted vines search only the half-space above the sword (not into the ground)
+        public static bool PlantedDrawBehind => true;      // true: drawn behind tiles and enemies (the ground hides the sunk tip, the vines are behind enemies); false: in front of enemies, the tip is not hidden
+        public static float PlantedLeafChance => 0.15f;    // per tick, a leaf drifts off the planted sword
 
         // ---- netcode ----
         // The vines are sent (target and length of each) only when a target or a length changes; nothing to tune.
