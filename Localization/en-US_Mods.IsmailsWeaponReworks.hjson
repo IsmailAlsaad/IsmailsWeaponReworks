@@ -90,6 +90,8 @@ Projectiles: {
 	NightsEdgeWaveProjectile.DisplayName: Nights Edge Wave Projectile
 	BladeOfGrassBladeProjectile.DisplayName: Blade Of Grass Blade Projectile
 	BladeOfGrassPlantedProjectile.DisplayName: Blade Of Grass Planted Projectile
+	BladeOfGrassPlantedVinesProjectile.DisplayName: Blade Of Grass Planted Vines Projectile
+	BladeOfGrassPlantSwingProjectile.DisplayName: Blade Of Grass Plant Swing Projectile
 }
 
 Configs: {
