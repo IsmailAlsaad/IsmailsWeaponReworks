@@ -1,14 +1,15 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using ReLogic.Content;
 using System;
+using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.IO;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
+using ReLogic.Content;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BladeOfGrass
 {
@@ -420,7 +421,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                     weight = BladeOfGrassTuning.Stiffness * vine.StiffnessFactor * (hasTarget ? BladeOfGrassTuning.TargetStiffnessBoost : 1f) * influence;
                 }
                 point += (wish - point) * weight;
-                }
                 vine.P[k] = point;
             }
             vine.Old[0] = root;

@@ -537,7 +537,7 @@ tModLoader/other bases -> project types:
     +GetDefaultPosition()[ov] +GetDefaultVisibility(PlayerDrawSet)[ov] #Draw(ref PlayerDrawSet)[ov]
 **BladeOfGrassVineSet.cs** uses: BladeOfGrassFx, BladeOfGrassSpineProjectile, BladeOfGrassTuning, Phase
   class BladeOfGrassVineSet
-    +Vines:Vine +StartTrimPx:float +Disabled:bool +DrawTint:Color +LengthScale:float +SearchAbove:bool +Tick(Projectile,Vector2,Func<int, Vector2>,float,float) +TakeSync() +Write(BinaryWriter,float) +Read(BinaryReader)
+    +Vines:Vine +StartTrimPx:float +Disabled:bool +DrawTint:Color +LengthScale:float +SearchAbove:bool +Tick(Projectile,Vector2,Func<int, Vector2>,float,float) +TakeSync() +Write(BinaryWriter,float) +Read(BinaryReader) +Release() +AddDrawData(ref PlayerDrawSet) +DrawNow()
     class Vine
       +P:Vector2 +Old:Vector2 +Init:bool +Length:float +SyncLength:float +Target:int +LastTarget:int +WrapTicks:int +Cooldown:int +LoopAngle:float +LoopDir:float +Seed:float +Shown:float +LoopClock:int +AimVel:Vector2 AimPos, +WaveAmp:float +Phase:float +OrbitDir:float
 
