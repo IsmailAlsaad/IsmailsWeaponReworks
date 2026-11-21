@@ -41,9 +41,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
             tooltips.RemoveAll(line => line.Mod == "Terraria" && line.Name.StartsWith("Tooltip"));
-            tooltips.Add(new TooltipLine(Mod, "BladeOfGrass1", "Hitting enemies makes the vines longer"));
-            tooltips.Add(new TooltipLine(Mod, "BladeOfGrass2", "The vines search around you and loop nearby enemies, breaking off as thorny coils that keep hurting them"));
-            tooltips.Add(new TooltipLine(Mod, "BladeOfGrass3", "Right click drives the sword into the ground: the vines stay there, grow slowly and fight on their own while you grow a new set"));
+            tooltips.Add(new TooltipLine(Mod, "BladeOfGrass0", "Right click to implant your vines in the ground"));
         }
     }
 }

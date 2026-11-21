@@ -142,7 +142,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                 Leaf(ground + new Vector2(Main.rand.NextFloat(-10f, 10f), -4f), new Vector2(Main.rand.NextFloat(-3f, 3f), Main.rand.NextFloat(-4f, -1f)), Main.rand.NextFloat(1f, 1.6f), Main.rand.NextBool(3) ? DustID.JungleGrass : DustID.Grass);
         }
 
-        // A leaf drifts off the planted sword.
+        // The planted vines pop out of the ground (the Amazon's vine bud look: a little dirt and a few leaves).
+        public static void Emerge(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item17 with { Volume = 0.5f, Pitch = 0f, PitchVariance = 0.15f }, position);
+            for (int i = 0; i < 10; i++)
+            {
+                Vector2 velocity = new Vector2(Main.rand.NextFloat(-1.8f, 1.8f), Main.rand.NextFloat(-2.6f, -0.6f));
+                Dust.NewDustPerfect(position + new Vector2(Main.rand.NextFloat(-8f, 8f), 0f), DustID.Dirt, velocity, 0, default, Main.rand.NextFloat(0.8f, 1.2f));
+            }
+            for (int i = 0; i < 5; i++)
+                Leaf(position + new Vector2(Main.rand.NextFloat(-6f, 6f), -6f), new Vector2(Main.rand.NextFloat(-1f, 1f), Main.rand.NextFloat(-1.5f, -0.5f)), Main.rand.NextFloat(0.8f, 1.2f), DustID.Grass);
+        }
+
+        // A leaf drifts off the planted vines' root.
         public static void PlantedLeaf(Vector2 position)
         {
             if (Main.dedServ)
@@ -150,15 +165,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             Leaf(position + Main.rand.NextVector2Circular(6f, 6f), new Vector2(Main.rand.NextFloat(-0.4f, 0.4f), Main.rand.NextFloat(-1f, -0.2f)), Main.rand.NextFloat(0.8f, 1.2f), Main.rand.NextBool(3) ? DustID.JungleGrass : DustID.Grass);
         }
 
-        // The sword grows back in the hand.
-        public static void Regrow(Vector2 hand)
-        {
-            if (Main.dedServ)
-                return;
-            SoundEngine.PlaySound(SoundID.Item17 with { Volume = 0.6f, Pitch = 0.7f }, hand);
-            for (int i = 0; i < 12; i++)
-                Leaf(hand + Main.rand.NextVector2Circular(14f, 14f), Main.rand.NextVector2Circular(2.5f, 2.5f), Main.rand.NextFloat(1f, 1.5f), Main.rand.NextBool(3) ? DustID.JungleGrass : DustID.GreenTorch);
-        }
 
         // A planted set starts to wither (it is being replaced).
         public static void Wither(Vector2 center)

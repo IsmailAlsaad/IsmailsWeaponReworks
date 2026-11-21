@@ -129,12 +129,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static float ReachSlack => 10f;         // an enemy may be this much farther than the vine's current length and still count as in reach
         public static int RetargetInterval => 5;       // ticks between target searches
         public static float SamePenalty => 100000f;    // added to an enemy's score per vine already on it, so vines spread out; the same enemy is only reused when nothing else is in reach
-        public static float SearchOrbitSpeed => 0.006f; // radians per tick the search direction turns around the player (a full turn in about 9 s); every other vine turns the other way
-        public static float SearchSweepDeg => 40f;     // on top of that a vine sweeps this far to each side ...
-        public static float SearchSweepSpeed => 0.03f; // ... at this speed (radians per tick of the sweep's own sine)
+        public static float SearchOrbitSpeed => 0.003f; // radians per tick the search direction turns around the player (a full turn in about 9 s); every other vine turns the other way
+        public static float SearchSweepDeg => 20f;     // on top of that a vine sweeps this far to each side ...
+        public static float SearchSweepSpeed => 0.015f; // ... at this speed (radians per tick of the sweep's own sine)
         public static float SearchReachMin => 0.55f;   // the tip floats between these two fractions of the vine's length from the player ...
         public static float SearchReachMax => 0.95f;
-        public static float SearchBreathSpeed => 0.025f; // ... breathing in and out at this speed
+        public static float SearchBreathSpeed => 0.015f; // ... breathing in and out at this speed
 
         // ---- looping and breaking off ----
         public static int LoopTicks => 36;             // how long a vine circles an enemy before the section breaks off
@@ -186,23 +186,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static float ChainStartTrimPx => 12f;       // the HELD vines' chain starts this many pixels out from the root (the first bit of each vine is not drawn)
         public static float PlantedChainStartTrimPx => 0f; // the same for the planted set
 
-        // ---- the planted sword (right click, patch 8) ----
-        public static float PlantMinReachPx => 24f;        // the sword is planted at least this far in front of the player (toward the cursor's side) ...
-        public static float PlantMaxReachPx => 160f;       // ... and at most this far; in between it follows the cursor's x
-        public static float PlantMaxDropPx => 480f;        // no ground within this far below the hand: nothing is planted
-        public static float PlantDropSpeed => 26f;         // the sword's fall, pixels per tick
-        public static float PlantSinkPx => 14f;            // how far the tip sinks into the tile (the tile hides that part when PlantedDrawBehind is on)
-        public static int PlantRegrowTicks => 30;          // after landing the hand stays empty this long, then the sword grows back in it
-        public static float PlantShake => 3f;              // camera punch when the sword lands
-        public static int PlantedLifeTicks => 3600;        // how long the planted set lives after landing (1 minute)
-        public static float PlantedRootDownPx => 8f;       // the vines grow from this far below the top (hilt) of the planted sword
+        // ---- the plant (right click, patch 8b): the Phaseblade's drive animation, then the vines grow out of the ground ----
+        public static int PlantLiftTicks => 9;             // the arm lifts, blade up
+        public static int PlantStabTicks => 8;             // the drive: the arm comes down accelerating while the blade rotates from point-up to point-down; it lands on the last tick
+        public static int PlantRecoverTicks => 9;          // the arm settles back to the ready pose and the sword comes out of the ground
+        public static float PlantRaisedArmDeg => -80f;     // the arm's raised angle (facing-local, negative = up)
+        public static float PlantReachPx => 20f;           // the vines come out of the ground this far in front of the player (the arm's end pose is solved to reach it)
+        public static float PlantGroundedDropPx => 24f;    // ground must be within this far below the feet (no ground: right click does nothing; there is no airborne plant)
+        public static float PlantShake => 3f;              // camera punch when the sword hits the ground
+        public static int PlantGrowTicks => 24;            // the vines grow out of the ground over this long (they cannot attack until they are out)
+        public static int PlantRetractTicks => 45;         // a replaced (or expired) set ungrows and shrivels away over this long
+        public static float PlantedRootSinkPx => 2f;       // the foot of the planted vines is this far inside the surface
+        public static int PlantedLifeTicks => 3600;        // how long the set stands after it is fully grown (1 minute), then it ungrows
         public static float PlantedGrowPerTick => 0.05f;   // every planted vine grows this many pixels per tick (3 px per second) ...
         public static float PlantedMaxLength => MaxLength; // ... up to this length (break-offs are never regrown by anything else)
         public static int PlantedSyncTicks => 30;          // while growing, the owner sends the lengths this often
-        public static int WitherTicks => 30;               // a planted set that is replaced fades out over this long
-        public static bool PlantedSearchAbove => true;     // the planted vines search only the half-space above the sword (not into the ground)
-        public static bool PlantedDrawBehind => true;      // true: drawn behind tiles and enemies (the ground hides the sunk tip, the vines are behind enemies); false: in front of enemies, the tip is not hidden
-        public static float PlantedLeafChance => 0.15f;    // per tick, a leaf drifts off the planted sword
+        public static bool PlantedSearchAbove => true;     // the planted vines search only the half-space above the ground (not into it)
+        public static float PlantedLeafChance => 0.15f;    // per tick, a leaf drifts off the planted vines' root
 
         // ---- netcode ----
         // The vines are sent (target and length of each) only when a target or a length changes; nothing to tune.

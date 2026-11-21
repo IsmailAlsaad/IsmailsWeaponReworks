@@ -54,7 +54,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
 
         public float StartTrimPx;      // the chain is not drawn for this many pixels from the root (host sets it)
         public bool Disabled;          // no targets, no break-offs (a planted set that is withering)
-        public float DrawFade = 1f;    // 0..1 multiplier on the drawn color (withering)
+        public Color DrawTint = Color.White; // multiplies the drawn color (a withering set browns)
+        public float LengthScale = 1f; // 0..1: how much of each vine's length is out (a planted set grows out of the ground and ungrows back into it)
         public bool SearchAbove;       // free vines search only above the center (a planted sword in the ground)
 
         Projectile host;
@@ -262,13 +263,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             // Length: the owner's copy reads the number it owns (hits made it longer, break-offs shorter); everyone else follows the synced length.
             if (isOwner && ownerLengths != null && index < ownerLengths.Length)
             {
-                vine.Length = ownerLengths[index];
-                vine.SyncLength = vine.Length;
+                vine.SyncLength = ownerLengths[index];
+                vine.Length = vine.SyncLength * LengthScale;
                 if (vine.Cooldown > 0)
                     vine.Cooldown--;
             }
             else
-                vine.Length += (vine.SyncLength - vine.Length) * 0.35f;
+                vine.Length += (vine.SyncLength * LengthScale - vine.Length) * 0.35f;
 
             if (vine.Length < 2f)
             {
@@ -564,6 +565,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
 
         readonly List<DrawData> drawList = new List<DrawData>();
 
+        Color Tint(Color color)
+        {
+            return DrawTint == Color.White ? color : new Color(color.ToVector4() * DrawTint.ToVector4());
+        }
+
         void BuildDrawData(List<DrawData> list)
         {
             list.Clear();
@@ -610,7 +616,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                 Vector2 delta = points[segment + 1] - points[segment];
                 float angle = delta.LengthSquared() > 0.0001f ? delta.ToRotation() : 0f;
                 float scale = MathHelper.Lerp(BladeOfGrassTuning.VineScale, BladeOfGrassTuning.VineScale * BladeOfGrassTuning.VineTipScale, at / Math.Max(1f, total));
-                Color color = Lighting.GetColor(position.ToTileCoordinates()) * DrawFade;
+                Color color = Tint(Lighting.GetColor(position.ToTileCoordinates()));
                 // The chain sprite is vertical: its long axis is turned along the vine.
                 list.Add(new DrawData(chain, position - Main.screenPosition, null, color, angle - MathHelper.PiOver2, origin, scale, SpriteEffects.None, 0));
                 at += Math.Max(1f, chain.Height * scale * BladeOfGrassTuning.ChainSpacing);
@@ -627,7 +633,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             float angle = (end - vine.P[Math.Max(0, n - 3)]).ToRotation();
             Vector2 direction = angle.ToRotationVector2();
             Vector2 center = end - direction * (head.Height * 0.5f * BladeOfGrassTuning.HeadScale) + direction * BladeOfGrassTuning.HeadForwardPx;
-            Color color = Lighting.GetColor(end.ToTileCoordinates()) * DrawFade;
+            Color color = Tint(Lighting.GetColor(end.ToTileCoordinates()));
             list.Add(new DrawData(head, center - Main.screenPosition, null, color, angle + MathHelper.PiOver2, head.Size() * 0.5f, BladeOfGrassTuning.HeadScale, SpriteEffects.None, 0));
         }
     }

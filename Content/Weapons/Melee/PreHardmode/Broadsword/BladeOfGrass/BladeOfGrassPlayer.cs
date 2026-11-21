@@ -80,19 +80,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             return null;
         }
 
-        // Owner only: right click drives the sword into the ground. The vines it has grown stay there as a planted set; the player starts a new set.
+        // Owner only: right click starts the plant swing (the Phaseblade's drive animation). It needs ground right below the feet.
         void TryPlant()
         {
-            if (BladeOfGrassPlantedProjectile.HidesSword(Player.whoAmI))
-                return; // the sword is not in the hand
-            if (Find(Player.whoAmI, ModContent.ProjectileType<BladeOfGrassBladeProjectile>()) == null)
-                return; // the held blade has not formed yet
             Item item = Player.HeldItem;
-            if (!BladeOfGrassPlantedProjectile.TryPlant(Player, Lengths, Player.GetSource_ItemUse(item), Player.GetWeaponDamage(item), Player.GetWeaponKnockback(item, item.knockBack)))
-                return; // no ground in reach
-            for (int i = 0; i < Lengths.Length; i++)
-                Lengths[i] = BladeOfGrassTuning.MinLength;
-            sinceHit = 0;
+            BladeOfGrassPlantSwingProjectile.TryStart(Player, Player.GetSource_ItemUse(item), Player.GetWeaponDamage(item), Player.GetWeaponKnockback(item, item.knockBack));
+        }
+
+        // Owner only, at the moment the sword hits the ground: the vines the player has grown go to the planted set and the player starts again from MinLength.
+        public static float[] TakeLengths(Player player)
+        {
+            BladeOfGrassPlayer state = player.GetModPlayer<BladeOfGrassPlayer>();
+            state.EnsureLengths();
+            float[] taken = (float[])state.Lengths.Clone();
+            for (int i = 0; i < state.Lengths.Length; i++)
+                state.Lengths[i] = BladeOfGrassTuning.MinLength;
+            state.sinceHit = 0;
+            return taken;
         }
 
         public override void OnRespawn()
@@ -130,8 +134,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             if (Player.noItems || Player.CCed)
                 return;
             int type = ModContent.ProjectileType<BladeOfGrassBladeProjectile>();
-            if (Find(Player.whoAmI, type) != null)
-                return;
+            if (Find(Player.whoAmI, type) != null || BladeOfGrassPlantSwingProjectile.Active(Player.whoAmI))
+                return; // the plant swing poses the arm and draws the sword while it runs
             Item item = Player.HeldItem;
             Projectile.NewProjectile(Player.GetSource_ItemUse(item), Player.MountedCenter, Vector2.Zero, type,
                 Player.GetWeaponDamage(item), Player.GetWeaponKnockback(item, item.knockBack), Player.whoAmI);

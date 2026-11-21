@@ -31,14 +31,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
 
         protected override int ItemType => ItemID.BladeofGrass;
 
-        // The sword is in the ground (or still growing back in the hand): nothing is drawn, nothing hits, nothing swooshes.
-        protected override bool HideBlade => BladeOfGrassPlantedProjectile.HidesSword(Projectile.owner);
-
-        public override bool? CanDamage()
-        {
-            return HideBlade ? (bool?)false : base.CanDamage();
-        }
-
         readonly BladeOfGrassVineSet vines = new BladeOfGrassVineSet();
 
         protected override float OwnerCharge(Player owner)
@@ -64,8 +56,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
 
         protected override void OnStabImpacted(Player owner) { }
 
-        protected override void FxPlaySwing(Vector2 position, float charge) { if (!HideBlade) BladeOfGrassFx.PlaySwing(position, charge); }
-        protected override void FxSwingDust(Vector2 tip, Vector2 motion, float charge) { if (!HideBlade) BladeOfGrassFx.SwingDust(tip, motion, charge); }
+        protected override void FxPlaySwing(Vector2 position, float charge) { BladeOfGrassFx.PlaySwing(position, charge); }
+        protected override void FxSwingDust(Vector2 tip, Vector2 motion, float charge) { BladeOfGrassFx.SwingDust(tip, motion, charge); }
         protected override void FxHitSpark(Vector2 position, float charge) { BladeOfGrassFx.HitSpark(position, charge); }
         protected override void FxChargeHit(Vector2 tip) { BladeOfGrassFx.ChargeHit(tip); }
         protected override void FxCharged(Vector2 hand, Vector2 tip) { }
