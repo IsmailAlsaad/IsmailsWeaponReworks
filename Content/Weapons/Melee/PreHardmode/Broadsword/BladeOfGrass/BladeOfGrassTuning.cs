@@ -184,7 +184,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static float ChainSpacing => 0.8f;          // distance between sprites along a vine, as a fraction of the sprite's height
         public static float ChainEndTrimPx => 11f;          // the chain stops this many pixels before each end (the head covers the rest), raise it if a link pokes out of a head
         public static float ChainStartTrimPx => 12f;       // the HELD vines' chain starts this many pixels out from the root (the first bit of each vine is not drawn)
-        public static float PlantedChainStartTrimPx => 0f; // the same for the planted set
+        public static float PlantedChainStartTrimPx => 12f; // the same for the planted set
 
         // ---- the plant (right click, patch 8b): the Phaseblade's drive animation, then the vines grow out of the ground ----
         public static int PlantLiftTicks => 9;             // the arm lifts, blade up
@@ -205,6 +205,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static bool PlantedSearchAbove => true;     // the planted vines search only the half-space above the ground (not into it)
         public static float PlantedLeafChance => 0.15f;    // per tick, a leaf drifts off the planted vines' root
         public static int PlantEmptyHandTicks => 30;       // after the sword is driven in the hand stays empty this long, then a new sword grows back in it (leaf burst)
+        public static float PlantedEndScale => 0.3f;       // while the planted set ungrows the sword shrinks (about its hilt) to this fraction of its size, sinks and fades out
         public static bool PlantedDrawBehind => true;      // true: the planted sword and vines are drawn behind tiles and enemies (the ground hides the sunk tip); false: in front of enemies, the tip is not hidden
 
         // ---- netcode ----

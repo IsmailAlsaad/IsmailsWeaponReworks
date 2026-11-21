@@ -47,7 +47,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         int Facing => Projectile.ai[1] >= 0f ? 1 : -1;
         float swordSink;       // 0..1: the sword sinks into the ground while the set ungrows
         // The vines grow from the middle of the blade and are drawn behind it.
-        Vector2 Root => HiltPoint + new Vector2(0f, Projectile.height * BladeOfGrassTuning.PlantedRootAlongBladeFraction);
+        float SwordScaleNow => MathHelper.Lerp(1f, BladeOfGrassTuning.PlantedEndScale, swordSink); // the sword shrinks (about its hilt) while the set ungrows
+        // Where the hilt is now: the sword sinks into the ground while it ungrows (and shrinks and fades), and everything on it goes down with it.
+        Vector2 SwordHilt => HiltPoint + new Vector2(0f, swordSink * (Projectile.height * SwordScaleNow + BladeOfGrassTuning.PlantSinkPx));
+        // The vine roots sit on the blade and are dragged down with the sword.
+        Vector2 Root => SwordHilt + new Vector2(0f, Projectile.height * SwordScaleNow * BladeOfGrassTuning.PlantedRootAlongBladeFraction);
 
         public override void SetDefaults()
         {
@@ -188,7 +192,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
 
                 Lighting.AddLight(Root, 0.1f, 0.3f, 0.1f);
                 if (!vines.Disabled && Main.rand.NextFloat() < BladeOfGrassTuning.PlantedLeafChance)
-                    BladeOfGrassFx.PlantedLeaf(Root);
+                    BladeOfGrassFx.PlantedLeaf(SwordHilt + new Vector2(0f, Projectile.height * SwordScaleNow * Main.rand.NextFloat())); // from anywhere along the blade
             }
             age++;
         }
@@ -215,9 +219,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             Main.instance.LoadItem(ItemID.BladeofGrass);
             Texture2D texture = TextureAssets.Item[ItemID.BladeofGrass].Value;
             HeldSwordPose.Sprite(texture, Facing, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
-            Vector2 position = HiltPoint + new Vector2(0f, swordSink * (Projectile.height + BladeOfGrassTuning.PlantSinkPx));
-            Color color = Color.Lerp(lightColor, Color.White, 0.3f);
-            Main.EntitySpriteDraw(texture, position - Main.screenPosition, null, color, MathHelper.PiOver2 + rotationOffset, origin, BladeOfGrassTuning.SwordScale, effects, 0);
+            Color color = Color.Lerp(lightColor, Color.White, 0.3f) * (1f - swordSink); // fades out while it ungrows
+            Main.EntitySpriteDraw(texture, SwordHilt - Main.screenPosition, null, color, MathHelper.PiOver2 + rotationOffset, origin, BladeOfGrassTuning.SwordScale * SwordScaleNow, effects, 0);
             return false;
         }
     }
