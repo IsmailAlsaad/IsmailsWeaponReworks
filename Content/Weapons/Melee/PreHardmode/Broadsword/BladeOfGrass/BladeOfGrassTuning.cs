@@ -204,7 +204,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static int PlantedSyncTicks => 30;          // while growing, the owner sends the lengths this often
         public static bool PlantedSearchAbove => true;     // the planted vines search only the half-space above the ground (not into it)
         public static float PlantedLeafChance => 0.15f;    // per tick, a leaf drifts off the planted vines' root
-        public static int PlantEmptyHandTicks => 30;       // after the sword is driven in the hand stays empty this long, then a new sword grows back in it (leaf burst)
+        public static int PlantEmptyHandTicks => 0;       // after the sword is driven in the hand stays empty this long, then a new sword grows back in it (leaf burst)
         public static float PlantedEndScale => 0.3f;       // while the planted set ungrows the sword shrinks (about its hilt) to this fraction of its size, sinks and fades out
         public static bool PlantedDrawBehind => true;      // true: the planted sword and vines are drawn behind tiles and enemies (the ground hides the sunk tip); false: in front of enemies, the tip is not hidden
 
