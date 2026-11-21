@@ -37,6 +37,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         float tiltRad;         // blade angle relative to the arm; arm + tilt = the blade's facing-local angle
         float plantStabArm;    // the arm angle at the end of the drive, solved from PlantReachPx when the swing starts
         Vector2 tipPosition;
+        BladeOfGrassVineSet vines; // the player's vines, taken over from the held blade; they ungrow while the swing runs up to the impact
 
         int ImpactTick => BladeOfGrassTuning.PlantLiftTicks + BladeOfGrassTuning.PlantStabTicks;
         int TotalTicks => ImpactTick + BladeOfGrassTuning.PlantRecoverTicks;
@@ -172,14 +173,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                 return;
             }
 
+            // The player faces the way the sword is driven in for the whole swing: the cursor and the keys cannot turn him around.
+            if (IsOwner)
+                owner.ChangeDir(Facing);
+            else
+                owner.direction = Facing;
             if (ticks == 0)
             {
-                if (IsOwner)
-                    owner.ChangeDir(Facing);
                 plantStabArm = SolveStabArm();
                 BladeOfGrassFx.PlantStart(owner.MountedCenter);
             }
             EndHeldBlade(owner);
+            TickVines(owner);
 
             Projectile.scale = BladeOfGrassTuning.SwordScale * owner.GetAdjustedItemScale(owner.HeldItem);
             armLocal = ArmAt(timer);
@@ -203,7 +208,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             {
                 Projectile other = Main.projectile[i];
                 if (other.active && other.owner == owner.whoAmI && other.type == type)
+                {
+                    if (vines == null && other.ModProjectile is BladeOfGrassBladeProjectile held)
+                        vines = held.TakeVines();
                     other.Kill();
+                }
             }
         }
 
@@ -235,6 +244,30 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         }
 
         // ---------------------------------------------------------------- drawing
+
+        // The player's vines do not vanish: from the start of the swing up to the impact they ungrow (shrink toward the player and brown); the planted ones then come out of the ground.
+        void TickVines(Player owner)
+        {
+            if (vines == null || Main.dedServ)
+                return;
+            float ungrow = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(timer / (float)Math.Max(1, ImpactTick), 0f, 1f));
+            vines.LengthScale = 1f - ungrow;
+            vines.Disabled = true; // no new targets or break-offs while they go
+            vines.DrawTint = Color.Lerp(Color.White, new Color(170, 130, 80), ungrow);
+            vines.StartTrimPx = BladeOfGrassTuning.ChainStartTrimPx;
+            vines.Tick(Projectile, owner.MountedCenter, _ => owner.MountedCenter, 0f, IsOwner ? BladeOfGrassPlayer.LengthsOf(owner) : null);
+        }
+
+        // Called by BladeOfGrassVineLayer (behind the player's body).
+        public void AddVineDrawData(ref PlayerDrawSet drawInfo)
+        {
+            vines?.AddDrawData(ref drawInfo);
+        }
+
+        public override void OnKill(int timeLeft)
+        {
+            vines?.Release();
+        }
 
         public override bool PreDraw(ref Color lightColor)
         {

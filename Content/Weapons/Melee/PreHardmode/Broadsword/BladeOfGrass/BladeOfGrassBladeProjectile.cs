@@ -85,6 +85,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         // Every machine, every tick (not on a dedicated server), right after the pose is set: the vines grow from the blade's edge.
         protected override void TickVisuals(ChargedBladePose pose)
         {
+            if (vinesTaken)
+                return;
             Player owner = Main.player[Projectile.owner];
             bool mine = Projectile.owner == Main.myPlayer;
             Vector2 hand = pose.Hand;
@@ -117,10 +119,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             vines.AddDrawData(ref drawInfo);
         }
 
+        bool vinesTaken;
+
+        // The plant swing takes the player's vines over (it ungrows them) before it ends this blade; this blade then no longer ticks, draws or releases them.
+        public BladeOfGrassVineSet TakeVines()
+        {
+            vinesTaken = true;
+            return vines;
+        }
+
         public override void OnKill(int timeLeft)
         {
             base.OnKill(timeLeft);
-            vines.Release();
+            if (!vinesTaken)
+                vines.Release();
         }
     }
 }

@@ -17,7 +17,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             return new BeforeParent(PlayerDrawLayers.Skin);
         }
 
-        static BladeOfGrassBladeProjectile HeldBlade(Player player)
+        // The held blade, or the plant swing that replaces it for a moment (it keeps the player's vines and ungrows them).
+        static ModProjectile HeldVines(Player player)
         {
             int index = player.heldProj;
             if (index < 0 || index >= Main.maxProjectiles)
@@ -25,19 +26,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             Projectile projectile = Main.projectile[index];
             if (!projectile.active || projectile.owner != player.whoAmI)
                 return null;
-            return projectile.ModProjectile as BladeOfGrassBladeProjectile;
+            if (projectile.ModProjectile is BladeOfGrassBladeProjectile || projectile.ModProjectile is BladeOfGrassPlantSwingProjectile)
+                return projectile.ModProjectile;
+            return null;
         }
 
         public override bool GetDefaultVisibility(PlayerDrawSet drawInfo)
         {
             if (drawInfo.shadow != 0f || drawInfo.drawPlayer.dead)
                 return false;
-            return HeldBlade(drawInfo.drawPlayer) != null;
+            return HeldVines(drawInfo.drawPlayer) != null;
         }
 
         protected override void Draw(ref PlayerDrawSet drawInfo)
         {
-            HeldBlade(drawInfo.drawPlayer)?.AddVineDrawData(ref drawInfo);
+            ModProjectile held = HeldVines(drawInfo.drawPlayer);
+            if (held is BladeOfGrassBladeProjectile blade)
+                blade.AddVineDrawData(ref drawInfo);
+            else if (held is BladeOfGrassPlantSwingProjectile swing)
+                swing.AddVineDrawData(ref drawInfo);
         }
     }
 }

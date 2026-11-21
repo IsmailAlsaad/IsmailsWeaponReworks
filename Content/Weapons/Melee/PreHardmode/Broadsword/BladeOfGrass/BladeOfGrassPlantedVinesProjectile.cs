@@ -169,6 +169,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                 rootFunction ??= _ => Root;
                 vines.StartTrimPx = BladeOfGrassTuning.PlantedChainStartTrimPx;
                 vines.SearchAbove = BladeOfGrassTuning.PlantedSearchAbove;
+                vines.RootDirection = new Vector2(0f, -1f); // straight up out of the ground ...
+                vines.RootDirectionFraction = BladeOfGrassTuning.PlantedRootUpFraction; // ... and free after this fraction of the length
                 vines.Tick(Projectile, Root, rootFunction, 0f, IsOwner ? lengths : null);
                 if (IsOwner && vines.TakeSync())
                     Projectile.netUpdate = true;

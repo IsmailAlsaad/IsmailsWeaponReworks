@@ -57,6 +57,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public Color DrawTint = Color.White; // multiplies the drawn color (a withering set browns)
         public float LengthScale = 1f; // 0..1: how much of each vine's length is out (a planted set grows out of the ground and ungrows back into it)
         public bool SearchAbove;       // free vines search only above the center (a planted sword in the ground)
+        public Vector2 RootDirection;       // zero = off; else every vine leaves its root in this direction (a planted set: straight up out of the ground) ...
+        public float RootDirectionFraction; // ... fully at the root, the pull fading out smoothly over this fraction of the vine (never less than the first rope segment), then the vine is free
 
         Projectile host;
         Vector2 center;
@@ -420,6 +422,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                     weight = BladeOfGrassTuning.Stiffness * vine.StiffnessFactor * (hasTarget ? BladeOfGrassTuning.TargetStiffnessBoost : 1f) * influence;
                 }
                 point += (wish - point) * weight;
+                if (RootDirection != Vector2.Zero && k < bodyCount)
+                {
+                    // The first points are pulled onto a straight line out of the root; the pull fades to nothing over RootDirectionFraction of the vine (point 1 is always on the line).
+                    float directionReach = Math.Max(1f, RootDirectionFraction * (n - 1));
+                    float directionPull = 1f - (k - 1) / directionReach;
+                    if (directionPull > 0f)
+                    {
+                        directionPull = MathHelper.SmoothStep(0f, 1f, directionPull);
+                        point += (root + RootDirection * (segment * k) - point) * directionPull;
+                    }
+                }
                 vine.P[k] = point;
             }
             vine.Old[0] = root;

@@ -180,9 +180,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static float VineScale => 1f;
         public static float VineTipScale => 0.7f;          // the vine gets this thick at its tip (fraction of VineScale)
         public static float SpineScale => 1f;
-        public static float HeadScale => 1f;
+        public static float HeadScale => 1.1f;
         public static float ChainSpacing => 0.8f;          // distance between sprites along a vine, as a fraction of the sprite's height
-        public static float ChainEndTrimPx => 4f;          // the chain stops this many pixels before each end (the head covers the rest), raise it if a link pokes out of a head
+        public static float ChainEndTrimPx => 11f;          // the chain stops this many pixels before each end (the head covers the rest), raise it if a link pokes out of a head
         public static float ChainStartTrimPx => 12f;       // the HELD vines' chain starts this many pixels out from the root (the first bit of each vine is not drawn)
         public static float PlantedChainStartTrimPx => 0f; // the same for the planted set
 
@@ -197,12 +197,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static int PlantGrowTicks => 24;            // the vines grow out of the ground over this long (they cannot attack until they are out)
         public static int PlantRetractTicks => 45;         // a replaced (or expired) set ungrows and shrivels away over this long
         public static float PlantedRootSinkPx => 2f;       // the foot of the planted vines is this far inside the surface
-        public static int PlantedLifeTicks => 3600;        // how long the set stands after it is fully grown (1 minute), then it ungrows
-        public static float PlantedGrowPerTick => 0.05f;   // every planted vine grows this many pixels per tick (3 px per second) ...
+        public static int PlantedLifeTicks => 6000;        // how long the set stands after it is fully grown (1 minute), then it ungrows
+        public static float PlantedGrowPerTick => 0.1f;   // every planted vine grows this many pixels per tick (3 px per second) ...
         public static float PlantedMaxLength => MaxLength; // ... up to this length (break-offs are never regrown by anything else)
         public static int PlantedSyncTicks => 30;          // while growing, the owner sends the lengths this often
         public static bool PlantedSearchAbove => true;     // the planted vines search only the half-space above the ground (not into it)
         public static float PlantedLeafChance => 0.15f;    // per tick, a leaf drifts off the planted vines' root
+        public static float PlantedRootUpFraction => 0.05f; // the planted vines leave the ground straight up; that pull fades out over this fraction of the vine's length (0.05 = about the first rope segment, then the vine is free; raise it, 0.15 to 0.3, for a longer straight stalk)
 
         // ---- netcode ----
         // The vines are sent (target and length of each) only when a target or a length changes; nothing to tune.
