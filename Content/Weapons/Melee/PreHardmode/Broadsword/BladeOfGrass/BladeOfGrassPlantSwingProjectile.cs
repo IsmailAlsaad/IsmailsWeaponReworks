@@ -40,7 +40,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         BladeOfGrassVineSet vines; // the player's vines, taken over from the held blade; they ungrow while the swing runs up to the impact
 
         int ImpactTick => BladeOfGrassTuning.PlantLiftTicks + BladeOfGrassTuning.PlantStabTicks;
-        int TotalTicks => ImpactTick + BladeOfGrassTuning.PlantRecoverTicks;
+        bool planted;          // the sword was driven in (the ground was there at the impact): it stays, the hand stays empty a while
+        int TotalTicks => ImpactTick + BladeOfGrassTuning.PlantRecoverTicks + (planted ? BladeOfGrassTuning.PlantEmptyHandTicks : 0);
 
         public override void SetDefaults()
         {
@@ -169,6 +170,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             }
             if (timer >= TotalTicks)
             {
+                if (planted)
+                    for (int i = 0; i < 6; i++)
+                        BladeOfGrassFx.PlantedLeaf(owner.MountedCenter + new Vector2(Facing * 12f, 0f) + Main.rand.NextVector2Circular(10f, 14f)); // the new sword grows back
                 Projectile.Kill();
                 return;
             }
@@ -221,6 +225,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         {
             if (!FindGround(owner, owner.Center.X + Facing * BladeOfGrassTuning.PlantReachPx, out Vector2 ground))
                 return;
+            planted = true;
             BladeOfGrassFx.PlantImpact(ground);
             CameraShake.Punch(ground, BladeOfGrassTuning.PlantShake, 10);
             if (IsOwner)
@@ -273,6 +278,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         {
             if (ticks == 0)
                 return false; // not posed yet
+            if (planted && timer > ImpactTick)
+                return false; // the sword stays in the ground; the hand is empty
             Main.instance.LoadItem(ItemID.BladeofGrass);
             Texture2D texture = TextureAssets.Item[ItemID.BladeofGrass].Value;
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);

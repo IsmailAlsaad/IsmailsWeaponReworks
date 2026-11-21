@@ -1,9 +1,12 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Microsoft.Xna.Framework;
 using System;
+using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 using System.IO;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -38,12 +41,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         Func<int, Vector2> rootFunction;
         readonly BladeOfGrassVineSet vines = new BladeOfGrassVineSet();
 
-        Vector2 Root => Projectile.Center + new Vector2(0f, BladeOfGrassTuning.PlantedRootSinkPx);
+        // The planted sword stands upright with its tip PlantSinkPx below the surface: Center is the middle of the blade, the hilt is the top.
+        Vector2 HiltPoint => new Vector2(Projectile.Center.X, Projectile.Top.Y);
+        Vector2 GroundPoint => new Vector2(Projectile.Center.X, Projectile.Bottom.Y - BladeOfGrassTuning.PlantSinkPx);
+        int Facing => Projectile.ai[1] >= 0f ? 1 : -1;
+        float swordSink;       // 0..1: the sword sinks into the ground while the set ungrows
+        // The vines grow from the middle of the blade and are drawn behind it.
+        Vector2 Root => HiltPoint + new Vector2(0f, Projectile.height * BladeOfGrassTuning.PlantedRootAlongBladeFraction);
 
         public override void SetDefaults()
         {
-            Projectile.width = 16;
-            Projectile.height = 16;
+            Projectile.width = 22;
+            Projectile.height = (int)(BladeOfGrassTuning.BladeLength * BladeOfGrassTuning.SwordScale); // the sword standing upright
             Projectile.aiStyle = -1;
             Projectile.friendly = false; // never hurts by itself; the coils do
             Projectile.DamageType = DamageClass.Melee;
@@ -51,6 +60,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             Projectile.tileCollide = false;
             Projectile.ignoreWater = true;
             Projectile.timeLeft = 10000; // refreshed by the AI; it ends itself
+            Projectile.hide = true; // drawn by DrawBehind
         }
 
         public override bool? CanDamage()
@@ -73,7 +83,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             }
 
             float[] taken = BladeOfGrassPlayer.TakeLengths(player);
-            int index = Projectile.NewProjectile(source, ground, Vector2.Zero, type, damage, knockback, player.whoAmI);
+            float height = BladeOfGrassTuning.BladeLength * BladeOfGrassTuning.SwordScale;
+            Vector2 center = new Vector2(ground.X, ground.Y + BladeOfGrassTuning.PlantSinkPx - height * 0.5f);
+            int index = Projectile.NewProjectile(source, center, Vector2.Zero, type, damage, knockback, player.whoAmI, 0f, player.direction >= 0 ? 1f : -1f);
             if (index < 0 || index >= Main.maxProjectiles)
                 return;
             if (Main.projectile[index].ModProjectile is BladeOfGrassPlantedVinesProjectile planted)
@@ -109,7 +121,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
             Projectile.velocity = Vector2.Zero;
 
             if (age == 0)
-                BladeOfGrassFx.Emerge(Projectile.Center);
+                BladeOfGrassFx.Emerge(GroundPoint);
 
             // Growing out of the ground, standing, ungrowing: one number (LengthScale) scales every vine's length; the vines cannot attack while it is not 1.
             float grow = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(age / (float)Math.Max(1, BladeOfGrassTuning.PlantGrowTicks), 0f, 1f));
@@ -141,6 +153,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                 }
             }
             vines.LengthScale = grow * (1f - retract);
+            swordSink = retract;
             vines.Disabled = !grown || retractTicks >= 0;
             vines.DrawTint = Color.Lerp(Color.White, new Color(170, 130, 80), retract);
 
@@ -169,8 +182,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
                 rootFunction ??= _ => Root;
                 vines.StartTrimPx = BladeOfGrassTuning.PlantedChainStartTrimPx;
                 vines.SearchAbove = BladeOfGrassTuning.PlantedSearchAbove;
-                vines.RootDirection = new Vector2(0f, -1f); // straight up out of the ground ...
-                vines.RootDirectionFraction = BladeOfGrassTuning.PlantedRootUpFraction; // ... and free after this fraction of the length
                 vines.Tick(Projectile, Root, rootFunction, 0f, IsOwner ? lengths : null);
                 if (IsOwner && vines.TakeSync())
                     Projectile.netUpdate = true;
@@ -189,9 +200,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
 
         // ---------------------------------------------------------------- drawing
 
+        public override void DrawBehind(int index, List<int> behindNPCsAndTiles, List<int> behindNPCs, List<int> behindProjectiles, List<int> overPlayers, List<int> overWiresUI)
+        {
+            if (BladeOfGrassTuning.PlantedDrawBehind)
+                behindNPCsAndTiles.Add(index); // the tile hides the part of the sword that sank in
+            else
+                behindProjectiles.Add(index);
+        }
+
         public override bool PreDraw(ref Color lightColor)
         {
-            vines.DrawNow();
+            vines.DrawNow(); // first: the vines are behind the sword, they grow from its middle
+
+            Main.instance.LoadItem(ItemID.BladeofGrass);
+            Texture2D texture = TextureAssets.Item[ItemID.BladeofGrass].Value;
+            HeldSwordPose.Sprite(texture, Facing, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
+            Vector2 position = HiltPoint + new Vector2(0f, swordSink * (Projectile.height + BladeOfGrassTuning.PlantSinkPx));
+            Color color = Color.Lerp(lightColor, Color.White, 0.3f);
+            Main.EntitySpriteDraw(texture, position - Main.screenPosition, null, color, MathHelper.PiOver2 + rotationOffset, origin, BladeOfGrassTuning.SwordScale, effects, 0);
             return false;
         }
     }

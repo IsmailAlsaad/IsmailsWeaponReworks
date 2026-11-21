@@ -196,14 +196,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Blad
         public static float PlantShake => 3f;              // camera punch when the sword hits the ground
         public static int PlantGrowTicks => 24;            // the vines grow out of the ground over this long (they cannot attack until they are out)
         public static int PlantRetractTicks => 45;         // a replaced (or expired) set ungrows and shrivels away over this long
-        public static float PlantedRootSinkPx => 2f;       // the foot of the planted vines is this far inside the surface
+        public static float PlantSinkPx => 14f;            // how far the sword's tip sinks into the ground (the tile hides that part when PlantedDrawBehind is on)
+        public static float PlantedRootAlongBladeFraction => 0.5f; // the vines grow from this far down the planted blade, measured from the hilt (0.5 = the middle)
         public static int PlantedLifeTicks => 6000;        // how long the set stands after it is fully grown (1 minute), then it ungrows
-        public static float PlantedGrowPerTick => 0.1f;   // every planted vine grows this many pixels per tick (3 px per second) ...
+        public static float PlantedGrowPerTick => 0.3f;   // every planted vine grows this many pixels per tick (3 px per second) ...
         public static float PlantedMaxLength => MaxLength; // ... up to this length (break-offs are never regrown by anything else)
         public static int PlantedSyncTicks => 30;          // while growing, the owner sends the lengths this often
         public static bool PlantedSearchAbove => true;     // the planted vines search only the half-space above the ground (not into it)
         public static float PlantedLeafChance => 0.15f;    // per tick, a leaf drifts off the planted vines' root
-        public static float PlantedRootUpFraction => 0.05f; // the planted vines leave the ground straight up; that pull fades out over this fraction of the vine's length (0.05 = about the first rope segment, then the vine is free; raise it, 0.15 to 0.3, for a longer straight stalk)
+        public static int PlantEmptyHandTicks => 30;       // after the sword is driven in the hand stays empty this long, then a new sword grows back in it (leaf burst)
+        public static bool PlantedDrawBehind => true;      // true: the planted sword and vines are drawn behind tiles and enemies (the ground hides the sunk tip); false: in front of enemies, the tip is not hidden
 
         // ---- netcode ----
         // The vines are sent (target and length of each) only when a target or a length changes; nothing to tune.
