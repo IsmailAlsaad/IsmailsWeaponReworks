@@ -1,14 +1,14 @@
-This mod is meant to be played with **"Factorraria"** which is a factory automation mod, but it can still be played standalone
+This mod is meant to be played with [c/FFD700:"Factorraria"] which is a factory automation mod, but it can still be played standalone
 
 It doesn't add any new weapons
 Instead it aims to spice up the vanilla weapons by giving them new mechanics and visuals
 as well as redesigning the progression
 
-The mod is currently in beta stage and only cover ***pre-hm*** content
+The mod is currently in beta stage and only cover [c/FF6B6B:pre-hm] content
 
-#### list of done weapon reworks:
+[c/66D9EF:--- list of done weapon reworks: ---]
 
-**Melee:**
+[c/FFD700:Melee:]
 all broadswords
 all shortswords
 all flails
@@ -16,11 +16,11 @@ all yoyos
 all spears
 all boomerangs
 
-#### Team credit:
+[c/66D9EF:--- Team credit: ---]
 
-*Ismail Alsaad* - Lead developer 
+[c/A6E22E:Ismail Alsaad] - Lead developer 
 
-#### Use of AI
+[c/66D9EF:--- Use of AI ---]
 - No artwork was made by AI
 - No music/sound was made by AI
 - No game mechanics/features were designed by AI
