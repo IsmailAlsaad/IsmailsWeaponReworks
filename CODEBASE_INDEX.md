@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-21 | 362 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-26 | 363 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-YoyoTuning(40) DetachedTrails(39) ReworkToggle(38) CameraShake(36) RemoteHitTracker(33) ThrustPalette(24) HeldSwordPose(24) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(17) PixelTrail(16) PixelTrailStyle(15) YoyoTrick(14) SweepTrail(14) FlailTuning(14) NightsEdgeTuning(13) FlailFx(13) ThrustPlayer(12) PixelLine(12)
+YoyoTuning(40) ReworkToggle(39) DetachedTrails(39) CameraShake(36) RemoteHitTracker(33) ThrustPalette(24) HeldSwordPose(24) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(17) PixelTrail(16) PixelTrailStyle(15) YoyoTrick(14) SweepTrail(14) FlailTuning(14) NightsEdgeTuning(13) FlailFx(13) ThrustPlayer(12) PixelLine(12)
 
 ## Inheritance
 Project bases -> derived:
@@ -55,6 +55,7 @@ tModLoader/other bases -> project types:
 - ModBuff (2): LightsBaneImbueBuff, NightsEdgeShadowArmorBuff
 - ConfigElement (1): ReworkGridElement
 - Mod (1): IsmailsWeaponReworks
+- ModCommand (1): GiveWeaponsCommand
 - ModConfig (1): ReworksToggleConfig
 - PlayerDrawLayer (1): BladeOfGrassVineLayer
 
@@ -281,6 +282,9 @@ tModLoader/other bases -> project types:
     +ChargeTicks(int)[v] +MinReach:float[v] +MaxReach:float[v] +EllipseWidthRatio:float[v] +ThrowSpeed(int)[v] +ReleaseBlendTicks:int[v] +MinHalfTicks:int[v] +TierDamageMultiplier(int)[v] +HitCooldownTicks:int[v] +SpinWhooshAngle:float[v] +SpinHitPeriodFraction:float[v] +SpinDamageMultiplier(int)[v] +HeadSize:float[v] +SpinRadiusMin:float[v] +SpinRadiusMax:float[v] +SpinRadiusSmoothing:float[v] +SpinOmegaStart(int)[v] +SpinOmegaEnd(int)[v] +SpecialMinReach:float[v] +SpecialMaxReach:float[v] +SpecialPathDamageMultiplier:float[v] +SpecialHangTicks:int[v] +RetractSpeed:float[v] +CatchDistance:float[v] +FailRetractSpeed:float[v] +PixelSize:float[v] +TrailLifeTicks:int[v] +TrailWidth(int)[v] +TrailJitter:float[v] +AfterimageTicks:int[v] +FlashTicks:int[v] +GlowColor(int)[ab] +HotColor(int)[ab] +TintLight(Vector3)[v] +ChainName:string[ab] #Pick<T>(int,T,T,T)[s]
 
 ### Common/Rework/
+**GiveWeaponsCommand.cs** uses: ReworkRegistry, ReworkToggle
+  class GiveWeaponsCommand : ModCommand
+    +Type:CommandType[ov] +Command:string[ov] +Description:string[ov] +Action(CommandCaller,string,string)[ov]
 **ReworkGridElement.cs** uses: ReworkGridTuning, ReworkRegistry
   class ReworkGridElement : ConfigElement<List<ItemDefinition>>
     +OnBind()[ov] +LeftClick(UIMouseEvent)[ov] +ScrollWheel(UIScrollWheelEvent)[ov] +Update(GameTime)[ov] #DrawSelf(SpriteBatch)[ov]
