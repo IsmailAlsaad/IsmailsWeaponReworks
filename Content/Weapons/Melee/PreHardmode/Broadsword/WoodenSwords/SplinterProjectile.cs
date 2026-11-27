@@ -12,7 +12,7 @@ using IsmailsWeaponReworks.Common;
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.WoodenSwords
 {
     /// <summary>
-    /// A splinter of a wooden sword, lodged in an enemy. It follows the enemy, draws one 6x6 cell of Splinters.png (column = the wood, row =
+    /// A splinter of a wooden sword, lodged in an enemy. It follows the enemy, draws one 12x12 cell of Splinters.png (column = the wood, row =
     /// the style, both picked at random by the owner when it lodges, plus a random rotation) and hurts the enemy for WoodenSwordTuning.DamagePerHit
     /// every HitIntervalTicks until its life (per wood) runs out, the enemy dies or the owner pushes it out (max splinters per enemy).
     /// ai[0] = the enemy's index (-1 = pushed out, every machine removes it), ai[1] = column * StyleCount + style, ai[2] = rotation,

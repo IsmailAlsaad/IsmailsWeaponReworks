@@ -42,6 +42,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.IceB
         float flash;           // 1 right after a click, fades to 0
         float opacity = 1f;
         bool holding = true;   // false once the blade is gone and only the trail is left
+        public bool HoldsSword => holding; // the idle sword takes over when this turns false
         float armLocal;        // arm direction in radians for a player facing right (positive = down)
         float tiltRad;         // blade tilt relative to the arm
         float lastChargeArm;
@@ -294,6 +295,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.IceB
             int t = (int)timer;
             bool released = CurrentPhase == Phase.Slash; // a charged release: the same swing plus trail and wave
             int tier = released ? ReleasedTier : 0;
+
+            // The strike is over: the sword stays in the hand (the idle sword takes it from here and eases into the ready pose) while this
+            // projectile only waits out the recover time and finishes the trail.
+            if (timer > windup + swing)
+            {
+                holding = false;
+                opacity = 0f;
+            }
 
             if (timer < windup + swing + recover)
             {

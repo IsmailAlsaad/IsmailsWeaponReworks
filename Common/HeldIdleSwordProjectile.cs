@@ -34,6 +34,8 @@ namespace IsmailsWeaponReworks.Common
         protected virtual float IdleBobDeg => 2f;
         protected virtual float IdleEase => 0.15f;
         protected virtual bool Hidden(Player owner) { return false; }
+        // False while the swing projectile still exists but no longer shows the sword (its trail is still fading): the idle sword takes over then.
+        protected virtual bool SwingOwnsSword(Projectile swing) { return true; }
 
         int ticks;
         bool hidden = true;
@@ -73,7 +75,13 @@ namespace IsmailsWeaponReworks.Common
             return null;
         }
 
+        // The pose is worked out in Tick, called by HeldIdleSwordSystem after every projectile has updated.
         public override void AI()
+        {
+            Projectile.timeLeft = 10000;
+        }
+
+        public void Tick()
         {
             Player owner = Main.player[Projectile.owner];
             if (!owner.active || owner.dead || owner.noItems || owner.CCed || !Holds(owner.HeldItem.type))
@@ -87,11 +95,12 @@ namespace IsmailsWeaponReworks.Common
             ticks++;
 
             Projectile swing = FindSwing(owner);
-            if (swing != null || Hidden(owner))
+            bool swingHasSword = swing != null && SwingOwnsSword(swing);
+            if (swingHasSword || Hidden(owner))
             {
                 hidden = true;
                 walkBob = 0f;
-                if (swing != null)
+                if (swingHasSword)
                 {
                     lastBlade = owner.gravDir == -1f ? -swing.rotation : swing.rotation;
                     haveBlade = true;

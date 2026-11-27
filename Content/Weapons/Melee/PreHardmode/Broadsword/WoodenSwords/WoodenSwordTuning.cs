@@ -73,7 +73,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
         public static float HitWidth => 18f;  // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
         public static float DamageMultiplier => 1f;  // of the item's damage (the speed is the reward for charging, so 1)
         public static float KnockbackMultiplier => 1f;
-        public static float HitShake => 0.6f;  // camera punch on a hit (grows with the charge)
+        public static float HitShake => 0f;  // camera punch on a hit (grows with the charge); 0 = none
         public static float ChargePerHit => 0f;  // no charge in this weapon
         public static float GlowMaxAlpha => 0f;  // no glow (no charge)
         public static Color OutlineColor => new Color(120, 255, 90, 0);
@@ -101,10 +101,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
         public static int CactusMaxSplinters => 5;
         public static int CactusLifeTicks => 420;       // 7 s
         public static int FadeTicks => 30;              // a splinter fades out over its last ticks
-        public static int CellSize => 6;                // Splinters.png: every cell is this big, the splinter centered in it
+        public static int CellSize => 12;               // Splinters.png: every cell is this big, the splinter centered in it
         public static int StyleCount => 4;              // splinter styles stacked vertically per wood
         public static float SplinterScale => 1f;
-        public static float StickShake => 0.4f;         // camera punch when a splinter lodges
+        public static float StickShake => 0f;           // camera punch when a splinter lodges; 0 = none
         public static int StickDustCount => 4;
         public static int TickDustCount => 2;           // dust at a splinter every time it hurts
         public static int ExpireDustCount => 3;

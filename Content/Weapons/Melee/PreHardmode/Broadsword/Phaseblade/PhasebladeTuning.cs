@@ -42,10 +42,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
         public static int RecoverTicks => 5;          // ... and settles back to the end of the arc over this long
         public static int SpinTurns => 1;             // whole turns the blade spins about the hand during the strike of swings 2 and 3
         public static int SweepHitSteps => 8;         // the blade's hit test is checked at this many poses between two ticks (a spin is fast)
-        public static float RestArmDeg => 10f;        // where a fresh combo starts
+        public static float RestArmDeg => 30f;        // where a fresh combo starts
         public static float SwingHighDeg => -70f;     // top of the arc
         public static float SwingLowDeg => 70f;       // bottom of the arc
-        public static float TiltHighDeg => -12f;      // blade tilt relative to the arm at the top ...
+        public static float TiltHighDeg => -60f;      // blade tilt relative to the arm at the top ...
         public static float TiltLowDeg => 12f;        // ... and at the bottom
         public static int ComboTicks => 30;           // a swing started within this long after the last one continues the combo
         public static int ChainEarlyTicks => 0;       // the next click may start its swing this many ticks BEFORE the strike ends (the swing hands over to it with no gap: the arm is nearly at rest there)

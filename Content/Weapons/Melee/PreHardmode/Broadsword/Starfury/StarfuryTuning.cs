@@ -30,7 +30,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Star
         public static float RestArmDeg => 10f;        // where a fresh combo starts (just before the high end of the arc)
         public static float SwingHighDeg => -70f;     // top of the arc
         public static float SwingLowDeg => 70f;       // bottom of the arc
-        public static float TiltHighDeg => -12f;      // blade tilt relative to the arm at the top (wrist) ...
+        public static float TiltHighDeg => -40f;      // blade tilt relative to the arm at the top (wrist) ...
         public static float TiltLowDeg => 12f;        // ... and at the bottom
         public static int ComboTicks => 30;           // a swing started within this long after the last one continues the alternation
 

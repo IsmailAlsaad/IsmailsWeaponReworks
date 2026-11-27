@@ -36,10 +36,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            WoodSpec spec = WoodenSwordWoods.Spec(WoodenSwordWoods.ColumnOf(item.type));
-            float seconds = spec.LifeTicks / 60f;
-            tooltips.Add(new TooltipLine(Mod, "WoodenSword1", "Hits lodge splinters in enemies (up to " + spec.MaxSplinters + ")"));
-            tooltips.Add(new TooltipLine(Mod, "WoodenSword2", "Each splinter hurts for " + WoodenSwordTuning.DamagePerHit + " damage per second for " + seconds.ToString("0.#") + " seconds"));
+            //WoodSpec spec = WoodenSwordWoods.Spec(WoodenSwordWoods.ColumnOf(item.type));
+            //float seconds = spec.LifeTicks / 60f;
+            //tooltips.Add(new TooltipLine(Mod, "WoodenSword1", "Hits lodge splinters in enemies (up to " + spec.MaxSplinters + ")"));
+            //tooltips.Add(new TooltipLine(Mod, "WoodenSword2", "Each splinter hurts for " + WoodenSwordTuning.DamagePerHit + " damage per second for " + seconds.ToString("0.#") + " seconds"));
         }
     }
 }

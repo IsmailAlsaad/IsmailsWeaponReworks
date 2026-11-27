@@ -28,7 +28,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.IceB
         public static float ArmStartDeg => 25f;
         public static float ArmEndDeg => -105f;       // fully lifted: up and a little behind the head
         public static int LiftTicks => 54;            // cubic ease-out, ends exactly on click 3
-        public static float BladeTiltDeg => -15f;      // the blade stays tilted this far forward from the arm
+        public static float BladeTiltDeg => -50f;      // the blade stays tilted this far forward from the arm
         public static float BladeLength => 58f;       // hand to tip, in pixels at scale 1
         public static float SwordScale => 1.15f;
         public static int ShakeStartTicks => 16;      // the blade starts to tremble just before the freeze click

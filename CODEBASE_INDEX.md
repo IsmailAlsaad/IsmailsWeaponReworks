@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-27 | 379 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-27 | 380 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -52,7 +52,7 @@ tModLoader/other bases -> project types:
 - GlobalItem (28): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, NightsEdgeGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, WoodenSwordGlobalItem, YoyoGlobalItem
 - ModPlayer (20): BeeKeeperPlayer, BladeOfGrassPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, HeldIdleSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, NightsEdgePlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, WoodenSwordPlayer, YoyoPlayer
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
-- ModSystem (4): DetachedTrails, MetaballLayers, ReworkRegistry, YoyoRegistry
+- ModSystem (5): DetachedTrails, HeldIdleSwordSystem, MetaballLayers, ReworkRegistry, YoyoRegistry
 - ModBuff (2): LightsBaneImbueBuff, NightsEdgeShadowArmorBuff
 - ConfigElement (1): ReworkGridElement
 - Mod (1): IsmailsWeaponReworks
@@ -122,7 +122,10 @@ tModLoader/other bases -> project types:
     +PostUpdate()[ov]
 **HeldIdleSwordProjectile.cs** uses: HeldSwordIdle, HeldSwordPose
   abstract class HeldIdleSwordProjectile : ModProjectile
-    +Texture:string[ov] +Holds(int)[ab] #SwingType:int[ab] #ReadyArmDeg:float[ab] #ReadyTiltDeg:float[ab] #SwordScale:float[ab] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ab] #IdleBobTicks:int[v] #IdleBobDeg:float[v] #IdleEase:float[v] #Hidden(Player)[v] +AI()[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +Holds(int)[ab] #SwingType:int[ab] #ReadyArmDeg:float[ab] #ReadyTiltDeg:float[ab] #SwordScale:float[ab] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ab] #IdleBobTicks:int[v] #IdleBobDeg:float[v] #IdleEase:float[v] #Hidden(Player)[v] #SwingOwnsSword(Projectile)[v] +AI()[ov] +Tick() +PreDraw(ref Color)[ov]
+**HeldIdleSwordSystem.cs** uses: HeldIdleSwordProjectile
+  class HeldIdleSwordSystem : ModSystem
+    +PostUpdateEverything()[ov]
 **HeldSpearProjectile.cs** uses: AimSpread, DetachedTrails, HeldAim, Mode, RemoteHitTracker, SegmentHit, SpearPose, SweepTrail, ThrustChain, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTimeline, ThrustTrailStyle
   abstract class HeldSpearProjectile : ModProjectile
     #ItemType:int[ab] #Chain:ThrustChain[ab] #Reach:float[ab] #Palette:ThrustPalette[ab] #SpearScale:float[v] #GripFraction:float[v] #HitWidth:float[v] #RetargetEachThrust:bool[v] #TrailLifeTicks:int[v] #TrailRails:int[v] #TrailOpacity:float[v] #PixelSize:float[v] #TrailTaper:float[v] #OnThrustStart(int)[v] #OnStrikeStart(int)[v] #OnTipStep(Vector2,Vector2,float)[v] #OnTipHit(NPC,HitInfo,int)[v] #ShouldContinue(int)[v] #ThrustPitch(int)[v] #SpriteRotation:float[v] #SpritePivot:Vector2[v] #ShaftLength()[v] +Texture:string[ov] #Owner:Player #IsOwner:bool #BaseAim:float #Seed:int #Mode:int #EndAge:int #Age:int #ThrustIndex:int #Extension:float #Striking:bool #Butt:Vector2 #Tip:Vector2 #Direction:Vector2 +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
@@ -624,10 +627,10 @@ tModLoader/other bases -> project types:
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +OnHitNPC(Item,Player,NPC,HitInfo,int)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **IceBladeIdleProjectile.cs** uses: HeldIdleSwordProjectile, IceBladeSwingProjectile, IceBladeTuning
   class IceBladeIdleProjectile : HeldIdleSwordProjectile
-    +Holds(int)[ov] #SwingType:int[ov] #ReadyArmDeg:float[ov] #ReadyTiltDeg:float[ov] #SwordScale:float[ov] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ov]
+    +Holds(int)[ov] #SwingType:int[ov] #ReadyArmDeg:float[ov] #ReadyTiltDeg:float[ov] #SwordScale:float[ov] #SwingOwnsSword(Projectile)[ov] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ov]
 **IceBladeSwingProjectile.cs** uses: DetachedTrails, HeldSwordPose, IceBladeFx, IceBladeTrailStyle, IceBladeTuning, IceBladeWaveProjectile, IceFx, PixelFan, SweepTrail
   class IceBladeSwingProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +HoldsSword:bool +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
       {Charge, Slash, Tap, Frozen}
 **IceBladeTrail.cs** uses: IceBladeTuning, SweepFade, SweepTrailStyle
@@ -899,7 +902,7 @@ tModLoader/other bases -> project types:
 **WoodenSwordFx.cs**
   static class WoodenSwordFx
     +PlaySwing(Vector2)[s] +PlayStick(Vector2)[s] +HitSpark(Vector2)[s] +Chips(Vector2,int,float)[s]
-**WoodenSwordGlobalItem.cs** uses: ReworkToggle, WoodSpec, WoodenSwordTuning, WoodenSwordWoods
+**WoodenSwordGlobalItem.cs** uses: ReworkToggle, WoodenSwordWoods
   class WoodenSwordGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **WoodenSwordPlayer.cs** uses: ReworkToggle, WoodenSwordBladeProjectile, WoodenSwordWoods
