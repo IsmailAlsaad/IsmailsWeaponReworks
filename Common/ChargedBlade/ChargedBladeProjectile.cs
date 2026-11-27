@@ -115,6 +115,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         float tiltRel;
         float armLocal;           // the resting pose, facing-local (positive = down); set from the tuning in SetDefaults
         float tiltRad;
+        float walkBob;            // HeldSwordIdle.WalkShift's memory
+        Vector2 poseShift;        // added to the hand this tick (the walking bob of the ready pose), zero in every other pose
         float chargeShown;        // the charge that is drawn: eases toward the real one
         float outlineShown;       // 0..1, how visible the full-charge outline is
         bool wasCharged;
@@ -321,6 +323,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
 
             float worldArm;
             float worldBlade;
+            poseShift = Vector2.Zero;
             if (impaling)
             {
                 ImpalePose(owner, out worldArm, out worldBlade);
@@ -344,10 +347,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             {
                 // The ready pose: the arm eases into it after a swing and bobs a little, so the sword is never dead still.
                 facing = owner.direction >= 0 ? 1 : -1;
-                float bob = (float)Math.Sin(MathHelper.TwoPi * ticks / Math.Max(1, Tune.IdleBobTicks)) * Rad(Tune.IdleBobDeg);
-                float ease = MathHelper.Clamp(Tune.IdleEase, 0.01f, 1f);
-                armLocal += MathHelper.WrapAngle(Rad(Tune.ReadyArmDeg) + bob - armLocal) * ease;
-                tiltRad += (Rad(Tune.ReadyTiltDeg) - tiltRad) * ease;
+                HeldSwordIdle.Step(ticks, Rad(Tune.ReadyArmDeg), Rad(Tune.ReadyTiltDeg), Tune.IdleBobTicks, Rad(Tune.IdleBobDeg), Tune.IdleEase, ref armLocal, ref tiltRad);
+                poseShift = HeldSwordIdle.WalkShift(owner, ref walkBob);
                 worldArm = HeldSwordPose.ToWorld(facing, armLocal);
                 worldBlade = HeldSwordPose.ToWorld(facing, armLocal + tiltRad);
             }
@@ -713,7 +714,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         void ApplyPose(Player owner, float worldArm, float worldBlade)
         {
             owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, worldArm - MathHelper.PiOver2);
-            Vector2 hand = HeldSwordPose.HandWorld(owner, worldArm);
+            Vector2 hand = HeldSwordPose.HandWorld(owner, worldArm) + poseShift;
             float blade = worldBlade;
             if (owner.gravDir == -1f)
                 blade = -blade;

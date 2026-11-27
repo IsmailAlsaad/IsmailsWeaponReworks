@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-27 | 372 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-27 | 379 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-ReworkToggle(41) YoyoTuning(40) DetachedTrails(39) CameraShake(37) RemoteHitTracker(33) ThrustPalette(24) HeldSwordPose(24) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(17) PixelTrail(16) PixelTrailStyle(15) YoyoTrick(14) SweepTrail(14) FlailTuning(14) NightsEdgeTuning(13) FlailFx(13) ThrustPlayer(12) SweepFade(12)
+ReworkToggle(42) YoyoTuning(40) DetachedTrails(39) CameraShake(37) RemoteHitTracker(33) HeldSwordPose(25) ThrustPalette(24) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(17) PixelTrail(16) PixelTrailStyle(15) YoyoTrick(14) SweepTrail(14) FlailTuning(14) NightsEdgeTuning(13) FlailFx(13) ThrustPlayer(12) SweepFade(12)
 
 ## Inheritance
 Project bases -> derived:
@@ -19,6 +19,7 @@ Project bases -> derived:
 - FlailProjectile: BallOHurtFlailProjectile, BlueMoonFlailProjectile, FlamingMaceFlailProjectile, MaceFlailProjectile, MeatballFlailProjectile, SunfuryFlailProjectile
 - FlailTuning: BallOHurtTuning, BlueMoonTuning, FlamingMaceTuning, MaceTuning, MeatballTuning, SunfuryFlailTuning
 - ForwardPassTrick: AmazonTrick, Code1Trick, ManOnTrapezeTrick, PopTheClutchTrick, RallyTrick
+- HeldIdleSwordProjectile: BeeKeeperIdleProjectile, IceBladeIdleProjectile, PhasebladeIdleProjectile, StarfuryIdleProjectile
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
 - IAroundTheWorldTuning: AroundTheWorldDefaults, HiveFiveTuning, ValorTuning
 - IChargeOutlineTuning: CascadeTuning, HiveFiveTuning
@@ -47,9 +48,9 @@ Project bases -> derived:
 - YoyoTrick: AroundTheWorldTrick, ForwardPassTrick, SleeperHoldTrick, WalkTheDogTrick
 - YoyoTuning: AmazonTuning, ArteryTuning, CascadeTuning, Code1Tuning, HiveFiveTuning, MalaiseTuning, RallyTuning, ValorTuning, WoodenYoyoTuning
 tModLoader/other bases -> project types:
-- ModProjectile (71): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BallOHurtBallProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassPlantSwingProjectile, BladeOfGrassPlantedVinesProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, BlueMoonBlastProjectile, CascadeBlastProjectile, ChargedBladeProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlailProjectile, FlamerangBlastProjectile, FlamerangProjectile, FlamingMaceBlastProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneImbueProjectile, MaceShrapnelProjectile, MeatballHeadProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, NightsEdgeBlastProjectile, NightsEdgeDropProjectile, NightsEdgeWaveProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, SplinterProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
+- ModProjectile (72): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BallOHurtBallProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassPlantSwingProjectile, BladeOfGrassPlantedVinesProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, BlueMoonBlastProjectile, CascadeBlastProjectile, ChargedBladeProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlailProjectile, FlamerangBlastProjectile, FlamerangProjectile, FlamingMaceBlastProjectile, HeldIdleSwordProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneImbueProjectile, MaceShrapnelProjectile, MeatballHeadProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, NightsEdgeBlastProjectile, NightsEdgeDropProjectile, NightsEdgeWaveProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, SplinterProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
 - GlobalItem (28): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, NightsEdgeGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, WoodenSwordGlobalItem, YoyoGlobalItem
-- ModPlayer (19): BeeKeeperPlayer, BladeOfGrassPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, NightsEdgePlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, WoodenSwordPlayer, YoyoPlayer
+- ModPlayer (20): BeeKeeperPlayer, BladeOfGrassPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, HeldIdleSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, NightsEdgePlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, WoodenSwordPlayer, YoyoPlayer
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
 - ModSystem (4): DetachedTrails, MetaballLayers, ReworkRegistry, YoyoRegistry
 - ModBuff (2): LightsBaneImbueBuff, NightsEdgeShadowArmorBuff
@@ -116,9 +117,18 @@ tModLoader/other bases -> project types:
 **HeldAim.cs**
   static class HeldAim
     +Capture(Player)[s] +ToWorld(Player,float)[s] +ToWorldDirection(Player,float)[s] +Facing(float)[s]
+**HeldIdleSwordPlayer.cs** uses: HeldIdleSwordProjectile, ReworkToggle
+  class HeldIdleSwordPlayer : ModPlayer
+    +PostUpdate()[ov]
+**HeldIdleSwordProjectile.cs** uses: HeldSwordIdle, HeldSwordPose
+  abstract class HeldIdleSwordProjectile : ModProjectile
+    +Texture:string[ov] +Holds(int)[ab] #SwingType:int[ab] #ReadyArmDeg:float[ab] #ReadyTiltDeg:float[ab] #SwordScale:float[ab] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ab] #IdleBobTicks:int[v] #IdleBobDeg:float[v] #IdleEase:float[v] #Hidden(Player)[v] +AI()[ov] +PreDraw(ref Color)[ov]
 **HeldSpearProjectile.cs** uses: AimSpread, DetachedTrails, HeldAim, Mode, RemoteHitTracker, SegmentHit, SpearPose, SweepTrail, ThrustChain, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTimeline, ThrustTrailStyle
   abstract class HeldSpearProjectile : ModProjectile
     #ItemType:int[ab] #Chain:ThrustChain[ab] #Reach:float[ab] #Palette:ThrustPalette[ab] #SpearScale:float[v] #GripFraction:float[v] #HitWidth:float[v] #RetargetEachThrust:bool[v] #TrailLifeTicks:int[v] #TrailRails:int[v] #TrailOpacity:float[v] #PixelSize:float[v] #TrailTaper:float[v] #OnThrustStart(int)[v] #OnStrikeStart(int)[v] #OnTipStep(Vector2,Vector2,float)[v] #OnTipHit(NPC,HitInfo,int)[v] #ShouldContinue(int)[v] #ThrustPitch(int)[v] #SpriteRotation:float[v] #SpritePivot:Vector2[v] #ShaftLength()[v] +Texture:string[ov] #Owner:Player #IsOwner:bool #BaseAim:float #Seed:int #Mode:int #EndAge:int #Age:int #ThrustIndex:int #Extension:float #Striking:bool #Butt:Vector2 #Tip:Vector2 #Direction:Vector2 +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**HeldSwordIdle.cs**
+  static class HeldSwordIdle
+    +WalkBobPixels:float[s] +WalkBobScale:float[s] +WalkBobEase:float[s] +IsRaisedFrame(int)[s] +WalkShift(Player,ref float)[s] +Step(int,float,float,int,float,float,ref float,ref float)[s]
 **HeldSwordPose.cs**
   static class HeldSwordPose
     +ToWorld(int,float)[s] +Hand(Player,int,float)[s] +BladeDirection(Player,int,float,float)[s] +HandWorld(Player,float)[s] +BladeDirectionWorld(Player,float)[s] +GripShift(float,float,float)[s] +Sprite(Texture2D,int,out Vector2,out float,out SpriteEffects)[s]
@@ -247,7 +257,7 @@ tModLoader/other bases -> project types:
 **ChargedBladePose.cs**
   struct ChargedBladePose
     +SpritePosition:Vector2 +SpriteRotation:float +SpriteOrigin:Vector2 +SpriteSize:Vector2 +Scale:float +Effects:SpriteEffects +Hand:Vector2 +Tip:Vector2 +TipMotion:Vector2 +Direction:Vector2 +Charge:float +Outline:float +Striking:bool +Ticks:int +ToWorld(Vector2)
-**ChargedBladeProjectile.cs** uses: CameraShake, ChargedBladePose, ChargedBladeTrailStyle, DetachedTrails, HeldAim, HeldSwordPose, IChargedBladeTuning, IDrawnBehindCarried, PixelFan, PixelOutline, RemoteHitTracker, SweepTrail
+**ChargedBladeProjectile.cs** uses: CameraShake, ChargedBladePose, ChargedBladeTrailStyle, DetachedTrails, HeldAim, HeldSwordIdle, HeldSwordPose, IChargedBladeTuning, IDrawnBehindCarried, PixelFan, PixelOutline, RemoteHitTracker, SweepTrail
   abstract partial class ChargedBladeProjectile : ModProjectile, IDrawnBehindCarried
     #Tune:IChargedBladeTuning[ab] #ItemType:int[ab] #OwnerCharge(Player)[ab] #AddOwnerCharge(Player,float)[ab] #CreateTrailStyle()[ab] #DrawsTrail:bool[v] #StabAvailable(Player)[v] #OnStabImpacted(Player)[ab] #FxPlaySwing(Vector2,float)[ab] #FxSwingDust(Vector2,Vector2,float)[ab] #FxHitSpark(Vector2,float)[ab] #FxChargeHit(Vector2)[ab] #FxCharged(Vector2,Vector2)[ab] #FxPlayStabWindup(Vector2)[ab] #FxStabImpact(Vector2)[ab] #FxSparkle(Vector2,Vector2)[ab] #TickVisuals(ChargedBladePose)[v] #DrawAfterBlade(ChargedBladePose)[v] #OnOwnerHit(NPC,HitInfo,bool)[v] #OnOwnerStrikeStart(Vector2,Vector2)[v] #SpriteAsset:Asset<Texture2D>[v] #StrikeProgress:float #InStrikePhase:bool +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +DrawBehindCarried(NPC) +PreDraw(ref Color)[ov]
 **ChargedBladeTrailStyle.cs** uses: SweepTrailStyle
@@ -486,6 +496,9 @@ tModLoader/other bases -> project types:
 **BeeKeeperGlobalItem.cs** uses: BeeKeeperPlayer, BeeKeeperSwingProjectile, BeeKeeperTuning, Phase, ReworkToggle
   class BeeKeeperGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**BeeKeeperIdleProjectile.cs** uses: BeeKeeperSwingProjectile, BeeKeeperTuning, HeldIdleSwordProjectile
+  class BeeKeeperIdleProjectile : HeldIdleSwordProjectile
+    +Holds(int)[ov] #SwingType:int[ov] #ReadyArmDeg:float[ov] #ReadyTiltDeg:float[ov] #SwordScale:float[ov] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ov]
 **BeeKeeperPlayer.cs** uses: BeeKeeperBeeProjectile, BeeKeeperBigBeeProjectile, BeeKeeperFx, BeeKeeperSmallBeeProjectile, BeeKeeperTuning, ReworkToggle
   class BeeKeeperPlayer : ModPlayer
     +LastPhase:int +LastEndArm:float +LastEndTick:uint +Linger:int +OnRespawn()[ov] +PostUpdate()[ov] +RecruitBees(NPC,int) +Deliver(float)
@@ -609,6 +622,9 @@ tModLoader/other bases -> project types:
 **IceBladeGlobalItem.cs** uses: IceBladeSwingProjectile, ReworkToggle
   class IceBladeGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +OnHitNPC(Item,Player,NPC,HitInfo,int)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**IceBladeIdleProjectile.cs** uses: HeldIdleSwordProjectile, IceBladeSwingProjectile, IceBladeTuning
+  class IceBladeIdleProjectile : HeldIdleSwordProjectile
+    +Holds(int)[ov] #SwingType:int[ov] #ReadyArmDeg:float[ov] #ReadyTiltDeg:float[ov] #SwordScale:float[ov] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ov]
 **IceBladeSwingProjectile.cs** uses: DetachedTrails, HeldSwordPose, IceBladeFx, IceBladeTrailStyle, IceBladeTuning, IceBladeWaveProjectile, IceFx, PixelFan, SweepTrail
   class IceBladeSwingProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
@@ -774,6 +790,9 @@ tModLoader/other bases -> project types:
 **PhasebladeGlobalItem.cs** uses: HeldSwordPose, Phase, PhasebladePlantedProjectile, PhasebladePlayer, PhasebladeSwingProjectile, PhasebladeTuning, ReworkToggle
   class PhasebladeGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +StartCombo(Player,IEntitySource,int,float)[s] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**PhasebladeIdleProjectile.cs** uses: HeldIdleSwordProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, PhasebladeTuning
+  class PhasebladeIdleProjectile : HeldIdleSwordProjectile
+    +Holds(int)[ov] #SwingType:int[ov] #ReadyArmDeg:float[ov] #ReadyTiltDeg:float[ov] #SwordScale:float[ov] #Hidden(Player)[ov] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ov]
 **PhasebladePlantedProjectile.cs** uses: HeldSwordPose, PhasebladeFx, PhasebladeGlobalItem, PhasebladePlayer, PhasebladeTuning, RemoteHitTracker, TileProbe
   class PhasebladePlantedProjectile : ModProjectile
     +Texture:string[ov] +FindTileBelow(float,float,float,out Vector2)[s] +FindGround(Player,float,out Vector2,float)[s] +Has(Player,int)[s] +IsReturning(Player,int)[s] +PullBack(Player,int,bool)[s] +AI()[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +DrawBehind(int,List<int>,List<int>,List<int>,List<int>,List<int>)[ov] +PreDraw(ref Color)[ov]
@@ -802,6 +821,9 @@ tModLoader/other bases -> project types:
 **StarfuryGlobalItem.cs** uses: HeldSwordPose, Phase, ReworkToggle, StarfuryPlayer, StarfuryStarProjectile, StarfurySwingProjectile, StarfuryTuning
   class StarfuryGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**StarfuryIdleProjectile.cs** uses: HeldIdleSwordProjectile, StarfurySwingProjectile, StarfuryTuning
+  class StarfuryIdleProjectile : HeldIdleSwordProjectile
+    +Holds(int)[ov] #SwingType:int[ov] #ReadyArmDeg:float[ov] #ReadyTiltDeg:float[ov] #SwordScale:float[ov] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ov]
 **StarfuryPlayer.cs** uses: StarfuryTuning
   class StarfuryPlayer : ModPlayer
     +LastPhase:int +LastEndArm:float +LastEndTick:uint +LastCallTick:uint +LastEndWorldArm:float +ChargeHits:int +AddHit() +PostUpdate()[ov]
@@ -1416,8 +1438,8 @@ tModLoader/other bases -> project types:
 
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; README.md; build.txt, description.txt, description_workshop.txt
+- Assets/Sounds/: ElectricEel.wav
 - Assets/Sounds/WoodSplit/: WoodSplit1.wav, WoodSplit2.wav, WoodSplit3.wav, WoodSplit4.wav
-- Content/Sounds/: ElectricEel.wav
 - Effects/: DarkFlameOrb.fx, PixelGlow.fx; PixelShared.fxh; DarkFlameOrb.xnb, PixelGlow.xnb
 - Localization/: en-US_Mods.IsmailsWeaponReworks.hjson
 - Properties/: launchSettings.json

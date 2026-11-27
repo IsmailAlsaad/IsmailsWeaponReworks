@@ -25,7 +25,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(new SoundStyle("IsmailsWeaponReworks/Assets/Sounds/WoodSplit", 1, 4) { Volume = 0.8f, PitchVariance = 0.1f }, position);
+            //SoundEngine.PlaySound(new SoundStyle("IsmailsWeaponReworks/Assets/Sounds/WoodSplit/WoodSplit", 1, 4) { Volume = 0.4f, PitchVariance = 0.1f }, position);
         }
 
         // ---- dust ----
@@ -34,22 +34,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
         {
             if (Main.dedServ)
                 return;
-            for (int i = 0; i < 3; i++)
-            {
-                Dust dust = Dust.NewDustPerfect(position, DustID.WoodFurniture, Main.rand.NextVector2Circular(2.5f, 2.5f), 0, default, Main.rand.NextFloat(0.8f, 1.2f));
-                dust.noGravity = true;
-            }
+            //for (int i = 0; i < 3; i++)
+            //{
+            //    Dust dust = Dust.NewDustPerfect(position, DustID.WoodFurniture, Main.rand.NextVector2Circular(2.5f, 2.5f), 0, default, Main.rand.NextFloat(0.8f, 1.2f));
+            //    dust.noGravity = true;
+            //}
         }
 
         public static void Chips(Vector2 position, int count, float speed)
         {
             if (Main.dedServ)
                 return;
-            for (int i = 0; i < count; i++)
-            {
-                Dust dust = Dust.NewDustPerfect(position + Main.rand.NextVector2Circular(3f, 3f), DustID.WoodFurniture, Main.rand.NextVector2Circular(speed, speed), 0, default, Main.rand.NextFloat(0.6f, 1f));
-                dust.noGravity = false;
-            }
+            //for (int i = 0; i < count; i++)
+            //{
+            //    Dust dust = Dust.NewDustPerfect(position + Main.rand.NextVector2Circular(3f, 3f), DustID.WoodFurniture, Main.rand.NextVector2Circular(speed, speed), 0, default, Main.rand.NextFloat(0.6f, 1f));
+            //    dust.noGravity = false;
+            //}
         }
     }
 }

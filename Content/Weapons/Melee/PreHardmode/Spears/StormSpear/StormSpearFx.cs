@@ -67,7 +67,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.StormSpe
                 Dust dust = Dust.NewDustPerfect(target, palette.DustA, Main.rand.NextVector2Circular(5f, 5f), 100, default, Main.rand.NextFloat(1.2f, 1.8f));
                 dust.noGravity = true;
             }
-            SoundStyle electricEel = new SoundStyle("IsmailsWeaponReworks/Content/Sounds/ElectricEel");
+            SoundStyle electricEel = new SoundStyle("IsmailsWeaponReworks/Assets/Sounds/ElectricEel");
             SoundEngine.PlaySound(electricEel with { PitchVariance = 0.15f , MaxInstances = 1});
         }
     }
