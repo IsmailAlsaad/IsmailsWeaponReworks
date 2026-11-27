@@ -1,29 +1,30 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-27 | 380 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-27 | 390 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-ReworkToggle(42) YoyoTuning(40) DetachedTrails(39) CameraShake(37) RemoteHitTracker(33) HeldSwordPose(25) ThrustPalette(24) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(17) PixelTrail(16) PixelTrailStyle(15) YoyoTrick(14) SweepTrail(14) FlailTuning(14) NightsEdgeTuning(13) FlailFx(13) ThrustPlayer(12) SweepFade(12)
+ReworkToggle(44) YoyoTuning(40) DetachedTrails(39) CameraShake(37) RemoteHitTracker(33) HeldSwordPose(25) ThrustPalette(24) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(17) PixelTrail(16) PixelTrailStyle(15) YoyoTrick(14) SweepTrail(14) FlailTuning(14) SweepFade(13) NightsEdgeTuning(13) FlailFx(13) ThrustPlayer(12)
 
 ## Inheritance
 Project bases -> derived:
 - AroundTheWorldTrick: HiveFiveTrick, ValorAroundTheWorldTrick
 - BeeKeeperBeeProjectile: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile
-- ChargedBladeProjectile: BladeOfGrassBladeProjectile, LightsBaneBladeProjectile, NightsEdgeBladeProjectile, WoodenSwordBladeProjectile
-- ChargedBladeTrailStyle: BladeOfGrassSweepTrailStyle, LightsBaneSweepTrailStyle, NightsEdgeSweepTrailStyle, WoodenSwordSweepTrailStyle
+- ChargedBladeProjectile: BladeOfGrassBladeProjectile, LightsBaneBladeProjectile, NightsEdgeBladeProjectile, OreSwordBladeProjectile, WoodenSwordBladeProjectile
+- ChargedBladeTrailStyle: BladeOfGrassSweepTrailStyle, LightsBaneSweepTrailStyle, NightsEdgeSweepTrailStyle, OreSwordSweepTrailStyle, WoodenSwordSweepTrailStyle
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
 - FlailFx: BallOHurtFx, BlueMoonFx, FlamingMaceFx, MaceFx, MeatballFx, SunfuryFlailFx
 - FlailGlobalItem: BallOHurtGlobalItem, BlueMoonGlobalItem, FlamingMaceGlobalItem, MaceGlobalItem, MeatballGlobalItem, SunfuryGlobalItem
 - FlailProjectile: BallOHurtFlailProjectile, BlueMoonFlailProjectile, FlamingMaceFlailProjectile, MaceFlailProjectile, MeatballFlailProjectile, SunfuryFlailProjectile
 - FlailTuning: BallOHurtTuning, BlueMoonTuning, FlamingMaceTuning, MaceTuning, MeatballTuning, SunfuryFlailTuning
+- FlareParticleStyle: OreSwordFlareStyle
 - ForwardPassTrick: AmazonTrick, Code1Trick, ManOnTrapezeTrick, PopTheClutchTrick, RallyTrick
 - HeldIdleSwordProjectile: BeeKeeperIdleProjectile, IceBladeIdleProjectile, PhasebladeIdleProjectile, StarfuryIdleProjectile
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
 - IAroundTheWorldTuning: AroundTheWorldDefaults, HiveFiveTuning, ValorTuning
 - IChargeOutlineTuning: CascadeTuning, HiveFiveTuning
-- IChargedBladeTuning: BladeOfGrassBladeTune, LightsBaneBladeTune, NightsEdgeBladeTune, WoodenSwordBladeTune
+- IChargedBladeTuning: BladeOfGrassBladeTune, LightsBaneBladeTune, NightsEdgeBladeTune, OreSwordBladeTune, WoodenSwordBladeTune
 - IDrawnBehindCarried: ChargedBladeProjectile
 - IForwardPassTuning: AmazonTuning, ArteryTuning, CascadeTuning, Code1Tuning, ForwardPassDefaults, MalaiseTuning, RallyTuning, ValorTuning
 - IImpaleTuning: NightsEdgeImpaleTune
@@ -49,10 +50,10 @@ Project bases -> derived:
 - YoyoTuning: AmazonTuning, ArteryTuning, CascadeTuning, Code1Tuning, HiveFiveTuning, MalaiseTuning, RallyTuning, ValorTuning, WoodenYoyoTuning
 tModLoader/other bases -> project types:
 - ModProjectile (72): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BallOHurtBallProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassPlantSwingProjectile, BladeOfGrassPlantedVinesProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, BlueMoonBlastProjectile, CascadeBlastProjectile, ChargedBladeProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlailProjectile, FlamerangBlastProjectile, FlamerangProjectile, FlamingMaceBlastProjectile, HeldIdleSwordProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, LightsBaneImbueProjectile, MaceShrapnelProjectile, MeatballHeadProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, NightsEdgeBlastProjectile, NightsEdgeDropProjectile, NightsEdgeWaveProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, SplinterProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
-- GlobalItem (28): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, NightsEdgeGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, WoodenSwordGlobalItem, YoyoGlobalItem
-- ModPlayer (20): BeeKeeperPlayer, BladeOfGrassPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, HeldIdleSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, NightsEdgePlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, WoodenSwordPlayer, YoyoPlayer
+- GlobalItem (29): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, NightsEdgeGlobalItem, OreSwordGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, WoodenSwordGlobalItem, YoyoGlobalItem
+- ModPlayer (21): BeeKeeperPlayer, BladeOfGrassPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, HeldIdleSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, NightsEdgePlayer, OreSwordPlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, WoodenSwordPlayer, YoyoPlayer
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
-- ModSystem (5): DetachedTrails, HeldIdleSwordSystem, MetaballLayers, ReworkRegistry, YoyoRegistry
+- ModSystem (6): DetachedFlares, DetachedTrails, HeldIdleSwordSystem, MetaballLayers, ReworkRegistry, YoyoRegistry
 - ModBuff (2): LightsBaneImbueBuff, NightsEdgeShadowArmorBuff
 - ConfigElement (1): ReworkGridElement
 - Mod (1): IsmailsWeaponReworks
@@ -114,6 +115,15 @@ tModLoader/other bases -> project types:
 **EasterEgg.cs**
   static class EasterEgg
     +Zenith:bool[s] +LocalPlayerNamed(string)[s] +Load(string,ref Asset<Texture2D>,ref bool)[s]
+**FlareParticles.cs**
+  abstract class FlareParticleStyle
+    +AssetPath:string[ab] +LifeTicks:int[v] +PeakScale:float[v] +GrowFraction:float[v] +SpinMin:float[v] +SpinMax:float[v] +Opacity:float[v] +Light:float[v] +MaxParticles:int[v]
+  class FlareParticleSet
+    +Style:FlareParticleStyle +IsEmpty:bool +Add(Vector2,Color) +Tick() +Draw()
+    class Flare
+      +Position:Vector2 +Rotation:float +Spin:float +Age:int +Life:int +Color:Color
+  class DetachedFlares : ModSystem
+    +Hand(FlareParticleSet)[s] +PostUpdateEverything()[ov] +PostDrawTiles()[ov] +OnWorldUnload()[ov] +Unload()[ov]
 **HeldAim.cs**
   static class HeldAim
     +Capture(Player)[s] +ToWorld(Player,float)[s] +ToWorldDirection(Player,float)[s] +Facing(float)[s]
@@ -786,6 +796,37 @@ tModLoader/other bases -> project types:
   class NightsEdgeWaveTipTrailStyle : PixelTrailStyle
     +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
 
+### Content/Weapons/Melee/PreHardmode/Broadsword/OreSwords/
+**OreSwordBladeProjectile.cs** uses: ChargedBladePose, ChargedBladeProjectile, ChargedBladeTrailStyle, Contact, DetachedFlares, FlareParticleSet, IChargedBladeTuning, OreSpec, OreSwordBladeTune, OreSwordFlareStyle, OreSwordFx, OreSwordMetals, OreSwordSweepTrailStyle, OreSwordTuning, WoodenSwordFx
+  class OreSwordBladeProjectile : ChargedBladeProjectile
+    +Texture:string[ov] #Tune:IChargedBladeTuning[ov] #ItemType:int[ov] #SpriteAsset:Asset<Texture2D>[ov] +OnSpawn(IEntitySource)[ov] #OwnerCharge(Player)[ov] #AddOwnerCharge(Player,float)[ov] #DrawsTrail:bool[ov] #CreateTrailStyle()[ov] #StabAvailable(Player)[ov] #OnStabImpacted(Player)[ov] #FxPlaySwing(Vector2,float)[ov] #FxSwingDust(Vector2,Vector2,float)[ov] #FxChargeHit(Vector2)[ov] #FxCharged(Vector2,Vector2)[ov] #FxPlayStabWindup(Vector2)[ov] #FxStabImpact(Vector2)[ov] #FxSparkle(Vector2,Vector2)[ov] #FxHitSpark(Vector2,float)[ov] #TickVisuals(ChargedBladePose)[ov] #DrawAfterBlade(ChargedBladePose)[ov] +OnKill(int)[ov]
+**OreSwordBladeTune.cs** uses: IChargedBladeTuning, OreSwordTuning, WoodenSwordBladeTune
+  class OreSwordBladeTune : IChargedBladeTuning
+    +BladeLength:float +ReadyArmDeg:float +ReadyTiltDeg:float +SwingLowDeg:float +SwingHighDeg:float +TiltLowDeg:float +TiltHighDeg:float +ChainAnticipateTicks:int +AnticipateTicks:int +ChainAnticipateDeg:float +AnticipateDeg:float +SwingTicks:int +RecoverTicks:int +SwingEasePower:float +OvershootDeg:float +AnticipateTiltDeg:float +SwordScale:float +ChargedAt:float +ChargeSyncStep:float +ChargeShowEase:float +OutlineFade:float +IdleBobTicks:int +IdleBobDeg:float +IdleEase:float +StabBlendOut:float +SparkleChance:float +FlashTicks:int +StabBufferTicks:int +StabTurnTicks:int +StabAimTicks:int +StabPlungeTicks:int +StabArmDeg:float +StabChestOffsetY:float +StabAimDistance:float +StabDepth:float +StabShake:float +StabHoldTicks:int +StabHitShake:float +MaxSpeedScale:float +SpeedCurvePower:float +AttackSpeedInfluence:float +MinSpeed:float +MaxSpeed:float +TrailSamplesPerTick:int +TrailLagTicks:float +TrailOuter:float +TrailInnerLow:float +TrailInnerHigh:float +TrailExpandBy:float +SweepHitSteps:int +HitLengthScale:float +HitWidth:float +DamageMultiplier:float +KnockbackMultiplier:float +HitShake:float +ChargePerHit:float +GripOffset:float +GlowMaxAlpha:float +OutlineColor:Color +GlowScale:float +OutlinePulseTicks:int +OutlineMin:float +OutlineMax:float +OutlineWidth:float +OutlineCoreColor:Color +CoreColor:Color +ShowBladeDebug:bool
+**OreSwordFlareStyle.cs** uses: FlareParticleStyle, OreSwordTuning
+  class OreSwordFlareStyle : FlareParticleStyle
+    +AssetPath:string[ov] +LifeTicks:int[ov] +PeakScale:float[ov] +GrowFraction:float[ov] +SpinMin:float[ov] +SpinMax:float[ov] +Opacity:float[ov] +Light:float[ov] +MaxParticles:int[ov]
+**OreSwordFx.cs** uses: OreSwordTuning
+  static class OreSwordFx
+    +PlayHit(Vector2)[s]
+**OreSwordGlobalItem.cs** uses: OreSwordMetals, ReworkToggle
+  class OreSwordGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov]
+**OreSwordMetals.cs**
+  struct OreSpec
+    +Column:int +Core:Color +Mid:Color +Deep:Color +Tint:Color
+  static class OreSwordMetals
+    +MetalCount:int[c] +ColumnOf(int)[s] +Spec(int)[s]
+**OreSwordPlayer.cs** uses: OreSwordBladeProjectile, OreSwordMetals, ReworkToggle
+  class OreSwordPlayer : ModPlayer
+    +PostUpdate()[ov]
+**OreSwordSweepTrailStyle.cs** uses: ChargedBladeTrailStyle, OreSpec, OreSwordMetals, OreSwordTuning, SweepFade
+  class OreSwordSweepTrailStyle : ChargedBladeTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
+**OreSwordTuning.cs**
+  static class OreSwordTuning
+    +TrailSamplesPerTick:int[s] +TrailLagTicks:float[s] +TrailOuter:float[s] +TrailInnerLow:float[s] +TrailInnerHigh:float[s] +TrailExpandBy:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailOpacity:float[s] +FlareLifeTicks:int[s] +FlarePeakScale:float[s] +FlareGrowFraction:float[s] +FlareSpinMin:float[s] +FlareSpinMax:float[s] +FlareTint:float[s] +FlareOpacity:float[s] +FlareLight:float[s] +FlareMax:int[s] +HitSoundCount:int[s] +HitSoundVolume:float[s] +HitSoundPitch:float[s] +HitSoundPitchVariance:float[s] +HitSoundMaxInstances:int[s]
+
 ### Content/Weapons/Melee/PreHardmode/Broadsword/Phaseblade/
 **PhasebladeFx.cs** uses: CameraShake, PhasebladeTuning, TileSound
   static class PhasebladeFx
@@ -1441,7 +1482,9 @@ tModLoader/other bases -> project types:
 
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; README.md; build.txt, description.txt, description_workshop.txt
-- Assets/Sounds/: ElectricEel.wav
+- Assets/Sounds/: BloodSpill.wav, ElectricEel.wav, Stab.wav
+- Assets/Sounds/MetalHit/: MetalHit1.wav, MetalHit2.wav, MetalHit3.wav
+- Assets/Sounds/MetalSword/: MetalSword1.wav, MetalSword2.wav, MetalSword3.wav, MetalSword4.wav, MetalSword5.wav
 - Assets/Sounds/WoodSplit/: WoodSplit1.wav, WoodSplit2.wav, WoodSplit3.wav, WoodSplit4.wav
 - Effects/: DarkFlameOrb.fx, PixelGlow.fx; PixelShared.fxh; DarkFlameOrb.xnb, PixelGlow.xnb
 - Localization/: en-US_Mods.IsmailsWeaponReworks.hjson

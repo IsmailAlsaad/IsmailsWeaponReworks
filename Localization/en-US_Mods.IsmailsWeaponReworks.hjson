@@ -94,6 +94,7 @@ Projectiles: {
 	BladeOfGrassPlantSwingProjectile.DisplayName: Blade Of Grass Plant Swing Projectile
 	SplinterProjectile.DisplayName: Splinter Projectile
 	WoodenSwordBladeProjectile.DisplayName: Wooden Sword Blade Projectile
+	OreSwordBladeProjectile.DisplayName: Ore Sword Blade Projectile
 	BeeKeeperIdleProjectile.DisplayName: Bee Keeper Idle Projectile
 	IceBladeIdleProjectile.DisplayName: Ice Blade Idle Projectile
 	PhasebladeIdleProjectile.DisplayName: Phaseblade Idle Projectile
