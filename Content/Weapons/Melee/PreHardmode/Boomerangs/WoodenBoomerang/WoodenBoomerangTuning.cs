@@ -37,7 +37,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Wood
         public static bool BreakOnTilesWhileReturning => false; // true: the way back breaks on blocks too (by default it passes through them)
 
         // ---- look ----
-        public static Color GlowColor => new Color(255, 190, 110, 0);
+        public static Color GlowColor => new Color(100, 100, 100, 0);
         public static int WoodDust => 7;                   // vanilla wood chip dust
     }
 }
