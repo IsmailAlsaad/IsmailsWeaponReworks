@@ -11,9 +11,9 @@
         // ---- swing trail geometry (a SweepTrail fan: the outer edge past the tip, the inner edge slides down the blade as the strike builds up) ----
         public static int TrailSamplesPerTick => 8;     // trail points laid per tick
         public static float TrailLagTicks => 0.4f;      // how many ticks the trail runs BEHIND the sprite (0 = exactly on it)
-        public static float TrailOuter => 0.9f;        // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
-        public static float TrailInnerLow => 0.7f;      // fully expanded, the fan reaches down the blade to this fraction of its length (no charge: always this one) ...
-        public static float TrailInnerHigh => 0.2f;     // ... (only a charged blade uses this one; the ore swords have no charge)
+        public static float TrailOuter => 1.25f;        // the outer edge of the fan, as a fraction of the blade length (1 = the tip)
+        public static float TrailInnerLow => 0.8f;      // fully expanded, the fan reaches down the blade to this fraction of its length (no charge: always this one) ...
+        public static float TrailInnerHigh => 0.3f;     // ... (only a charged blade uses this one; the ore swords have no charge)
         public static float TrailExpandBy => 0.8f;      // the fan has fully expanded this far into the strike (0..1)
 
         // ---- swing trail look ----
@@ -29,16 +29,16 @@
         public static float FlareGrowFraction => 0.3f;  // the first this much of its life it grows, then it shrinks to 0
         public static float FlareSpinMin => 0.02f;      // radians per tick, constant over the life, random direction
         public static float FlareSpinMax => 0.06f;
-        public static float FlareTint => 1f;          // 0 = white, 1 = fully the metal's color
+        public static float FlareTint => 0.5f;          // 0 = white, 1 = fully the metal's color
         public static float FlareOpacity => 1f;
         public static float FlareLight => 0.3f;
         public static int FlareMax => 24;               // flares alive at once per player (one more removes the oldest)
 
         // ---- hit sound (Assets/Sounds/MetalSword/MetalSword1..N) ----
-        public static int HitSoundCount => 3;           // how many MetalSword files there are (MetalSword1 to MetalSwordN)
+        public static int HitSoundCount => 5;           // how many MetalSword files there are (MetalSword1 to MetalSwordN)
         public static float HitSoundVolume => 0.8f;
         public static float HitSoundPitch => 0f;
         public static float HitSoundPitchVariance => 0.1f;
-        public static int HitSoundMaxInstances => 1;    // hits that can sound at the same time
+        public static int HitSoundMaxInstances => 4;    // hits that can sound at the same time
     }
 }
