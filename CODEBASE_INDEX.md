@@ -1,17 +1,17 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-27 | 394 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-27 | 408 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-ReworkToggle(44) YoyoTuning(40) DetachedTrails(40) CameraShake(38) RemoteHitTracker(33) HeldSwordPose(26) ThrustPalette(25) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(18) PixelTrail(16) SweepTrail(15) PixelTrailStyle(15) YoyoTrick(14) SweepFade(14) FlailTuning(14) Phase(13) NightsEdgeTuning(13) FlailFx(13)
+ReworkToggle(46) YoyoTuning(40) DetachedTrails(40) CameraShake(39) RemoteHitTracker(33) HeldSwordPose(26) ThrustPalette(25) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(18) PixelTrail(16) SweepTrail(15) SweepFade(15) PixelTrailStyle(15) YoyoTrick(14) FlailTuning(14) Phase(13) NightsEdgeTuning(13) IChargedBladeTuning(13)
 
 ## Inheritance
 Project bases -> derived:
 - AroundTheWorldTrick: HiveFiveTrick, ValorAroundTheWorldTrick
 - BeeKeeperBeeProjectile: BeeKeeperBigBeeProjectile, BeeKeeperSmallBeeProjectile
-- ChargedBladeProjectile: BladeOfGrassBladeProjectile, LightsBaneBladeProjectile, NightsEdgeBladeProjectile, OreSwordBladeProjectile, WoodenSwordBladeProjectile
-- ChargedBladeTrailStyle: BladeOfGrassSweepTrailStyle, LightsBaneSweepTrailStyle, NightsEdgeSweepTrailStyle, OreSwordSweepTrailStyle, WoodenSwordSweepTrailStyle
+- ChargedBladeProjectile: BladeOfGrassBladeProjectile, CandyCaneSwordBladeProjectile, LightsBaneBladeProjectile, NightsEdgeBladeProjectile, OreSwordBladeProjectile, WoodenSwordBladeProjectile
+- ChargedBladeTrailStyle: BladeOfGrassSweepTrailStyle, CandyCaneSwordSweepTrailStyle, LightsBaneSweepTrailStyle, NightsEdgeSweepTrailStyle, OreSwordSweepTrailStyle, WoodenSwordSweepTrailStyle
 - DarkLanceOrbTrailStyle: DarkLanceEmberTrailStyle
 - EnchantedBoomerangBase: EnchantedBoomerangProjectile, EtherealBoomerangProjectile
 - FlailFx: BallOHurtFx, BlueMoonFx, FlamingMaceFx, MaceFx, MeatballFx, SunfuryFlailFx
@@ -24,7 +24,7 @@ Project bases -> derived:
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
 - IAroundTheWorldTuning: AroundTheWorldDefaults, HiveFiveTuning, ValorTuning
 - IChargeOutlineTuning: CascadeTuning, HiveFiveTuning
-- IChargedBladeTuning: BladeOfGrassBladeTune, LightsBaneBladeTune, NightsEdgeBladeTune, OreSwordBladeTune, WoodenSwordBladeTune
+- IChargedBladeTuning: BladeOfGrassBladeTune, CandyCaneSwordBladeTune, LightsBaneBladeTune, NightsEdgeBladeTune, OreSwordBladeTune, WoodenSwordBladeTune
 - IDrawnBehindCarried: ChargedBladeProjectile
 - IForwardPassTuning: AmazonTuning, ArteryTuning, CascadeTuning, Code1Tuning, ForwardPassDefaults, MalaiseTuning, RallyTuning, ValorTuning
 - IImpaleTuning: NightsEdgeImpaleTune
@@ -49,23 +49,25 @@ Project bases -> derived:
 - YoyoTrick: AroundTheWorldTrick, ForwardPassTrick, SleeperHoldTrick, WalkTheDogTrick
 - YoyoTuning: AmazonTuning, ArteryTuning, CascadeTuning, Code1Tuning, HiveFiveTuning, MalaiseTuning, RallyTuning, ValorTuning, WoodenYoyoTuning
 tModLoader/other bases -> project types:
-- ModProjectile (73): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BallOHurtBallProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassPlantSwingProjectile, BladeOfGrassPlantedVinesProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, BlueMoonBlastProjectile, CascadeBlastProjectile, ChargedBladeProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlailProjectile, FlamerangBlastProjectile, FlamerangProjectile, FlamingMaceBlastProjectile, HeldIdleSwordProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, KatanaSwingProjectile, LightsBaneImbueProjectile, MaceShrapnelProjectile, MeatballHeadProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, NightsEdgeBlastProjectile, NightsEdgeDropProjectile, NightsEdgeWaveProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, SplinterProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
-- GlobalItem (29): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, NightsEdgeGlobalItem, OreSwordGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, WoodenSwordGlobalItem, YoyoGlobalItem
-- ModPlayer (21): BeeKeeperPlayer, BladeOfGrassPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, HeldIdleSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, NightsEdgePlayer, OreSwordPlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, WoodenSwordPlayer, YoyoPlayer
+- ModProjectile (75): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BallOHurtBallProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassPlantSwingProjectile, BladeOfGrassPlantedVinesProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, BlueMoonBlastProjectile, CandyBlastProjectile, CandyProjectile, CascadeBlastProjectile, ChargedBladeProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlailProjectile, FlamerangBlastProjectile, FlamerangProjectile, FlamingMaceBlastProjectile, HeldIdleSwordProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, KatanaSwingProjectile, LightsBaneImbueProjectile, MaceShrapnelProjectile, MeatballHeadProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, NightsEdgeBlastProjectile, NightsEdgeDropProjectile, NightsEdgeWaveProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, SplinterProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
+- GlobalItem (30): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, CandyCaneSwordGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, NightsEdgeGlobalItem, OreSwordGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, WoodenSwordGlobalItem, YoyoGlobalItem
+- ModPlayer (22): BeeKeeperPlayer, BladeOfGrassPlayer, CandyCaneSwordPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, HeldIdleSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, NightsEdgePlayer, OreSwordPlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, WoodenSwordPlayer, YoyoPlayer
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
 - ModSystem (6): DetachedFlares, DetachedTrails, HeldIdleSwordSystem, MetaballLayers, ReworkRegistry, YoyoRegistry
-- ModBuff (2): LightsBaneImbueBuff, NightsEdgeShadowArmorBuff
+- ModBuff (3): LightsBaneImbueBuff, NightsEdgeShadowArmorBuff, SugarRushBuff
 - PlayerDrawLayer (2): BladeOfGrassVineLayer, RottedForkSpinLayer
 - ConfigElement (1): ReworkGridElement
 - Mod (1): IsmailsWeaponReworks
 - ModCommand (1): GiveWeaponsCommand
 - ModConfig (1): ReworksToggleConfig
+- byte (1): IwrPacket
 
 ## Files
 
 ### (root)/
-**IsmailsWeaponReworks.cs**
+**IsmailsWeaponReworks.cs** uses: IwrNet
   class IsmailsWeaponReworks : Mod
+    +HandlePacket(BinaryReader,int)[ov]
 
 ### Common/
 **AfterimageTrail.cs**
@@ -304,6 +306,14 @@ tModLoader/other bases -> project types:
   abstract class FlailTuning
     +ChargeTicks(int)[v] +MinReach:float[v] +MaxReach:float[v] +EllipseWidthRatio:float[v] +ThrowSpeed(int)[v] +ReleaseBlendTicks:int[v] +MinHalfTicks:int[v] +TierDamageMultiplier(int)[v] +HitCooldownTicks:int[v] +SpinWhooshAngle:float[v] +SpinHitPeriodFraction:float[v] +SpinDamageMultiplier(int)[v] +HeadSize:float[v] +SpinRadiusMin:float[v] +SpinRadiusMax:float[v] +SpinRadiusSmoothing:float[v] +SpinOmegaStart(int)[v] +SpinOmegaEnd(int)[v] +SpecialMinReach:float[v] +SpecialMaxReach:float[v] +SpecialPathDamageMultiplier:float[v] +SpecialHangTicks:int[v] +RetractSpeed:float[v] +CatchDistance:float[v] +FailRetractSpeed:float[v] +PixelSize:float[v] +TrailLifeTicks:int[v] +TrailWidth(int)[v] +TrailJitter:float[v] +AfterimageTicks:int[v] +FlashTicks:int[v] +GlowColor(int)[ab] +HotColor(int)[ab] +TintLight(Vector3)[v] +ChainName:string[ab] #Pick<T>(int,T,T,T)[s]
 
+### Common/Net/
+**IwrNet.cs** uses: CandyPickup, IwrPacket
+  static class IwrNet
+    +Start(IwrPacket)[s] +Handle(BinaryReader,int)[s]
+**IwrPacket.cs**
+  enum IwrPacket : byte
+    {CandyPickupRequest, CandyPickupGrant}
+
 ### Common/Rework/
 **GiveWeaponsCommand.cs** uses: ReworkRegistry, ReworkToggle
   class GiveWeaponsCommand : ModCommand
@@ -333,6 +343,9 @@ tModLoader/other bases -> project types:
   class LightsBaneImbueBuff : ModBuff
 **NightsEdgeShadowArmorBuff.cs** uses: NightsEdgeTuning
   class NightsEdgeShadowArmorBuff : ModBuff
+    +Texture:string[ov] +Update(Player,ref int)[ov]
+**SugarRushBuff.cs** uses: CandyCaneSwordTuning
+  class SugarRushBuff : ModBuff
     +Texture:string[ov] +Update(Player,ref int)[ov]
 
 ### Content/Weapons/Melee/PreHardmode/Boomerangs/EnchantedBoomerang/
@@ -596,6 +609,43 @@ tModLoader/other bases -> project types:
 **BloodButchererTuning.cs**
   static class BloodButchererTuning
     +BladeLength:float[s] +HandleLength:float[s] +SwordScale:float[s] +WindupTicks:int[s] +ThrustTicks:int[s] +OpenTicks:int[s] +GapeTicks:int[s] +BiteTicks:int[s] +ChompCount:int[s] +ChompTicks:int[s] +ChompOpenAmount:float[s] +ChompDamageMultiplier:float[s] +ChompShake:float[s] +RecoverTicks:int[s] +DecideWaitTicks:int[s] +HandoffWaitTicks:int[s] +AttackSpeedInfluence:float[s] +SpeedScaleMin:float[s] +SpeedScaleMax:float[s] +PullTicks:int[s] +SpinTicks:int[s] +LockTicks:int[s] +SpinTopSpeed:float[s] +ChompTurnSpeed:float[s] +WindDownTicks:int[s] +WindDownRecoverTicks:int[s] +ReleaseHoldTicks:int[s] +ReleaseOpenTicks:int[s] +SpinOffset:float[s] +PinRatio:float[s] +LaunchSpeed:float[s] +LaunchAiOffTicks:int[s] +LaunchGravity:float[s] +LaunchMaxFall:float[s] +GripTickDamageMultiplier:float[s] +GripTickInterval:int[s] +LaunchDamageMultiplier:float[s] +MaxGrabSize:float[s] +LaunchShake:float[s] +SpinWhooshPitchLow:float[s] +SpinWhooshPitchHigh:float[s] +JawTrailCutTicks:int[s] +SpinSweepDamageMultiplier:float[s] +SpinSweepHitInterval:int[s] +SpinSweepMinSpeed:float[s] +SpinSweepWidth:float[s] +ImpactMinSpeed:float[s] +ImpactDamageMultiplier:float[s] +ImpactMaxMultiplier:float[s] +ImpactShake:float[s] +ImpactCooldownTicks:int[s] +CollisionMinSpeed:float[s] +CollisionPadding:float[s] +CollisionThrownDamageMultiplier:float[s] +CollisionVictimDamageMultiplier:float[s] +CollisionKnockback:float[s] +TrailFullSpeed:float[s] +TrailFillTo:float[s] +SpinTrailLifeTicks:int[s] +SpinTrailRails:int[s] +SpinTrailOpacity:float[s] +SpinTrailSamplesPerTick:int[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +TetherRestLength:float[s] +TetherWidth:float[s] +TetherThinWidth:float[s] +TetherSag:float[s] +TetherMaxSag:float[s] +TetherTrailing:float[s] +TetherMaxTrailing:float[s] +TetherWobble:float[s] +TetherSegments:int[s] +TetherDarkColor:Color[s] +TetherMidColor:Color[s] +TetherGlowColor:Color[s] +WindupPullback:float[s] +ThrustDistance:float[s] +BiteLungeDistance:float[s] +JawOpenDeg:float[s] +CatchPadding:float[s] +BiteBodyWidth:float[s] +BiteDamageMultiplier:float[s] +OtherDamageMultiplier:float[s] +ClampShake:float[s] +PixelSize:float[s] +TeethCount:int[s] +ToothLength:float[s] +FlashTicks:int[s] +TrailLifeTicks:int[s] +TrailWidth:float[s] +TrailSamplesPerTick:int[s] +CrimsonColor:Color[s] +BrightColor:Color[s] +BoneColor:Color[s]
+
+### Content/Weapons/Melee/PreHardmode/Broadsword/CandyCaneSword/
+**CandyBlastProjectile.cs** uses: CandyCaneSwordTuning
+  class CandyBlastProjectile : ModProjectile
+    +Texture:string[ov] +ShouldUpdatePosition()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +PreDraw(ref Color)[ov]
+**CandyCaneSwordBladeProjectile.cs** uses: CandyCaneSwordBladeTune, CandyCaneSwordFx, CandyCaneSwordSweepTrailStyle, CandyCaneSwordTuning, CandyProjectile, ChargedBladeProjectile, ChargedBladeTrailStyle, Contact, IChargedBladeTuning
+  class CandyCaneSwordBladeProjectile : ChargedBladeProjectile
+    +Texture:string[ov] #Tune:IChargedBladeTuning[ov] #ItemType:int[ov] #SpriteAsset:Asset<Texture2D>[ov] +OnSpawn(IEntitySource)[ov] #OwnerCharge(Player)[ov] #AddOwnerCharge(Player,float)[ov] #DrawsTrail:bool[ov] #CreateTrailStyle()[ov] #StabAvailable(Player)[ov] #OnStabImpacted(Player)[ov] #FxPlaySwing(Vector2,float)[ov] #FxSwingDust(Vector2,Vector2,float)[ov] #FxChargeHit(Vector2)[ov] #FxCharged(Vector2,Vector2)[ov] #FxPlayStabWindup(Vector2)[ov] #FxStabImpact(Vector2)[ov] #FxSparkle(Vector2,Vector2)[ov] #FxHitSpark(Vector2,float)[ov] #OnOwnerHit(NPC,HitInfo,bool)[ov]
+**CandyCaneSwordBladeTune.cs** uses: CandyCaneSwordTuning, IChargedBladeTuning, WoodenSwordBladeTune
+  class CandyCaneSwordBladeTune : IChargedBladeTuning
+    +BladeLength:float +ReadyArmDeg:float +ReadyTiltDeg:float +SwingLowDeg:float +SwingHighDeg:float +TiltLowDeg:float +TiltHighDeg:float +ChainAnticipateTicks:int +AnticipateTicks:int +ChainAnticipateDeg:float +AnticipateDeg:float +SwingTicks:int +RecoverTicks:int +SwingEasePower:float +OvershootDeg:float +AnticipateTiltDeg:float +SwordScale:float +ChargedAt:float +ChargeSyncStep:float +ChargeShowEase:float +OutlineFade:float +IdleBobTicks:int +IdleBobDeg:float +IdleEase:float +StabBlendOut:float +SparkleChance:float +FlashTicks:int +StabBufferTicks:int +StabTurnTicks:int +StabAimTicks:int +StabPlungeTicks:int +StabArmDeg:float +StabChestOffsetY:float +StabAimDistance:float +StabDepth:float +StabShake:float +StabHoldTicks:int +StabHitShake:float +MaxSpeedScale:float +SpeedCurvePower:float +AttackSpeedInfluence:float +MinSpeed:float +MaxSpeed:float +TrailSamplesPerTick:int +TrailLagTicks:float +TrailOuter:float +TrailInnerLow:float +TrailInnerHigh:float +TrailExpandBy:float +SweepHitSteps:int +HitLengthScale:float +HitWidth:float +DamageMultiplier:float +KnockbackMultiplier:float +HitShake:float +ChargePerHit:float +GripOffset:float +GlowMaxAlpha:float +OutlineColor:Color +GlowScale:float +OutlinePulseTicks:int +OutlineMin:float +OutlineMax:float +OutlineWidth:float +OutlineCoreColor:Color +CoreColor:Color +ShowBladeDebug:bool
+**CandyCaneSwordFx.cs** uses: CameraShake, CandyCaneSwordTuning, CandyKind, CandyKinds
+  static class CandyCaneSwordFx
+    +SheetPath:string[s] +PlaySwing(Vector2)[s] +HitSpark(Vector2)[s] +Burst(Vector2,CandyKind,int,float,float)[s] +Spawn(Vector2,CandyKind)[s] +Break(Vector2,CandyKind)[s] +Pickup(Vector2,CandyKind)[s] +RedExplosion(Vector2)[s] +KillBurst(Vector2)[s]
+**CandyCaneSwordGlobalItem.cs** uses: ReworkToggle
+  class CandyCaneSwordGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov]
+**CandyCaneSwordPlayer.cs** uses: CandyCaneSwordBladeProjectile, ReworkToggle
+  class CandyCaneSwordPlayer : ModPlayer
+    +PostUpdate()[ov]
+**CandyCaneSwordSweepTrailStyle.cs** uses: CandyCaneSwordTuning, ChargedBladeTrailStyle, SweepFade
+  class CandyCaneSwordSweepTrailStyle : ChargedBladeTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
+**CandyCaneSwordTuning.cs**
+  static class CandyCaneSwordTuning
+    +SpawnChance:float[s] +BlueEnabled:bool[s] +BurstMin:int[s] +BurstMax:int[s] +BurstSpreadDeg:float[s] +BurstSpeedMin:float[s] +BurstSpeedMax:float[s] +PopSpeedMin:float[s] +PopSpeedMax:float[s] +PopSideSpeed:float[s] +MaxCandies:int[s] +RedLifeTicks:int[s] +GreenLifeTicks:int[s] +BlueLifeTicks:int[s] +YellowLifeTicks:int[s] +BlinkTicks:int[s] +PopInTicks:int[s] +Gravity:float[s] +MaxFallSpeed:float[s] +AirDrag:float[s] +BounceKeep:float[s] +GroundFriction:float[s] +SettleSpeed:float[s] +SpinMin:float[s] +SpinMax:float[s] +GroundSpinKeep:float[s] +PickupDelayTicks:int[s] +PickupRange:int[s] +MagnetRange:float[s] +MagnetAccel:float[s] +MagnetMaxSpeed:float[s] +MagnetDamp:float[s] +RequestRetryTicks:int[s] +ServerReachSlack:float[s] +HealAmount:int[s] +HealOnlyWhenHurt:bool[s] +SugarRushTicksPerCandy:int[s] +SugarRushMaxTicks:int[s] +SugarRushAttackSpeed:float[s] +RedBlastRadius:float[s] +RedBlastTicks:int[s] +RedBlastDamageMultiplier:float[s] +RedBlastKnockback:float[s] +RedBlastShake:float[s] +HitboxSize:int[s] +CellSize:int[s] +Columns:int[s] +StyleCount:int[s] +DrawScale:float[s] +FallbackSize:float[s] +LightStrength:float[s] +HitSparkCount:int[s] +SpawnDustCount:int[s] +BreakDustCount:int[s] +PickupDustCount:int[s] +BlastDustCount:int[s] +BlastSmokeCount:int[s] +KillBurstDustCount:int[s] +KillBurstShake:float[s] +SwingSoundVolume:float[s] +SpawnSoundVolume:float[s] +BreakSoundVolume:float[s] +PickupSoundVolume:float[s] +BlastSoundVolume:float[s] +TrailSamplesPerTick:int[s] +TrailLagTicks:float[s] +TrailOuter:float[s] +TrailInnerLow:float[s] +TrailInnerHigh:float[s] +TrailExpandBy:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailCore:Color[s] +TrailMid:Color[s] +TrailDeep:Color[s]
+**CandyKind.cs** uses: CandyCaneSwordTuning
+  enum CandyKind
+    {Red, Green, Blue, Yellow}
+  static class CandyKinds
+    +Tint(CandyKind)[s] +DustOf(CandyKind)[s] +LifeTicks(CandyKind)[s] +IsPickup(CandyKind)[s] +Pick()[s]
+**CandyPickup.cs** uses: CandyCaneSwordFx, CandyCaneSwordTuning, CandyKind, CandyProjectile, IwrNet, IwrPacket, SugarRushBuff
+  static class CandyPickup
+    +Request(Projectile)[s] +ReadRequest(BinaryReader,int)[s] +ReadGrant(BinaryReader)[s]
+**CandyProjectile.cs** uses: CandyBlastProjectile, CandyCaneSwordFx, CandyCaneSwordTuning, CandyKind, CandyKinds, CandyPickup
+  class CandyProjectile : ModProjectile
+    +Texture:string[ov] +Age:int +Claimed:bool +Kind:CandyKind +EnforceCap(Player,int)[s] +SpawnOne(IEntitySource,Player,Vector2,int)[s] +SpawnBurst(IEntitySource,Player,Vector2,int)[s] +CanPick(CandyKind,Player)[s] +CanBeClaimedBy(Player) +AI()[ov] +OnTileCollide(Vector2)[ov] +PreDraw(ref Color)[ov]
 
 ### Content/Weapons/Melee/PreHardmode/Broadsword/EnchantedSword/
 **EnchantedSwordBladeProjectile.cs** uses: CameraShake, DetachedTrails, EnchantedSwordFx, EnchantedSwordPlayer, EnchantedSwordSweepTrailStyle, EnchantedSwordTuning, EtherealBeamProjectile, HeldAim, HeldSwordPose, PixelFan, PixelOutline, RemoteHitTracker, SegmentHit, Stage, SweepTrail

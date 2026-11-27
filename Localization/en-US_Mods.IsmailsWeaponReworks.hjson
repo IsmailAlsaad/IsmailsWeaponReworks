@@ -95,6 +95,9 @@ Projectiles: {
 	SplinterProjectile.DisplayName: Splinter Projectile
 	WoodenSwordBladeProjectile.DisplayName: Wooden Sword Blade Projectile
 	OreSwordBladeProjectile.DisplayName: Ore Sword Blade Projectile
+	CandyCaneSwordBladeProjectile.DisplayName: Candy Cane Sword Blade Projectile
+	CandyProjectile.DisplayName: Candy Projectile
+	CandyBlastProjectile.DisplayName: Candy Blast Projectile
 	BeeKeeperIdleProjectile.DisplayName: Bee Keeper Idle Projectile
 	IceBladeIdleProjectile.DisplayName: Ice Blade Idle Projectile
 	PhasebladeIdleProjectile.DisplayName: Phaseblade Idle Projectile
@@ -147,5 +150,10 @@ Buffs: {
 	NightsEdgeShadowArmorBuff: {
 		DisplayName: Shadow Armor
 		Description: 15% Increased damage reduction
+	}
+
+	SugarRushBuff: {
+		DisplayName: Sugar Rush
+		Description: 15% increased melee speed
 	}
 }
