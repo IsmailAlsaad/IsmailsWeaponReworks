@@ -37,9 +37,17 @@ namespace IsmailsWeaponReworks.Common
 
         // One tick of the ready pose: the (facing-local) arm and blade tilt ease toward the ready angles, the arm also swaying slowly up and
         // down by bobRad over bobTicks. The angles are the caller's own fields; they may start anywhere (right after a swing) and settle in.
-        public static void Step(int ticks, float readyArmRad, float readyTiltRad, int bobTicks, float bobRad, float ease, ref float armLocal, ref float tiltRad)
+        // Above this speed (pixels per tick) the player counts as moving: the slow breathing sway is off then (the walking bob already moves the sword).
+        public static float MovingSpeed => 0.1f;
+        // How fast the sway fades out when the player starts moving and back in when they stop (per tick, 0..1).
+        public static float SwayEase => 0.1f;
+
+        // 'sway' is the caller's own float (start it at 1): 1 = the breathing sway is fully on (standing still), 0 = off (moving).
+        public static void Step(Player owner, int ticks, float readyArmRad, float readyTiltRad, int bobTicks, float bobRad, float ease, ref float armLocal, ref float tiltRad, ref float sway)
         {
-            float bob = (float)System.Math.Sin(MathHelper.TwoPi * ticks / System.Math.Max(1, bobTicks)) * bobRad;
+            bool moving = owner.velocity.LengthSquared() > MovingSpeed * MovingSpeed;
+            sway += ((moving ? 0f : 1f) - sway) * MathHelper.Clamp(SwayEase, 0.01f, 1f);
+            float bob = (float)System.Math.Sin(MathHelper.TwoPi * ticks / System.Math.Max(1, bobTicks)) * bobRad * sway;
             float e = MathHelper.Clamp(ease, 0.01f, 1f);
             armLocal += MathHelper.WrapAngle(readyArmRad + bob - armLocal) * e;
             tiltRad += (readyTiltRad - tiltRad) * e;

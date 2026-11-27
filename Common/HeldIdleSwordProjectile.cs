@@ -44,6 +44,7 @@ namespace IsmailsWeaponReworks.Common
         float armLocal;
         float tiltRad;
         float walkBob;
+        float swayAmount = 1f;
 
         public override void SetDefaults()
         {
@@ -126,7 +127,7 @@ namespace IsmailsWeaponReworks.Common
                 }
             }
 
-            HeldSwordIdle.Step(ticks, Rad(ReadyArmDeg), Rad(ReadyTiltDeg), IdleBobTicks, Rad(IdleBobDeg), IdleEase, ref armLocal, ref tiltRad);
+            HeldSwordIdle.Step(owner, ticks, Rad(ReadyArmDeg), Rad(ReadyTiltDeg), IdleBobTicks, Rad(IdleBobDeg), IdleEase, ref armLocal, ref tiltRad, ref swayAmount);
             float worldArm = HeldSwordPose.ToWorld(facing, armLocal);
             float worldBlade = HeldSwordPose.ToWorld(facing, armLocal + tiltRad);
 

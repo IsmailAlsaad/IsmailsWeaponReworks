@@ -116,6 +116,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         float armLocal;           // the resting pose, facing-local (positive = down); set from the tuning in SetDefaults
         float tiltRad;
         float walkBob;            // HeldSwordIdle.WalkShift's memory
+        float swayAmount = 1f;    // HeldSwordIdle.Step's memory: 1 = breathing sway on, 0 = off (moving)
         Vector2 poseShift;        // added to the hand this tick (the walking bob of the ready pose), zero in every other pose
         float chargeShown;        // the charge that is drawn: eases toward the real one
         float outlineShown;       // 0..1, how visible the full-charge outline is
@@ -347,7 +348,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             {
                 // The ready pose: the arm eases into it after a swing and bobs a little, so the sword is never dead still.
                 facing = owner.direction >= 0 ? 1 : -1;
-                HeldSwordIdle.Step(ticks, Rad(Tune.ReadyArmDeg), Rad(Tune.ReadyTiltDeg), Tune.IdleBobTicks, Rad(Tune.IdleBobDeg), Tune.IdleEase, ref armLocal, ref tiltRad);
+                HeldSwordIdle.Step(owner, ticks, Rad(Tune.ReadyArmDeg), Rad(Tune.ReadyTiltDeg), Tune.IdleBobTicks, Rad(Tune.IdleBobDeg), Tune.IdleEase, ref armLocal, ref tiltRad, ref swayAmount);
                 poseShift = HeldSwordIdle.WalkShift(owner, ref walkBob);
                 worldArm = HeldSwordPose.ToWorld(facing, armLocal);
                 worldBlade = HeldSwordPose.ToWorld(facing, armLocal + tiltRad);

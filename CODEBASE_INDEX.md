@@ -131,7 +131,7 @@ tModLoader/other bases -> project types:
     #ItemType:int[ab] #Chain:ThrustChain[ab] #Reach:float[ab] #Palette:ThrustPalette[ab] #SpearScale:float[v] #GripFraction:float[v] #HitWidth:float[v] #RetargetEachThrust:bool[v] #TrailLifeTicks:int[v] #TrailRails:int[v] #TrailOpacity:float[v] #PixelSize:float[v] #TrailTaper:float[v] #OnThrustStart(int)[v] #OnStrikeStart(int)[v] #OnTipStep(Vector2,Vector2,float)[v] #OnTipHit(NPC,HitInfo,int)[v] #ShouldContinue(int)[v] #ThrustPitch(int)[v] #SpriteRotation:float[v] #SpritePivot:Vector2[v] #ShaftLength()[v] +Texture:string[ov] #Owner:Player #IsOwner:bool #BaseAim:float #Seed:int #Mode:int #EndAge:int #Age:int #ThrustIndex:int #Extension:float #Striking:bool #Butt:Vector2 #Tip:Vector2 #Direction:Vector2 +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
 **HeldSwordIdle.cs**
   static class HeldSwordIdle
-    +WalkBobPixels:float[s] +WalkBobScale:float[s] +WalkBobEase:float[s] +IsRaisedFrame(int)[s] +WalkShift(Player,ref float)[s] +Step(int,float,float,int,float,float,ref float,ref float)[s]
+    +WalkBobPixels:float[s] +WalkBobScale:float[s] +WalkBobEase:float[s] +IsRaisedFrame(int)[s] +WalkShift(Player,ref float)[s] +MovingSpeed:float[s] +SwayEase:float[s] +Step(Player,int,float,float,int,float,float,ref float,ref float,ref float)[s]
 **HeldSwordPose.cs**
   static class HeldSwordPose
     +ToWorld(int,float)[s] +Hand(Player,int,float)[s] +BladeDirection(Player,int,float,float)[s] +HandWorld(Player,float)[s] +BladeDirectionWorld(Player,float)[s] +GripShift(float,float,float)[s] +Sprite(Texture2D,int,out Vector2,out float,out SpriteEffects)[s]
