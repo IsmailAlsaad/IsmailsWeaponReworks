@@ -59,6 +59,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
         int vAge;              // the age the movement uses: the real age, but a charged lance waits in its hold until the click
         int lastV = -1;
         int goAge = -1;        // the age this machine saw the release at
+        int returnAge = -1;    // the age this machine saw the charge come back after a miss (-1 = never)
         float curT;
         float smoothAim;       // the thrust aim as this machine shows it (the owner's is exact, the others glide toward it)
         float outlineShown;    // 0..1, how visible the purple outline is
@@ -201,7 +202,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
         // 0 during the sweep, 1 from the end of the coil: how much the lance has grown into its thrust shape (size, grip).
         float ThrustBlend(float t)
         {
-            return t <= tailStart ? 0f : Smooth((t - tailStart) / pW);
+            if (t <= tailStart)
+                return returnAge < 0 ? 0f : 1f - Smooth((age - returnAge) / (float)pW);   // back from a missed thrust: shrinks into the held shape instead of snapping
+            return Smooth((t - tailStart) / pW);
         }
 
         // 0 for the full strike (the lance turns around the chest). A charged lance (modes 1 and 2) is held in the hand from the coil on.
@@ -273,6 +276,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
 
             if (Mode == 2 && goAge < 0)
                 goAge = age;   // the click on the charged lance: every machine starts the thrust from here
+            else if (Mode == 1 && goAge >= 0)
+            {
+                goAge = -1;        // the thrust missed and the owner put the lance back to mode 1: wait in the hold again (vAge below is min(age, b4 - 1))
+                returnAge = age;
+                if (!Main.dedServ)
+                    DarkLanceFx.Primed(tip);   // the same click-and-flash as when it first became charged
+            }
             // The age the movement runs on: the real one, except that a charged lance (mode 1) waits in its hold until the click, then the thrust runs on.
             if (Mode == 0)
                 vAge = age;
@@ -283,10 +293,24 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
 
             if (vAge >= tb7)
             {
-                owner.itemAnimation = 0; // the next use may start as soon as the cooldown is over
-                owner.itemTime = 0;
-                Projectile.Kill();
-                return;
+                if (Mode == 2 && !(IsOwner && exploded))
+                {
+                    // The thrust ended without connecting: the charge is KEPT. The owner puts the strike back to mode 1 (charged, waiting for a
+                    // click); the other machines cannot know hit from miss, so they wait here for the owner's word (mode 1, or the kill).
+                    if (IsOwner)
+                    {
+                        Projectile.ai[0] = SpinDirection * (1f + Gathered + 100f);
+                        Projectile.netUpdate = true;
+                    }
+                    vAge = tb7 - 1;
+                }
+                else
+                {
+                    owner.itemAnimation = 0; // the next use may start as soon as the cooldown is over
+                    owner.itemTime = 0;
+                    Projectile.Kill();
+                    return;
+                }
             }
 
             if (IsOwner)
@@ -535,7 +559,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
                 sweepTrail = null;
             }
             if (vAge == tb4 && vAge != lastV)
+            {
+                DetachedTrails.Hand(thrustTrail);   // the lance can thrust again after a miss: the old line keeps fading on its own
                 thrustTrail = new PixelTrail(new DarkLanceStrikeTrailStyle(DarkLanceTuning.StrikeTrailThrustScale), IsOwner);
+            }
 
             bool laySweep = sweepTrail != null && age >= b1 && age < b3 && speedFraction > DarkLanceTuning.StrikeTrailMinSpeed;
             bool layThrust = thrustTrail != null && vAge >= tb4 && vAge < tb5;
