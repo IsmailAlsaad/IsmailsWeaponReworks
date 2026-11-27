@@ -13,9 +13,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
 {
     /// <summary>
     /// One candy (all kinds are this one projectile). ai[0] = the kind (CandyKind), ai[1] = the style (0..9: row * 5 + column inside the kind's two rows
-    /// of Candy.png), ai[2] = 0 normal, 1 = "break now" (the owner pushed it out because of the cap; every machine sees it and breaks it).
+    /// of Candy.png), ai[2] = 0 normal, 1 = "break now" (the owner pushed it out because of the cap or the enemy it hung on was pushed out; every machine sees it and breaks it), 2 = blue stuck to a block, 3 + n = blue stuck to enemy n (the velocity then holds the offset from the enemy's center).
     /// Red: falls and goes off in a small AoE (CandyBlastProjectile) when it touches a block. Green: waits on the ground, drifts to a player and heals
-    /// him 5. Yellow: the same, but gives Sugar Rush (+2 s each, max 10 s). Every candy breaks when its lifetime runs out (it blinks first). Blue comes in patch 2.
+    /// him 5. Yellow: the same, but gives Sugar Rush (+2 s each, max 10 s). Blue: sticks to the first enemy it touches (after a short delay) or to a block, and an enemy that touches a block-stuck one takes it; stuck to an enemy it hurts it every BlueHitIntervalTicks for BlueDamageMultiplier of the sword's damage (up to BlueMaxPerEnemy per player on one enemy, the oldest comes off). Every candy breaks when its lifetime runs out (it blinks first).
     /// MULTIPLAYER: the owner's client decides what spawns (kind, style, velocity, the cap). Every machine runs the same physics and the same timers
     /// (a bounce or settle is corrected by the owner's netUpdate) and draws the same look from ai. ANY player can pick up a green or yellow candy:
     /// that player's client asks the server (CandyPickup.Request), the server claims the candy once and tells everybody (CandyPickup grant packet), and only
@@ -31,6 +31,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         bool started;
         float spin;
         int lastRequestAge = -1000;
+        int stuckNpcType = -1;
+        int stuckWait;
+        int hurtTimer;
+        bool stuckSeen;
 
         /// <summary>Ticks this machine has seen the candy alive (the owner's copy is the reference for "oldest").</summary>
         public int Age;
@@ -73,7 +77,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
                 for (int i = 0; i < Main.maxProjectiles; i++)
                 {
                     Projectile p = Main.projectile[i];
-                    if (!p.active || p.type != type || p.owner != owner.whoAmI || p.ai[2] != 0f)
+                    if (!p.active || p.type != type || p.owner != owner.whoAmI || p.ai[2] == 1f)
                         continue;
                     count++;
                     int age = p.ModProjectile is CandyProjectile candy ? candy.Age : 0;
@@ -171,6 +175,165 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             CandyPickup.Request(Projectile);
         }
 
+        // ---- blue candy ----
+
+        int State => (int)Projectile.ai[2];
+
+        // Stuck to a block (2) or to an enemy (3 and up): the candy does not move by itself any more.
+        bool Stuck => Projectile.ai[2] >= 2f;
+
+        public override bool ShouldUpdatePosition()
+        {
+            return !Stuck;
+        }
+
+        void BreakNow()
+        {
+            CandyCaneSwordFx.Break(Projectile.Center, Kind);
+            Projectile.Kill();
+        }
+
+        // Every machine, every tick of a blue candy. True when this tick is handled (stuck, or gone), false for the normal flight.
+        bool StepBlue()
+        {
+            int state = State;
+            if (state < 2)
+            {
+                // Free flight: the owner's client sticks it to an enemy it touches once the pop is over (a block sticks it from OnTileCollide).
+                if (Projectile.owner == Main.myPlayer && Age >= CandyCaneSwordTuning.BlueStickDelayTicks)
+                    TryAttach();
+                return false;
+            }
+
+            Projectile.tileCollide = false;
+            if (!stuckSeen)
+            {
+                stuckSeen = true;
+                hurtTimer = Math.Max(1, CandyCaneSwordTuning.BlueHitIntervalTicks);
+                CandyCaneSwordFx.BlueStick(Projectile.Center);
+            }
+
+            if (state >= 3)
+            {
+                int index = state - 3;
+                NPC npc = index < Main.maxNPCs ? Main.npc[index] : null;
+                if (npc == null)
+                {
+                    BreakNow();
+                    return true;
+                }
+                if (stuckNpcType < 0)
+                {
+                    // The enemy had not reached this machine yet: wait for it a moment.
+                    if (npc.active)
+                        stuckNpcType = npc.type;
+                    else if (++stuckWait > 30)
+                        BreakNow();
+                    return true;
+                }
+                if (!npc.active || npc.life <= 0 || npc.type != stuckNpcType)
+                {
+                    BreakNow(); // the enemy died (or its slot was taken by another)
+                    return true;
+                }
+
+                Projectile.Center = npc.Center + Projectile.velocity + new Vector2(0f, npc.gfxOffY);
+                Tick(npc);
+            }
+            else if (Projectile.owner == Main.myPlayer)
+            {
+                TryAttach(); // an enemy that touches a block-stuck candy takes it
+            }
+
+            StuckGlow();
+            return true;
+        }
+
+        // Every machine counts the interval and shows the tick; only the owner's client strikes (SimpleStrikeNPC syncs itself).
+        void Tick(NPC npc)
+        {
+            if (--hurtTimer > 0)
+                return;
+            hurtTimer = Math.Max(1, CandyCaneSwordTuning.BlueHitIntervalTicks);
+            CandyCaneSwordFx.BlueTick(Projectile.Center);
+            if (Projectile.owner != Main.myPlayer || npc.dontTakeDamage || npc.immortal)
+                return;
+            int damage = Math.Max(1, (int)(Projectile.damage * CandyCaneSwordTuning.BlueDamageMultiplier));
+            int direction = npc.Center.X > Main.player[Projectile.owner].Center.X ? 1 : -1;
+            npc.SimpleStrikeNPC(damage, direction, false, 0f, DamageClass.Melee);
+        }
+
+        void StuckGlow()
+        {
+            if (Main.dedServ)
+                return;
+            Color tint = CandyKinds.Tint(CandyKind.Blue);
+            Lighting.AddLight(Projectile.Center, tint.ToVector3() * CandyCaneSwordTuning.LightStrength);
+            if (Main.rand.NextBool(24))
+            {
+                Dust dust = Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(8f, 8f), CandyKinds.DustOf(CandyKind.Blue), Vector2.Zero, 0, default, 0.7f);
+                dust.noGravity = true;
+            }
+        }
+
+        // Owner's client: a free or block-stuck blue candy touches an enemy and sticks to it.
+        void TryAttach()
+        {
+            int reach = (int)CandyCaneSwordTuning.BlueStickReach;
+            Rectangle box = Projectile.Hitbox;
+            box.Inflate(reach, reach);
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC npc = Main.npc[i];
+                if (!npc.active || npc.life <= 0 || npc.friendly || (!npc.CanBeChasedBy() && npc.type != NPCID.TargetDummy) || !box.Intersects(npc.Hitbox))
+                    continue;
+                AttachTo(npc);
+                return;
+            }
+        }
+
+        // Owner's client: hang on 'npc'. The owner may only have BlueMaxPerEnemy on one enemy: the oldest comes off first.
+        void AttachTo(NPC npc)
+        {
+            int type = ModContent.ProjectileType<CandyProjectile>();
+            int attached = 3 + npc.whoAmI;
+            while (true)
+            {
+                int count = 0;
+                Projectile oldest = null;
+                int oldestAge = -1;
+                for (int i = 0; i < Main.maxProjectiles; i++)
+                {
+                    Projectile p = Main.projectile[i];
+                    if (!p.active || p.type != type || p.owner != Projectile.owner || (int)p.ai[2] != attached)
+                        continue;
+                    count++;
+                    int age = p.ModProjectile is CandyProjectile candy ? candy.Age : 0;
+                    if (age > oldestAge)
+                    {
+                        oldestAge = age;
+                        oldest = p;
+                    }
+                }
+                if (count < CandyCaneSwordTuning.BlueMaxPerEnemy || oldest == null)
+                    break;
+                oldest.ai[2] = 1f; // pushed off: every machine sees it and breaks it
+                oldest.netUpdate = true;
+            }
+
+            Projectile.ai[2] = attached;
+            Projectile.velocity = Projectile.Center - npc.Center; // the offset rides along; the candy never moves by itself again
+            stuckNpcType = npc.type;
+            stuckWait = 0;
+            hurtTimer = Math.Max(1, CandyCaneSwordTuning.BlueHitIntervalTicks);
+            if (!stuckSeen)
+            {
+                stuckSeen = true;
+                CandyCaneSwordFx.BlueStick(Projectile.Center);
+            }
+            Projectile.netUpdate = true;
+        }
+
         // ---- every machine ----
 
         void Start()
@@ -190,12 +353,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
                 Start();
             Age++;
             CandyKind kind = Kind;
-            if (Projectile.ai[2] != 0f || Age >= CandyKinds.LifeTicks(kind))
+            if (Projectile.ai[2] == 1f || Age >= CandyKinds.LifeTicks(kind))
             {
                 CandyCaneSwordFx.Break(Projectile.Center, kind);
                 Projectile.Kill();
                 return;
             }
+            if (kind == CandyKind.Blue && StepBlue())
+                return;
 
             bool magnet = false;
             if (CandyKinds.IsPickup(kind) && Age >= CandyCaneSwordTuning.PickupDelayTicks && !Claimed)
@@ -249,6 +414,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             if (Kind == CandyKind.Red)
             {
                 Explode();
+                return false;
+            }
+            if (Kind == CandyKind.Blue)
+            {
+                Projectile.ai[2] = 2f; // stuck to a block (every machine does the same; the owner's netUpdate settles the exact spot)
+                Projectile.velocity = Vector2.Zero;
+                if (Projectile.owner == Main.myPlayer)
+                    Projectile.netUpdate = true;
                 return false;
             }
 

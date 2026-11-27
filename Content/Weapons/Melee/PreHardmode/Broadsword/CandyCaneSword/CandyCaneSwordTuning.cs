@@ -11,7 +11,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
     {
         // ---- when a candy appears ----
         public static float SpawnChance => 0.25f;       // per true melee hit that does not kill (1/4)
-        public static bool BlueEnabled => false;        // blue candies (stick to enemies and tiles) arrive in patch 2; until then the random pick skips them
+        public static bool BlueEnabled => true;         // false: the random pick skips blue candies
         public static int BurstMin => 6;                // candies shot upward when a hit of the sword kills an enemy
         public static int BurstMax => 8;
         public static float BurstSpreadDeg => 50f;      // the fan is straight up +- this many degrees
@@ -64,6 +64,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         public static float RedBlastDamageMultiplier => 1f; // of the sword's damage
         public static float RedBlastKnockback => 4f;
         public static float RedBlastShake => 2f;
+
+        // ---- blue candy (sticks to an enemy or a block; stuck to an enemy it hurts it every interval until it breaks) ----
+        public static int BlueStickDelayTicks => 10;       // a fresh candy cannot stick to an enemy yet (it pops up first); a block it touches sticks it at once
+        public static float BlueStickReach => 4f;          // how far outside an enemy's box a blue candy still counts as touching it
+        public static int BlueMaxPerEnemy => 3;            // per player on one enemy; one more pushes the oldest off
+        public static float BlueDamageMultiplier => 0.35f; // of the sword's damage, per hit
+        public static int BlueHitIntervalTicks => 60;      // 60 = once per second
+        public static float StickSoundVolume => 0.4f;
 
         // ---- look (Candy.png: 5 columns x 8 rows of 40 x 40 cells; rows 0-1 red, 2-3 green, 4-5 blue, 6-7 yellow) ----
         public static int HitboxSize => 20;

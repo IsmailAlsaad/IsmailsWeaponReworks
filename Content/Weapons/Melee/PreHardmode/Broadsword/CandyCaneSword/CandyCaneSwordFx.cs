@@ -102,6 +102,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             CameraShake.Punch(position, CandyCaneSwordTuning.RedBlastShake, 10);
         }
 
+        // A blue candy sticks to an enemy or a block.
+        public static void BlueStick(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            Burst(position, CandyKind.Blue, 6, 2.5f, 1f);
+            SoundEngine.PlaySound(SoundID.Item17 with { Volume = CandyCaneSwordTuning.StickSoundVolume, Pitch = -0.2f, PitchVariance = 0.15f, MaxInstances = 3 }, position);
+        }
+
+        // A blue candy's tick on the enemy it hangs on.
+        public static void BlueTick(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            Burst(position, CandyKind.Blue, 3, 1.5f, 0.8f);
+        }
+
         // An enemy dies to the sword: a poof of every candy color where it stood (the owner's machine only; the candies show their own spawn dust everywhere).
         public static void KillBurst(Vector2 position)
         {
@@ -109,7 +126,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
                 return;
             for (int i = 0; i < CandyCaneSwordTuning.KillBurstDustCount; i++)
             {
-                CandyKind kind = (CandyKind)(i % 3 == 2 ? 3 : i % 3); // red, green, (skip blue), yellow
+                CandyKind kind = (CandyKind)(i % 4); // red, green, blue, yellow
                 Dust dust = Dust.NewDustPerfect(position, CandyKinds.DustOf(kind), Main.rand.NextVector2Circular(5f, 5f) + new Vector2(0f, -2f), 0, default, Main.rand.NextFloat(1f, 1.5f));
                 dust.noGravity = true;
             }
