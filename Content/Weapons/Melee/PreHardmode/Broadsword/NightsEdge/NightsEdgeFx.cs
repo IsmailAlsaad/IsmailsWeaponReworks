@@ -250,7 +250,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Nigh
                 return;
             SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.9f, Pitch = -0.6f }, point);
             if (caught)
-                SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.5f, Pitch = -0.2f }, point);
+                SoundEngine.PlaySound(new SoundStyle("IsmailsWeaponReworks/Assets/Sounds/Stab") with { Volume = 0.5f, Pitch = -0.2f }, point);
+                //SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.5f, Pitch = -0.2f }, point);
             int count = caught ? 20 : 10;
             for (int i = 0; i < count; i++)
                 Mote(point, direction * Main.rand.NextFloat(1f, 6f) + Main.rand.NextVector2Circular(2.5f, 2.5f), Main.rand.NextFloat(1.1f, 1.8f), i % 2 == 0 ? DustID.Shadowflame : DustID.PurpleTorch);
@@ -297,7 +298,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Nigh
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.5f, Pitch = -0.3f }, point);
+            SoundEngine.PlaySound(new SoundStyle("IsmailsWeaponReworks/Assets/Sounds/BloodSpill") with { Volume = 0.5f, Pitch = -0.3f }, point);
+            //SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.5f, Pitch = -0.3f }, point);
             SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.8f, Pitch = -0.5f }, point);
             for (int ring = 0; ring < 2; ring++)
                 for (int i = 0; i < 28; i++)
