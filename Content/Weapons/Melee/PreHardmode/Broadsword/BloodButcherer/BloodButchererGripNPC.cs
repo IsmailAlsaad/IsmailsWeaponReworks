@@ -1,5 +1,6 @@
 ﻿using IsmailsWeaponReworks.Common;
 using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.ModLoader;
 
@@ -29,6 +30,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
         Vector2 lastVelocity;    // the velocity this enemy went into the last tick's movement with
         Vector2 lastPosition;
         long lastImpactTick = -1000;
+        readonly List<int> collided = new List<int>(); // the enemies this throw has already flown into (each one only once per throw)
 
         public bool Held => Main.GameUpdateCount - HoldTick <= 2;
         public bool Launched => Main.GameUpdateCount - LaunchTick < BloodButchererTuning.LaunchAiOffTicks;
@@ -40,6 +42,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
             ImpactBaseDamage = baseDamage;
             tracking = true;
             lastKnown = false;
+            collided.Clear();
         }
 
         public override bool PreAI(NPC npc)
@@ -54,7 +57,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
 
             // What the last tick's movement did to the thrown enemy (this also runs once more on the tick the AI-off window has ended).
             if (tracking && lastKnown)
+            {
+                CheckCollisions(npc);
                 CheckImpact(npc);
+            }
 
             if (Launched)
             {
@@ -104,6 +110,47 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
             float multiplier = System.Math.Min(BloodButchererTuning.ImpactMaxMultiplier, BloodButchererTuning.ImpactDamageMultiplier * impact / System.Math.Max(1f, BloodButchererTuning.LaunchSpeed));
             int damage = System.Math.Max(1, (int)(ImpactBaseDamage * multiplier));
             npc.SimpleStrikeNPC(damage, lastVelocity.X >= 0f ? 1 : -1, false, 0f, DamageClass.Melee);
+        }
+
+        // The thrown enemy flew through other enemies during the last tick (the box it swept, not only where it ended up, or a fast enemy
+        // would skip thin ones). Each enemy it touches (once per throw) takes the impact damage and so does the thrown enemy itself, with the
+        // same formula as a tile hit but from the speed it is flying at (it loses none: it flies on if it survived). Every machine plays the
+        // effects; only the thrower's machine strikes (SimpleStrikeNPC syncs it).
+        void CheckCollisions(NPC npc)
+        {
+            float speed = lastVelocity.Length();
+            if (speed < BloodButchererTuning.CollisionMinSpeed)
+                return;
+
+            Rectangle before = new Rectangle((int)lastPosition.X, (int)lastPosition.Y, npc.width, npc.height);
+            Rectangle swept = Rectangle.Union(before, npc.Hitbox);
+            int padding = (int)BloodButchererTuning.CollisionPadding;
+            swept.Inflate(padding, padding);
+
+            Vector2 direction = lastVelocity / speed;
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC other = Main.npc[i];
+                if (other.whoAmI == npc.whoAmI || !Snarable.CanBite(other) || collided.Contains(i) || !swept.Intersects(other.Hitbox))
+                    continue;
+                collided.Add(i);
+
+                Vector2 point = (npc.Center + other.Center) * 0.5f;
+                BloodButchererFx.ImpactBurst(point, -direction, speed);
+                BloodButchererFx.PlayImpact(point, speed);
+                CameraShake.Punch(point, BloodButchererTuning.ImpactShake * MathHelper.Clamp(speed / System.Math.Max(1f, BloodButchererTuning.LaunchSpeed), 0.3f, 1.5f), 16, "BloodButchererImpact");
+
+                if (Main.myPlayer != ImpactOwner)
+                    continue;
+                float multiplier = System.Math.Min(BloodButchererTuning.ImpactMaxMultiplier, BloodButchererTuning.ImpactDamageMultiplier * speed / System.Math.Max(1f, BloodButchererTuning.LaunchSpeed));
+                int hitDirection = lastVelocity.X >= 0f ? 1 : -1;
+                if (other.life > 0)
+                    other.SimpleStrikeNPC(System.Math.Max(1, (int)(ImpactBaseDamage * multiplier * BloodButchererTuning.CollisionVictimDamageMultiplier)), hitDirection, false, BloodButchererTuning.CollisionKnockback, DamageClass.Melee);
+                if (npc.life > 0 && !npc.dontTakeDamage && !npc.immortal)
+                    npc.SimpleStrikeNPC(System.Math.Max(1, (int)(ImpactBaseDamage * multiplier * BloodButchererTuning.CollisionThrownDamageMultiplier)), -hitDirection, false, 0f, DamageClass.Melee);
+                if (npc.life <= 0)
+                    return; // it died on that one: it flies no further
+            }
         }
 
         public override bool CanHitPlayer(NPC npc, Player target, ref int cooldownSlot)

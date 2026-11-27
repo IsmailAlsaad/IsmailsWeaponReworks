@@ -93,6 +93,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
         int lastChompCycle = -1; // the chomp cycle whose hit re-arm has run
         int lastChompClose = -1; // the chomp cycle whose closing effects have run
         float chompStop = -1f;   // the timeline time the chomps end early (the enemy died), -1 while they run their full count
+        bool finished;           // the timeline is over: the blade stays drawn in the hand until the next bite takes over (see AI)
+        int finishedTicks;       // ticks spent finished
+        public bool Finished => finished;
 
         // ---- timeline ----
 
@@ -389,9 +392,26 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
 
             if (timer >= TotalTicks)
             {
-                owner.itemAnimation = 0; // the next use may start on the very next tick
-                owner.itemTime = 0;
-                Projectile.Kill();
+                // The bite is over, but the blade does not vanish at once: dying on this tick would leave one frame without a blade (and the
+                // next bite only spawns on the next tick), which flickered while the button was held. It stays in the hand, posed and drawn, for
+                // one more tick; the owner's next bite is spawned in that tick and takes over. Another machine waits until the next bite has
+                // arrived (or HandoffWaitTicks).
+                if (!finished)
+                {
+                    finished = true;
+                    owner.itemAnimation = 0; // the next use may start on the very next tick
+                    owner.itemTime = 0;
+                }
+                finishedTicks++;
+                if (IsOwner ? finishedTicks > 1 : (HasSuccessor() || finishedTicks > BloodButchererTuning.HandoffWaitTicks))
+                {
+                    Projectile.Kill();
+                    return;
+                }
+                jawOpen = OpenAt(timer);
+                ApplyPose(owner);
+                UpdateTether();
+                lastOwnerCenter = owner.Center;
                 return;
             }
 
@@ -445,6 +465,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
                 timer = throwAt; // lands exactly on the throw, so the blade points exactly at the aim even on a fast timeline
             else
                 timer += speedScale;
+        }
+
+        // Is there a newer bite of the same player that has already started? Then this finished one is only waiting to be removed.
+        bool HasSuccessor()
+        {
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile other = Main.projectile[i];
+                if (i != Projectile.whoAmI && other.active && other.owner == Projectile.owner && other.type == Projectile.type
+                    && other.ModProjectile is BloodButchererSwingProjectile swing && swing.ticks > 0 && !swing.finished)
+                    return true;
+            }
+            return false;
         }
 
         // ---- grip: aim, spin, pin and throw ----
@@ -788,10 +821,47 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
             Projectile.netUpdate = true;
         }
 
-        // The catch wedge: the triangle between the pivot and the two jaw tips at full gape. The bite is quick, so it is tested against
-        // the full gape for the whole bite: forgiving on purpose.
+        // The body of the bite: a rectangle (BiteBodyWidth wide) from the player's center to the sword tip. The wedge starts at the pivot,
+        // which is out in front of the player, so an enemy right next to the player was in a blind spot; this covers everything between.
+        bool BodyTouches(Rectangle box)
+        {
+            float width = BloodButchererTuning.BiteBodyWidth;
+            if (width <= 0f)
+                return false;
+            Vector2 start = Owner.Center;
+            Vector2 end = pivot + bladeDir * jawLength;
+            Vector2 axis = end - start;
+            float length = axis.Length();
+            if (length < 1f)
+                return false;
+            axis /= length;
+            Vector2 side = new Vector2(-axis.Y, axis.X);
+            float halfWidth = width * 0.5f;
+
+            // The rectangle's bounding box against the enemy's box (the world axes).
+            float reachX = Math.Abs(side.X) * halfWidth;
+            float reachY = Math.Abs(side.Y) * halfWidth;
+            if (box.Right < Math.Min(start.X, end.X) - reachX || box.Left > Math.Max(start.X, end.X) + reachX
+                || box.Bottom < Math.Min(start.Y, end.Y) - reachY || box.Top > Math.Max(start.Y, end.Y) + reachY)
+                return false;
+
+            // The enemy's box against the rectangle's own two axes (along the blade and across it).
+            Vector2 half = new Vector2(box.Width, box.Height) * 0.5f;
+            Vector2 offset = box.Center.ToVector2() - start;
+            float alongExtent = Math.Abs(axis.X) * half.X + Math.Abs(axis.Y) * half.Y;
+            float acrossExtent = Math.Abs(side.X) * half.X + Math.Abs(side.Y) * half.Y;
+            float along = Vector2.Dot(offset, axis);
+            float across = Vector2.Dot(offset, side);
+            return along + alongExtent >= 0f && along - alongExtent <= length && Math.Abs(across) <= halfWidth + acrossExtent;
+        }
+
+        // The catch wedge: the triangle between the pivot and the two jaw tips at full gape, plus the body rectangle from the player to the
+        // sword tip (BodyTouches). The bite is quick, so it is tested against the full gape for the whole bite: forgiving on purpose.
         bool WedgeTouches(Rectangle box)
         {
+            if (BodyTouches(box))
+                return true;
+
             float spread = MathHelper.ToRadians(BloodButchererTuning.JawOpenDeg);
             Vector2 a = pivot;
             Vector2 b = pivot + bladeDir.RotatedBy(spread) * jawLength;
@@ -1053,6 +1123,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
 
         public override bool PreDraw(ref Color lightColor)
         {
+            if (finished && HasSuccessor())
+                return false; // the next bite has taken over: only that one is drawn
+
             spinTrail?.Draw();
             jawA?.Draw();
             jawB?.Draw();

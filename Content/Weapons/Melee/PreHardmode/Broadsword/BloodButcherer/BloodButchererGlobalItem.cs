@@ -31,10 +31,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
             item.UseSound = null;                 // the projectile plays its own sounds
         }
 
-        // One bite at a time.
+        // One bite at a time. A bite whose timeline is over (it only stays drawn for a tick so the blade never vanishes between two bites) no
+        // longer counts, so the next bite can start on the very next tick.
         public override bool CanUseItem(Item item, Player player)
         {
-            return player.ownedProjectileCounts[ModContent.ProjectileType<BloodButchererSwingProjectile>()] <= 0;
+            int type = ModContent.ProjectileType<BloodButchererSwingProjectile>();
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile projectile = Main.projectile[i];
+                if (projectile.active && projectile.owner == player.whoAmI && projectile.type == type && !(projectile.ModProjectile is BloodButchererSwingProjectile swing && swing.Finished))
+                    return false;
+            }
+            return true;
         }
 
         public override bool Shoot(Item item, Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)

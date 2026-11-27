@@ -30,6 +30,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
         public static float ChompShake => 2.5f;       // a small camera punch per close
         public static int RecoverTicks => 12;
         public static int DecideWaitTicks => 20;      // another machine waits this long for the owner's catch decision, then assumes a miss (real ticks, not scaled)
+        public static int HandoffWaitTicks => 6;      // another machine keeps a finished blade drawn this long while it waits for the owner's next bite to arrive (real ticks), so a held button never shows an empty frame
 
         // ---- attack speed (patch 4): the owner's melee attack speed plays the whole timeline faster or slower ----
         public static float AttackSpeedInfluence => 1f; // 1 = the timeline runs at exactly your melee attack speed, 0 = ignores it, 0.5 = half of the bonus
@@ -72,6 +73,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
         public static float ImpactShake => 5f;        // camera punch when it loses LaunchSpeed (scales with the speed lost)
         public static int ImpactCooldownTicks => 6;
 
+        // ---- a thrown enemy hitting other enemies (patch 6): it flies on through them; the enemy it hits and the thrown enemy both take the impact damage ----
+        public static float CollisionMinSpeed => 3f;  // pixels per tick: a thrown enemy slower than this hurts nothing it touches
+        public static float CollisionPadding => 4f;   // pixels: the flying enemy's hitbox counts this much bigger (forgiving)
+        public static float CollisionThrownDamageMultiplier => 1f; // the thrown enemy's own damage (same speed scaling as a tile impact: ImpactDamageMultiplier, ImpactMaxMultiplier)
+        public static float CollisionVictimDamageMultiplier => 1f; // the enemy it hit
+        public static float CollisionKnockback => 5f; // the enemy it hit is pushed along the flight
+
         // ---- spin trail (patch 2b): a fan along the blade that fills it up as the blade speeds up and thins out as it slows down ----
         public static float TrailFullSpeed => 0.4f;   // the fan covers the whole blade at this angular speed (radians per tick)
         public static float TrailFillTo => 0.15f;     // fully expanded, the fan reaches down to this fraction of the blade length (0 = the hand)
@@ -104,6 +112,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Bloo
 
         // ---- catching and damage ----
         public static float CatchPadding => 10f;      // the catch wedge (the triangle between the pivot and the two open jaw tips) is this much more forgiving
+        public static float BiteBodyWidth => 32f;     // the bite (and the catch) also covers a rectangle this wide from the player's center to the sword tip, so there is no blind spot right next to the player
         public static float BiteDamageMultiplier => 1f;   // the enemy the bite caught
         public static float OtherDamageMultiplier => 0.6f; // any other enemy inside the jaws
         public static float ClampShake => 5f;         // camera punch strength when the jaws clamp on something
