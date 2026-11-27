@@ -15,7 +15,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
     public class KatanaPlayer : ModPlayer
     {
         public int CooldownTicks;
-
+        public bool ThrewThisPress; // owner only: set by a throw, cleared once the button is up
         public bool Ready => CooldownTicks <= 0;
 
         // The first active projectile of this type owned by this player, or null. (A manual scan instead of ownedProjectileCounts, which
@@ -62,6 +62,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
         {
             if (Player.whoAmI != Main.myPlayer)
                 return;
+            if (!Player.controlUseItem || Player.dead)
+                ThrewThisPress = false;
             if (Player.dead)
                 CooldownTicks = 0;
             else if (CooldownTicks > 0)

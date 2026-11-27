@@ -30,7 +30,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
             item.noMelee = true;                  // the projectiles are the weapon
             item.noUseGraphic = true;             // the projectiles draw the sword
             item.channel = false;
-            item.autoReuse = false;               // one throw per press
+            item.autoReuse = true;               // one throw per press
             item.UseSound = null;                 // the projectiles play their own sounds
         }
 
@@ -42,6 +42,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
                 return false;
             if (KatanaPlayer.BladeFlying(player.whoAmI) || PlayerDash.IsDashing(player))
                 return false; // a blade stuck in a tile or falling does not block anything
+            if (player.GetModPlayer<KatanaPlayer>().ThrewThisPress)
+                return false; // the press that threw the blade must be let go before anything else starts
             return true;
         }
 
@@ -58,7 +60,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
         {
             // Shoot only runs on the attacking player's own client; the projectile is then synced to everyone else.
             if (CanThrow(player))
+            {
                 KatanaBladeProjectile.Throw(player, source);
+                player.GetModPlayer<KatanaPlayer>().ThrewThisPress = true;
+            }
             else
                 StartSwing(player, source, damage, knockback); // not fully sheathed yet: a plain swing at the cursor
             return false;

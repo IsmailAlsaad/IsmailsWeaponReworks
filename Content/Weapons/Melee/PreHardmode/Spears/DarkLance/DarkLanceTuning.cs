@@ -35,6 +35,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
         public static float CoilDraw => 0.5f;            // how far the lance is drawn back for the thrust, as a fraction of ThrustReach
         public static bool ThrustRetarget => true;       // the thrust goes where the cursor is when the coil starts (false = where the click was)
         public static int StrikeCooldownTicks => 3;
+        public static bool ChainStrikes => true;         // holding left click hands one strike over to the next with no gap (false = the old gap and cooldown between cycles)
+        public static float ChainHandoffFraction => 0.6f;   // how far through the recover the next strike takes over: 0 = right after the thrust settles, 1 = at the very end of the recover
         public static float SweepDamageMultiplier => 0.8f;   // times the item's damage; every enemy once per sweep
         public static float SweepScale => 1.15f;
         public static float SweepGrip => 0.25f;          // how much of the shaft sticks out behind the hand during the sweep

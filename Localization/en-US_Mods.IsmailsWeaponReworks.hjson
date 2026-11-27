@@ -99,6 +99,7 @@ Projectiles: {
 	IceBladeIdleProjectile.DisplayName: Ice Blade Idle Projectile
 	PhasebladeIdleProjectile.DisplayName: Phaseblade Idle Projectile
 	StarfuryIdleProjectile.DisplayName: Starfury Idle Projectile
+	KatanaSwingProjectile.DisplayName: Katana Swing Projectile
 }
 
 Configs: {

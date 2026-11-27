@@ -41,7 +41,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
         int SpinDirection => Projectile.ai[0] >= 0f ? 1 : -1;
-        int Mode => (int)(Math.Abs(Projectile.ai[0]) / 100f);   // 0 = the full strike, 1 = collect the orbs then wait charged, 2 = released from the charge
+        int Mode => (int)(Math.Abs(Projectile.ai[0]) / 100f) % 10;
+        bool Chained => Math.Abs(Projectile.ai[0]) >= 1000f;   // +1000 in ai[0]: this strike was handed over from the previous one (button held), see ChainNext
+        bool Carrying => Chained && carried;                    // chained AND the last strike's end pose was found: the start blends from it
+        float Pack(int gathered, int mode) => SpinDirection * (1f + gathered + 100f * mode + (Chained ? 1000f : 0f));   // 0 = the full strike, 1 = collect the orbs then wait charged, 2 = released from the charge
         int Gathered => Math.Min(DarkLanceTuning.MaxOrbs, Math.Max(0, (int)Math.Round(Math.Abs(Projectile.ai[0])) % 100 - 1));
         float ThrustAim => Projectile.ai[1];
         float BaseAim => Projectile.ai[2];
@@ -75,6 +78,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
         bool exploded;         // owner only
         bool hasPose;
         bool whooshed;
+        bool carried;          // the end pose of the strike before this one was read (chained starts only)
+        float carryAim;        // that pose: the aim (player's own frame), size, extension (fraction of the reach) and hand offset (world)
+        float carrySize = 1f;
+        float carryExtension;
+        Vector2 carryHand;
         Vector2 butt;
         Vector2 tip;
         Vector2 direction;
@@ -165,6 +173,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
             float aim = BaseAim + SpinDirection * turn;
             if (Mode >= 1 && t < b1)
                 aim += MathHelper.WrapAngle(ChargeAim() - BaseAim) * (1f - Smooth(t / pA));   // starts from the pose the charge left the lance in
+            else if (Carrying && t < b1)
+                aim += MathHelper.WrapAngle(carryAim - BaseAim) * (1f - Smooth(t / pA));      // chained: starts from the pose the last strike ended in
             if (t > b3)
             {
                 float end = BaseAim + SpinDirection * (MathHelper.TwoPi + DarkLanceTuning.SweepOvershoot);
@@ -179,7 +189,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
             float anticipationDraw = DarkLanceTuning.AnticipationDraw;
             float coilDraw = DarkLanceTuning.CoilDraw;
             if (t <= b1)
-                return -anticipationDraw * Smooth(t / pA);
+                return -anticipationDraw * Smooth(t / pA) + (Carrying ? carryExtension * (1f - Smooth(t / pA)) : 0f);
             if (t <= b3)
                 return -anticipationDraw * (1f - Smooth((t - b1) / (b3 - b1)));   // lets go of the draw while it turns
             if (t <= tailStart)
@@ -203,7 +213,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
         float ThrustBlend(float t)
         {
             if (t <= tailStart)
-                return returnAge < 0 ? 0f : 1f - Smooth((age - returnAge) / (float)pW);   // back from a missed thrust: shrinks into the held shape instead of snapping
+                return Carrying && t < b1 ? 1f - Smooth(t / pA) : returnAge < 0 ? 0f : 1f - Smooth((age - returnAge) / (float)pW);   // back from a missed thrust: shrinks into the held shape instead of snapping
             return Smooth((t - tailStart) / pW);
         }
 
@@ -216,7 +226,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
         Vector2 HandAt(float t, Vector2 centerHand)
         {
             float blend = ArmBlend(t);
-            return blend <= 0f ? centerHand : Vector2.Lerp(centerHand, SpearPose.Hand(Owner, AimAt(t)), blend);
+            Vector2 hand = blend <= 0f ? centerHand : Vector2.Lerp(centerHand, SpearPose.Hand(Owner, AimAt(t)), blend);
+            if (Carrying && t < b1)
+                hand += carryHand * (1f - Smooth(t / pA));   // chained: where the last strike held the lance, fading into the chest
+            return hand;
         }
 
         // The pose the charge left the lance in (pointing up, leaning toward the facing side), in the player's own frame.
@@ -242,6 +255,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
             float aim = AimAt(t);
             float grow = ThrustBlend(t);
             float size = Size;
+            if (Carrying && t < b1)
+                size = MathHelper.Lerp(carrySize, Size, Smooth(t / pA));   // chained: starts as big as the last strike ended
             directionOut = HeldAim.ToWorldDirection(Owner, aim);
             scaleOut = MathHelper.Lerp(DarkLanceTuning.SweepScale, DarkLanceTuning.ThrustScale * size, grow) * Owner.GetAdjustedItemScale(Owner.HeldItem);
             float shaft = TextureDiagonal() * scaleOut;
@@ -272,6 +287,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
 
             Projectile.timeLeft = 2;
             ReadPlan();
+            if (!IsOwner && YoungerChainExists())
+            {
+                Projectile.Kill();   // the owner handed over to the next strike: no two lances at once
+                return;
+            }
+            if (age == 0 && Chained)
+                ReadCarry(owner);
             Projectile.localNPCHitCooldown = inThrust ? -1 : DarkLanceTuning.SweepHitCooldownTicks;   // how soon the sweep may hit the same enemy again (-1 = once per sweep)
 
             if (Mode == 2 && goAge < 0)
@@ -290,6 +312,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
                 vAge = Math.Min(age, b4 - 1);
             else
                 vAge = b4 + (age - goAge);
+
+            // CHAIN: with the button held, the next strike starts the very tick the recover is (nearly) over, so the lance never leaves the hand
+            // between cycles. Owner only: the new strike is spawned (carrying the handover in ai[0]) and this one ends; the other machines end
+            // this one when the new one shows up (YoungerChainExists).
+            if (IsOwner && DarkLanceTuning.ChainStrikes && (Mode == 0 || (Mode == 2 && exploded)) && owner.controlUseItem && !owner.controlUseTile
+                && vAge >= tb6 + (int)Math.Round(MathHelper.Clamp(DarkLanceTuning.ChainHandoffFraction, 0f, 1f) * pR))
+            {
+                ChainNext();
+                return;
+            }
 
             if (vAge >= tb7)
             {
@@ -390,7 +422,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
             // the auto sweep of a charged lance (mode 1) gathers the orbs but hurts nothing
             striking = (sweepPhase && Mode == 0 && speedFraction >= DarkLanceTuning.SweepMinHitSpeed) || inThrust;
 
-            owner.GetModPlayer<DarkLancePlayer>().LanceTip = tip; // gathered orbs fly to it (every machine)
+            DarkLancePlayer lancePlayer = owner.GetModPlayer<DarkLancePlayer>();
+            lancePlayer.LanceTip = tip; // gathered orbs fly to it (every machine)
+            lancePlayer.ChainAim = smoothAim;   // the pose a chained strike starts from (every machine, a few ticks fresh at most)
+            lancePlayer.ChainSize = Size;
+            lancePlayer.ChainExtension = ExtensionAt(t);
+            lancePlayer.ChainHand = hand - centerHand;
+            lancePlayer.ChainTick = Main.GameUpdateCount;
 
             if (vAge == tb4 && vAge != lastV)
             {
@@ -414,6 +452,43 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
             prevCenterHand = centerHand;
             lastV = vAge;
             age++;
+        }
+
+        // Owner only: the next strike, spawned at the cursor with the chain flag (+1000 in ai[0]); ai[1] = the aim this strike ended in (the new one
+        // blends from it), ai[2] = the new aim. The damage and knockback are this strike's own (the sweep's).
+        void ChainNext()
+        {
+            Player owner = Owner;
+            float aim = HeldAim.Capture(owner);
+            owner.SetDummyItemTime(2);   // the item stays "in use" through the handover (no one-tick arm flicker)
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), owner.MountedCenter, Vector2.Zero, Type, Projectile.damage, Projectile.knockBack, owner.whoAmI, HeldAim.Facing(aim) * 1001f, smoothAim, aim);
+            Projectile.Kill();
+        }
+
+        // Every machine, on the first tick of a chained strike: the pose the last strike ended in (published by it every tick).
+        void ReadCarry(Player owner)
+        {
+            DarkLancePlayer lancePlayer = owner.GetModPlayer<DarkLancePlayer>();
+            if (Main.GameUpdateCount - lancePlayer.ChainTick > 3u)
+                return;   // nothing fresh (a missed packet): start as a plain strike
+            carried = true;
+            carryAim = lancePlayer.ChainAim;
+            carrySize = lancePlayer.ChainSize;
+            carryExtension = lancePlayer.ChainExtension;
+            carryHand = lancePlayer.ChainHand;
+        }
+
+        // Is there a chained strike of this player that is younger than this one? Then this one has been handed over and ends.
+        bool YoungerChainExists()
+        {
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile p = Main.projectile[i];
+                if (p.active && p.whoAmI != Projectile.whoAmI && p.owner == Projectile.owner && p.type == Projectile.type
+                    && p.ModProjectile is DarkLanceStrikeProjectile other && other.Chained && other.age < age)
+                    return true;
+            }
+            return false;
         }
 
         // The charged lance (mode 1, waiting for the click) that this player has out, or null. Owner's client.
@@ -464,7 +539,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
             }
             if (changed)
             {
-                Projectile.ai[0] = SpinDirection * (1f + count + 100f * Mode);
+                Projectile.ai[0] = Pack(count, Mode);
                 Projectile.netUpdate = true;
             }
         }
@@ -642,6 +717,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
 
         public override bool PreDraw(ref Color lightColor)
         {
+            if (!hasPose)
+                return false;   // a strike spawned this tick (the chain) has no pose until its first AI
             sweepTrail?.Draw();
             thrustTrail?.Draw();
 

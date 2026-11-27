@@ -15,6 +15,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.DarkLanc
         public float OrbTurn;
         public int Serial;   // owner's client only
         public Vector2 LanceTip;    // every machine: where the lance tip is (the sweep and the thrust write it every tick); gathered orbs fly to it
+        public float ChainAim;      // every machine: the pose the strike is in, written every tick; a chained strike starts from it (aim, size, extension, hand offset)
+        public float ChainSize = 1f;
+        public float ChainExtension;
+        public Vector2 ChainHand;
+        public uint ChainTick;
 
         int pingCount;
         uint pingResetAt;
