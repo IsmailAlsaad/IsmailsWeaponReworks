@@ -69,7 +69,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
         public static float TrailInnerHigh => 0.3f;  // ... and with a full charge
         public static float TrailExpandBy => 0.8f;  // the fan has fully expanded this far into the strike (0..1)
         public static int SweepHitSteps => 6;  // the hit test is checked at this many poses between two ticks (a fast strike needs more)
-        public static float HitLengthScale => 1.3f;  // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
+        public static float HitLengthScale => 1f;  // how far the sword HITS along the blade, as a fraction of BladeLength (1.5 = 50% further). Does not change what you see
         public static float HitWidth => 18f;  // how thick the hit line is (pixels at scale 1; the line is that wide around the blade). Does not change what you see
         public static float DamageMultiplier => 1f;  // of the item's damage (the speed is the reward for charging, so 1)
         public static float KnockbackMultiplier => 1f;
