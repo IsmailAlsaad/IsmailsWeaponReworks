@@ -66,6 +66,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         protected virtual void OnOwnerHit(NPC target, NPC.HitInfo hit, bool fullBefore) { }
         /// <summary>Owner's client, once per swing at the moment the strike begins (the blade starts to cut): 'hand' is the owner's center, 'direction' the swing's aim as a unit vector. The Night's Edge throws its flame wave from here.</summary>
         protected virtual void OnOwnerStrikeStart(Vector2 hand, Vector2 direction) { }
+        /// <summary>The sprite the sword is drawn with (and measured from). By default the projectile's own texture; the wooden swords return the held item's sprite.</summary>
+        protected virtual ReLogic.Content.Asset<Texture2D> SpriteAsset => TextureAssets.Projectile[Type];
 
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
@@ -794,7 +796,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         {
             trail?.Draw();
 
-            Texture2D texture = TextureAssets.Projectile[Type].Value;
+            Texture2D texture = SpriteAsset.Value;
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
 
             Vector2 position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, Tune.GripOffset, Projectile.scale) - Main.screenPosition;
@@ -833,7 +835,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         ChargedBladePose MakePose()
         {
             ChargedBladePose pose = new ChargedBladePose();
-            var asset = TextureAssets.Projectile[Type];
+            var asset = SpriteAsset;
             if (asset.IsLoaded)
             {
                 Texture2D texture = asset.Value;

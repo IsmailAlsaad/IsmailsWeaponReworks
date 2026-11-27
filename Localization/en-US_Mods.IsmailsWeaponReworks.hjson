@@ -92,6 +92,8 @@ Projectiles: {
 	BladeOfGrassPlantedProjectile.DisplayName: Blade Of Grass Planted Projectile
 	BladeOfGrassPlantedVinesProjectile.DisplayName: Blade Of Grass Planted Vines Projectile
 	BladeOfGrassPlantSwingProjectile.DisplayName: Blade Of Grass Plant Swing Projectile
+	SplinterProjectile.DisplayName: Splinter Projectile
+	WoodenSwordBladeProjectile.DisplayName: Wooden Sword Blade Projectile
 }
 
 Configs: {
