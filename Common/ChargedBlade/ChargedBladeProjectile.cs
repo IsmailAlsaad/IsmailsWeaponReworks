@@ -39,6 +39,8 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         protected abstract void AddOwnerCharge(Player owner, float amount);
         /// <summary>The trail style of a swing (a fresh one per trail; the blade sets its Charge every tick).</summary>
         protected abstract ChargedBladeTrailStyle CreateTrailStyle();
+        /// <summary>False = the swing lays no trail at all (a weapon with a plain swing). Default: true.</summary>
+        protected virtual bool DrawsTrail => true;
         /// <summary>Owner's machine: may a right click start the stab now (on top of: full charge, a fresh press)? Light's Bane: not while imbued.</summary>
         protected virtual bool StabAvailable(Player owner)
         {
@@ -661,6 +663,9 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         void AddTrailSample(float time, float fraction)
         {
             if (Main.dedServ)
+                return;
+
+            if (!DrawsTrail)
                 return;
 
             time -= Tune.TrailLagTicks;

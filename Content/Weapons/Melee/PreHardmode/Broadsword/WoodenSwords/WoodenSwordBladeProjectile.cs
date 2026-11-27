@@ -48,6 +48,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
 
         protected override void AddOwnerCharge(Player owner, float amount) { }
 
+        protected override bool DrawsTrail => false;
+
         protected override ChargedBladeTrailStyle CreateTrailStyle()
         {
             return new WoodenSwordSweepTrailStyle(WoodenSwordWoods.ColumnOf(woodItem));
@@ -62,7 +64,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
         protected override void OnStabImpacted(Player owner) { }
 
         protected override void FxPlaySwing(Vector2 position, float charge) { WoodenSwordFx.PlaySwing(position); }
-        protected override void FxSwingDust(Vector2 tip, Vector2 motion, float charge) { WoodenSwordFx.SwingDust(tip, motion); }
+        protected override void FxSwingDust(Vector2 tip, Vector2 motion, float charge) { }
         protected override void FxHitSpark(Vector2 position, float charge) { WoodenSwordFx.HitSpark(position); }
         protected override void FxChargeHit(Vector2 tip) { }
         protected override void FxCharged(Vector2 hand, Vector2 tip) { }

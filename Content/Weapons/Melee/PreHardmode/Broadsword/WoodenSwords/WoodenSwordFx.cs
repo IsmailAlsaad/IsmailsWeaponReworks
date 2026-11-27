@@ -25,18 +25,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
         {
             if (Main.dedServ)
                 return;
-            SoundEngine.PlaySound(SoundID.Item17 with { Volume = 0.5f, Pitch = 0.5f, PitchVariance = 0.2f }, position);
+            SoundEngine.PlaySound(new SoundStyle("IsmailsWeaponReworks/Assets/Sounds/WoodSplit", 1, 4) { Volume = 0.8f, PitchVariance = 0.1f }, position);
         }
 
         // ---- dust ----
-
-        public static void SwingDust(Vector2 tip, Vector2 motion)
-        {
-            if (Main.dedServ || !Main.rand.NextBool(4))
-                return;
-            Dust dust = Dust.NewDustPerfect(tip + Main.rand.NextVector2Circular(4f, 4f), DustID.WoodFurniture, -motion * 0.05f + Main.rand.NextVector2Circular(0.6f, 0.6f), 0, default, Main.rand.NextFloat(0.7f, 1f));
-            dust.noGravity = true;
-        }
 
         public static void HitSpark(Vector2 position)
         {
