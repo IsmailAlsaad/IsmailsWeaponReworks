@@ -212,11 +212,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Mura
             Vector2 direction = HeldSwordPose.BladeDirectionWorld(Owner, WorldBlade(arm, tilt));
             float length = MuramasaTuning.BladeLength * Projectile.scale * MuramasaTuning.TrailLengthScale;
             // The fan starts as a line at the tip and its inner edge slides down the blade toward the hand while the swing builds up.
-            float inner = PixelFan.Expand(SwingProgress(time), MuramasaTuning.TrailExpandBy, MuramasaTuning.TrailInner);
+            float outer = MuramasaTuning.TrailOuter;
+            float inner = PixelFan.Expand(SwingProgress(time), MuramasaTuning.TrailExpandBy, outer * MuramasaTuning.TrailInner, outer);
             trail ??= new SweepTrail(new MuramasaSweepTrailStyle(), IsOwner);
             // 'along' = where in the strike this sample is; the style (TailFirst) makes the tail live shorter, so it fades out first.
             float along = MathHelper.Clamp((time - StrikeStart) / Math.Max(1, MuramasaTuning.SwingTicks), 0f, 1f);
-            trail.AddBlade(hand, direction, length, 1f, inner, along);
+            trail.AddBlade(hand, direction, length, outer, inner, along);
         }
 
         // The blade is a line from the hand to the tip. The strike is fast, so the test sweeps: it checks the line at a few poses between the
@@ -333,7 +334,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Mura
             float tilt = SwingTiltAt(time);
             Vector2 hand = HeldSwordPose.HandWorld(Owner, WorldArm(arm));
             Vector2 direction = HeldSwordPose.BladeDirectionWorld(Owner, WorldBlade(arm, tilt));
-            Vector2 edge = hand + direction * MuramasaTuning.BladeLength * Projectile.scale * MuramasaTuning.TrailLengthScale;
+            Vector2 edge = hand + direction * MuramasaTuning.BladeLength * Projectile.scale * MuramasaTuning.TrailLengthScale * MuramasaTuning.TrailOuter;
             Main.EntitySpriteDraw(pixel, edge - Main.screenPosition, new Rectangle(0, 0, 1, 1), Color.LimeGreen, 0f, new Vector2(0.5f), 5f, SpriteEffects.None, 0);
         }
     }

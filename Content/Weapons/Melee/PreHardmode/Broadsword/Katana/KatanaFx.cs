@@ -32,6 +32,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
                 Spark(Vector2.Lerp(hand, tip, Main.rand.NextFloat()), Main.rand.NextVector2Circular(1f, 1f), 1f, true);
         }
 
+        public static void PlaySwing(Vector2 position, bool up)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.8f, Pitch = up ? 0.4f : 0.2f, PitchVariance = 0.1f }, position);
+        }
+
+        // A few sparks near the tip while the strike runs.
+        public static void SwingDust(Vector2 from, Vector2 to)
+        {
+            if (Main.dedServ)
+                return;
+            for (int i = 0; i < 3; i++)
+                Spark(Vector2.Lerp(from, to, Main.rand.NextFloat(0.5f, 1f)), Main.rand.NextVector2Circular(1.2f, 1.2f), 1.1f, Main.rand.NextBool());
+        }
+
         // The blade leaves the hand.
         public static void Throw(Vector2 origin, Vector2 direction)
         {

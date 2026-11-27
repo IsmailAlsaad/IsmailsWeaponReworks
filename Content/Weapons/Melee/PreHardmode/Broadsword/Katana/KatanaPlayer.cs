@@ -73,6 +73,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
                 return;
             if (BladeFlying(Player.whoAmI))
                 return;
+            if (Find(Player.whoAmI, ModContent.ProjectileType<KatanaSwingProjectile>()) != null)
+                return; // the swing hands over to a new stance itself when it ends
             KatanaStanceProjectile.Spawn(Player.GetSource_ItemUse(Player.HeldItem), Player,
                 MathHelper.ToRadians(KatanaTuning.ReadyArmDeg), MathHelper.ToRadians(KatanaTuning.ReadyTiltDeg), CooldownTicks);
         }

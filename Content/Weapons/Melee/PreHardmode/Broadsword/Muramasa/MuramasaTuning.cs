@@ -61,7 +61,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Mura
         public static float TailLifeScale => 0.45f;
         public static int TrailRails => 8;
         public static float TrailExpandBy => 0.5f;
-        public static float TrailInner => 0.3f;       // fully expanded, the fan reaches down the blade to this fraction of its length
+        public static float TrailOuter => 1f;        // the outer edge of the fan, as a fraction of the blade length (1 = the tip; above 1 reaches past it). The inner edge keeps its proportion to it
+        public static float TrailInner => 0.3f;       // fully expanded, the fan's inner edge sits at this fraction of the OUTER edge's distance from the hand
         public static float TrailOpacity => 1f;
         public static int TrailSamplesPerTick => 8;
         public static Color CoreColor => MuramasaGreen.Active ? new Color(215, 255, 225, 0) : new Color(215, 240, 255, 0);   // with the easter egg on, "blue" is green

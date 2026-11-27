@@ -26,6 +26,37 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
         public static int ClickDustCount => 8;
         public static float ClickShake => 1.5f;       // camera shake strength of the click (pixels)
 
+        // ---- the plain swing (a click before the sword is fully sheathed; copied from the Muramasa): anticipation, strike, recover; fixed ticks ----
+        public static int AnticipateTicks => 3;
+        public static float AnticipateDeg => 14f;     // how far past the start of the arc the arm pulls back
+        public static float AnticipateTiltDeg => 8f;
+        public static int SwingTicks => 5;            // the strike (the only part that damages)
+        public static float SwingEasePower => 2.2f;   // 1 = even speed; higher = faster start and a longer deceleration
+        public static float OvershootDeg => 5f;
+        public static int RecoverTicks => 6;
+        public static int SweepHitSteps => 4;         // the blade's hit test is checked at this many poses between two ticks
+        public static float SwingHitWidth => 18f;     // how thick the blade is for hits (pixels at scale 1)
+        // Relative to the AIM (the direction to the cursor when the swing starts): 0 = at the cursor, negative = above, positive = below.
+        public static float SwingHighDeg => -65f;     // top of the arc
+        public static float SwingLowDeg => 65f;       // bottom of the arc
+        public static float TiltHighDeg => -12f;
+        public static float TiltLowDeg => 12f;
+        public static float HitShake => 1f;
+        public static int FlashTicks => 10;
+
+        // ---- pixel look of the swing trail (the colors are CoreColor / GlowColor / EdgeColor at the bottom) ----
+        public static int TrailLifeTicks => 10;
+        public static float TailLifeScale => 0.45f;
+        public static int TrailRails => 8;
+        public static float TrailExpandBy => 0.5f;
+        public static float TrailOuter => 1f;         // the outer edge of the fan, as a fraction of the blade length (1 = the tip; above 1 reaches past it). The inner edge keeps its proportion to it
+        public static float TrailInner => 0.3f;       // fully expanded, the fan's inner edge sits at this fraction of the OUTER edge's distance from the hand
+        public static float TrailOpacity => 1f;
+        public static int TrailSamplesPerTick => 8;
+        public static float TrailLagTicks => 0.15f;   // how many ticks the trail runs BEHIND the sprite (0 = exactly on it)
+        public static float TrailLengthScale => 1f;   // the trail is laid along BladeLength * this (match it to the sprite by eye)
+        public static bool ShowBladeDebug => false;   // true: magenta square = the hit-test tip, green square = where the trail's outer edge is laid
+
         // ---- the throw: hold the button and the blade flies out along the aim line ----
         public static float MaxRangeTiles => 30f;     // the farthest the blade can fly
         public static int MaxChargeTicks => 10;       // holding this long (0.5 s) sends it the whole way

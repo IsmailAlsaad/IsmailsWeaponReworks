@@ -48,6 +48,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
         // The sword has clicked shut and the cooldown is over (the white glow is on): only then may the next blade be thrown.
         public bool ReadyToThrow => readyAnnounced;
 
+        // The pose right now (the start pose before the first tick): a swing started from the stance continues from exactly this.
+        public float ArmLocal => ticks == 0 ? StartArm : armLocal;
+        public float TiltRad => ticks == 0 ? StartTilt : tiltRad;
+
         public static void Spawn(IEntitySource source, Player owner, float startArmLocal, float startTilt, int cooldownTicks)
         {
             Projectile.NewProjectile(source, owner.MountedCenter, Vector2.Zero, ModContent.ProjectileType<KatanaStanceProjectile>(), 0, 0f, owner.whoAmI, startArmLocal, startTilt, Math.Max(0, cooldownTicks));
