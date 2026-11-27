@@ -15,6 +15,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.IceB
         protected override float ReadyArmDeg => IceBladeTuning.ArmStartDeg;
         protected override float ReadyTiltDeg => IceBladeTuning.BladeTiltDeg;
         protected override float SwordScale => IceBladeTuning.SwordScale;
+        protected override int ReturnDelayTicks => 7;  // ticks the sword stays in its post-strike pose (60 = 1 second)
+        protected override float IdleEase => 0.06f;     // how softly it settles into the ready pose afterwards (0.15 = default)
 
         protected override bool SwingOwnsSword(Projectile swing)
         {

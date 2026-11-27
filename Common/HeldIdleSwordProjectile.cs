@@ -33,6 +33,7 @@ namespace IsmailsWeaponReworks.Common
         protected virtual int IdleBobTicks => 90;
         protected virtual float IdleBobDeg => 2f;
         protected virtual float IdleEase => 0.15f;
+        protected virtual int ReturnDelayTicks => 0; // after a swing the sword stays in its last pose this long before easing into the ready pose
         protected virtual bool Hidden(Player owner) { return false; }
         // False while the swing projectile still exists but no longer shows the sword (its trail is still fading): the idle sword takes over then.
         protected virtual bool SwingOwnsSword(Projectile swing) { return true; }
@@ -45,6 +46,7 @@ namespace IsmailsWeaponReworks.Common
         float tiltRad;
         float walkBob;
         float swayAmount = 1f;
+        int holdTicks;
 
         public override void SetDefaults()
         {
@@ -114,6 +116,7 @@ namespace IsmailsWeaponReworks.Common
             if (hidden)
             {
                 hidden = false;
+                holdTicks = haveBlade ? ReturnDelayTicks : 0;
                 if (haveBlade)
                 {
                     // Start from the blade angle the swing left (no arm/tilt split known: all of it in the arm), then ease into the ready pose.
@@ -127,7 +130,10 @@ namespace IsmailsWeaponReworks.Common
                 }
             }
 
-            HeldSwordIdle.Step(owner, ticks, Rad(ReadyArmDeg), Rad(ReadyTiltDeg), IdleBobTicks, Rad(IdleBobDeg), IdleEase, ref armLocal, ref tiltRad, ref swayAmount);
+            if (holdTicks > 0)
+                holdTicks--; // the sword stays in the pose the swing ended in
+            else
+                HeldSwordIdle.Step(owner, ticks, Rad(ReadyArmDeg), Rad(ReadyTiltDeg), IdleBobTicks, Rad(IdleBobDeg), IdleEase, ref armLocal, ref tiltRad, ref swayAmount);
             float worldArm = HeldSwordPose.ToWorld(facing, armLocal);
             float worldBlade = HeldSwordPose.ToWorld(facing, armLocal + tiltRad);
 

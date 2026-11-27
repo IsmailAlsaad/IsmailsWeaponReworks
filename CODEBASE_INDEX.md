@@ -122,7 +122,7 @@ tModLoader/other bases -> project types:
     +PostUpdate()[ov]
 **HeldIdleSwordProjectile.cs** uses: HeldSwordIdle, HeldSwordPose
   abstract class HeldIdleSwordProjectile : ModProjectile
-    +Texture:string[ov] +Holds(int)[ab] #SwingType:int[ab] #ReadyArmDeg:float[ab] #ReadyTiltDeg:float[ab] #SwordScale:float[ab] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ab] #IdleBobTicks:int[v] #IdleBobDeg:float[v] #IdleEase:float[v] #Hidden(Player)[v] #SwingOwnsSword(Projectile)[v] +AI()[ov] +Tick() +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +Holds(int)[ab] #SwingType:int[ab] #ReadyArmDeg:float[ab] #ReadyTiltDeg:float[ab] #SwordScale:float[ab] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ab] #IdleBobTicks:int[v] #IdleBobDeg:float[v] #IdleEase:float[v] #ReturnDelayTicks:int[v] #Hidden(Player)[v] #SwingOwnsSword(Projectile)[v] +AI()[ov] +Tick() +PreDraw(ref Color)[ov]
 **HeldIdleSwordSystem.cs** uses: HeldIdleSwordProjectile
   class HeldIdleSwordSystem : ModSystem
     +PostUpdateEverything()[ov]
@@ -627,7 +627,7 @@ tModLoader/other bases -> project types:
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +OnHitNPC(Item,Player,NPC,HitInfo,int)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **IceBladeIdleProjectile.cs** uses: HeldIdleSwordProjectile, IceBladeSwingProjectile, IceBladeTuning
   class IceBladeIdleProjectile : HeldIdleSwordProjectile
-    +Holds(int)[ov] #SwingType:int[ov] #ReadyArmDeg:float[ov] #ReadyTiltDeg:float[ov] #SwordScale:float[ov] #SwingOwnsSword(Projectile)[ov] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ov]
+    +Holds(int)[ov] #SwingType:int[ov] #ReadyArmDeg:float[ov] #ReadyTiltDeg:float[ov] #SwordScale:float[ov] #ReturnDelayTicks:int[ov] #IdleEase:float[ov] #SwingOwnsSword(Projectile)[ov] #DrawBlade(Texture2D,Vector2,float,Vector2,float,SpriteEffects,Color)[ov]
 **IceBladeSwingProjectile.cs** uses: DetachedTrails, HeldSwordPose, IceBladeFx, IceBladeTrailStyle, IceBladeTuning, IceBladeWaveProjectile, IceFx, PixelFan, SweepTrail
   class IceBladeSwingProjectile : ModProjectile
     +Texture:string[ov] +HoldsSword:bool +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
