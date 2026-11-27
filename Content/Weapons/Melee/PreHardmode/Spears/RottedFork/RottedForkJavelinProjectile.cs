@@ -146,14 +146,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.RottedFo
             RottedForkFx.Flecks(tip, tip - prevTip, 1f, palette);
             Lighting.AddLight(tip, palette.Mid.ToVector3() * 0.6f);
 
-            trail ??= new SweepTrail(new ThrustTrailStyle(palette, RottedForkTuning.TrailLifeTicks, RottedForkTuning.TrailRails, RottedForkTuning.PixelSize, RottedForkTuning.TrailOpacity, RottedForkTuning.JavelinTrailTaper), IsOwner);
+            // The same smooth fan the spin leaves (same style numbers, two samples per tick), but opened ACROSS the flight path: a shaft that
+            // flies along its own length sweeps no area, so each sample is a pair of points either side of the butt, JavelinTrailWidth apart.
+            trail ??= new SweepTrail(new RottedForkJavelinTrailStyle(palette, RottedForkTuning.TrailLifeTicks, RottedForkTuning.TrailRails, RottedForkTuning.PixelSize, RottedForkTuning.TrailOpacity), IsOwner);
+            Vector2 side = new Vector2(-direction.Y, direction.X) * (RottedForkTuning.JavelinTrailWidth * 0.5f);
             for (int i = 1; i <= 2; i++)
             {
                 float f = i / 2f - RottedForkTuning.TrailLagTicks;
-                Vector2 tipPoint = Vector2.Lerp(prevTip, tip, f);
-                Vector2 root = Vector2.Lerp(prevButt, butt, f);
-                float outer = RottedForkTuning.TrailOuter;
-                trail.AddSegment(root, tipPoint, outer, outer * (1f - RottedForkTuning.TrailInnerFraction));
+                Vector2 root = Vector2.Lerp(prevButt, butt, f) + direction * RottedForkTuning.JavelinTrailAlong + new Vector2(-direction.Y, direction.X) * RottedForkTuning.JavelinTrailAcross;
+                trail.Add(root + side, root - side);
             }
             trail.Tick();
         }

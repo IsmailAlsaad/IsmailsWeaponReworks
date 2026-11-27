@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using Terraria.DataStructures;
 
 namespace IsmailsWeaponReworks.Common
 {
@@ -36,6 +37,21 @@ namespace IsmailsWeaponReworks.Common
                 position += toCenter.RotatedBy(rotation) * (centerScale - scale);   // moves the copy so its middle sits where the real sprite's middle is
             }
             Main.EntitySpriteDraw(texture, position - Main.screenPosition, null, color, rotation, origin, scale, effects, 0);
+        }
+
+        // The same sprite as DrawSprite, as a DrawData for a PlayerDrawLayer (the position is already a screen position). Lets a held spear
+        // be drawn inside the player's layers, e.g. behind the hand.
+        public static DrawData SpriteData(Texture2D texture, Vector2 butt, float worldRotation, int spriteDirection, float scale, Color color, float centerScale = 0f)
+        {
+            HeldSwordPose.Sprite(texture, spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
+            float rotation = worldRotation + rotationOffset;
+            Vector2 position = butt;
+            if (centerScale > 0f && centerScale != scale)
+            {
+                Vector2 toCenter = texture.Size() * 0.5f - origin;
+                position += toCenter.RotatedBy(rotation) * (centerScale - scale);
+            }
+            return new DrawData(texture, position - Main.screenPosition, null, color, rotation, origin, scale, effects, 0);
         }
     }
 }

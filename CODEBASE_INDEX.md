@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-27 | 392 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-27 | 394 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-ReworkToggle(44) YoyoTuning(40) DetachedTrails(40) CameraShake(38) RemoteHitTracker(33) HeldSwordPose(26) ThrustPalette(24) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(18) PixelTrail(16) SweepTrail(15) PixelTrailStyle(15) YoyoTrick(14) SweepFade(14) FlailTuning(14) Phase(13) NightsEdgeTuning(13) FlailFx(13)
+ReworkToggle(44) YoyoTuning(40) DetachedTrails(40) CameraShake(38) RemoteHitTracker(33) HeldSwordPose(26) ThrustPalette(25) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(18) PixelTrail(16) SweepTrail(15) PixelTrailStyle(15) YoyoTrick(14) SweepFade(14) FlailTuning(14) Phase(13) NightsEdgeTuning(13) FlailFx(13)
 
 ## Inheritance
 Project bases -> derived:
@@ -40,7 +40,7 @@ Project bases -> derived:
 - NightsEdgeBlobStyle: NightsEdgeBurstStyle, NightsEdgeEdgeStyle, NightsEdgeFlameStyle
 - PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, EtherealBeamTrailStyle, FlailTrailStyle, FlamingMaceTrailStyle, HiveFiveTrailStyle, MaceShardTrailStyle, MoltenTrailStyle, NightsEdgeWaveTipTrailStyle, SunfuryTrailStyle
 - PopTheClutchTrick: CascadeTrick, ValorTrick
-- SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, ChargedBladeTrailStyle, EnchantedSwordSweepTrailStyle, IceBladeTrailStyle, KatanaSweepTrailStyle, MuramasaSweepTrailStyle, PhasebladeSweepTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
+- SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, ChargedBladeTrailStyle, EnchantedSwordSweepTrailStyle, IceBladeTrailStyle, KatanaSweepTrailStyle, MuramasaSweepTrailStyle, PhasebladeSweepTrailStyle, RottedForkJavelinTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
 - VolcanoDripStyle: VolcanoBurstStyle
 - WalkTheDogTrick: AmazonWalkTheDogTrick, WoodenYoyoTrick
 - YoyoFx: AmazonFx, CascadeFx, Code1Fx, HiveFiveFx, LoopYoyoFx, RallyFx, ValorFx, WoodenYoyoFx
@@ -55,11 +55,11 @@ tModLoader/other bases -> project types:
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
 - ModSystem (6): DetachedFlares, DetachedTrails, HeldIdleSwordSystem, MetaballLayers, ReworkRegistry, YoyoRegistry
 - ModBuff (2): LightsBaneImbueBuff, NightsEdgeShadowArmorBuff
+- PlayerDrawLayer (2): BladeOfGrassVineLayer, RottedForkSpinLayer
 - ConfigElement (1): ReworkGridElement
 - Mod (1): IsmailsWeaponReworks
 - ModCommand (1): GiveWeaponsCommand
 - ModConfig (1): ReworksToggleConfig
-- PlayerDrawLayer (1): BladeOfGrassVineLayer
 
 ## Files
 
@@ -223,7 +223,7 @@ tModLoader/other bases -> project types:
     +CanBite(NPC)[s] +CanGrip(NPC,float)[s]
 **SpearPose.cs** uses: HeldSwordPose
   static class SpearPose
-    +Arm(Player,float)[s] +Hand(Player,float)[s] +DrawSprite(Texture2D,Vector2,float,int,float,Color,float,Vector2,float)[s]
+    +Arm(Player,float)[s] +Hand(Player,float)[s] +DrawSprite(Texture2D,Vector2,float,int,float,Color,float,Vector2,float)[s] +SpriteData(Texture2D,Vector2,float,int,float,Color,float)[s]
 **SweepTrail.cs** uses: FanLook, PixelFan
   abstract class SweepTrailStyle
     +Grid:float[v] +LifeTicks:int[v] +Rails:int[v] +TaperFraction:float[v] +Smoothing:bool[v] +Look:FanLook[v] +SoftFeatherPx:float[v] +RibbonLayers:int[v] +RibbonShrink:float[v] +RibbonWidthScale:float[v] +RibbonGain:float[v] +Fade:SweepFade[v] +TailLifeScale:float[v] +GetColor(float,float)[ab] #Falloff(float)[s] #ThreeStop(float,Color,Color,Color)[s]
@@ -1146,18 +1146,24 @@ tModLoader/other bases -> project types:
 **RottedForkGlobalItem.cs** uses: HeldAim, ReworkToggle, RottedForkJavelinProjectile, RottedForkSpinProjectile, RottedForkTuning, ThrustPlayer
   class RottedForkGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +AltFunctionUse(Item,Player)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +Throw(Player,IEntitySource,int,float)[s] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**RottedForkJavelinProjectile.cs** uses: AreaEffect, CarriedNPC, DetachedTrails, RemoteHitTracker, RottedForkFx, RottedForkPlayer, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
+**RottedForkJavelinProjectile.cs** uses: AreaEffect, CarriedNPC, DetachedTrails, RemoteHitTracker, RottedForkFx, RottedForkJavelinTrailStyle, RottedForkPlayer, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer
   class RottedForkJavelinProjectile : ModProjectile
     +Texture:string[ov] +OnSpawn(IEntitySource)[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +OnTileCollide(Vector2)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**RottedForkJavelinTrailStyle.cs** uses: SweepTrailStyle, ThrustPalette
+  class RottedForkJavelinTrailStyle : SweepTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +GetColor(float,float)[ov]
 **RottedForkPlayer.cs** uses: RottedForkGlobalItem, RottedForkJavelinProjectile, RottedForkSpinProjectile, ThrustPlayer
   class RottedForkPlayer : ModPlayer
     +AutoThrow:bool +PreUpdate()[ov]
+**RottedForkSpinLayer.cs** uses: RottedForkSpinProjectile
+  class RottedForkSpinLayer : PlayerDrawLayer
+    +GetDefaultPosition()[ov] +GetDefaultVisibility(PlayerDrawSet)[ov] #Draw(ref PlayerDrawSet)[ov]
 **RottedForkSpinProjectile.cs** uses: DetachedTrails, HeldAim, RemoteHitTracker, RottedForkFx, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
   class RottedForkSpinProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov] +AddForkDrawData(ref PlayerDrawSet)
 **RottedForkTuning.cs** uses: ThrustPalette
   static class RottedForkTuning
-    +SpinSpeed:float[s] +RampTicks:int[s] +StartSpeedFraction:float[s] +WindDownTicks:int[s] +MinSpinTicks:int[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +HitCooldownTicks:int[s] +MinHitSpeed:float[s] +HitWidth:float[s] +SpearScale:float[s] +JointOffset:float[s] +JavelinSpeed:float[s] +JavelinLifeTicks:int[s] +JavelinDamageMultiplier:float[s] +JavelinHitWidth:float[s] +JavelinCooldownTicks:int[s] +MaxImpaled:int[s] +MaxCarrySize:float[s] +CarryFollow:float[s] +CarryFrontGap:float[s] +CarryGap:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +CarriedBlastMultiplier:float[s] +BlastKnockback:float[s] +CarriedKnockback:float[s] +BlastShake:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailInnerFraction:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +PixelSize:float[s] +JavelinTrailTaper:float[s] +Palette:ThrustPalette[s]
+    +SpinSpeed:float[s] +RampTicks:int[s] +StartSpeedFraction:float[s] +WindDownTicks:int[s] +MinSpinTicks:int[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +HitCooldownTicks:int[s] +MinHitSpeed:float[s] +HitStart:float[s] +HitEnd:float[s] +HitWidth:float[s] +SpearScale:float[s] +JointOffset:float[s] +JavelinSpeed:float[s] +JavelinLifeTicks:int[s] +JavelinDamageMultiplier:float[s] +JavelinHitWidth:float[s] +JavelinCooldownTicks:int[s] +MaxImpaled:int[s] +MaxCarrySize:float[s] +CarryFollow:float[s] +CarryFrontGap:float[s] +CarryGap:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +CarriedBlastMultiplier:float[s] +BlastKnockback:float[s] +CarriedKnockback:float[s] +BlastShake:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailInnerFraction:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +PixelSize:float[s] +JavelinTrailWidth:float[s] +JavelinTrailAlong:float[s] +JavelinTrailAcross:float[s] +Palette:ThrustPalette[s]
 
 ### Content/Weapons/Melee/PreHardmode/Spears/Spear/
 **SpearGlobalItem.cs** uses: HeldAim, ReworkToggle, SpearThrustProjectile, SpearTuning, ThrustPlayer

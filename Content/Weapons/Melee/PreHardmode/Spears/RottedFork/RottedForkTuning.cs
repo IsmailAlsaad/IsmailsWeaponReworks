@@ -23,6 +23,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.RottedFo
         public static float DamageMultiplier => 0.8f;    // per hit, times the item's damage (balance by damage per second)
         public static int HitCooldownTicks => 10;        // the same enemy can be hit again after this long
         public static float MinHitSpeed => 0.35f;        // the fork only hurts while it is at least this fast (fraction of full speed)
+        public static float HitStart => 0f;              // where the spin hit line begins on the shaft: 0 = at the butt, 1 = only at the tip (fraction of the shaft)
+        public static float HitEnd => 1.25f;                // where the spin hit line ends: 1 = at the tip, above 1 reaches past the tip (1.2 = 20% of the shaft further)
         public static float HitWidth => 22f;             // thickness of the hit line (pixels at scale 1)
 
         // ---- the fork ----
@@ -48,14 +50,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.RottedFo
         public static float BlastShake => 3f;               // camera punch of the explosion (nearby players)
 
         // ---- look ----
-        public static int TrailLifeTicks => 8;
+        public static int TrailLifeTicks => 16;
         public static int TrailRails => 6;
         public static float TrailOpacity => 0.8f;
         public static float TrailInnerFraction => 0.6f;  // how far down the shaft (from the tip toward the butt) the fan reaches
-        public static float TrailOuter => 1f;            // the outer edge of the fan, as a fraction of the shaft from the butt (1 = the tip)
+        public static float TrailOuter => 1.2f;            // the outer edge of the SPIN fan, as a fraction of the shaft from the butt (1 = the tip)
         public static float TrailLagTicks => 0f;         // how many ticks the trail runs BEHIND the fork (0 = exactly on it; the pose between two ticks is extended linearly)
         public static float PixelSize => 2f;
-        public static float JavelinTrailTaper => 1f;   // the oldest part of the javelin streak is a point that widens to full width this far (0 to 1) along it
+        public static float JavelinTrailWidth => 20f;  // the javelin trail's width across the flight path (pixels), centred behind the fork; brightest in the middle
+        public static float JavelinTrailAlong => 70f;   // shifts the javelin trail along the flight direction (pixels, positive = toward the tip)
+        public static float JavelinTrailAcross => 0f;  // shifts the javelin trail sideways (pixels)
         public static ThrustPalette Palette => new ThrustPalette(new Color(255, 200, 185), new Color(205, 50, 60) * 0.6f, new Color(110, 15, 35) * 0.3f, DustID.Blood, DustID.RedTorch);
     }
 }

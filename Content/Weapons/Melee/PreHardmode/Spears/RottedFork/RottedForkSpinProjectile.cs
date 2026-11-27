@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -47,6 +48,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.RottedFo
         Vector2 prevTip2;
         SweepTrail trail;
         SweepTrail trail2;
+        Color lastLight = Color.White; // the light the last PreDraw saw, for the fork drawn by RottedForkSpinLayer
         RemoteHitTracker remoteHits; // created on first use: a field initializer here would be shared by every projectile of the type
 
         public override void SetDefaults()
@@ -189,7 +191,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.RottedFo
             if (!hasPose || speedFraction < RottedForkTuning.MinHitSpeed)
                 return false;
             float width = RottedForkTuning.HitWidth * Projectile.scale;
-            return SegmentHit.Sweep(targetHitbox, prevButt, prevTip, butt, tip, width, 3) || SegmentHit.Sweep(targetHitbox, prevButt, prevTip2, butt, tip2, width, 3);
+            float start = RottedForkTuning.HitStart;
+            Vector2 root = Vector2.Lerp(butt, tip, start);
+            Vector2 prevRoot = Vector2.Lerp(prevButt, prevTip, start);
+            Vector2 root2 = Vector2.Lerp(butt, tip2, start);
+            Vector2 prevRoot2 = Vector2.Lerp(prevButt, prevTip2, start);
+            float end = RottedForkTuning.HitEnd;
+            Vector2 reach = Vector2.Lerp(butt, tip, end);
+            Vector2 prevReach = Vector2.Lerp(prevButt, prevTip, end);
+            Vector2 reach2 = Vector2.Lerp(butt, tip2, end);
+            Vector2 prevReach2 = Vector2.Lerp(prevButt, prevTip2, end);
+            return SegmentHit.Sweep(targetHitbox, prevRoot, prevReach, root, reach, width, 3) || SegmentHit.Sweep(targetHitbox, prevRoot2, prevReach2, root2, reach2, width, 3);
         }
 
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
@@ -216,7 +228,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.RottedFo
         {
             trail?.Draw();
             trail2?.Draw();
+            lastLight = lightColor; // the fork itself is drawn by RottedForkSpinLayer, inside the player's layers (behind the hand)
+            return false;
+        }
 
+        // Called by RottedForkSpinLayer on every machine: the two forks (and their glow copies) as player draw data, queued just before the
+        // player's front arm so the hand is drawn over the shaft.
+        public void AddForkDrawData(ref PlayerDrawSet drawInfo)
+        {
+            if (!hasPose)
+                return;
             Texture2D texture = TextureAssets.Projectile[Type].Value;
             ThrustPalette palette = RottedForkTuning.Palette;
             float scale = Projectile.scale;
@@ -227,11 +248,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.RottedFo
             for (int side = 0; side < 2; side++)
             {
                 float turn = rotation + side * MathHelper.Pi; // the second fork is the first one turned half a circle around the joint
-                SpearPose.DrawSprite(texture, butt, turn, flip, scale * 1.18f, palette.Halo * (0.45f * glow), 0f, default, scale);
-                SpearPose.DrawSprite(texture, butt, turn, flip, scale * 1.07f, palette.Mid * (0.5f * glow), 0f, default, scale);
-                SpearPose.DrawSprite(texture, butt, turn, flip, scale, Color.Lerp(lightColor, Color.White, 0.3f + 0.4f * glow));
+                drawInfo.DrawDataCache.Add(SpearPose.SpriteData(texture, butt, turn, flip, scale * 1.18f, palette.Halo * (0.45f * glow), scale));
+                drawInfo.DrawDataCache.Add(SpearPose.SpriteData(texture, butt, turn, flip, scale * 1.07f, palette.Mid * (0.5f * glow), scale));
+                drawInfo.DrawDataCache.Add(SpearPose.SpriteData(texture, butt, turn, flip, scale, Color.Lerp(lastLight, Color.White, 0.3f + 0.4f * glow)));
             }
-            return false;
         }
     }
 }
