@@ -45,6 +45,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
             }
         }
 
+        /// <summary>The vanilla dust of a wood's column (the chips of the splinters). Palm, Rich Mahogany and Ash are plain wood dust (7) until their ids are checked on the wiki's Dust IDs page; change the numbers here.</summary>
+        public static int DustOf(int column)
+        {
+            switch (column)
+            {
+                case 1: return 122;  // boreal wood
+                case 2: return 7;    // palm wood (check)
+                case 3: return 7;    // rich mahogany (check)
+                case 4: return 121;  // shadewood
+                case 5: return 77;   // ebonwood
+                case 6: return 36;    // ash wood (check)
+                case 7: return DustID.t_Cactus; // cactus (40)
+                default: return DustID.WoodFurniture; // wood (7)
+            }
+        }
+
         public static WoodSpec Spec(int column)
         {
             int max = WoodenSwordTuning.MaxSplinters;

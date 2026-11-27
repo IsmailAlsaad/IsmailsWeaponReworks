@@ -100,14 +100,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
         public static int LifeTicks => 300;             // how long a splinter stays in (5 s)
         public static int CactusMaxSplinters => 5;
         public static int CactusLifeTicks => 420;       // 7 s
-        public static int FadeTicks => 30;              // a splinter fades out over its last ticks
         public static int CellSize => 12;               // Splinters.png: every cell is this big, the splinter centered in it
         public static int StyleCount => 4;              // splinter styles stacked vertically per wood
         public static float SplinterScale => 1f;
         public static float StickShake => 0f;           // camera punch when a splinter lodges; 0 = none
-        public static int StickDustCount => 4;
-        public static int TickDustCount => 2;           // dust at a splinter every time it hurts
-        public static int ExpireDustCount => 3;
+        public static int StickDustCount => 3;          // wood chips when a splinter lodges
+        public static int TickDustCount => 0;           // dust at a splinter every time it hurts (0 = none)
+        public static int BreakDustCount => 5;          // a splinter breaks into this many bits when its life ends (or its enemy dies, or it is pushed out)
+        public static float BreakDustSpeed => 2.5f;
         public static int WaitForNpcTicks => 30;        // a client that gets the splinter before the enemy waits this long for it
     }
 }

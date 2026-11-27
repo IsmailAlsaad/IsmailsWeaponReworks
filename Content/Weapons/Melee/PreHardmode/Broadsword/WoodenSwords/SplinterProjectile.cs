@@ -103,7 +103,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
                 npcType = Main.npc[index].type;
             Projectile.Center = Anchor(index);
             WoodenSwordFx.PlayStick(Projectile.Center);
-            WoodenSwordFx.Chips(Projectile.Center, WoodenSwordTuning.StickDustCount, 2f);
+            WoodenSwordFx.Chips(Projectile.Center, Column, WoodenSwordTuning.StickDustCount, 2f);
             if (Projectile.owner == Main.myPlayer)
                 CameraShake.Punch(Projectile.Center, WoodenSwordTuning.StickShake, 6);
         }
@@ -150,7 +150,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
             int interval = Math.Max(1, WoodenSwordTuning.HitIntervalTicks);
             if (age > 0 && age % interval == 0)
             {
-                WoodenSwordFx.Chips(Projectile.Center, WoodenSwordTuning.TickDustCount, 1.2f);
+                WoodenSwordFx.Chips(Projectile.Center, Column, WoodenSwordTuning.TickDustCount, 1.2f);
                 if (Projectile.owner == Main.myPlayer && !npc.dontTakeDamage && !npc.immortal)
                 {
                     int direction = npc.Center.X > Main.player[Projectile.owner].Center.X ? 1 : -1;
@@ -162,7 +162,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
         public override void OnKill(int timeLeft)
         {
             if (started)
-                WoodenSwordFx.Chips(Projectile.Center, WoodenSwordTuning.ExpireDustCount, 1.5f);
+                WoodenSwordFx.Break(Projectile.Center, Column, WoodenSwordTuning.BreakDustCount, WoodenSwordTuning.BreakDustSpeed);
         }
 
         public override bool PreDraw(ref Color lightColor)
@@ -170,8 +170,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Wood
             if (!started)
                 return false;
 
-            float fade = MathHelper.Clamp(Projectile.timeLeft / (float)Math.Max(1, WoodenSwordTuning.FadeTicks), 0f, 1f);
-            Color color = Lighting.GetColor(Projectile.Center.ToTileCoordinates()) * fade;
+            Color color = Lighting.GetColor(Projectile.Center.ToTileCoordinates());
             Vector2 position = (Projectile.Center - Main.screenPosition).Floor();
             float rotation = Projectile.ai[2];
             float scale = WoodenSwordTuning.SplinterScale;
