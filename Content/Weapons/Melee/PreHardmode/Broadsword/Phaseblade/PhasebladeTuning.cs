@@ -52,20 +52,29 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
         public static int RemoteLingerTicks => 6;     // other players' copy of a swing holds its last pose this long, waiting for the next swing to arrive over the network (so lag does not make the blade blink)
         public static int FlashTicks => 10;
 
-        // ---- the plant (right click): the blade lifts up, then the arm drives it into the ground in front of the feet while it rotates point-down ----
+        // ---- the throw (right click): the arm winds back, whips forward toward the cursor and lets go; the blade flies in an arc, spins, falls and sticks in the ground where it lands ----
         // Arm angles here are facing-local (0 = forward, negative = up), not relative to the aim.
-        public static int PlantLiftTicks => 9;        // the arm lifts, blade up
-        public static int PlantStabTicks => 8;        // the drive: the arm comes down accelerating while the blade rotates from point-up to point-down in the same motion; it lands on the last tick
-        public static int PlantRecoverTicks => 9;     // the arm settles back after the blade is planted
-        public static float PlantRestArmDeg => 25f;   // where a plant starts when no swing came right before it, and where the arm settles
-        public static float PlantRaisedArmDeg => -80f;
+        public static int ThrowWindupTicks => 9;      // the arm lifts back, blade up
+        public static int ThrowSnapTicks => 6;        // the arm whips forward to point at the cursor; the blade is released on the last tick
+        public static int ThrowRecoverTicks => 10;    // the (empty) arm settles back
+        public static float ThrowRestArmDeg => 25f;   // where a throw starts when no swing came right before it, and where the arm settles
+        public static float ThrowRaisedArmDeg => -110f; // the wound-up arm (up and back)
+        public static float ThrowAvgSpeed => 12f;     // the arc is aimed to pass the cursor; its flight time is the distance divided by this (pixels per tick). Lower = a higher, slower arc
+        public static int ThrowMinFlightTicks => 12;  // flight time of the shortest throws
+        public static float ThrowMaxSpeed => 26f;     // launch speed cap: a cursor farther than this can reach is landed short of
+        public static float ThrowGravity => 0.35f;    // pixels per tick squared
+        public static float ThrowMaxFallSpeed => 18f;
+        public static float ThrowSpinPerSpeed => 0.035f; // radians per tick of spin for every pixel per tick of speed: the spin follows the speed (slowest at the top of the arc, fastest on the way down)
+        public static float ThrowDamageFactor => 2f;  // the flying blade hits this much harder than the planted blade (0.5 x 2 = the item's damage)
+
+        // ---- the planted blade ----
         public static float PlantSinkPx => 14f;       // how far the blade's tip sinks into the tile below the ground surface (the tile hides that part: the planted blade is drawn behind tiles)
-        public static float PlantReachPx => 20f;      // the planted blade stands this far in front of the player's centre; the arm's end pose is solved to reach it (the arm can only reach so far)
-        public static float PlantGroundedDropPx => 24f; // ground within this far below the feet = a standing plant; farther (airborne) = the blade is shot straight down until it hits a tile (no distance limit)
-        public static float PlantDropSpeed => 26f;    // the shot blade's speed straight down, in pixels per tick
         public static float PlantedMaxDistancePx => 2400f; // a planted blade returns by itself when its owner is farther away than this (or dies)
         public static float PlantedEmberChance => 0.35f;   // per tick
         public static float PlantShake => 4f;         // camera punch when the blade lands
+        public static float PlantVibrateDeg => 16f;   // how far the blade rocks about its tip when it lands (the rocking dies out by itself)
+        public static int PlantVibrateTicks => 30;    // how long the rocking lasts
+        public static float PlantVibrateSpeed => 1.3f; // radians per tick of the rocking
 
         // ---- the pull back (any click while the blade is planted or falling): it leaves the ground, spins, flies to the hand, hits what it crosses ----
         public static float ReturnPopSpeed => 7f;     // it pops up out of the ground at this speed before the pull takes over

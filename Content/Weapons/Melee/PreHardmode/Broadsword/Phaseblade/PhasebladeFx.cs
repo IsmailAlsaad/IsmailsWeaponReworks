@@ -49,7 +49,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
         {
             if (Main.dedServ)
                 return;
-            Spark(tip, -tipVelocity * 0.08f + Main.rand.NextVector2Circular(1f, 1f), 1.2f, color);
+            //Spark(tip, -tipVelocity * 0.08f + Main.rand.NextVector2Circular(1f, 1f), 1.2f, color);
         }
 
         public static void PlayPlantLift(Vector2 position)
@@ -57,6 +57,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
             if (Main.dedServ)
                 return;
             SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.5f, Pitch = 0.1f, PitchVariance = 0.1f }, position);
+        }
+
+        // The blade leaves the hand: a whoosh and a short fan of sparks in the throw's direction.
+        public static void PlayThrow(Vector2 position, Vector2 direction, Color color)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.8f, Pitch = 0.25f, PitchVariance = 0.1f }, position);
+            SoundEngine.PlaySound(SoundID.Item15 with { Volume = 0.4f, Pitch = 0.3f }, position);
+            float aim = direction.ToRotation();
+            for (int i = 0; i < 10; i++)
+                Spark(position, (aim + Main.rand.NextFloat(-0.5f, 0.5f)).ToRotationVector2() * Main.rand.NextFloat(2f, 6f), 1.2f, color);
         }
 
         // The sound the tile makes when it is hit (dirt, stone, wood, glass, a modded tile's own, see TileSound), taken from the tile the blade

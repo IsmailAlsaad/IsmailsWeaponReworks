@@ -35,11 +35,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
 
         public override bool AltFunctionUse(Item item, Player player)
         {
-            return true; // right click plants the blade in the ground
+            return true; // right click throws the blade
         }
 
-        // One swing at a time. A planted (or falling) blade is pulled back by any click (the click is used up by it; a LEFT click also starts the combo
-        // when the blade is caught). A plant works anywhere: on the ground it is driven in, in the air the blade is shot straight down.
+        // One swing at a time. A thrown blade (flying or stuck in the ground) is pulled back by any click (the click is used up by it; a LEFT click also
+        // starts the combo when the blade is caught). A throw works anywhere.
         public override bool CanUseItem(Item item, Player player)
         {
             // A swing in progress blocks the item, except in its chain window (the last ticks of the strike): then the next swing may start.
@@ -70,17 +70,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
             // that pose in this same tick, so the blade is never missing for a frame; its trail keeps fading by itself).
             PhasebladeSwingProjectile.Find(player)?.Projectile.Kill();
 
-            // RIGHT CLICK: the plant swing. It starts from the arm's pose where the last swing ended (converted to the facing-local angles the plant uses).
+            // RIGHT CLICK: the throw swing. It starts from the arm's pose where the last swing ended (converted to the facing-local angles the throw uses).
             if (player.altFunctionUse == 2)
             {
                 int side = Main.MouseWorld.X >= player.Center.X ? 1 : -1;
                 bool justSwung = state.LastPhase >= 0 && Main.GameUpdateCount - state.LastEndTick <= (uint)PhasebladeTuning.ComboTicks;
-                float plantStart = justSwung ? MathHelper.WrapAngle(HeldSwordPose.ToWorld(side, state.LastEndWorldArm)) : MathHelper.ToRadians(PhasebladeTuning.PlantRestArmDeg);
+                float throwStart = justSwung ? MathHelper.WrapAngle(HeldSwordPose.ToWorld(side, state.LastEndWorldArm)) : MathHelper.ToRadians(PhasebladeTuning.ThrowRestArmDeg);
                 Vector2 toCursor = Main.MouseWorld - player.MountedCenter;
-                float plantAim = toCursor.LengthSquared() > 1f ? toCursor.ToRotation() : (side == 1 ? 0f : MathHelper.Pi);
-                int plantDamage = (int)(damage * PhasebladeTuning.PlantedDamageMultiplier);
-                float plantKnockback = knockback * PhasebladeTuning.PlantedKnockbackMultiplier;
-                Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, plantDamage, plantKnockback, player.whoAmI, (float)PhasebladeSwingProjectile.Phase.Plant, plantStart, plantAim);
+                float throwAim = toCursor.LengthSquared() > 1f ? toCursor.ToRotation() : (side == 1 ? 0f : MathHelper.Pi);
+                int throwDamage = (int)(damage * PhasebladeTuning.PlantedDamageMultiplier);
+                float throwKnockback = knockback * PhasebladeTuning.PlantedKnockbackMultiplier;
+                Projectile.NewProjectile(source, player.MountedCenter, Vector2.Zero, type, throwDamage, throwKnockback, player.whoAmI, (float)PhasebladeSwingProjectile.Phase.Throw, throwStart, throwAim);
                 state.LastStartTick = Main.GameUpdateCount;
                 return false;
             }
@@ -125,7 +125,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "Phaseblade1", "Right click to plant the blade in the ground"));// (in the air it shoots straight down)"));
+            tooltips.Add(new TooltipLine(Mod, "Phaseblade1", "Right click to throw the blade"));
             //tooltips.Add(new TooltipLine(Mod, "Phaseblade2", "Click again to call it back: it flies to your hand, hurting enemies on the way"));
         }
     }

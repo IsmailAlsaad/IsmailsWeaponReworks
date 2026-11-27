@@ -28,7 +28,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
         // The projectile's own sprite is only a placeholder: the swing draws the held item's sprite (the color of the Phaseblade in the hand).
         public override string Texture => "Terraria/Images/Item_" + ItemID.BluePhaseblade;
 
-        public enum Phase { SwingDown = 0, SpinDown = 1, SpinUp = 2, Plant = 3 }
+        public enum Phase { SwingDown = 0, SpinDown = 1, SpinUp = 2, Throw = 3 }
 
         Phase CurrentPhase => (Phase)(int)Projectile.ai[0];
         float StartArm => Projectile.ai[1];
@@ -39,7 +39,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
         int Facing => Math.Cos(Aim) >= 0.0 ? 1 : -1;
         bool IsUp => CurrentPhase == Phase.SpinUp;
         bool Spins => CurrentPhase == Phase.SpinDown || CurrentPhase == Phase.SpinUp;
-        bool IsPlant => CurrentPhase == Phase.Plant;
+        bool IsThrow => CurrentPhase == Phase.Throw;
         bool Loops => CurrentPhase == Phase.SpinDown;
         Color BladeColor => PhasebladeTuning.ColorOf(Owner.HeldItem.type);
 
@@ -52,7 +52,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
         float tiltRad;         // blade tilt relative to the arm (includes the spin)
         Vector2 tipPosition;
         Vector2 lastTipPosition;
-        float plantStabArm;    // the plant: the facing-local arm angle at the end of the drive, solved from PlantReachPx when the plant starts
         Vector2 lastOwnerCenter; // where the owner was on the previous tick: the trail interpolates the owner's movement from it
         Vector2 hitOwnerFrom;    // the owner's position at the start and end of this tick: the hit test interpolates between them
         Vector2 hitOwnerTo;
@@ -83,15 +82,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
         }
 
         // The arm and the blade as world angles (in the player's own frame, see ApplyPose); a swing is relative to its aim and mirrored by the facing.
-        // The plant keeps the facing-local angles (it does not follow the aim).
+        // The throw keeps the facing-local angles (it does not follow the aim).
         float WorldArm(float arm)
         {
-            return IsPlant ? HeldSwordPose.ToWorld(Facing, arm) : Aim + Facing * arm;
+            return IsThrow ? HeldSwordPose.ToWorld(Facing, arm) : Aim + Facing * arm;
         }
 
         float WorldBlade(float arm, float tilt)
         {
-            return IsPlant ? HeldSwordPose.ToWorld(Facing, arm + tilt) : Aim + Facing * (arm + tilt);
+            return IsThrow ? HeldSwordPose.ToWorld(Facing, arm + tilt) : Aim + Facing * (arm + tilt);
         }
 
         // Where the pull back of a down swing ends (just above the top of the arc).
@@ -126,8 +125,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
         int StrikeTicks => Spins ? PhasebladeTuning.SpinSwingTicks : PhasebladeTuning.SwingTicks;
         int StrikeStart => WindupTicks;
         int StrikeEnd => StrikeStart + StrikeTicks;
-        int PlantImpactTick => PhasebladeTuning.PlantLiftTicks + PhasebladeTuning.PlantStabTicks;
-        int TotalTicks => IsPlant ? PlantImpactTick + PhasebladeTuning.PlantRecoverTicks : StrikeEnd + PhasebladeTuning.RecoverTicks;
+        int ThrowReleaseTick => PhasebladeTuning.ThrowWindupTicks + PhasebladeTuning.ThrowSnapTicks;
+        int TotalTicks => IsThrow ? ThrowReleaseTick + PhasebladeTuning.ThrowRecoverTicks : StrikeEnd + PhasebladeTuning.RecoverTicks;
 
         // +1 when the arm angle grows during the swing (down), -1 when it shrinks (up).
         float Travel => IsUp ? -1f : 1f;
@@ -162,13 +161,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
             return tilt;
         }
 
-        bool Damaging => !IsPlant && poseTime >= StrikeStart && poseTime <= StrikeEnd;
+        bool Damaging => !IsThrow && poseTime >= StrikeStart && poseTime <= StrikeEnd;
 
         // From the last ticks of the strike on, the next click may start its swing: the item is released (see AI) and PhasebladeGlobalItem ends this
         // swing and starts the next in the same tick, so one blade replaces the other with no frame in between.
-        public bool InChainWindow => !IsPlant && timer >= StrikeEnd - PhasebladeTuning.ChainEarlyTicks;
+        public bool InChainWindow => !IsThrow && timer >= StrikeEnd - PhasebladeTuning.ChainEarlyTicks;
 
-        // The player's running swing (or plant swing), or null.
+        // The player's running swing (or throw swing), or null.
         public static PhasebladeSwingProjectile Find(Player player)
         {
             for (int i = 0; i < Main.maxProjectiles; i++)
@@ -214,7 +213,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
 
             // The owner's copy ends right at the end of the swing; the other players' copy holds its last pose a few ticks longer, so a late packet
             // of the next swing does not leave a gap.
-            if (timer >= TotalTicks + (!IsOwner && !IsPlant ? PhasebladeTuning.RemoteLingerTicks : 0))
+            if (timer >= TotalTicks + (!IsOwner && !IsThrow ? PhasebladeTuning.RemoteLingerTicks : 0))
             {
                 owner.itemAnimation = 0; // the next swing may start on the very next tick
                 owner.itemTime = 0;
@@ -224,8 +223,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
 
             if (ticks == 0 && IsOwner)
                 owner.ChangeDir(Facing);
-            if (ticks == 0 && IsPlant)
-                plantStabArm = SolveStabArm();
 
             Projectile.scale = PhasebladeTuning.SwordScale * owner.GetAdjustedItemScale(owner.HeldItem);
             Projectile.localNPCHitCooldown = Spins ? PhasebladeTuning.SpinHitCooldownTicks : -1; // swing 1 hits once; the spinning swings re-hit
@@ -236,10 +233,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
             hitOwnerTo = owner.Center;
             poseTime = timer;
 
-            if (IsPlant)
+            if (IsThrow)
             {
-                armLocal = PlantArmAt(timer);
-                tiltRad = PlantBladeAt(timer) - armLocal; // arm + tilt = the blade's facing-local angle
+                armLocal = ThrowArmAt(timer);
+                tiltRad = ThrowBladeAt(timer) - armLocal; // arm + tilt = the blade's facing-local angle
             }
             else
             {
@@ -270,9 +267,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
 
         void Effects()
         {
-            if (IsPlant)
+            if (IsThrow)
             {
-                PlantEffects();
+                ThrowEffects();
                 return;
             }
             Color color = BladeColor;
@@ -304,63 +301,58 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
                 Lighting.AddLight(tipPosition, color.ToVector3() * (0.7f + 0.4f * flash));
         }
 
-        // ---- the plant (right click) ----
+        // ---- the throw (right click) ----
 
-        // The arm (facing-local): it lifts with a cubic ease-out, then comes down accelerating (the drive, while the blade rotates), then settles to the rest pose.
-        float PlantArmAt(float time)
+        // The arm angle (facing-local) that points at the cursor the throw was aimed at: Aim is the world angle captured when the throw started.
+        float ThrowArm => MathHelper.WrapAngle(HeldSwordPose.ToWorld(Facing, Aim));
+
+        // The arm (facing-local): it winds back and up with a cubic ease-out, then whips forward to point at the cursor (accelerating), then settles.
+        float ThrowArmAt(float time)
         {
-            float lift = Math.Max(1, PhasebladeTuning.PlantLiftTicks);
-            float drive = Math.Max(1, PhasebladeTuning.PlantStabTicks);
-            float raised = Rad(PhasebladeTuning.PlantRaisedArmDeg);
-            if (time < lift)
+            float windup = Math.Max(1, PhasebladeTuning.ThrowWindupTicks);
+            float snap = Math.Max(1, PhasebladeTuning.ThrowSnapTicks);
+            float raised = Rad(PhasebladeTuning.ThrowRaisedArmDeg);
+            if (time < windup)
             {
-                float k = MathHelper.Clamp(time / lift, 0f, 1f);
+                float k = MathHelper.Clamp(time / windup, 0f, 1f);
                 return MathHelper.Lerp(StartArm, raised, 1f - (float)Math.Pow(1f - k, 3));
             }
-            if (time < PlantImpactTick)
+            if (time < ThrowReleaseTick)
             {
-                float k = MathHelper.Clamp((time - lift) / drive, 0f, 1f);
-                return MathHelper.Lerp(raised, plantStabArm, k * k);
+                float k = MathHelper.Clamp((time - windup) / snap, 0f, 1f);
+                return MathHelper.Lerp(raised, ThrowArm, k * k);
             }
-            float settle = MathHelper.SmoothStep(0f, 1f, (time - PlantImpactTick) / Math.Max(1, PhasebladeTuning.PlantRecoverTicks));
-            return MathHelper.Lerp(plantStabArm, Rad(PhasebladeTuning.PlantRestArmDeg), settle);
+            float settle = MathHelper.SmoothStep(0f, 1f, (time - ThrowReleaseTick) / Math.Max(1, PhasebladeTuning.ThrowRecoverTicks));
+            return MathHelper.Lerp(ThrowArm, Rad(PhasebladeTuning.ThrowRestArmDeg), settle);
         }
 
-        // The blade's own facing-local angle: point-up while the arm lifts, then it rotates over the front to point-down during the same motion that
-        // drives it down, and is point-down a little before it lands.
-        float PlantBladeAt(float time)
+        // The blade's own facing-local angle: point-up while the arm winds back, then it swings round to point along the arm as it lets go.
+        float ThrowBladeAt(float time)
         {
-            float lift = Math.Max(1, PhasebladeTuning.PlantLiftTicks);
-            float drive = Math.Max(1, PhasebladeTuning.PlantStabTicks);
-            if (time < lift)
+            float windup = Math.Max(1, PhasebladeTuning.ThrowWindupTicks);
+            float snap = Math.Max(1, PhasebladeTuning.ThrowSnapTicks);
+            if (time < windup)
                 return -MathHelper.PiOver2;
-            float k = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp((time - lift) / drive / 0.9f, 0f, 1f));
-            return MathHelper.Lerp(-MathHelper.PiOver2, MathHelper.PiOver2, k);
+            float k = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp((time - windup) / snap, 0f, 1f));
+            return MathHelper.Lerp(-MathHelper.PiOver2, ThrowArm, k);
         }
 
-        // Where the planted blade stands: PlantReachPx in front of the player (the side the swing faces).
-        float PlantX => Owner.Center.X + Facing * PhasebladeTuning.PlantReachPx;
-
-        // The arm angle at the end of the drive: the one whose hand is PlantReachPx in front of the player (the blade hangs straight down from it), so
-        // the reach setting moves the planted blade AND the pose that plants it. A reach longer than the arm gives the arm's longest reach.
-        float SolveStabArm()
+        // Owner only: the launch velocity from 'from' (the blade's middle). The arc is aimed to pass exactly through the cursor: the flight time is the
+        // distance over ThrowAvgSpeed, and the vertical speed makes up for the gravity the blade picks up on the way (gravity is added once per tick,
+        // before the move, so after n ticks it has fallen g * n * (n + 1) / 2). A cursor too far for ThrowMaxSpeed is landed short of.
+        Vector2 ThrowVelocity(Vector2 from)
         {
-            float best = Rad(PhasebladeTuning.PlantRaisedArmDeg);
-            float bestError = float.MaxValue;
-            for (float degrees = PhasebladeTuning.PlantRaisedArmDeg; degrees <= 60f; degrees += 1f)
-            {
-                Vector2 hand = HeldSwordPose.Hand(Owner, Facing, Rad(degrees));
-                float error = Math.Abs((hand.X - Owner.Center.X) * Facing - PhasebladeTuning.PlantReachPx);
-                if (error < bestError)
-                {
-                    bestError = error;
-                    best = Rad(degrees);
-                }
-            }
-            return best;
+            Vector2 toTarget = Main.MouseWorld - from;
+            float gravity = PhasebladeTuning.ThrowGravity;
+            float flight = Math.Max(PhasebladeTuning.ThrowMinFlightTicks, toTarget.Length() / Math.Max(0.1f, PhasebladeTuning.ThrowAvgSpeed));
+            Vector2 velocity = new Vector2(toTarget.X / flight, toTarget.Y / flight - gravity * (flight + 1f) * 0.5f);
+            float speed = velocity.Length();
+            if (speed > PhasebladeTuning.ThrowMaxSpeed)
+                velocity *= PhasebladeTuning.ThrowMaxSpeed / speed;
+            return velocity;
         }
 
-        void PlantEffects()
+        void ThrowEffects()
         {
             Color color = BladeColor;
             int t = (int)timer;
@@ -369,43 +361,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
                 flash = 1f;
                 PhasebladeFx.PlayPlantLift(tipPosition);
             }
-            if (t < PlantImpactTick)
+            if (t < ThrowReleaseTick)
                 Lighting.AddLight(tipPosition, color.ToVector3() * 0.7f);
-            if (t == PlantImpactTick)
+            if (t == ThrowReleaseTick)
             {
-                // Ground within reach of the feet: the blade is driven in right here. Otherwise (airborne) it leaves the hand and is shot straight down.
-                if (PhasebladePlantedProjectile.FindGround(Owner, PlantX, out Vector2 ground, PhasebladeTuning.PlantGroundedDropPx))
-                {
-                    PhasebladeFx.PlayPlant(ground);
-                    PhasebladeFx.PlantImpact(ground, color);
-                    if (IsOwner)
-                        SpawnPlanted(ground);
-                }
-                else
-                {
-                    PhasebladeFx.PlayPlantLift(tipPosition);
-                    if (IsOwner)
-                        SpawnFalling();
-                }
+                // The blade leaves the hand from the middle of its length. Every machine plays the release; only the owner spawns the blade (its
+                // velocity travels in the spawn packet), and the thrown blade's own AI does the rest on every machine.
+                Vector2 center = (Projectile.Center + tipPosition) * 0.5f;
+                PhasebladeFx.PlayThrow(center, Aim.ToRotationVector2(), color);
+                if (IsOwner)
+                    SpawnThrown(center, ThrowVelocity(center));
             }
         }
 
-        // Owner only: the planted blade stands on the ground PlantReachPx in front of the player, its tip PlantSinkPx into the tile (the tile hides that
-        // part, see PhasebladePlantedProjectile.DrawBehind). It is a normal spawned projectile, already in the planted state (ai[2] = 2).
-        void SpawnPlanted(Vector2 ground)
+        // Owner only: the thrown blade, already flying (ai[2] = 0 = flying). It is the same projectile that stands in the ground afterwards.
+        void SpawnThrown(Vector2 center, Vector2 velocity)
         {
-            float height = PhasebladeTuning.BladeLength * PhasebladeTuning.SwordScale;
-            Vector2 center = new Vector2(ground.X, ground.Y + PhasebladeTuning.PlantSinkPx - height * 0.5f);
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), center, Vector2.Zero, ModContent.ProjectileType<PhasebladePlantedProjectile>(),
-                Projectile.damage, Projectile.knockBack, Projectile.owner, Owner.HeldItem.type, Facing, 2f);
-        }
-
-        // Owner only: the blade leaves the hand's tip pointing down and falls straight down (ai[2] = 0 = falling) until it meets a tile.
-        void SpawnFalling()
-        {
-            float height = PhasebladeTuning.BladeLength * PhasebladeTuning.SwordScale;
-            Vector2 center = new Vector2(PlantX, tipPosition.Y - height * 0.5f);
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), center, new Vector2(0f, PhasebladeTuning.PlantDropSpeed), ModContent.ProjectileType<PhasebladePlantedProjectile>(),
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), center, velocity, ModContent.ProjectileType<PhasebladePlantedProjectile>(),
                 Projectile.damage, Projectile.knockBack, Projectile.owner, Owner.HeldItem.type, Facing, 0f);
         }
 
@@ -504,7 +476,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
             if (IsOwner)
             {
                 PhasebladePlayer state = Owner.GetModPlayer<PhasebladePlayer>();
-                state.LastPhase = IsPlant ? -1 : (int)CurrentPhase; // a plant ends the combo
+                state.LastPhase = IsThrow ? -1 : (int)CurrentPhase; // a throw ends the combo
                 state.LastEndArm = MathHelper.WrapAngle(armLocal);
                 state.LastEndWorldArm = WorldArm(armLocal);
                 state.LastEndTick = Main.GameUpdateCount;
@@ -518,8 +490,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Phas
         public override bool PreDraw(ref Color lightColor)
         {
             trail?.Draw();
-            if (IsPlant && poseTime >= PlantImpactTick)
-                return false; // the blade is in the ground now (the planted projectile draws it)
+            if (IsThrow && poseTime >= ThrowReleaseTick)
+                return false; // the blade has left the hand (the thrown projectile draws it)
 
             int itemType = Owner.HeldItem.type;
             if (!PhasebladeTuning.IsPhaseblade(itemType))
