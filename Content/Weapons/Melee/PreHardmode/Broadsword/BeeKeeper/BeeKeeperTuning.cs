@@ -54,6 +54,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
         public static int SpawnIntervalTicks => 50;   // one new bee this often while the swarm is not full
         public static int LingerTicks => 280;         // the swarm stays this long after the sword is put away, then leaves
         public static int LeaveTicks => 24;           // a leaving bee shrinks and rises for this long, then is gone
+        public static int LeaveIntervalTicks => 14;   // once the linger time is over, one idle bee starts leaving this often (bee by bee, not all at once)
         public static int BigSize => 22;              // hitbox of a big bee (square, pixels)
         public static int SmallSize => 14;
         public static float BigScale => 1f;           // drawn size
@@ -76,7 +77,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
         public static float SnapDistance => 900f;     // a bee further away than this jumps back to the swarm
 
         // ---- the swarm attack (a true melee hit sends bees: they fly out, latch on, sting) ----
-        public static int MaxBeesPerEnemy => 3;        // at most this many of a player's bees fly to or sit on one enemy at a time
+        public static int MaxBigPerEnemy => 1;         // at most this many of a player's BIG bees fly to or sit on one enemy at a time ...
+        public static int MaxSmallPerEnemy => 2;       // ... and this many small ones (so 1 big and 2 small, 3 bees in all)
         public static int BeesPerHit => 2;             // bees sent by the FIRST hit on an enemy ...
         public static int HitsForFullSwarm => 5;       // ... growing evenly until this hit, which sends every idle bee
         public static int HitMemoryTicks => 240;       // an enemy's hit count is forgotten after this long without a new hit on it
@@ -116,36 +118,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
         public static Color HoneyOutlineCoreColor => new Color(255, 215, 90, 0);
         public static float HoneyDripChance => 0.05f;       // per latched bee per tick, times its fill
         public static float HoneyReturnDripChance => 0.04f; // per returning bee per tick, times its load
-        public static float HoneyDripGravity => 0.12f;
-        public static int HoneyDripLifeMin => 40;
-        public static int HoneyDripLifeMax => 80;
-        public static float HoneyDripSizeMin => 2f;
-        public static float HoneyDripSizeMax => 3.4f;
+        public static float HoneyDropScaleMin => 1f;       // size of a honey dust particle (a drip off the enemy) ...
+        public static float HoneyDropScaleMax => 1.4f;     // ... picked at random between these
 
-        // the metaball look of the drips and of the blob a bee carries
-        public static float HoneyPixelSize => 2f;
-        public static float HoneyMerge => 2.2f;
-        public static float HoneyBlobOutline => 0f;
-        public static float HoneyGlow => 0.25f;
-        public static float HoneyDripHeat => 0.55f;
-        public static Color HoneyFillDark => new Color(190, 85, 15);
-        public static Color HoneyFillLight => new Color(255, 200, 60);
-        public static Color HoneyFillShine => new Color(255, 238, 160);
-        public static Color HoneyDripOutlineColor => HoneyFillLight;
-        public static Color HoneyGlowColor => new Color(255, 160, 30);
-
-        public static Color HoneyFill(float heat)
-        {
-            heat = MathHelper.Clamp(heat, 0f, 1f);
-            return heat < 0.5f ? Color.Lerp(HoneyFillDark, HoneyFillLight, heat * 2f) : Color.Lerp(HoneyFillLight, HoneyFillShine, (heat - 0.5f) * 2f);
-        }
-
-        // the blob a returning bee carries: it hangs under the bee and is bigger with a fuller load
-        public static float HoneyBlobRadius => 4f;        // at a full load, on a big bee
-        public static float HoneyBlobMinScale => 0.35f;   // an almost empty load is this fraction of that
-        public static float HoneyBlobSmallScale => 0.8f;  // a small bee carries (and hangs) this fraction
-        public static float HoneyBlobOffset => 6f;        // how far under the bee's middle
-        public static float HoneyBlobHeat => 0.55f;
+        // the honey a returning bee carries is shown as a few honey dust specks under it
+        public static float HoneyCarryChance => 0.3f;     // per returning bee per tick, times its load
+        public static float HoneyCarryOffset => 6f;       // how far under the bee's middle
+        public static float HoneyCarrySmallScale => 0.8f; // a small bee sheds them this fraction closer
 
         // ---- the flight home (every machine flies it, the owner's client decides it has arrived) ----
         public static float ReturnSpeed => 14f;

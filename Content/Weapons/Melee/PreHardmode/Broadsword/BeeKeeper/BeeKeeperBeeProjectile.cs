@@ -47,6 +47,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
         float Seed => Projectile.ai[2];
         float Carried => Projectile.ai[1];   // Return only: the honey this bee carries (0..1, 1 = a full load)
         public bool IsIdle => State == BeeState.Idle;
+        public bool IsBigBee => IsBig;
         public bool IsSentAt(int npcIndex) => (State == BeeState.Travel || State == BeeState.Latched) && TargetIndex == npcIndex; // flying to or sitting on that enemy
         bool IsOwner => Projectile.owner == Main.myPlayer;
 
@@ -119,11 +120,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
                     Projectile.Kill();
                     return;
                 }
-                if (State == BeeState.Idle && owner.GetModPlayer<BeeKeeperPlayer>().Linger <= 0)
-                {
-                    Projectile.ai[0] = (float)BeeState.Leaving;
-                    Projectile.netUpdate = true;
-                }
+                // Leaving is decided by BeeKeeperPlayer.TickLeave (one idle bee at a time), not by each bee on its own.
             }
 
             // Every machine notices a change of the synced state (the owner's own change too, one tick later).
@@ -231,6 +228,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
             Projectile.ai[0] = (float)((int)state + ((target + 1) << 3));
             Projectile.ai[1] = carried; // the honey a Returning bee carries; 0 in every other state
             Projectile.netUpdate = true;
+        }
+
+        // Owner's client only (BeeKeeperPlayer.TickLeave): an idle bee starts leaving (it shrinks and rises, then is gone).
+        public void Dismiss()
+        {
+            if (State == BeeState.Idle)
+                SetState(BeeState.Leaving, -1);
         }
 
         // Owner's client only (BeeKeeperPlayer picks the idle bees): fly to this enemy and latch on. 'swordDamage' is what the swing did.
@@ -372,7 +376,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
             Vector2 side = new Vector2(-wanted.Y, wanted.X).SafeNormalize(Vector2.Zero) * weave;
             Projectile.velocity = Vector2.Lerp(Projectile.velocity, wanted + side, BeeKeeperTuning.ReturnTurn);
 
-            BeeKeeperFx.HoneyBlob(Projectile.Center, carry, IsBig);
+            BeeKeeperFx.HoneyCarry(Projectile.Center, carry, IsBig);
             if (ticks % 3 == 0)
                 BeeKeeperFx.TravelTrail(Projectile.Center, Projectile.velocity);
             if (Main.rand.NextFloat() < BeeKeeperTuning.HoneyReturnDripChance * carry)

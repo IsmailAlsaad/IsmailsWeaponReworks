@@ -115,28 +115,29 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
 
         // ---- honey (every machine calls these from its own copy of the bee; visual only) ----
 
-        // A drop of honey leaves the enemy (or a bee carrying a load): a metaball particle that falls, merges with its neighbours and is gone
-        // when it lands.
+        // A drop of honey leaves the enemy (or a bee carrying a load): a plain honey dust particle that falls by itself.
         public static void HoneyDrip(Vector2 position)
         {
             if (Main.dedServ)
                 return;
-            MetaballLayers.Of<BeeKeeperHoneyStyle>().Spawn(
-                position + new Vector2(Main.rand.NextFloat(-5f, 5f), 0f),
-                new Vector2(Main.rand.NextFloat(-0.3f, 0.3f), Main.rand.NextFloat(0f, 0.6f)),
-                Main.rand.Next(BeeKeeperTuning.HoneyDripLifeMin, BeeKeeperTuning.HoneyDripLifeMax + 1),
-                Main.rand.NextFloat(BeeKeeperTuning.HoneyDripSizeMin, BeeKeeperTuning.HoneyDripSizeMax));
+            Dust.NewDustPerfect(position + new Vector2(Main.rand.NextFloat(-5f, 5f), 0f), DustID.Honey,
+                new Vector2(Main.rand.NextFloat(-0.3f, 0.3f), Main.rand.NextFloat(0f, 0.6f)), 100, default,
+                Main.rand.NextFloat(BeeKeeperTuning.HoneyDropScaleMin, BeeKeeperTuning.HoneyDropScaleMax));
         }
 
-        // The honey a returning bee carries: a metaball body for THIS tick, hanging under the bee (call it every tick).
-        public static void HoneyBlob(Vector2 position, float carry, bool big)
+        // The honey a returning bee carries: now and then a honey speck under the bee (call it every tick; a fuller load sheds more).
+        public static void HoneyCarry(Vector2 position, float carry, bool big)
         {
             if (Main.dedServ)
                 return;
             carry = MathHelper.Clamp(carry, 0f, 1f);
-            float kind = big ? 1f : BeeKeeperTuning.HoneyBlobSmallScale;
-            float scale = MathHelper.Lerp(BeeKeeperTuning.HoneyBlobMinScale, 1f, carry) * kind;
-            MetaballLayers.Of<BeeKeeperHoneyStyle>().AddBlob(position + new Vector2(0f, BeeKeeperTuning.HoneyBlobOffset * kind), BeeKeeperTuning.HoneyBlobRadius * scale, MathHelper.Clamp(BeeKeeperTuning.HoneyBlobHeat + 0.3f * carry, 0f, 1f));
+            if (Main.rand.NextFloat() >= BeeKeeperTuning.HoneyCarryChance * carry)
+                return;
+            float kind = big ? 1f : BeeKeeperTuning.HoneyCarrySmallScale;
+            Dust dust = Dust.NewDustPerfect(position + new Vector2(Main.rand.NextFloat(-3f, 3f), BeeKeeperTuning.HoneyCarryOffset * kind), DustID.Honey,
+                new Vector2(Main.rand.NextFloat(-0.3f, 0.3f), Main.rand.NextFloat(0f, 0.4f)), 100, default,
+                Main.rand.NextFloat(BeeKeeperTuning.HoneyDropScaleMin, BeeKeeperTuning.HoneyDropScaleMax) * kind);
+            dust.noGravity = true;
         }
 
         // A returning bee reaches the owner and hands its honey over: honey flecks and now and then a soft pop.

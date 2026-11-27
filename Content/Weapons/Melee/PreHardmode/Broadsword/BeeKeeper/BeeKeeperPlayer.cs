@@ -25,6 +25,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
 
         public int Linger;               // ticks the swarm stays after the sword was last held (owner only)
         int spawnTimer;
+        int leaveTimer;
 
         // Honey handed over by returning bees, waiting to be given (owner only).
         float pendingHealth;
@@ -66,8 +67,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
             if (Linger <= 0)
             {
                 spawnTimer = 0;
+                TickLeave();
                 return;
             }
+            leaveTimer = 0;
 
             spawnTimer++;
             if (spawnTimer < BeeKeeperTuning.SpawnIntervalTicks || !ReworkToggle.Holds(Player, ItemID.BeeKeeper))
@@ -93,7 +96,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
             hits[target.whoAmI] = record;
 
             List<BeeKeeperBeeProjectile> pool = new List<BeeKeeperBeeProjectile>();
-            int onEnemy = 0; // bees of this player already flying to or sitting on this enemy
+            int bigOnEnemy = 0;   // bees of this player already flying to or sitting on this enemy, by size
+            int smallOnEnemy = 0;
             for (int i = 0; i < Main.maxProjectiles; i++)
             {
                 Projectile projectile = Main.projectile[i];
@@ -102,24 +106,38 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
                     if (bee.IsIdle)
                         pool.Add(bee);
                     else if (bee.IsSentAt(target.whoAmI))
-                        onEnemy++;
+                    {
+                        if (bee.IsBigBee)
+                            bigOnEnemy++;
+                        else
+                            smallOnEnemy++;
+                    }
                 }
             }
-            int room = BeeKeeperTuning.MaxBeesPerEnemy - onEnemy;
-            if (pool.Count == 0 || room <= 0)
+            int bigRoom = BeeKeeperTuning.MaxBigPerEnemy - bigOnEnemy;
+            int smallRoom = BeeKeeperTuning.MaxSmallPerEnemy - smallOnEnemy;
+            if (pool.Count == 0 || (bigRoom <= 0 && smallRoom <= 0))
                 return; // nobody idle, or this enemy already has its full share of bees
 
             int full = Math.Max(1, BeeKeeperTuning.HitsForFullSwarm);
             float progress = full <= 1 ? 1f : (Math.Min(record.Count, full) - 1) / (float)(full - 1);
             int wanted = (int)Math.Ceiling(MathHelper.Lerp(BeeKeeperTuning.BeesPerHit, BeeKeeperTuning.MaxBig + BeeKeeperTuning.MaxSmall, progress));
-            wanted = Math.Min(Math.Min(wanted, pool.Count), room);
-            for (int i = 0; i < wanted; i++)
+            wanted = Math.Min(Math.Min(wanted, pool.Count), Math.Max(0, bigRoom) + Math.Max(0, smallRoom));
+            int sent = 0;
+            for (int i = 0; i < pool.Count && sent < wanted; i++)
             {
-                int pick = Main.rand.Next(i, pool.Count); // a random bee of the ones not chosen yet
+                int pick = Main.rand.Next(i, pool.Count); // a random bee of the ones not looked at yet
                 BeeKeeperBeeProjectile chosen = pool[pick];
                 pool[pick] = pool[i];
                 pool[i] = chosen;
+                if (chosen.IsBigBee ? bigRoom <= 0 : smallRoom <= 0)
+                    continue; // this size is full on this enemy: look at the next bee
+                if (chosen.IsBigBee)
+                    bigRoom--;
+                else
+                    smallRoom--;
                 chosen.Recruit(target, swordDamage);
+                sent++;
             }
         }
 
@@ -168,6 +186,30 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.BeeK
             BeeKeeperFx.HoneyHeal(Player.Center, pendingHoney);
             pendingHealth = 0f;
             pendingHoney = 0f;
+        }
+
+        // Owner only, every tick while the sword is gone and its linger time is over: every LeaveIntervalTicks ONE idle bee (picked at
+        // random) starts leaving, so the swarm thins out bee by bee instead of vanishing at once. A bee that is out on an enemy is not idle:
+        // it finishes its stings and flies its honey home first, then it waits in the queue like the others. No idle bee = the timer stays
+        // full, so the next bee to become idle goes at once.
+        void TickLeave()
+        {
+            leaveTimer++;
+            if (leaveTimer < Math.Max(1, BeeKeeperTuning.LeaveIntervalTicks))
+                return;
+
+            List<BeeKeeperBeeProjectile> idle = new List<BeeKeeperBeeProjectile>();
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile projectile = Main.projectile[i];
+                if (projectile.active && projectile.owner == Player.whoAmI && projectile.ModProjectile is BeeKeeperBeeProjectile bee && bee.IsIdle)
+                    idle.Add(bee);
+            }
+            if (idle.Count == 0)
+                return;
+
+            leaveTimer = 0;
+            idle[Main.rand.Next(idle.Count)].Dismiss();
         }
 
         // Owner only: one more bee of whichever kind has room, picked at random in proportion to how many of each are missing.
