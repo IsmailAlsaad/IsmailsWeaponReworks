@@ -395,6 +395,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
             }
 
             // The sword is back in the hand: the stance starts from the throw pose and settles into the sheathed one.
+            owner.itemAnimation = 0; // the throw is over: the next click may start a swing without waiting out the item's use time
+            owner.itemTime = 0;
             KatanaStanceProjectile.Spawn(source, owner, HeldSwordPose.ToWorld(Facing, Aim), 0f, owner.GetModPlayer<KatanaPlayer>().CooldownTicks);
         }
 

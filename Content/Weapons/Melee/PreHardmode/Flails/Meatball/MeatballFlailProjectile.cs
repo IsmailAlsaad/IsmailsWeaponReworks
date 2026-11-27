@@ -1,4 +1,5 @@
-﻿using IsmailsWeaponReworks.Common.Flail;
+﻿using IsmailsWeaponReworks.Common;
+using IsmailsWeaponReworks.Common.Flail;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
@@ -70,6 +71,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Flails.Meatball
 
             if (!IsOwner)
                 return;
+            // The first enemy the head touches on its way (anywhere between the hand and the cursor) catches the ball: it sticks right there.
+            NPC touched = FindTouched(oldCenter, Projectile.Center, out Vector2 touchPoint);
+            if (touched != null)
+            {
+                DetachStuck(owner, touched, touchPoint);
+                return;
+            }
+
             bool blocked = phaseTimer > 2 && Collision.SolidCollision(Projectile.Center - new Vector2(6f), 12, 12);
             if (arrived || blocked)
                 Detach(owner, blocked ? oldCenter : Projectile.Center);
@@ -83,6 +92,44 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Flails.Meatball
             Vector2 direction = AimAngle.ToRotationVector2();
             Projectile.NewProjectile(Projectile.GetSource_FromThis(), at, direction * Meat.BallSpeed, ModContent.ProjectileType<MeatballHeadProjectile>(),
                 Math.Max(1, lockedDamage), Projectile.knockBack, Projectile.owner);
+            owner.GetModPlayer<MeatballPlayer>().RegrowTicks = Meat.RegrowTicks;
+            EndSpecial();
+        }
+
+        // Owner only: the nearest enemy the head touched on this tick's path (the head's width swept from 'from' to 'to'), or null.
+        // 'point' = where the head first met it.
+        NPC FindTouched(Vector2 from, Vector2 to, out Vector2 point)
+        {
+            NPC found = null;
+            point = to;
+            float best = float.MaxValue;
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC npc = Main.npc[i];
+                if (!Snarable.CanBite(npc))   // NOT CanBeChasedBy: it is false for the target dummy
+                    continue;
+                float unused = 0f;
+                if (!Collision.CheckAABBvLineCollision(npc.Hitbox.TopLeft(), npc.Hitbox.Size(), from, to, Tuning.HeadSize, ref unused))
+                    continue;
+                Vector2 entry = Contact.EntryPoint(from, to, npc.Hitbox);
+                float distance = Vector2.DistanceSquared(from, entry);
+                if (distance < best)
+                {
+                    best = distance;
+                    found = npc;
+                    point = entry;
+                }
+            }
+            return found;
+        }
+
+        // Owner only: the head touched an enemy before the apex. The ball tears loose right there and is born already stuck to that enemy
+        // (impact hit, fuse, explosion: the same as a ball that flew on and landed), the chain whips back. Same ball cap and hand rule.
+        void DetachStuck(Player owner, NPC npc, Vector2 at)
+        {
+            MeatballHeadProjectile.MakeRoom(Projectile.owner, Meat.MaxBalls);
+            MeatballHeadProjectile.SpawnStuck(Projectile.GetSource_FromThis(), npc, at, AimAngle.ToRotationVector2(), Math.Max(1, lockedDamage),
+                Projectile.knockBack, Projectile.owner);
             owner.GetModPlayer<MeatballPlayer>().RegrowTicks = Meat.RegrowTicks;
             EndSpecial();
         }

@@ -4,7 +4,7 @@ generated 2026-11-27 | 392 .cs files | regenerate: `python index_codebase.py` (p
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-ReworkToggle(44) YoyoTuning(40) DetachedTrails(40) CameraShake(38) RemoteHitTracker(33) HeldSwordPose(26) ThrustPalette(24) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(18) PixelTrail(16) SweepTrail(15) PixelTrailStyle(15) YoyoTrick(14) SweepFade(14) FlailTuning(14) NightsEdgeTuning(13) FlailFx(13) ThrustPlayer(12)
+ReworkToggle(44) YoyoTuning(40) DetachedTrails(40) CameraShake(38) RemoteHitTracker(33) HeldSwordPose(26) ThrustPalette(24) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(18) PixelTrail(16) SweepTrail(15) PixelTrailStyle(15) YoyoTrick(14) SweepFade(14) FlailTuning(14) Phase(13) NightsEdgeTuning(13) FlailFx(13)
 
 ## Inheritance
 Project bases -> derived:
@@ -658,7 +658,7 @@ tModLoader/other bases -> project types:
 **KatanaFx.cs** uses: KatanaTuning
   static class KatanaFx
     +Click(Vector2,Vector2)[s] +PlaySwing(Vector2,bool)[s] +SwingDust(Vector2,Vector2)[s] +Throw(Vector2,Vector2)[s] +FlightDust(Vector2,Vector2)[s] +Embed(Vector2,Vector2)[s] +DashStart(Vector2,Vector2)[s] +DashTrail(Vector2,Vector2)[s] +Ready(Vector2,Vector2)[s] +ReadySparkle(Vector2)[s] +Unstick(Vector2,Vector2)[s] +Drop(Vector2,Vector2)[s] +DropLand(Vector2,float)[s] +HitMark(Vector2,float)[s] +HitSpark(Vector2)[s]
-**KatanaGlobalItem.cs** uses: HeldAim, KatanaBladeProjectile, KatanaPlayer, KatanaStanceProjectile, KatanaSwingProjectile, KatanaTuning, PlayerDash, ReworkToggle
+**KatanaGlobalItem.cs** uses: DashPhase, DashPlayer, HeldAim, KatanaBladeProjectile, KatanaPlayer, KatanaStanceProjectile, KatanaSwingProjectile, KatanaTuning, Phase, ReworkToggle
   class KatanaGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +StartSwing(Player,IEntitySource,int,float)[s] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **KatanaHitStopNPC.cs** uses: KatanaTuning
@@ -666,7 +666,7 @@ tModLoader/other bases -> project types:
     +InstancePerEntity:bool[ov] +Apply(NPC,int)[s] +PreAI(NPC)[ov] +DrawEffects(NPC,ref Color)[ov]
 **KatanaPlayer.cs** uses: KatanaBladeProjectile, KatanaStanceProjectile, KatanaSwingProjectile, KatanaTuning, ReworkToggle
   class KatanaPlayer : ModPlayer
-    +CooldownTicks:int +Ready:bool +Find(int,int)[s] +BladeFlying(int)[s] +KillReleasedBlades(int)[s] +PostUpdate()[ov]
+    +CooldownTicks:int +ThrewThisPress:bool +Ready:bool +Find(int,int)[s] +BladeFlying(int)[s] +KillReleasedBlades(int)[s] +PostUpdate()[ov]
 **KatanaSlashProjectile.cs** uses: AfterimageTrail, CameraShake, HitMarkSet, KatanaFx, KatanaHitStopNPC, KatanaTuning, PixelLine
   class KatanaSlashProjectile : ModProjectile
     +Texture:string[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +PreDraw(ref Color)[ov]
@@ -1041,7 +1041,7 @@ tModLoader/other bases -> project types:
     +Instance:MaceTuning[s] +TrailWidth(int)[ov] +SpinOmegaStart(int)[ov] +SpinOmegaEnd(int)[ov] +MinReach:float[ov] +MaxReach:float[ov] +RetractSpeed:float[ov] +TrailLifeTicks:int[ov] +AfterimageTicks:int[ov] +TierDamageMultiplier(int)[ov] +SpecialPathDamageMultiplier:float[ov] +ShardDamageMultiplier:float +ShardKnockbackMultiplier:float +SpecialMinReach:float[ov] +SpecialMaxReach:float[ov] +SpecialHangTicks:int[ov] +SpecialSpeed:float +SpecialMinTicks:int +ShardColumns:int +ShardRows:int +ShardLaunchSpeedMin:float +ShardLaunchSpeedMax:float +ShardLaunchUp:float +ShardGravity:float +ShardMaxFallSpeed:float +ShardAirDrag:float +ShardBounceDamp:float +ShardRestSpeed:float +ShardGroundFriction:float +ShardSpin:float +ShardPierce:int +ShardLifeTicks:int +ShardGraceTicks:int +ShardBoxPx:float +ShardTrailWidth:float +ShardTrailLifeTicks:int +ShardTrailMinSpeed:float +GlowColor(int)[ov] +HotColor(int)[ov] +ChainName:string[ov]
 
 ### Content/Weapons/Melee/PreHardmode/Flails/Meatball/
-**MeatballFlailProjectile.cs** uses: FlailFx, FlailProjectile, FlailTuning, MeatballFx, MeatballHeadProjectile, MeatballPlayer, MeatballSwedish, MeatballTuning, Phase
+**MeatballFlailProjectile.cs** uses: Contact, FlailFx, FlailProjectile, FlailTuning, MeatballFx, MeatballHeadProjectile, MeatballPlayer, MeatballSwedish, MeatballTuning, Phase, Snarable
   class MeatballFlailProjectile : FlailProjectile
     +Texture:string[ov] #ItemType:int[ov] #Tuning:FlailTuning[ov] #Fx:FlailFx[ov] #SweepsPath:bool[ov] #HeadHidden:bool[ov] #RestartsOnHold:bool[ov] #HeadTextureOverride()[ov] #ChainTextureOverride()[ov] #BeginSpecial(Player)[ov] #UpdateSpecial(Player)[ov]
 **MeatballFx.cs** uses: CameraShake, FlailFx, MeatballBloodStyle, MeatballSwedish, MeatballTuning, MetaballLayer, MetaballLayers
@@ -1052,7 +1052,7 @@ tModLoader/other bases -> project types:
     #ItemType:int[ov] #ProjectileType:int[ov] +CanUseItem(Item,Player)[ov] +Unload()[ov] +PreDrawInInventory(Item,SpriteBatch,Vector2,Rectangle,Color,Color,Vector2,float)[ov] +PreDrawInWorld(Item,SpriteBatch,Color,Color,ref float,ref float,int)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **MeatballHeadProjectile.cs** uses: AreaEffect, Contact, DetachedTrails, FlailTrailStyle, MeatballFx, MeatballSwedish, MeatballTuning, PixelTrail, Snarable
   class MeatballHeadProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov] +MakeRoom(int,int)[s] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +AI()[ov] +MakeRoom(int,int)[s] +SpawnStuck(IEntitySource,NPC,Vector2,Vector2,int,float,int)[s] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
       {Flying, Attached, Spent}
 **MeatballPlayer.cs**

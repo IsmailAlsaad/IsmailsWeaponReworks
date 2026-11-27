@@ -40,7 +40,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Kata
         {
             if (KatanaPlayer.Find(player.whoAmI, ModContent.ProjectileType<KatanaSwingProjectile>()) != null)
                 return false;
-            if (KatanaPlayer.BladeFlying(player.whoAmI) || PlayerDash.IsDashing(player))
+            if (KatanaPlayer.BladeFlying(player.whoAmI) || player.GetModPlayer<DashPlayer>().Phase == DashPhase.Dash)
                 return false; // a blade stuck in a tile or falling does not block anything
             if (player.GetModPlayer<KatanaPlayer>().ThrewThisPress)
                 return false; // the press that threw the blade must be let go before anything else starts

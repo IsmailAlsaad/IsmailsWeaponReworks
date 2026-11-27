@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -124,6 +125,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Flails.Meatball
                     fuseTicks = 0;
                     beatPhase = 0f;
                     beatCount = 0;
+                    if (lastPhase == -1 && !Main.dedServ)
+                        MeatballFx.Instance.Detach(Projectile.Center, Projectile.velocity);   // born stuck (the head hit an enemy before the apex): the tear-off cue plays here
                     Projectile.velocity = Vector2.Zero;
                     DetachedTrails.Hand(trail);
                     trail = null;
@@ -326,6 +329,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Flails.Meatball
             }
             if (count >= maxBalls && oldest != null)
                 oldest.Detonate();
+        }
+
+        // Owner's client only (the flail calls it after MakeRoom): spawns a ball that is already stuck to 'npc' at 'contact' (Attached from its
+        // first tick, ai[1] / ai[2] encoded as in AttachToNpc, synced by the spawn packet) and deals the impact hit. 'direction' is only
+        // the direction of the throw, read once for the tear-off cue.
+        public static void SpawnStuck(IEntitySource source, NPC npc, Vector2 contact, Vector2 direction, int damage, float knockback, int owner)
+        {
+            Vector2 offset = contact - npc.Center;
+            float length = Math.Min(offset.Length(), 1000f);
+            float angle = length > 0.01f ? offset.ToRotation() : 0f;
+            Vector2 forward = direction.SafeNormalize(Vector2.UnitX);
+            Projectile.NewProjectile(source, contact, forward * Tune.BallSpeed, ModContent.ProjectileType<MeatballHeadProjectile>(), damage, knockback, owner,
+                (float)Phase.Attached, npc.whoAmI + length / 1024f, angle);
+
+            int impact = Math.Max(1, (int)(damage * Tune.ImpactDamageMultiplier));
+            npc.SimpleStrikeNPC(impact, forward.X >= 0f ? 1 : -1, false, knockback * Tune.ImpactKnockbackMultiplier, DamageClass.Melee);   // syncs itself
         }
 
         // ---- drawing ----
