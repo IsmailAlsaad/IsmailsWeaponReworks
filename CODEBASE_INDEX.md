@@ -1551,7 +1551,7 @@ tModLoader/other bases -> project types:
 
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; README.md; build.txt, description.txt, description_workshop.txt
-- Assets/Sounds/: BloodSpill.wav, ElectricEel.wav, Stab.wav
+- Assets/Sounds/: BloodSpill.wav, ElectricEel.wav, Reeling.wav, Stab.wav
 - Assets/Sounds/Candy/: CandyBreak1.wav, CandyBreak2.wav, CandyBreak3.wav, CandyExplode.wav, CandyPickup.wav
 - Assets/Sounds/MetalHit/: MetalHit1.wav, MetalHit2.wav, MetalHit3.wav
 - Assets/Sounds/MetalSword/: MetalSword1.wav, MetalSword2.wav, MetalSword3.wav
