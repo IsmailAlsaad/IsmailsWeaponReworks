@@ -31,7 +31,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static float RopeHitWidthPx => 8f;             // how thick the string's touch test is (swept from the hand to the butt)
         public static float MaxHoldSize => 120f;              // an enemy wider or taller than this counts as immovable (like a boss)
         public static int SnapTicks => 6;                     // the wrench flies to the contact point and turns its head to the enemy in this many ticks
-        public static int PlaceholderHoldTicks => 60;         // W2 only (W3 replaces it with the reel): the wrench stays pinned this long, then the owner lets go
+
+
+        // ---- REEL (W3: a movable enemy is held and slid to the player, then the wrench flies back to the hand) ----
+        public static int ReelTicks => 24;                    // the enemy slides from where it was latched to the stop point in this many ticks (an immovable enemy is strained against for the same time)
+        public static float ReelEase => 1f;                   // 0 = constant speed, 1 = a full ease-in-out cubic
+        public static float SwingDistancePx => 56f;           // the stop point: this far from the player along the line to where the enemy was latched
+        public static int RetractTicks => 8;                  // the wrench flies from the enemy to the hand in this many ticks (it accelerates)
+        public static int HandOverHoldTicks => 20;            // W3 only (W4 replaces it with the heavy swing): the wrench waits in the hand with the enemy held in front, then the enemy is let go
+
+        // ---- FACING ----
+        public static float FaceDeadzonePx => 6f;             // the player always faces the wrench's side; closer to the player than this the facing is kept
 
         // ---- RETURN (a block stopped it, or the pass is over: pulled to the hand and caught) ----
         public static float ReturnStartSpeed => 7f;

@@ -81,6 +81,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                 Chip(position, back * Main.rand.NextFloat(1f, 4f) + along * Main.rand.NextFloat(-3f, 3f), Main.rand.NextFloat(0.9f, 1.6f));
         }
 
+        // The reel begins (the enemy starts sliding in). A placeholder sound until Ismail's reel clip exists (W7).
+        public static void Reel(Vector2 position)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.5f, Pitch = -0.4f, PitchVariance = 0.05f }, position);
+        }
+
         // The wrench starts back to the hand.
         public static void Retract(Vector2 position)
         {
