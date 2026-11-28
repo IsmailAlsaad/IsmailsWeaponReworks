@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Common;
+using Microsoft.Xna.Framework;
 using Terraria;
 
 namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
@@ -34,9 +35,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
     public class ForwardPassTrick : YoyoTrick
     {
         protected readonly IForwardPassTuning P;
-        protected Vector2 axis;       // unit vector from the player toward the far end
-        protected Vector2 bulge;      // unit vector across the axis: the side the outward half swings to
-        protected float halfReach;    // half the length of the ellipse
+        protected readonly EllipsePath ellipse = new EllipsePath();   // the pure ellipse math, shared with the Combat Wrench (Common/EllipsePath.cs)
+        protected Vector2 axis => ellipse.Axis;       // unit vector from the player toward the far end
+        protected Vector2 bulge => ellipse.Bulge;     // unit vector across the axis: the side the outward half swings to
+        protected float halfReach => ellipse.HalfReach;   // half the length of the ellipse
         protected bool stopped;       // a block stopped it on this machine; it waits for the owner's return
         protected bool comingBack;    // the second half of the ellipse: the string is pulled taut
         protected bool blockedComingBack; // a block stopped it on the way back: it keeps its damage hitbox while it is pulled to the hand
@@ -70,24 +72,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
         // Works out the ellipse (axis, half length, the side it bulges to) from yoyo.Aim. A pattern that throws more than one pass (Pop the Clutch) calls it itself.
         protected void PrepareEllipse(YoyoProjectile yoyo)
         {
-            float length = System.Math.Max(1f, yoyo.Aim.Length());
-            axis = yoyo.Aim / length;
-            halfReach = length * 0.5f;
-            bulge = new Vector2(-axis.Y, axis.X);
-            float lean = Vector2.Dot(bulge, new Vector2(0f, -yoyo.GravDir));  // toward "up" for this player's gravity
-            if (System.Math.Abs(lean) < 0.15f)
-                lean = Vector2.Dot(bulge, new Vector2(yoyo.Side, 0f));        // aiming straight up or down: bulge toward the throwing side
-            if (lean < 0f)
-                bulge = -bulge;
+            ellipse.Prepare(yoyo.Aim, yoyo.GravDir, yoyo.Side);
         }
 
         // The yoyo's offset from the player's centre at 'eased' (0..1, one whole ellipse) along the prepared ellipse. bulgeSign 1 = the usual
         // (upper) side, -1 = the mirrored (lower) side.
         protected Vector2 EllipseOffset(float eased, float bulgeSign)
         {
-            float theta = eased * MathHelper.TwoPi;
-            return axis * (halfReach * (1f - (float)System.Math.Cos(theta)))
-                 + bulge * (bulgeSign * halfReach * P.ForwardPassWidthRatio * (float)System.Math.Sin(theta));
+            return ellipse.Offset(eased, bulgeSign, P.ForwardPassWidthRatio);
         }
 
         public override void Tick(YoyoProjectile yoyo)

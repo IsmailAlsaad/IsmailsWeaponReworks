@@ -1,4 +1,5 @@
 ﻿using IsmailsWeaponReworks.Common;
+using IsmailsWeaponReworks.Common.Rope;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
@@ -32,7 +33,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
 
     /// <summary>
     /// The held yoyo (patch 1; since patch 5 the shared base of every yoyo's projectile): ONE projectile that lives for as long as a reworked yoyo is held (YoyoPlayer spawns it). It is the yoyo
-    /// itself: Projectile.Center is the yoyo, the YoyoRope runs from the player's hand to it (a straight line while idle, a verlet rope while out or returning), and it poses the arm.
+    /// itself: Projectile.Center is the yoyo, the VerletRope runs from the player's hand to it (a straight line while idle, a verlet rope while out or returning), and it poses the arm.
     /// IDLE: nothing pressed: the arm hangs down, the yoyo is let down gently, spins a little and is pulled back up, over and over.
     /// OUT: the left button runs the yoyo's trick (YoyoTrick; the Wooden Yoyo's is Walk the Dog). The throw side is the side of the screen
     /// the cursor is on (a trick may keep following the cursor's side while it is out; Walk the Dog does). It retracts after the trick's hits, when the string is at full length, or when the button
@@ -106,7 +107,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
         YoyoTrick rightTrick;          // null when this yoyo has no right click trick
         bool rightBlocked;             // the right button went down on the interface or a tile interaction: it does not count until it is let go
         YoyoTrick ActiveTrick => UsingRight && rightTrick != null ? rightTrick : leftTrick;
-        YoyoRope rope;
+        VerletRope rope;
         readonly List<Vector2> stringPath = new List<Vector2>();   // the string a trick draws by hand (YoyoTrick.StringPath)
         bool stringPathActive;
         YoyoRopeWrap wrap;             // where the string bends around blocks (visual only)
@@ -213,7 +214,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
                 leftTrick = CreateTrick(Tuning);
                 rightTrick = CreateRightTrick(Tuning);
                 trick = leftTrick;
-                rope = new YoyoRope(Tuning);
+                rope = new VerletRope(Tuning);
                 wrap = new YoyoRopeWrap();
                 afterimages = new YoyoAfterimages(Tuning);
                 Projectile.Center = owner.MountedCenter;

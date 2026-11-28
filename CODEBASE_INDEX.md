@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-28 | 411 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-28 | 414 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -30,6 +30,7 @@ Project bases -> derived:
 - IImpaleTuning: NightsEdgeImpaleTune
 - ILoopTuning: ArteryTuning, MalaiseTuning
 - IPopTheClutchTuning: CascadeTuning, PopTheClutchDefaults, ValorTuning
+- IRopeLook: YoyoTuning
 - ISleeperTuning: CascadeTuning, HiveFiveTuning, SleeperDefaults
 - IWalkTheDogTuning: AmazonTuning, WalkTheDogDefaults, WoodenYoyoTuning
 - LoopYoyoFx: ArteryFx, MalaiseFx
@@ -117,6 +118,9 @@ tModLoader/other bases -> project types:
 **EasterEgg.cs**
   static class EasterEgg
     +Zenith:bool[s] +LocalPlayerNamed(string)[s] +Load(string,ref Asset<Texture2D>,ref bool,AssetRequestMode)[s]
+**EllipsePath.cs**
+  class EllipsePath
+    +Axis:Vector2 +Bulge:Vector2 +HalfReach:float +Prepare(Vector2,int,int) +Offset(float,float,float)
 **FlareParticles.cs**
   abstract class FlareParticleStyle
     +AssetPath:string[ab] +LifeTicks:int[v] +PeakScale:float[v] +GrowFraction:float[v] +SpinMin:float[v] +SpinMax:float[v] +Opacity:float[v] +Light:float[v] +MaxParticles:int[v]
@@ -337,6 +341,14 @@ tModLoader/other bases -> project types:
 **ReworksToggleConfig.cs** uses: Mode, ReworkGridElement, ReworkRegistry
   class ReworksToggleConfig : ModConfig
     +Mode:ConfigScope[ov] +DisabledReworks:List<ItemDefinition> +Clone()[ov] +NeedsReload(ModConfig)[ov] +AcceptClientChanges(ModConfig,int,ref NetworkText)[ov] +OnChanged()[ov]
+
+### Common/Rope/
+**IRopeLook.cs**
+  interface IRopeLook
+    +RopePoints:int +RopeMinLength:float +RopeDamping:float +RopeIterations:int +RopeCollides:bool +RopeSubdivisions:int +RopeWidth:float +RopeOutlineWidth:float +RopeColor:Color +RopeAltColor:Color +RopeOutlineColor:Color
+**VerletRope.cs** uses: IRopeLook
+  class VerletRope
+    +MainOverride:Color? +AltOverride:Color? +OutlineOverride:Color? +Straight(Vector2,Vector2) +Update(Vector2,Vector2,float,float,float) +Tighten(Vector2,Vector2,float) +TightenAlong(Vector2,IReadOnlyList<Vector2>,Vector2,float) +Draw(Texture2D) +DrawPolyline(Texture2D,IReadOnlyList<Vector2>)
 
 ### Content/Buffs/
 **GrapeBuff.cs**
@@ -1287,12 +1299,12 @@ tModLoader/other bases -> project types:
   class AroundTheWorldDefaults : IAroundTheWorldTuning
   class AroundTheWorldTrick : YoyoTrick
     #A:IAroundTheWorldTuning #angle:float #radius:float #omega:float #speed01:float #finished:bool #stopped:bool +Name:string[ov] +MaxHits:int[ov] +RetractsOnRelease:bool[ov] +WrapsString:bool[ov] +Angle:float +Radius:float +Speed01:float #Spins:int[v] #FullRadius() +Begin(YoyoProjectile,bool)[ov] +Tick(YoyoProjectile)[ov] +PathPoint(YoyoProjectile,float) +ArmPose(YoyoProjectile,out float)[ov] +RopeTaut(YoyoProjectile)[ov] +SpinStep(YoyoProjectile)[ov]
-**ForwardPassTrick.cs** uses: YoyoContact, YoyoProjectile, YoyoTrick, YoyoTuning
+**ForwardPassTrick.cs** uses: EllipsePath, YoyoContact, YoyoProjectile, YoyoTrick, YoyoTuning
   interface IForwardPassTuning
     +ForwardPassTicks:int +ForwardPassWidthRatio:float +ForwardPassReachMargin:float +ForwardPassEase:float +ForwardPassThroughPlatforms:bool +ForwardPassBlockedReturnHurts:bool
   class ForwardPassDefaults : IForwardPassTuning
   class ForwardPassTrick : YoyoTrick
-    #P:IForwardPassTuning #axis:Vector2 #bulge:Vector2 #halfReach:float #stopped:bool #comingBack:bool #blockedComingBack:bool +Name:string[ov] +MaxHits:int[ov] +RetractsOnRelease:bool[ov] +Begin(YoyoProjectile,bool)[ov] #PrepareEllipse(YoyoProjectile) #EllipseOffset(float,float) +Tick(YoyoProjectile)[ov] +RopeTaut(YoyoProjectile)[ov] +HurtsWhileReturning(YoyoProjectile)[ov] +SpinStep(YoyoProjectile)[ov]
+    #P:IForwardPassTuning #ellipse:EllipsePath #axis:Vector2 #bulge:Vector2 #halfReach:float #stopped:bool #comingBack:bool #blockedComingBack:bool +Name:string[ov] +MaxHits:int[ov] +RetractsOnRelease:bool[ov] +Begin(YoyoProjectile,bool)[ov] #PrepareEllipse(YoyoProjectile) #EllipseOffset(float,float) +Tick(YoyoProjectile)[ov] +RopeTaut(YoyoProjectile)[ov] +HurtsWhileReturning(YoyoProjectile)[ov] +SpinStep(YoyoProjectile)[ov]
 **ILoopTuning.cs**
   interface ILoopTuning
     +LassoMinReachPx:float +LassoTouchPaddingPx:float +LoopCatchTicks:int +LoopConstrictTicks:int +LoopWalkSpeedPx:float +LoopGapPx:float +LoopMinHandDistancePx:float +LoopRadiusPadPx:float +LoopMinRadiusPx:float +LoopMaxRadiusPx:float +LoopCloseRadiusPx:float +LoopSpinSpeed:float +LoopStringStepPx:float +LoopArcSamples:int +SnareMaxSizePx:float +ShredIntervalTicks:int +ShredDamageFraction:float +ShredShake:float
@@ -1347,7 +1359,7 @@ tModLoader/other bases -> project types:
 **YoyoPlayer.cs** uses: ReworkToggle, YoyoRegistry
   class YoyoPlayer : ModPlayer
     +Find(int,int)[s] +PostUpdate()[ov]
-**YoyoProjectile.cs** uses: HeldAim, HeldSwordPose, YoyoAfterimages, YoyoFx, YoyoRegistry, YoyoRope, YoyoRopeWrap, YoyoShake, YoyoTrick, YoyoTuning
+**YoyoProjectile.cs** uses: HeldAim, HeldSwordPose, VerletRope, YoyoAfterimages, YoyoFx, YoyoRegistry, YoyoRopeWrap, YoyoShake, YoyoTrick, YoyoTuning
   enum YoyoState
     {Idle, Out, Return}
   struct YoyoContact
@@ -1366,8 +1378,8 @@ tModLoader/other bases -> project types:
 **YoyoTrick.cs** uses: YoyoProjectile, YoyoTuning
   abstract class YoyoTrick
     #T:YoyoTuning +Name:string[ab] +MaxHits:int[ab] +FollowsCursorSide:bool[v] +CursorSideDeadzonePx:float[v] +RetractsOnRelease:bool[v] +ReleaseGraceTicks:int[v] +HurtsWhileOut:bool[v] +WrapsString:bool[v] +RopeTaut(YoyoProjectile)[v] +ArmPose(YoyoProjectile,out float)[v] +StringPath(YoyoProjectile,List<Vector2>)[v] +HurtsWhileReturning(YoyoProjectile)[v] +Begin(YoyoProjectile,bool)[ab] +Tick(YoyoProjectile)[ab] +OnHit(YoyoProjectile,NPC)[v] +OnRetract(YoyoProjectile)[v] +SpinStep(YoyoProjectile)[v]
-**YoyoTuning.cs**
-  class YoyoTuning
+**YoyoTuning.cs** uses: IRopeLook
+  class YoyoTuning : IRopeLook
     +TexturePath:string[v] +RopeLengthPx:float[v] +RopeLength() +RopePoints:int[v] +RopeSlackFactor:float[v] +RopeExtraSlack:float[v] +RopeGravity:float[v] +RopeTightenSpeed:float[v] +RopeMinLength:float[v] +RopeDamping:float[v] +RopeIterations:int[v] +RopeCollides:bool[v] +RopeSubdivisions:int[v] +RopeWidth:float[v] +RopeOutlineWidth:float[v] +RopeColor:Color[v] +RopeAltColor:Color[v] +RopeOutlineColor:Color[v] +HitboxSize:int[v] +HitCooldownTicks:int[v] +ArmFollow:float[v] +SyncEveryTicks:int[v] +UseSlopes:bool[v] +CollisionStepPx:float[v] +SweepHits:bool[v] +RopeWraps:bool[v] +RopeWrapMaxPivots:int[v] +RopeWrapClearancePx:float[v] +RopeWrapSnapSpeed:float[v] +IdleRestTicks:int[v] +IdleDropTicks:int[v] +IdleSpinTicks:int[v] +IdleRaiseTicks:int[v] +IdleDropPx:float[v] +IdleSwayPx:float[v] +IdleSpinRestSpeed:float[v] +IdleSpinSpeed:float[v] +IdleArmRestDeg:float[v] +IdleArmDropDeg:float[v] +ThrowArmStartDeg:float[v] +ThrowArmBlendTicks:int[v] +CatchArmDeg:float[v] +CatchArmBlendDistance:float[v] +ReleaseGraceTicks:int[v] +RethrowDelayTicks:int[v] +ReturnStartSpeed:float[v] +ReturnAccel:float[v] +ReturnMaxSpeed:float[v] +CatchDistance:float[v] +ReturnSpinSpeed:float[v] +SpinPerPixel:float[v] +HitShake:float[v] +Afterimages:bool[v] +AfterimageTicks:int[v] +AfterimageMinScale:float[v] +AfterimageMinSpeed:float[v] +AfterimageColor:Color[v]
 
 ### Content/Weapons/Melee/PreHardmode/Yoyos/Amazon/
@@ -1551,7 +1563,7 @@ tModLoader/other bases -> project types:
 
 ## Non-code files (png omitted; sprites follow <Name>_On/_Off/_On_FirstLiquid naming)
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; README.md; build.txt, description.txt, description_workshop.txt
-- Assets/Sounds/: BloodSpill.wav, ElectricEel.wav, Reeling.wav, Stab.wav
+- Assets/Sounds/: BloodSpill.wav, ElectricEel.wav, Stab.wav, WrenchReel.wav
 - Assets/Sounds/Candy/: CandyBreak1.wav, CandyBreak2.wav, CandyBreak3.wav, CandyExplode.wav, CandyPickup.wav
 - Assets/Sounds/MetalHit/: MetalHit1.wav, MetalHit2.wav, MetalHit3.wav
 - Assets/Sounds/MetalSword/: MetalSword1.wav, MetalSword2.wav, MetalSword3.wav

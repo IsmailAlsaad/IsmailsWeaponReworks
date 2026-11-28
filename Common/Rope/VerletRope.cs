@@ -4,10 +4,10 @@ using System;
 using System.Collections.Generic;
 using Terraria;
 
-namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
+namespace IsmailsWeaponReworks.Common.Rope
 {
     /// <summary>
-    /// The yoyo's string. IDLE: a plain straight line from the hand to the yoyo (Straight, no simulation). OUT and RETURN: a verlet rope
+    /// A hand-held string (first user: the yoyos, second: the Combat Wrench). IDLE: a plain straight line from the hand to the yoyo (Straight, no simulation). OUT and RETURN: a verlet rope
     /// pinned to the hand at one end and the yoyo at the other (Update), starting from the straight line. Its length follows the distance
     /// between the two every tick (the caller gives how much slack and gravity), it lies on the ground instead of going through it, and it
     /// is simulated in the hand's frame: every tick all points shift by how far the hand moved, so the player's own movement (running,
@@ -16,16 +16,16 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
     /// twisted body), lit by the world light. Visual only: every machine simulates and draws its own from the hand and the yoyo
     /// positions, nothing is synced. Client only.
     /// </summary>
-    public class YoyoRope
+    public class VerletRope
     {
-        readonly YoyoTuning tuning;
+        readonly IRopeLook tuning;
 
-        // A yoyo that changes its string's colors while it plays (a charge) sets these before every draw; null = the tuning's colors.
+        // A weapon that changes its string's colors while it plays (a charge) sets these before every draw; null = the tuning's colors.
         public Color? MainOverride;
         public Color? AltOverride;
         public Color? OutlineOverride;
 
-        public YoyoRope(YoyoTuning tuning)
+        public VerletRope(IRopeLook tuning)
         {
             this.tuning = tuning;
         }

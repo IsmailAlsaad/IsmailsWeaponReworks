@@ -10,7 +10,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
     /// Where the yoyo's string bends around blocks (patch 8). A list of corner points ("pivots") between the hand and the yoyo, fixed to the
     /// tiles: when the straight string between two neighbors would pass through a solid block, the corner of that block with the shortest
     /// detour is added (a little outside it); a corner goes away again as soon as its two neighbors can see each other. The string is then
-    /// laid along hand, corners, yoyo (YoyoRope.TightenAlong). Line of sight is sampled every few pixels against full solid blocks and half
+    /// laid along hand, corners, yoyo (VerletRope.TightenAlong). Line of sight is sampled every few pixels against full solid blocks and half
     /// blocks; sloped tiles and platforms do not block it. When the hand or the yoyo is inside a block there is no wrap (the string is simply
     /// straight). Visual only: every machine runs its own, nothing is synced. Client only.
     /// </summary>

@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Common.Rope;
+using Microsoft.Xna.Framework;
 using System;
 using Terraria;
 using Terraria.ID;
@@ -11,7 +12,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
     /// pattern's numbers come as an interface with defaults, for example IWalkTheDogTuning: the yoyo's tuning implements it and lists its
     /// own values). Properties instead of fields, so hot reload can tweak them.
     /// </summary>
-    public class YoyoTuning
+    public class YoyoTuning : IRopeLook
     {
         // His own art, when it exists (for example "IsmailsWeaponReworks/Content/Weapons/Melee/PreHardmode/Yoyos/WoodenYoyo/WoodenYoyoProjectile"); null or
         // a missing file = the vanilla sprite.
