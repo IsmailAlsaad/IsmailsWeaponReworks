@@ -41,7 +41,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         int ticks;               // ticks this machine has run this projectile
         float timer;             // ticks along the timeline
         int targetType = -1;     // the held enemy's type, so a recycled npc slot is never mistaken for it
-        Vector2 heldCenter;      // where the held enemy is (it only moves through open air)
+        Vector2 heldCenter;      // where the held enemy is (it moves straight through tiles)
         float heldSpeed;         // how fast the enemy is still coming toward the stop point (pixels per tick); starts at the reel speed
         bool struck;             // the hit tick has passed on this machine
         int armed;               // owner: the swing may damage while this is above 0
@@ -57,9 +57,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         // ---- timeline ----
 
         static int StrikeEnd => CombatWrenchTuning.WindupTicks + Math.Max(1, CombatWrenchTuning.StrikeTicks);
-        // After the hit: the wrench VIBRATES in the hand (VibrateTicks, from the hit tick), then the arm SETTLES down (SettleTicks) and the swing ends.
-        static int SettleStart => Math.Max(StrikeEnd, HitTick + Math.Max(1, CombatWrenchTuning.VibrateTicks));
-        static int RecoverEnd => SettleStart + Math.Max(1, CombatWrenchTuning.SettleTicks);
+        // After the hit: the wrench VIBRATES in the hand (VibrateTicks, from the hit tick) while, AT THE SAME TIME, the arm SETTLES down (SettleTicks,
+        // from the end of the strike, which is the hit tick or right after it). The swing ends when both are done.
+        static int SettleStart => StrikeEnd;
+        static int RecoverEnd => Math.Max(SettleStart + Math.Max(1, CombatWrenchTuning.SettleTicks), HitTick + Math.Max(1, CombatWrenchTuning.VibrateTicks));
 
         // 1 at the hit tick, fading to 0 at the end of the shake (0 before the hit): a damped envelope, a function of the ticks only.
         static float VibrateEnvelope(float time)
@@ -203,7 +204,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             return npc.active && npc.type == targetType ? npc : null;
         }
 
-        // Every machine, every tick until the hit: the enemy keeps coming toward the stop point in front of the player (through open air only)
+        // Every machine, every tick until the hit: the enemy keeps coming toward the stop point in front of the player (through tiles too)
         // at the reel speed, so it never stops and waits for the swing: its speed eases down (SwingApproachDecay) just enough that it arrives
         // exactly on the hit tick. An enemy that is already at the stop point simply stays there.
         void HoldTarget(Player owner, NPC target)
@@ -216,7 +217,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                 int ticksToHit = Math.Max(1, HitTick - (int)timer);
                 heldSpeed = Math.Max(distance / ticksToHit, heldSpeed * MathHelper.Clamp(CombatWrenchTuning.SwingApproachDecay, 0f, 1f));
                 Vector2 want = heldCenter + toStop / distance * Math.Min(distance, heldSpeed);
-                heldCenter = CarriedNPC.ClampToOpenAir(heldCenter, want, target);
+                heldCenter = want;   // straight through tiles
             }
             CarriedNPC.Hold(target, heldCenter);
         }

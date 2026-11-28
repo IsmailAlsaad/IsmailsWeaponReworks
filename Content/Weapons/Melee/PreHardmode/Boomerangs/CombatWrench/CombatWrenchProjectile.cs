@@ -68,12 +68,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         int aimSendDelay;          // owner only: ticks until the next aim update may be sent
         Vector2 latchOwnerCenter;  // the player's center when the reel began (the reel's origin eases from here to the player's live center)
         float reelStartDistance;   // how far from the player the enemy was when latched
-        Vector2 heldCenter;        // where the held enemy is (it only moves through open air)
+        Vector2 heldCenter;        // where the held enemy is (it moves straight through tiles)
         Vector2 retractStart;      // where the wrench was when the Retract began
         float retractStartRotation; // and how it was turned
         int reelTicks;             // how long the reel takes at ReelSpeedPx (worked out at the latch from the distance)
         int pickupDelay;           // ticks after the Snap until the enemy is PickupProgress of the way along its reel and the wrench is picked up
         bool swingSpawned;         // owner only: the heavy swing has been spawned
+        CombatWrenchFx.ReelSound reelSound;   // visual only: the WrenchReel clip while a movable enemy is reeled in
         bool havePrev;             // owner only: the swept contact test has last tick's positions
         Vector2 prevCenter;
         Vector2 prevTip;
@@ -423,8 +424,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         }
 
         // The held enemy's place this tick: it stays where it was latched during the Snap, then slides to the stop point in front of the player
-        // at a constant speed (a function of the ticks only, whatever the wrench is doing), and then stays at the stop point. Always through
-        // open air only.
+        // at a constant speed (a function of the ticks only, whatever the wrench is doing), and then stays at the stop point. Straight through
+        // tiles (the enemy is held, so no block stops it).
         void HoldEnemy(Player owner, NPC npc)
         {
             // The enemy rides the reel line (it turns toward the cursor): its distance from the player shrinks at a constant speed down to
@@ -434,7 +435,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             Vector2 origin = Vector2.Lerp(latchOwnerCenter, owner.MountedCenter, u);
             float distance = MathHelper.Lerp(reelStartDistance, CombatWrenchTuning.SwingDistancePx, u);
             Vector2 want = origin + reelDir * distance;
-            heldCenter = CarriedNPC.ClampToOpenAir(heldCenter, want, npc);
+            heldCenter = want;   // straight through tiles
             CarriedNPC.Hold(npc, heldCenter);
         }
 
@@ -502,7 +503,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             }
 
             if (latchTicks == snapEnd)
-                CombatWrenchFx.Reel(Projectile.Center);   // the drag or the reel begins
+                reelSound = CombatWrenchFx.Reel(Projectile.Center, movable);   // the drag or the reel begins
 
             // The stage changes FIRST, so what a stage starts from (the Retract's start point) is set before the stage uses it.
             if (!returning)
@@ -515,6 +516,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                         retractStart = Projectile.Center;
                         retractStartRotation = Projectile.rotation;
                         CombatWrenchFx.Retract(Projectile.Center);
+                        reelSound?.FadeOut();
                     }
                 }
                 Projectile.ai[0] = (float)now;   // local, like Out and Back; the owner's Return is the next synced change
@@ -533,6 +535,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                 {
                     FollowAim(owner, isOwner);
                     HoldEnemy(owner, npc);
+                    if (reelSound != null)
+                        reelSound.Position = heldCenter;
                 }
 
                 if (now == Phase.Snap || now == Phase.Reel)
@@ -689,6 +693,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             if (!returnStarted)
             {
                 returnStarted = true;
+                reelSound?.FadeOut();
                 returnSpeed = Math.Max(CombatWrenchTuning.ReturnStartSpeed, lastSpeed * 0.4f);
                 CombatWrenchFx.Retract(Projectile.Center);
             }
@@ -767,6 +772,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
 
         public override void OnKill(int timeLeft)
         {
+            reelSound?.FadeOut();
+            reelSound = null;
             DetachedTrails.Hand(trail);
             trail = null;
         }

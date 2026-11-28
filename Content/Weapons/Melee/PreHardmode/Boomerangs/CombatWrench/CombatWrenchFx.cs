@@ -105,12 +105,56 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                 Chip(position, back * Main.rand.NextFloat(1.5f, 5.5f) + along * Main.rand.NextFloat(-4f, 4f), Main.rand.NextFloat(1f, 1.9f));
         }
 
-        // The reel begins (the enemy starts sliding in). A placeholder sound until Ismail's reel clip exists (W7).
-        public static void Reel(Vector2 position)
+        // The reel begins. A movable enemy gets Ismail's WrenchReel clip: it plays while the enemy is pulled in, follows the enemy, and the
+        // caller fades it out (FadeOut on the returned handle) when the wrench is picked up. An immovable enemy (or a missing clip) keeps the
+        // vanilla placeholder and returns null.
+        public static ReelSound Reel(Vector2 position, bool movable)
         {
             if (Main.dedServ)
-                return;
-            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.5f, Pitch = -0.4f, PitchVariance = 0.05f }, position);
+                return null;
+            string path = "IsmailsWeaponReworks/Assets/Sounds/WrenchReel";
+            if (!movable || !Terraria.ModLoader.ModContent.HasAsset(path))
+            {
+                SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.5f, Pitch = -0.4f, PitchVariance = 0.05f }, position);
+                return null;
+            }
+            ReelSound handle = new ReelSound(position);
+            SoundEngine.PlaySound(new SoundStyle(path) { Volume = CombatWrenchTuning.ReelSoundVolume, PitchVariance = CombatWrenchTuning.ReelSoundPitchVariance, MaxInstances = 4 }, position, handle.Update);
+            return handle;
+        }
+
+        /// <summary>The playing reel clip. The wrench moves Position with the enemy and calls FadeOut; the sound fades itself and stops, even if the wrench is gone by then.</summary>
+        public sealed class ReelSound
+        {
+            public Vector2 Position;
+            int fadeTotal;
+            int fadeLeft = -1;   // -1 = not fading
+
+            public ReelSound(Vector2 position)
+            {
+                Position = position;
+            }
+
+            public void FadeOut()
+            {
+                if (fadeLeft >= 0)
+                    return;
+                fadeTotal = (int)MathHelper.Max(1f, CombatWrenchTuning.ReelSoundFadeTicks);
+                fadeLeft = fadeTotal;
+            }
+
+            // The sound engine calls this every tick; false ends the sound.
+            public bool Update(ActiveSound sound)
+            {
+                sound.Position = Position;
+                if (fadeLeft < 0)
+                    return true;
+                fadeLeft--;
+                if (fadeLeft <= 0)
+                    return false;
+                sound.Volume = fadeLeft / (float)fadeTotal;
+                return true;
+            }
         }
 
         // The strike begins: a heavy whoosh ('direction' is where the hammer is going).
