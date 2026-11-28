@@ -38,9 +38,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         // ---- REEL (W3: a movable enemy is held and slid to the player, then the wrench flies back to the hand) ----
         public static float ReelSpeedPx => 12f;              // the enemy is reeled at this constant speed (pixels per tick, no ease), so a longer way takes longer
         public static int MinReelTicks => 4;                  // but never faster than this many ticks
-        public static float PickupDistancePx => 110f;         // the moment the reeled enemy is this close to the player, the wrench is picked up (it flies to the hand while the enemy keeps sliding to the stop point)
+        public static float PickupProgress => 0.5f;           // the moment the reeled enemy is this far along its way to the stop point (0..1), the wrench is picked up and flies to the hand faster than the enemy moves, so the heavy swing starts while the enemy is still coming
+        public static float ReelAimTurnRad => 0.12f;          // the reel line (player to the enemy) follows the cursor, turning at most this many radians per tick; the swing's direction is fixed the moment the wrench is caught
+        public static float ReelAimMinDistancePx => 24f;      // a cursor closer to the player than this does not steer the reel
+        public static float ReelAimSyncDelta => 0.04f;        // the owner tells the other machines the new cursor angle once it changed by this many radians (at most every 2 ticks)
         public static float SwingDistancePx => 56f;           // the stop point: this far from the player along the line to where the enemy was latched
-        public static int RetractTicks => 8;                  // the wrench flies from the enemy to the hand in this many ticks (it accelerates)
+        public static int RetractTicks => 5;                  // the wrench flies from the enemy to the hand in this many ticks (it accelerates, so it is much faster than the enemy's reel)
         public static int HandOverHoldTicks => 45;            // W4: the wrench waits in the hand at most this long for the heavy swing to start on this machine (a safety net for a lost packet: after it the enemy is let go and the wrench is caught)
 
         // ---- STRAIN (an immovable enemy is not moved: the wrench drags back a little, and the moment the drag ends it reels straight back and deals the hit) ----
@@ -59,7 +62,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static float RestArmDeg => 55f;                 // after the strike the arm eases down to this angle below the line to the enemy
         public static float StrikeEasePower => 2.2f;           // the strike speeds up into the hit: progress = t ^ this (1 = constant speed)
         public static float WindupTiltDeg => 55f;              // the head leans this far past the arm during the wind-up (over the shoulder) and straightens along the arm in the strike
-        public static float GripOffsetPx => 25f;               // how far from the hand the wrench's center sits along the swing (10 = the butt in the hand, like RopeAttachPx)
+        public static float GripOffsetPx => 10f;               // how far from the hand the wrench's center sits along the swing (10 = the butt in the hand, like RopeAttachPx; more and the wrench floats in front of the hand)
+        public static float SwingApproachDecay => 0.85f;       // while the swing winds up, an enemy that is still coming slows from the reel speed toward the speed that makes it arrive exactly on the hit tick: 1 = keeps the reel speed as long as it can, lower = slows sooner
 
         // ---- FACING ----
         public static float FaceDeadzonePx => 6f;             // the player always faces the wrench's side; closer to the player than this the facing is kept

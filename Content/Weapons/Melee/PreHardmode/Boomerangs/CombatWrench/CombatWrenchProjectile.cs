@@ -60,11 +60,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         Vector2 snapStartCenter;
         float snapStartRotation;
         Phase stage = Phase.Snap;  // the latched stage this machine is in (a pure function of latchTicks)
-        Vector2 reelDir;           // unit vector from the player toward where the enemy was latched: the reel runs along it
+        Vector2 reelDir;           // unit vector from the player toward the held enemy: the reel runs along it (it follows the cursor, see reelAngle)
+        float reelAngle;           // the reel line's angle (world), starts at the latch direction and turns toward aimAngle
+        float aimAngle;            // the owner's cursor angle from the player (world); the owner writes it, the others read it from SendExtraAI (synced)
+        float sentAimAngle;        // owner only: the aimAngle the other machines last got
+        int aimSendDelay;          // owner only: ticks until the next aim update may be sent
+        Vector2 latchOwnerCenter;  // the player's center when the reel began (the reel's origin eases from here to the player's live center)
+        float reelStartDistance;   // how far from the player the enemy was when latched
         Vector2 heldCenter;        // where the held enemy is (it only moves through open air)
         Vector2 retractStart;      // where the wrench was when the Retract began
         int reelTicks;             // how long the reel takes at ReelSpeedPx (worked out at the latch from the distance)
-        int pickupDelay;           // ticks after the Snap until the enemy is within PickupDistancePx of the player and the wrench is picked up
+        int pickupDelay;           // ticks after the Snap until the enemy is PickupProgress of the way along its reel and the wrench is picked up
         bool swingSpawned;         // owner only: the heavy swing has been spawned
         bool havePrev;             // owner only: the swept contact test has last tick's positions
         Vector2 prevCenter;
@@ -354,6 +360,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             Vector2 contact = byHead ? Vector2.Clamp(tip, box.TopLeft(), box.BottomRight()) : RopeEntry(hand, butt, box);
             contactOffset = contact - npc.Center;
             snapCenter = npc.Center;
+            Vector2 fromPlayer = npc.Center - Main.player[Projectile.owner].MountedCenter;
+            aimAngle = fromPlayer.LengthSquared() > 16f ? fromPlayer.ToRotation() : (side >= 0 ? 0f : MathHelper.Pi);
+            sentAimAngle = aimAngle;
             movable = Snarable.CanGrip(npc, CombatWrenchTuning.MaxHoldSize);
             Projectile.ai[0] = (float)Phase.Snap;
             Projectile.ai[1] = npc.whoAmI + 1;
@@ -397,13 +406,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             latchedType = index >= 0 && index < Main.maxNPCs && Main.npc[index].active ? Main.npc[index].type : -1;
             heldCenter = snapCenter;
             Vector2 toEnemy = snapCenter - owner.MountedCenter;
-            reelDir = toEnemy.LengthSquared() > 16f ? Vector2.Normalize(toEnemy) : new Vector2(side, 0f);   // the reel runs along this line
+            reelDir = toEnemy.LengthSquared() > 16f ? Vector2.Normalize(toEnemy) : new Vector2(side, 0f);   // the reel starts along this line, then follows the cursor
+            reelAngle = reelDir.ToRotation();
+            latchOwnerCenter = owner.MountedCenter;
+            reelStartDistance = toEnemy.Length();
             float reelDistance = Math.Max(0f, Vector2.Distance(snapCenter, owner.MountedCenter) - CombatWrenchTuning.SwingDistancePx);
             reelTicks = Math.Max(CombatWrenchTuning.MinReelTicks, (int)Math.Ceiling(reelDistance / Math.Max(0.1f, CombatWrenchTuning.ReelSpeedPx)));   // a constant speed: the longer the way, the longer it takes
             float startDistance = Vector2.Distance(snapCenter, owner.MountedCenter);
             float travel = startDistance - CombatWrenchTuning.SwingDistancePx;
-            float toGo = startDistance - CombatWrenchTuning.PickupDistancePx;
-            pickupDelay = travel <= 0.01f || toGo <= 0f ? 0 : Math.Min(reelTicks, (int)Math.Ceiling(reelTicks * toGo / travel));   // the enemy is this far along the reel when it is close enough
+            pickupDelay = travel <= 0.01f ? 0 : Math.Min(reelTicks, (int)Math.Ceiling(reelTicks * MathHelper.Clamp(CombatWrenchTuning.PickupProgress, 0f, 1f)));   // the wrench is picked up when the enemy is this far along its reel
             NPC npc = LatchedNpc();
             Vector2 contact = (npc != null ? npc.Center : snapCenter) + contactOffset;
             CombatWrenchFx.Snap(contact, AwayFromPlayer(owner, contact));
@@ -414,16 +425,45 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         // open air only.
         void HoldEnemy(Player owner, NPC npc)
         {
-            Vector2 stop = owner.MountedCenter + reelDir * CombatWrenchTuning.SwingDistancePx;
+            // The enemy rides the reel line (it turns toward the cursor): its distance from the player shrinks at a constant speed down to
+            // the stop point, and the line's origin eases from where the player was at the latch to where the player is now (so the Snap
+            // does not drag it along with a running player).
             float u = MathHelper.Clamp((latchTicks - CombatWrenchTuning.SnapTicks) / (float)Math.Max(1, reelTicks), 0f, 1f);
-            Vector2 want = Vector2.Lerp(snapCenter, stop, u);   // a straight line (the stop point moves with the player)
+            Vector2 origin = Vector2.Lerp(latchOwnerCenter, owner.MountedCenter, u);
+            float distance = MathHelper.Lerp(reelStartDistance, CombatWrenchTuning.SwingDistancePx, u);
+            Vector2 want = origin + reelDir * distance;
             heldCenter = CarriedNPC.ClampToOpenAir(heldCenter, want, npc);
             CarriedNPC.Hold(npc, heldCenter);
         }
 
+        // Every machine, every tick of the reel: the reel line turns toward the owner's cursor (the owner reads the mouse and tells the others
+        // through SendExtraAI), at most ReelAimTurnRad per tick. It stops following the moment the swing is spawned: that is the commit.
+        void FollowAim(Player owner, bool isOwner)
+        {
+            if (swingSpawned || latchTicks <= CombatWrenchTuning.SnapTicks)
+                return;
+            if (isOwner)
+            {
+                Vector2 toMouse = Main.MouseWorld - owner.MountedCenter;
+                float minimum = CombatWrenchTuning.ReelAimMinDistancePx;
+                if (toMouse.LengthSquared() > minimum * minimum)
+                    aimAngle = toMouse.ToRotation();
+                aimSendDelay--;
+                if (aimSendDelay <= 0 && Math.Abs(MathHelper.WrapAngle(aimAngle - sentAimAngle)) > CombatWrenchTuning.ReelAimSyncDelta)
+                {
+                    sentAimAngle = aimAngle;
+                    aimSendDelay = 2;
+                    Projectile.netUpdate = true;
+                }
+            }
+            float turn = CombatWrenchTuning.ReelAimTurnRad;
+            reelAngle += MathHelper.Clamp(MathHelper.WrapAngle(aimAngle - reelAngle), -turn, turn);
+            reelDir = reelAngle.ToRotationVector2();
+        }
+
         // The latched stages, a pure function of the ticks since the latch on every machine: Snap (the head flies to the contact point and
         // turns away from the player), Reel (a movable enemy is held and slid to the stop point at a constant speed; the wrench stays pinned
-        // to it), Retract (the moment the enemy is within PickupDistancePx of the player the wrench flies to the hand, while the enemy keeps sliding in), HandOver (the wrench waits in the hand
+        // to it), Retract (the moment the enemy is PickupProgress of the way along its reel the wrench flies to the hand, while the enemy keeps sliding in), HandOver (the wrench waits in the hand
         // while the heavy swing projectile takes over: the wrench ends without letting the enemy go). An immovable enemy is not moved: the
         // wrench drags back a little on a cubic ease (the head still pinned to it), and the moment the drag ends it reels straight
         // back to the hand; that snap back is the hit (the same damage as the heavy swing), with no push forward first.
@@ -477,10 +517,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                 Projectile.ai[0] = (float)now;   // local, like Out and Back; the owner's Return is the next synced change
             }
 
+            if (movable && !returning && npc != null && SwingTakenOver())
+            {
+                // The heavy swing holds the enemy from here on (it must not be pulled around by two holders in one tick); the wrench ends quietly.
+                Projectile.Kill();
+                return;
+            }
+
             if (npc != null)
             {
                 if (movable)
+                {
+                    FollowAim(owner, isOwner);
                     HoldEnemy(owner, npc);
+                }
 
                 if (now == Phase.Snap || now == Phase.Reel)
                 {
@@ -535,13 +585,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                 // W4: once the enemy has arrived and the wrench is in the hand, the owner starts the heavy swing (a separate projectile that holds
                 // the enemy from its very first tick). The wrench keeps holding the enemy until that swing has run on this machine, then it ends
                 // quietly (no catch, no release). If the swing never shows up (a lost packet) the old end is the fallback: let go and catch.
-                if (isOwner && !swingSpawned && latchTicks >= Math.Max(reelEnd, retractEnd))
-                    SpawnSwing(owner, npc);
-                if (SwingTakenOver())
-                {
-                    Projectile.Kill();
-                    return;
-                }
+                if (isOwner && !swingSpawned && latchTicks >= retractEnd)
+                    SpawnSwing(owner, npc);   // the wrench is caught: the swing's direction is fixed now; the enemy may still be on its way (the swing keeps it coming)
                 if (latchTicks >= handOverEnd)
                 {
                     CarriedNPC.Release(npc);
@@ -556,7 +601,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         void SpawnSwing(Player owner, NPC npc)
         {
             swingSpawned = true;
-            float angle = reelDir.ToRotation();
+            float angle = reelAngle;   // the commit: from here on the swing's direction never changes
             float aimArm = HeldAim.ToWorld(owner, angle) - Tilt(owner);
             float startLocal = HeldAim.Facing(angle) * MathHelper.WrapAngle(armWorld - aimArm);
             Projectile.NewProjectile(Projectile.GetSource_FromThis(), hand, Vector2.Zero, ModContent.ProjectileType<CombatWrenchSwingProjectile>(),
@@ -584,6 +629,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             writer.Write(snapCenter.X);
             writer.Write(snapCenter.Y);
             writer.Write(movable);
+            writer.Write(aimAngle);
         }
 
         public override void ReceiveExtraAI(BinaryReader reader)
@@ -591,6 +637,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             contactOffset = new Vector2(reader.ReadSingle(), reader.ReadSingle());
             snapCenter = new Vector2(reader.ReadSingle(), reader.ReadSingle());
             movable = reader.ReadBoolean();
+            aimAngle = reader.ReadSingle();
         }
 
         // Owner only: from now on every machine pulls the wrench to the hand (ai[0] travels with the netUpdate).

@@ -41,6 +41,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         float timer;             // ticks along the timeline
         int targetType = -1;     // the held enemy's type, so a recycled npc slot is never mistaken for it
         Vector2 heldCenter;      // where the held enemy is (it only moves through open air)
+        float heldSpeed;         // how fast the enemy is still coming toward the stop point (pixels per tick); starts at the reel speed
         bool struck;             // the hit tick has passed on this machine
         int armed;               // owner: the swing may damage while this is above 0
         float flash;             // 1 right after the hit, fades to 0
@@ -169,11 +170,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             return npc.active && npc.type == targetType ? npc : null;
         }
 
-        // Every machine, every tick until the hit: the enemy stays at the stop point in front of the player, through open air only.
+        // Every machine, every tick until the hit: the enemy keeps coming toward the stop point in front of the player (through open air only)
+        // at the reel speed, so it never stops and waits for the swing: its speed eases down (SwingApproachDecay) just enough that it arrives
+        // exactly on the hit tick. An enemy that is already at the stop point simply stays there.
         void HoldTarget(Player owner, NPC target)
         {
             Vector2 stop = owner.MountedCenter + ReelAngle.ToRotationVector2() * CombatWrenchTuning.SwingDistancePx;
-            heldCenter = CarriedNPC.ClampToOpenAir(heldCenter, stop, target);
+            Vector2 toStop = stop - heldCenter;
+            float distance = toStop.Length();
+            if (distance > 0.01f)
+            {
+                int ticksToHit = Math.Max(1, HitTick - (int)timer);
+                heldSpeed = Math.Max(distance / ticksToHit, heldSpeed * MathHelper.Clamp(CombatWrenchTuning.SwingApproachDecay, 0f, 1f));
+                Vector2 want = heldCenter + toStop / distance * Math.Min(distance, heldSpeed);
+                heldCenter = CarriedNPC.ClampToOpenAir(heldCenter, want, target);
+            }
             CarriedNPC.Hold(target, heldCenter);
         }
 
@@ -223,6 +234,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                 NPC first = TargetIndex >= 0 && TargetIndex < Main.maxNPCs && Main.npc[TargetIndex].active ? Main.npc[TargetIndex] : null;
                 targetType = first != null ? first.type : -1;
                 heldCenter = first != null ? first.Center : owner.MountedCenter + ReelAngle.ToRotationVector2() * CombatWrenchTuning.SwingDistancePx;
+                heldSpeed = CombatWrenchTuning.ReelSpeedPx;
             }
 
             owner.ChangeDir(Facing);   // every tick, on every machine: the player faces the enemy
