@@ -7,7 +7,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
     /// <summary>
     /// Hands the swing numbers to the shared charged blade (Common/ChargedBlade). Everything is the wooden swords' (WoodenSwordBladeTune, which also
     /// measures the blade length from the item sprite), so the Candy Cane Sword swings exactly like them; only the trail geometry (TrailOuter, TrailInnerLow,
-    /// TrailInnerHigh, TrailExpandBy, TrailLagTicks, TrailSamplesPerTick) comes from CandyCaneSwordTuning. Every property forwards live, so hot reload
+    /// TrailInnerHigh, TrailExpandBy, TrailSamplesPerTick, and the grip offset) comes from CandyCaneSwordTuning (the trail's lag too, one number per swing direction, through the blade). Every property forwards live, so hot reload
     /// of a number still takes effect. Add a line here only when IChargedBladeTuning gets a new member.
     /// </summary>
     public class CandyCaneSwordBladeTune : IChargedBladeTuning
@@ -73,7 +73,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         public float MinSpeed => inner.MinSpeed;
         public float MaxSpeed => inner.MaxSpeed;
         public int TrailSamplesPerTick => CandyCaneSwordTuning.TrailSamplesPerTick;
-        public float TrailLagTicks => CandyCaneSwordTuning.TrailLagTicks;
+        // The blade overrides the lag per swing direction (TrailLagTicksUp / TrailLagTicksDown); this is only the interface's default.
+        public float TrailLagTicks => CandyCaneSwordTuning.TrailLagTicksDown;
         public float TrailOuter => CandyCaneSwordTuning.TrailOuter;
         public float TrailInnerLow => CandyCaneSwordTuning.TrailInnerLow;
         public float TrailInnerHigh => CandyCaneSwordTuning.TrailInnerHigh;
@@ -85,7 +86,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         public float KnockbackMultiplier => inner.KnockbackMultiplier;
         public float HitShake => inner.HitShake;
         public float ChargePerHit => inner.ChargePerHit;
-        public float GripOffset => inner.GripOffset;
+        public float GripOffset => CandyCaneSwordTuning.GripOffset;
         public float GlowMaxAlpha => inner.GlowMaxAlpha;
         public Color OutlineColor => inner.OutlineColor;
         public float GlowScale => inner.GlowScale;

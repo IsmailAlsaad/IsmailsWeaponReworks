@@ -57,7 +57,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         // ---- Sugar Rush (yellow candy) ----
         public static int SugarRushTicksPerCandy => 120;
         public static int SugarRushMaxTicks => 600;
-        public static float SugarRushAttackSpeed => 0.15f; // melee attack speed
+        public static float SugarRushAttackSpeed => 0.30f; // melee attack speed
+        public static float SugarRushMoveSpeed => 0.15f;   // movement speed
 
         // ---- red candy explosion ----
         public static float RedBlastRadius => 56f;
@@ -83,6 +84,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         public static float DrawScale => 1f;
         public static float FallbackSize => 14f;        // the colored square drawn until Candy.png exists
         public static float LightStrength => 0.25f;
+        public static float GripOffset => 5f;           // where the hand holds the sword: pixels up from the end of the handle, along the blade, at scale 1 (the sprite is drawn that much further back; visual only, the reach and the hit line stay)
         public static bool ShowHitboxDebug => false;    // true: a magenta circle on every candy's hitbox (radius = half of HitboxSize) and a dot on its center
 
         // ---- dust, sound, shake ----
@@ -102,10 +104,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
 
         // ---- swing trail geometry (a SweepTrail fan, the same numbers as the ore swords) ----
         public static int TrailSamplesPerTick => 8;
-        public static float TrailLagTicks => 0.4f;
+        public static float TrailLagTicksDown => 1f; // how many ticks the trail lags behind the sword on the DOWNWARD swing (starts equal to the upward one: put its own number here)
+        public static float TrailLagTicksUp => 0f;
         public static float TrailOuter => 0.9f;
-        public static float TrailInnerLow => 0.7f;
-        public static float TrailInnerHigh => 0.2f;
+        public static float TrailInnerLow => 0.4f;
+        public static float TrailInnerHigh => 0.1f;
         public static float TrailExpandBy => 0.8f;
 
         // ---- swing trail look ----

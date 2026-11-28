@@ -74,6 +74,12 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         /// <summary>A sprite that is not a whole asset (a frame cut out of a sheet, or one that changes color): when this returns a texture it is drawn and measured instead of SpriteAsset. Null = use SpriteAsset.</summary>
         protected virtual Texture2D SpriteOverride => null;
 
+        /// <summary>How many ticks the swing trail lags behind the sword for the swing that is running ('upSwing': the sword travels from low to high, otherwise from high to low). By default the tuning's TrailLagTicks for both directions; a weapon whose two directions need different values overrides this.</summary>
+        protected virtual float TrailLag(bool upSwing)
+        {
+            return Tune.TrailLagTicks;
+        }
+
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
 
@@ -673,7 +679,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
             if (!DrawsTrail)
                 return;
 
-            time -= Tune.TrailLagTicks;
+            time -= TrailLag(IsUp);
             float arm = SwingArmAt(time);
             float tilt = SwingTiltAt(time);
             Vector2 shift = Vector2.Lerp(lastOwnerCenter, Owner.Center, fraction) - Owner.Center;

@@ -154,6 +154,6 @@ Buffs: {
 
 	SugarRushBuff: {
 		DisplayName: Sugar Rush
-		Description: 15% increased melee speed
+		Description: Sugar has flooded your blood stream!
 	}
 }

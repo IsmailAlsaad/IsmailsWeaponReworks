@@ -37,6 +37,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         // The owner's next candy color (every machine mirrors it, see CandyCaneSwordPlayer).
         CandyKind NextKind => Main.player[Projectile.owner].GetModPlayer<CandyCaneSwordPlayer>().NextCandy;
 
+        // The trail lags the sword by a different number of ticks on the upward and on the downward swing (the two behave differently with this sword).
+        protected override float TrailLag(bool upSwing)
+        {
+            return upSwing ? CandyCaneSwordTuning.TrailLagTicksUp : CandyCaneSwordTuning.TrailLagTicksDown;
+        }
+
         public override void OnSpawn(IEntitySource source)
         {
             tune = null;

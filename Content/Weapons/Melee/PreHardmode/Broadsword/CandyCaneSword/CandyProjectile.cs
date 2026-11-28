@@ -260,7 +260,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
                 return;
             hurtTimer = Math.Max(1, CandyCaneSwordTuning.BlueHitIntervalTicks);
             CandyCaneSwordFx.BlueTick(Projectile.Center);
-            if (Projectile.owner != Main.myPlayer || npc.dontTakeDamage || npc.immortal)
+            if (Projectile.owner != Main.myPlayer || npc.dontTakeDamage) // immortal enemies (target dummies) are hit too
                 return;
             int damage = Math.Max(1, (int)(Projectile.damage * CandyCaneSwordTuning.BlueDamageMultiplier));
             int direction = npc.Center.X > Main.player[Projectile.owner].Center.X ? 1 : -1;
@@ -424,6 +424,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             }
             if (Kind == CandyKind.Blue)
             {
+                SnapToTile(oldVelocity);
                 Projectile.ai[2] = 2f; // stuck to a block (every machine does the same; the owner's netUpdate settles the exact spot)
                 Projectile.velocity = Vector2.Zero;
                 if (Projectile.owner == Main.myPlayer)
@@ -445,6 +446,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             if (bounced && Projectile.owner == Main.myPlayer)
                 Projectile.netUpdate = true; // the other machines catch up with the real position
             return false;
+        }
+
+        // The tick a blue candy touches a block it can still be a few pixels away from it: a falling candy covers only the part of its speed the block let
+        // through, and zeroing the speed when it sticks would throw that part away (the candy would hang in the air). So close the gap exactly: along every
+        // axis the block stopped, move by what Collision.TileCollision allows from where the candy is now (nothing if it already touches the block).
+        void SnapToTile(Vector2 oldVelocity)
+        {
+            int width = Projectile.width;
+            int height = Projectile.height;
+            if (Projectile.velocity.Y != oldVelocity.Y)
+                Projectile.position += Collision.TileCollision(Projectile.position, new Vector2(0f, oldVelocity.Y), width, height, false, false, 1);
+            if (Projectile.velocity.X != oldVelocity.X)
+                Projectile.position += Collision.TileCollision(Projectile.position, new Vector2(oldVelocity.X, 0f), width, height, false, false, 1);
         }
 
         // Every machine plays the explosion; only the owner's client spawns the damage.

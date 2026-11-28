@@ -6,7 +6,7 @@ using Terraria.ModLoader;
 namespace IsmailsWeaponReworks.Content.Buffs
 {
     /// <summary>
-    /// Sugar Rush: +15% melee attack speed, given by picking up a yellow candy of the Candy Cane Sword (CandyPickup adds 2 s per candy, max 10 s). The speed
+    /// Sugar Rush: +30% melee attack speed and +15% movement speed, given by picking up a yellow candy of the Candy Cane Sword (CandyPickup adds 2 s per candy, max 10 s). The speed
     /// follows the buff, whoever gave it; vanilla syncs the buff list, so every machine sees it.
     /// Icon: Content/Buffs/SugarRushBuff.png (32x32, like vanilla buff icons); the vanilla Swiftness icon until that file exists.
     /// </summary>
@@ -25,6 +25,7 @@ namespace IsmailsWeaponReworks.Content.Buffs
         public override void Update(Player player, ref int buffIndex)
         {
             player.GetAttackSpeed(DamageClass.Melee) += CandyCaneSwordTuning.SugarRushAttackSpeed;
+            player.moveSpeed += CandyCaneSwordTuning.SugarRushMoveSpeed;
         }
     }
 }
