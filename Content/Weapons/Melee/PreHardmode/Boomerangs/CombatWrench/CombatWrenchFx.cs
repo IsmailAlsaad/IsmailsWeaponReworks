@@ -123,9 +123,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             direction = direction.LengthSquared() < 0.01f ? Vector2.UnitX : Vector2.Normalize(direction);
             Vector2 along = new Vector2(-direction.Y, direction.X);
 
-            string path = "IsmailsWeaponReworks/Assets/Sounds/CombatWrench/WrenchHeavyHit";
+            string path = $"IsmailsWeaponReworks/Assets/Sounds/MetalBonk/MetalBonk{Main.rand.Next(1,3)}";
             if (Terraria.ModLoader.ModContent.HasAsset(path))
-                SoundEngine.PlaySound(new SoundStyle(path) { Volume = CombatWrenchTuning.HitSoundVolume }, position);
+                SoundEngine.PlaySound(new SoundStyle(path) { Volume = CombatWrenchTuning.HitSoundVolume , PitchVariance = 0.2f}, position);
             else
             {
                 SoundEngine.PlaySound(SoundID.Tink with { Volume = 1f, Pitch = -0.6f, PitchVariance = 0.05f }, position);

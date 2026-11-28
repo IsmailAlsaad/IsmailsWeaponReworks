@@ -129,7 +129,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static float HitShake => 1.7f;                 // W4: camera punch of the heavy hit
         public static int HitSparkCount => 18;                // W4: chips thrown by the heavy hit
         public static int HitSmokeCount => 6;
-        public static float HitSoundVolume => 1f;             // W4: volume of Ismail's WrenchHeavyHit clip
+        public static float HitSoundVolume => 0.7f;             // W4: volume of Ismail's WrenchHeavyHit clip
         public static bool ShowHitboxDebug => false;          // true: a magenta line from the hand to the head's tip during the swing and a cyan dot at the stop point
     }
 
