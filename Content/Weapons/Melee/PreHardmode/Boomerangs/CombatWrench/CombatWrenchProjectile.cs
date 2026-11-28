@@ -129,7 +129,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
 
             // The string, from the hand to the butt of the sprite. While Out it is a loose verlet rope; on the way back and while
             // returning it is pulled taut.
-            Vector2 butt = Projectile.Center + (Projectile.rotation + MathHelper.ToRadians(CombatWrenchTuning.ButtAngleDeg)).ToRotationVector2() * CombatWrenchTuning.RopeAttachPx;
+            Vector2 butt = Projectile.Center + (Projectile.rotation + MathHelper.ToRadians(CombatWrenchTuning.HeadAngleDeg + 180f)).ToRotationVector2() * CombatWrenchTuning.RopeAttachPx;
             if (CurrentPhase == Phase.Out)
                 rope.Update(hand, butt, CombatWrenchTuning.RopeSlackFactor, CombatWrenchTuning.RopeExtraSlack, CombatWrenchTuning.RopeGravity * (owner.gravDir >= 0f ? 1 : -1));
             else
@@ -160,7 +160,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         {
             owner.ChangeDir(side); // every tick, so nothing (movement keys) can turn the player away from the throw
             passTicks++;
-            Projectile.rotation += CombatWrenchTuning.SpinPerTick * side;
 
             if (!stopped)
             {
@@ -187,6 +186,25 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             float startArm = HeldSwordPose.ToWorld(side, MathHelper.ToRadians(CombatWrenchTuning.ThrowArmStartDeg));
             float blend = MathHelper.Clamp(passTicks / (float)Math.Max(1, CombatWrenchTuning.ThrowArmBlendTicks), 0f, 1f);
             ApplyArm(owner, startArm + MathHelper.WrapAngle(toWrench - startArm) * blend);
+
+            // It spins only on the way out (and not while a block holds it). From the halfway point on it points straight away from the hand.
+            if (CurrentPhase == Phase.Out)
+            {
+                if (!stopped)
+                    Projectile.rotation += CombatWrenchTuning.SpinPerTick * side;
+            }
+            else
+                PointAway();
+        }
+
+        // The wrench's head points straight away from the hand (along the taut string), turning there from wherever it was at PointFollow per tick.
+        void PointAway()
+        {
+            Vector2 away = Projectile.Center - hand;
+            if (away.LengthSquared() < 1f)
+                return;
+            float target = away.ToRotation() - MathHelper.ToRadians(CombatWrenchTuning.HeadAngleDeg);
+            Projectile.rotation += MathHelper.WrapAngle(target - Projectile.rotation) * MathHelper.Clamp(CombatWrenchTuning.PointFollow, 0.01f, 1f);
         }
 
         // Owner only: from now on every machine pulls the wrench to the hand (ai[0] travels with the netUpdate).
@@ -217,7 +235,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             returnSpeed = Math.Min(returnSpeed + CombatWrenchTuning.ReturnAccel, CombatWrenchTuning.ReturnMaxSpeed);
             if (distance > 0.01f)
                 Projectile.Center += toHand / distance * Math.Min(distance, returnSpeed);
-            Projectile.rotation += CombatWrenchTuning.ReturnSpinPerTick * side;
+            PointAway();
 
             if (distance <= CombatWrenchTuning.CatchDistancePx)
             {

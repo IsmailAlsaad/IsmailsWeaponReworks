@@ -358,7 +358,7 @@ namespace IsmailsWeaponReworks.Common.Rope
                         Piece(pixel, a, b, tuning.RopeOutlineWidth, Tint(OutlineOverride ?? tuning.RopeOutlineColor, light));
                     else
                     {
-                        bool twist = (j / 2) % 2 == 1;
+                        bool twist = (j / Math.Max(1, tuning.RopeStripePieces)) % 2 == 1;
                         Piece(pixel, a, b, tuning.RopeWidth, Tint(twist ? (AltOverride ?? tuning.RopeAltColor) : (MainOverride ?? tuning.RopeColor), light));
                     }
                 }

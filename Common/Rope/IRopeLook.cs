@@ -14,6 +14,7 @@ namespace IsmailsWeaponReworks.Common.Rope
         int RopeIterations { get; }       // constraint passes per tick (more = stiffer string)
         bool RopeCollides { get; }        // the string lies on the ground instead of going through it
         int RopeSubdivisions { get; }     // smoothing: curve pieces drawn between two rope points
+        int RopeStripePieces { get; }     // the two string colors alternate every this many curve pieces (2 = the yoyo look)
         float RopeWidth { get; }
         float RopeOutlineWidth { get; }
         Color RopeColor { get; }

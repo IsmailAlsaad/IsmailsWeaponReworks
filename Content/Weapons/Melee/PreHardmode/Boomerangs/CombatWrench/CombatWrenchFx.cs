@@ -19,7 +19,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
 
         static void Chip(Vector2 position, Vector2 velocity, float scale)
         {
-            Dust dust = Dust.NewDustPerfect(position, DustID.Adamantite, velocity, 0, default, scale);
+            Dust dust = Dust.NewDustPerfect(position, DustID.Silver, velocity, 0, default, scale);
             dust.noGravity = true;
         }
 

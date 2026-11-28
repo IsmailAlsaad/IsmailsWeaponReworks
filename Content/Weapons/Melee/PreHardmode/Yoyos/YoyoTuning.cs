@@ -39,6 +39,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Yoyos
         public virtual int RopeIterations => 10;           // constraint passes per tick (more = stiffer string)
         public virtual bool RopeCollides => true;          // the string lies on the ground instead of going through it
         public virtual int RopeSubdivisions => 4;          // smoothing: curve pieces drawn between two rope points
+        public virtual int RopeStripePieces => 2;          // the string alternates its two colors every this many curve pieces (2 = the look it always had)
         public virtual float RopeWidth => 1.8f;
         public virtual float RopeOutlineWidth => 3.2f;
         public virtual Color RopeColor => new Color(238, 228, 205);
