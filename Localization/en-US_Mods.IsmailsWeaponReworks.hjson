@@ -152,8 +152,13 @@ Buffs: {
 		Description: 15% Increased damage reduction
 	}
 
+	GrapeBuff: {
+		DisplayName: Graped
+		Description: You are now grape flavored
+	}
+
 	SugarRushBuff: {
 		DisplayName: Sugar Rush
-		Description: Sugar has flooded your blood stream!
+		Description: Insulin has flooded your blood stream!
 	}
 }

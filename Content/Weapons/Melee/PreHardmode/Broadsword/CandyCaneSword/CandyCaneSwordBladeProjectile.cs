@@ -32,7 +32,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         protected override Asset<Texture2D> SpriteAsset => TextureAssets.Item[ItemID.CandyCaneSword];
 
         // Ismail's CandyCaneSword.png: the sword in the color of the next candy (the vanilla sprite until the file exists).
-        protected override Texture2D SpriteOverride => CandyCaneSwordSprites.Cell(NextKind);
+        protected override Texture2D SpriteOverride => CandyCaneSwordPurple.Sword() ?? CandyCaneSwordSprites.Cell(NextKind);   // the purple seed: one purple sword whatever the color
 
         // The owner's next candy color (every machine mirrors it, see CandyCaneSwordPlayer).
         CandyKind NextKind => Main.player[Projectile.owner].GetModPlayer<CandyCaneSwordPlayer>().NextCandy;

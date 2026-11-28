@@ -60,6 +60,11 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         public static float SugarRushAttackSpeed => 0.30f; // melee attack speed
         public static float SugarRushMoveSpeed => 0.15f;   // movement speed
 
+        // ---- the purple seed (getfixedboi, see CandyCaneSwordPurple) ----
+        public static int GrapeTicks => 600;            // Grape buff: a green or yellow candy refreshes it to this long (600 = 10 s)
+        public static int PurpleStyleCount => 2;        // PurpleCandy.png: 4 columns (green, blue, yellow, red) x 2 rows; a candy's style picks the row
+        public static Color PurpleText => new Color(185, 110, 255);   // the two tooltip lines
+
         // ---- red candy explosion ----
         public static float RedBlastRadius => 56f;
         public static int RedBlastTicks => 3;

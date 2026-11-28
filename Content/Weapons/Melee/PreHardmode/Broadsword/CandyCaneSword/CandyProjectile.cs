@@ -489,7 +489,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
                 ModContent.RequestIfExists<Texture2D>(CandyCaneSwordFx.SheetPath, out sheet, AssetRequestMode.ImmediateLoad);
             }
 
-            if (sheet != null && sheet.IsLoaded)
+            Texture2D purple = CandyCaneSwordPurple.CandySheet();   // the purple seed: same kind and behavior, other art
+            if (purple != null)
+            {
+                Rectangle purpleSource = CandyCaneSwordPurple.Cell(kind, Style);
+                Color purpleColor = Color.Lerp(lightColor, Color.White, 0.6f) * alpha;
+                Main.spriteBatch.Draw(purple, position, purpleSource, purpleColor, Projectile.rotation, purpleSource.Size() / 2f, CandyCaneSwordTuning.DrawScale * scale, SpriteEffects.None, 0f);
+            }
+            else if (sheet != null && sheet.IsLoaded)
             {
                 int cell = CandyCaneSwordTuning.CellSize;
                 int style = Style;

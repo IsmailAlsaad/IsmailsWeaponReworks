@@ -1,4 +1,5 @@
-﻿using IsmailsWeaponReworks.Common.Rework;
+﻿using System.Collections.Generic;
+using IsmailsWeaponReworks.Common.Rework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -34,18 +35,28 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             return false;
         }
 
+        // The purple seed (getfixedboi, see CandyCaneSwordPurple): the quote in purple, on two lines like the Meatball's (the quote, then who said it).
+        public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
+        {
+            if (!CandyCaneSwordPurple.Active)
+                return;
+            tooltips.Add(new TooltipLine(Mod, "CandyCaneSwordPurple1", "\"I love purple color\"") { OverrideColor = CandyCaneSwordTuning.PurpleText });
+            tooltips.Add(new TooltipLine(Mod, "CandyCaneSwordPurple2", "-GooseMazz") { OverrideColor = CandyCaneSwordTuning.PurpleText });
+        }
+
         // ---- the item's own art follows the color of the next candy (CandyCaneSword.png); the vanilla art until the file exists ----
 
         public override void Unload()
         {
             CandyCaneSwordSprites.Unload();
+            CandyCaneSwordPurple.Unload();
         }
 
         static Texture2D CurrentSprite()
         {
             if (Main.dedServ || Main.LocalPlayer == null)
                 return null;
-            return CandyCaneSwordSprites.Cell(Main.LocalPlayer.GetModPlayer<CandyCaneSwordPlayer>().NextCandy);
+            return CandyCaneSwordPurple.Sword() ?? CandyCaneSwordSprites.Cell(Main.LocalPlayer.GetModPlayer<CandyCaneSwordPlayer>().NextCandy);
         }
 
         // Inventory, hotbar, chests, shops: the colored sword at the same spot and scale as the vanilla icon.

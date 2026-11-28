@@ -1,8 +1,10 @@
 ﻿using System.IO;
 using IsmailsWeaponReworks.Common.Net;
+using IsmailsWeaponReworks.Content.Buffs;
 using IsmailsWeaponReworks.Common.Rework;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.Graphics.Shaders;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -56,6 +58,61 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             state.NextCandy = (CandyKind)kind;
             if (Main.netMode == NetmodeID.Server)
                 state.SyncPlayer(-1, sender, false);
+        }
+
+        // The Grape buff's purple dye (see GrapeBuff): while it runs, EVERY dye slot of this player is the vanilla Purple Dye, armor, accessories and all the
+        // misc slots (pet, light pet, hook, minecart, mount) alike, whatever dyes he really wears. No item is touched: Player.UpdateDyes recomputes all of
+        // these from the real dye slots every tick, so the real dyes are back the tick the buff ends. This runs for every player on every machine and
+        // vanilla syncs the buff list, so everybody sees everybody purple. (cYorai is copied from cPet right after this hook.)
+        public override void UpdateDyes()
+        {
+            if (Main.dedServ || !Player.HasBuff(ModContent.BuffType<GrapeBuff>()))
+                return;
+            int dye = GameShaders.Armor.GetShaderIdFromItemId(ItemID.PurpleDye);
+            Player.cHead = dye;
+            Player.cBody = dye;
+            Player.cLegs = dye;
+            Player.cHandOn = dye;
+            Player.cHandOff = dye;
+            Player.cBack = dye;
+            Player.cFront = dye;
+            Player.cShoe = dye;
+            Player.cWaist = dye;
+            Player.cShield = dye;
+            Player.cShieldFallback = dye;
+            Player.cNeck = dye;
+            Player.cFace = dye;
+            Player.cFaceHead = dye;
+            Player.cBeard = dye;
+            Player.cBalloon = dye;
+            Player.cBalloonFront = dye;
+            Player.cWings = dye;
+            Player.cCarpet = dye;
+            Player.cFloatingTube = dye;
+            Player.cBackpack = dye;
+            Player.cTail = dye;
+            Player.cFlameWaker = dye;
+            Player.cPortableStool = dye;
+            Player.cMinion = dye;
+            Player.cPet = dye;
+            Player.cLight = dye;
+            Player.cMinecart = dye;
+            Player.cMount = dye;
+            Player.cGrapple = dye;
+        }
+
+        // Grape also cleanses: every debuff the player already has is removed (the buff makes him immune to NEW ones, see GrapeBuff.Update). Only the owner's
+        // client does it; vanilla syncs the buff list from there. Backwards, because DelBuff shifts the later buffs down.
+        public override void PostUpdateBuffs()
+        {
+            if (Player.whoAmI != Main.myPlayer || !Player.HasBuff(ModContent.BuffType<GrapeBuff>()))
+                return;
+            for (int i = Player.buffType.Length - 1; i >= 0; i--)
+            {
+                int type = Player.buffType[i];
+                if (type > 0 && Main.debuff[type])
+                    Player.DelBuff(i);
+            }
         }
 
         public override void PostUpdate()

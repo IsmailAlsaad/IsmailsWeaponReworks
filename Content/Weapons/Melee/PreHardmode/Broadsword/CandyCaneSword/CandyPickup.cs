@@ -134,6 +134,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
                 int current = index >= 0 ? player.buffTime[index] : 0;
                 player.AddBuff(type, System.Math.Min(CandyCaneSwordTuning.SugarRushMaxTicks, current + CandyCaneSwordTuning.SugarRushTicksPerCandy));
             }
+
+            // The purple seed (see CandyCaneSwordPurple): a green or a yellow candy ALSO gives Grape, refreshed to GrapeTicks (it never stacks past that).
+            if (CandyCaneSwordPurple.Active && (kind == CandyKind.Green || kind == CandyKind.Yellow))
+                player.AddBuff(ModContent.BuffType<GrapeBuff>(), CandyCaneSwordTuning.GrapeTicks);
         }
     }
 }

@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-28 | 409 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-28 | 411 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -54,7 +54,7 @@ tModLoader/other bases -> project types:
 - ModPlayer (22): BeeKeeperPlayer, BladeOfGrassPlayer, CandyCaneSwordPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, HeldIdleSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, NightsEdgePlayer, OreSwordPlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, WoodenSwordPlayer, YoyoPlayer
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
 - ModSystem (6): DetachedFlares, DetachedTrails, HeldIdleSwordSystem, MetaballLayers, ReworkRegistry, YoyoRegistry
-- ModBuff (3): LightsBaneImbueBuff, NightsEdgeShadowArmorBuff, SugarRushBuff
+- ModBuff (4): GrapeBuff, LightsBaneImbueBuff, NightsEdgeShadowArmorBuff, SugarRushBuff
 - PlayerDrawLayer (2): BladeOfGrassVineLayer, RottedForkSpinLayer
 - ConfigElement (1): ReworkGridElement
 - Mod (1): IsmailsWeaponReworks
@@ -116,7 +116,7 @@ tModLoader/other bases -> project types:
     +Hand(PixelTrail)[s] +Hand(SweepTrail)[s] +Hand(AfterimageTrail)[s] +PostUpdateEverything()[ov] +PostDrawTiles()[ov] +OnWorldUnload()[ov] +Unload()[ov]
 **EasterEgg.cs**
   static class EasterEgg
-    +Zenith:bool[s] +LocalPlayerNamed(string)[s] +Load(string,ref Asset<Texture2D>,ref bool)[s]
+    +Zenith:bool[s] +LocalPlayerNamed(string)[s] +Load(string,ref Asset<Texture2D>,ref bool,AssetRequestMode)[s]
 **FlareParticles.cs**
   abstract class FlareParticleStyle
     +AssetPath:string[ab] +LifeTicks:int[v] +PeakScale:float[v] +GrowFraction:float[v] +SpinMin:float[v] +SpinMax:float[v] +Opacity:float[v] +Light:float[v] +MaxParticles:int[v]
@@ -339,6 +339,9 @@ tModLoader/other bases -> project types:
     +Mode:ConfigScope[ov] +DisabledReworks:List<ItemDefinition> +Clone()[ov] +NeedsReload(ModConfig)[ov] +AcceptClientChanges(ModConfig,int,ref NetworkText)[ov] +OnChanged()[ov]
 
 ### Content/Buffs/
+**GrapeBuff.cs**
+  class GrapeBuff : ModBuff
+    +Texture:string[ov] +Update(Player,ref int)[ov]
 **LightsBaneImbueBuff.cs**
   class LightsBaneImbueBuff : ModBuff
 **NightsEdgeShadowArmorBuff.cs** uses: NightsEdgeTuning
@@ -614,7 +617,7 @@ tModLoader/other bases -> project types:
 **CandyBlastProjectile.cs** uses: CandyCaneSwordTuning
   class CandyBlastProjectile : ModProjectile
     +Texture:string[ov] +ShouldUpdatePosition()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +PreDraw(ref Color)[ov]
-**CandyCaneSwordBladeProjectile.cs** uses: CandyCaneSwordBladeTune, CandyCaneSwordFx, CandyCaneSwordPlayer, CandyCaneSwordSprites, CandyCaneSwordSweepTrailStyle, CandyCaneSwordTuning, CandyKind, CandyKinds, CandyProjectile, ChargedBladeProjectile, ChargedBladeTrailStyle, Contact, IChargedBladeTuning
+**CandyCaneSwordBladeProjectile.cs** uses: CandyCaneSwordBladeTune, CandyCaneSwordFx, CandyCaneSwordPlayer, CandyCaneSwordPurple, CandyCaneSwordSprites, CandyCaneSwordSweepTrailStyle, CandyCaneSwordTuning, CandyKind, CandyKinds, CandyProjectile, ChargedBladeProjectile, ChargedBladeTrailStyle, Contact, IChargedBladeTuning
   class CandyCaneSwordBladeProjectile : ChargedBladeProjectile
     +Texture:string[ov] #Tune:IChargedBladeTuning[ov] #ItemType:int[ov] #SpriteAsset:Asset<Texture2D>[ov] #SpriteOverride:Texture2D[ov] #TrailLag(bool)[ov] +OnSpawn(IEntitySource)[ov] #OwnerCharge(Player)[ov] #AddOwnerCharge(Player,float)[ov] #DrawsTrail:bool[ov] #CreateTrailStyle()[ov] #StabAvailable(Player)[ov] #OnStabImpacted(Player)[ov] #FxPlaySwing(Vector2,float)[ov] #FxSwingDust(Vector2,Vector2,float)[ov] #FxChargeHit(Vector2)[ov] #FxCharged(Vector2,Vector2)[ov] #FxPlayStabWindup(Vector2)[ov] #FxStabImpact(Vector2)[ov] #FxSparkle(Vector2,Vector2)[ov] #FxHitSpark(Vector2,float)[ov] #OnOwnerHit(NPC,HitInfo,bool)[ov]
 **CandyCaneSwordBladeTune.cs** uses: CandyCaneSwordSprites, CandyCaneSwordTuning, IChargedBladeTuning, WoodenSwordBladeTune, WoodenSwordTuning
@@ -623,12 +626,15 @@ tModLoader/other bases -> project types:
 **CandyCaneSwordFx.cs** uses: CameraShake, CandyCaneSwordTuning, CandyKind, CandyKinds
   static class CandyCaneSwordFx
     +SoundFolder:string[s] +SheetPath:string[s] +PlaySwing(Vector2)[s] +HitSpark(Vector2,CandyKind)[s] +Burst(Vector2,CandyKind,int,float,float)[s] +Spawn(Vector2,CandyKind)[s] +Break(Vector2,CandyKind)[s] +Pickup(Vector2,CandyKind)[s] +RedExplosion(Vector2)[s] +BlueStick(Vector2)[s] +BlueTick(Vector2)[s] +KillBurst(Vector2)[s]
-**CandyCaneSwordGlobalItem.cs** uses: CandyCaneSwordPlayer, CandyCaneSwordSprites, ReworkToggle
+**CandyCaneSwordGlobalItem.cs** uses: CandyCaneSwordPlayer, CandyCaneSwordPurple, CandyCaneSwordSprites, CandyCaneSwordTuning, ReworkToggle
   class CandyCaneSwordGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Unload()[ov] +PreDrawInInventory(Item,SpriteBatch,Vector2,Rectangle,Color,Color,Vector2,float)[ov] +PreDrawInWorld(Item,SpriteBatch,Color,Color,ref float,ref float,int)[ov]
-**CandyCaneSwordPlayer.cs** uses: CandyCaneSwordBladeProjectile, CandyKind, CandyKinds, IwrNet, IwrPacket, ReworkToggle
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov] +Unload()[ov] +PreDrawInInventory(Item,SpriteBatch,Vector2,Rectangle,Color,Color,Vector2,float)[ov] +PreDrawInWorld(Item,SpriteBatch,Color,Color,ref float,ref float,int)[ov]
+**CandyCaneSwordPlayer.cs** uses: CandyCaneSwordBladeProjectile, CandyKind, CandyKinds, GrapeBuff, IwrNet, IwrPacket, ReworkToggle
   class CandyCaneSwordPlayer : ModPlayer
-    +NextCandy:CandyKind +CopyClientState(ModPlayer)[ov] +SendClientChanges(ModPlayer)[ov] +SyncPlayer(int,int,bool)[ov] +ReadNext(BinaryReader,int)[s] +PostUpdate()[ov]
+    +NextCandy:CandyKind +CopyClientState(ModPlayer)[ov] +SendClientChanges(ModPlayer)[ov] +SyncPlayer(int,int,bool)[ov] +ReadNext(BinaryReader,int)[s] +UpdateDyes()[ov] +PostUpdateBuffs()[ov] +PostUpdate()[ov]
+**CandyCaneSwordPurple.cs** uses: CandyCaneSwordTuning, CandyKind, EasterEgg
+  static class CandyCaneSwordPurple
+    +Active:bool[s] +CandySheet()[s] +Sword()[s] +Cell(CandyKind,int)[s] +Unload()[s]
 **CandyCaneSwordSprites.cs** uses: CandyKind
   static class CandyCaneSwordSprites
     +SheetPath:string[s] +Cells:int[s] +CellSize:Vector2[s] +Cell(CandyKind)[s] +Unload()[s]
@@ -637,16 +643,16 @@ tModLoader/other bases -> project types:
     +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
 **CandyCaneSwordTuning.cs**
   static class CandyCaneSwordTuning
-    +SpawnChance:float[s] +GreenChanceFullHealth:float[s] +GreenChanceNoHealth:float[s] +BlueEnabled:bool[s] +BurstMin:int[s] +BurstMax:int[s] +BurstSpreadDeg:float[s] +BurstSpeedMin:float[s] +BurstSpeedMax:float[s] +PopSpeedMin:float[s] +PopSpeedMax:float[s] +PopSideSpeed:float[s] +MaxCandies:int[s] +RedLifeTicks:int[s] +GreenLifeTicks:int[s] +BlueLifeTicks:int[s] +YellowLifeTicks:int[s] +PopInTicks:int[s] +Gravity:float[s] +MaxFallSpeed:float[s] +AirDrag:float[s] +BounceKeep:float[s] +GroundFriction:float[s] +SettleSpeed:float[s] +SpinMin:float[s] +SpinMax:float[s] +GroundSpinKeep:float[s] +PickupDelayTicks:int[s] +PickupRange:int[s] +MagnetRange:float[s] +MagnetAccel:float[s] +MagnetMaxSpeed:float[s] +MagnetDamp:float[s] +RequestRetryTicks:int[s] +ServerReachSlack:float[s] +HealAmount:int[s] +HealOnlyWhenHurt:bool[s] +SugarRushTicksPerCandy:int[s] +SugarRushMaxTicks:int[s] +SugarRushAttackSpeed:float[s] +SugarRushMoveSpeed:float[s] +RedBlastRadius:float[s] +RedBlastTicks:int[s] +RedBlastDamageMultiplier:float[s] +RedBlastKnockback:float[s] +RedBlastShake:float[s] +BlueStickDelayTicks:int[s] +BlueSourceIgnoreTicks:int[s] +BlueStickReach:float[s] +BlueMaxPerEnemy:int[s] +BlueDamageMultiplier:float[s] +BlueHitIntervalTicks:int[s] +StickSoundVolume:float[s] +HitboxSize:int[s] +CellSize:int[s] +Columns:int[s] +StyleCount:int[s] +DrawScale:float[s] +FallbackSize:float[s] +LightStrength:float[s] +GripOffset:float[s] +ShowHitboxDebug:bool[s] +HitSparkCount:int[s] +SpawnDustCount:int[s] +BreakDustCount:int[s] +PickupDustCount:int[s] +BlastDustCount:int[s] +BlastSmokeCount:int[s] +KillBurstDustCount:int[s] +KillBurstShake:float[s] +SwingSoundVolume:float[s] +SpawnSoundVolume:float[s] +BreakSoundVolume:float[s] +PickupSoundVolume:float[s] +BlastSoundVolume:float[s] +TrailSamplesPerTick:int[s] +TrailLagTicksDown:float[s] +TrailLagTicksUp:float[s] +TrailOuter:float[s] +TrailInnerLow:float[s] +TrailInnerHigh:float[s] +TrailExpandBy:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailCore:Color[s] +TrailDeepScale:float[s]
+    +SpawnChance:float[s] +GreenChanceFullHealth:float[s] +GreenChanceNoHealth:float[s] +BlueEnabled:bool[s] +BurstMin:int[s] +BurstMax:int[s] +BurstSpreadDeg:float[s] +BurstSpeedMin:float[s] +BurstSpeedMax:float[s] +PopSpeedMin:float[s] +PopSpeedMax:float[s] +PopSideSpeed:float[s] +MaxCandies:int[s] +RedLifeTicks:int[s] +GreenLifeTicks:int[s] +BlueLifeTicks:int[s] +YellowLifeTicks:int[s] +PopInTicks:int[s] +Gravity:float[s] +MaxFallSpeed:float[s] +AirDrag:float[s] +BounceKeep:float[s] +GroundFriction:float[s] +SettleSpeed:float[s] +SpinMin:float[s] +SpinMax:float[s] +GroundSpinKeep:float[s] +PickupDelayTicks:int[s] +PickupRange:int[s] +MagnetRange:float[s] +MagnetAccel:float[s] +MagnetMaxSpeed:float[s] +MagnetDamp:float[s] +RequestRetryTicks:int[s] +ServerReachSlack:float[s] +HealAmount:int[s] +HealOnlyWhenHurt:bool[s] +SugarRushTicksPerCandy:int[s] +SugarRushMaxTicks:int[s] +SugarRushAttackSpeed:float[s] +SugarRushMoveSpeed:float[s] +GrapeTicks:int[s] +PurpleStyleCount:int[s] +PurpleText:Color[s] +RedBlastRadius:float[s] +RedBlastTicks:int[s] +RedBlastDamageMultiplier:float[s] +RedBlastKnockback:float[s] +RedBlastShake:float[s] +BlueStickDelayTicks:int[s] +BlueSourceIgnoreTicks:int[s] +BlueStickReach:float[s] +BlueMaxPerEnemy:int[s] +BlueDamageMultiplier:float[s] +BlueHitIntervalTicks:int[s] +StickSoundVolume:float[s] +HitboxSize:int[s] +CellSize:int[s] +Columns:int[s] +StyleCount:int[s] +DrawScale:float[s] +FallbackSize:float[s] +LightStrength:float[s] +GripOffset:float[s] +ShowHitboxDebug:bool[s] +HitSparkCount:int[s] +SpawnDustCount:int[s] +BreakDustCount:int[s] +PickupDustCount:int[s] +BlastDustCount:int[s] +BlastSmokeCount:int[s] +KillBurstDustCount:int[s] +KillBurstShake:float[s] +SwingSoundVolume:float[s] +SpawnSoundVolume:float[s] +BreakSoundVolume:float[s] +PickupSoundVolume:float[s] +BlastSoundVolume:float[s] +TrailSamplesPerTick:int[s] +TrailLagTicksDown:float[s] +TrailLagTicksUp:float[s] +TrailOuter:float[s] +TrailInnerLow:float[s] +TrailInnerHigh:float[s] +TrailExpandBy:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailCore:Color[s] +TrailDeepScale:float[s]
 **CandyKind.cs** uses: CandyCaneSwordTuning
   enum CandyKind
     {Red, Green, Blue, Yellow}
   static class CandyKinds
     +Tint(CandyKind)[s] +DustOf(CandyKind)[s] +LifeTicks(CandyKind)[s] +IsPickup(CandyKind)[s] +Pick(Player)[s]
-**CandyPickup.cs** uses: CandyCaneSwordFx, CandyCaneSwordTuning, CandyKind, CandyProjectile, IwrNet, IwrPacket, SugarRushBuff
+**CandyPickup.cs** uses: CandyCaneSwordFx, CandyCaneSwordPurple, CandyCaneSwordTuning, CandyKind, CandyProjectile, GrapeBuff, IwrNet, IwrPacket, SugarRushBuff
   static class CandyPickup
     +Request(Projectile)[s] +ReadRequest(BinaryReader,int)[s] +ReadGrant(BinaryReader)[s]
-**CandyProjectile.cs** uses: CandyBlastProjectile, CandyCaneSwordFx, CandyCaneSwordTuning, CandyKind, CandyKinds, CandyPickup
+**CandyProjectile.cs** uses: CandyBlastProjectile, CandyCaneSwordFx, CandyCaneSwordPurple, CandyCaneSwordTuning, CandyKind, CandyKinds, CandyPickup
   class CandyProjectile : ModProjectile
     +Texture:string[ov] +Age:int +Claimed:bool +SourceNpc:int +Kind:CandyKind +EnforceCap(Player,int)[s] +SpawnOne(IEntitySource,Player,Vector2,int,CandyKind,int)[s] +SpawnBurst(IEntitySource,Player,Vector2,int)[s] +CanPick(CandyKind,Player)[s] +CanBeClaimedBy(Player) +ShouldUpdatePosition()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +PreDraw(ref Color)[ov]
 

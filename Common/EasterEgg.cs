@@ -23,12 +23,12 @@ namespace IsmailsWeaponReworks.Common
 
         // The texture at path ("ModName/Folder/File", no extension) if the PNG exists, otherwise null. The caller keeps the asset and the
         // tried flag, so the file is only looked up once.
-        public static Texture2D Load(string path, ref Asset<Texture2D> asset, ref bool tried)
+        public static Texture2D Load(string path, ref Asset<Texture2D> asset, ref bool tried, AssetRequestMode mode = AssetRequestMode.AsyncLoad)
         {
             if (!tried)
             {
                 tried = true;
-                ModContent.RequestIfExists<Texture2D>(path, out asset);
+                ModContent.RequestIfExists<Texture2D>(path, out asset, mode);
             }
             return asset != null && asset.IsLoaded ? asset.Value : null;
         }
