@@ -59,7 +59,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static float RestArmDeg => 55f;                 // after the strike the arm eases down to this angle below the line to the enemy
         public static float StrikeEasePower => 2.2f;           // the strike speeds up into the hit: progress = t ^ this (1 = constant speed)
         public static float WindupTiltDeg => 55f;              // the head leans this far past the arm during the wind-up (over the shoulder) and straightens along the arm in the strike
-        public static float GripOffsetPx => 10f;               // how far from the hand the wrench's center sits along the swing (10 = the butt in the hand, like RopeAttachPx)
+        public static float GripOffsetPx => 25f;               // how far from the hand the wrench's center sits along the swing (10 = the butt in the hand, like RopeAttachPx)
 
         // ---- FACING ----
         public static float FaceDeadzonePx => 6f;             // the player always faces the wrench's side; closer to the player than this the facing is kept
