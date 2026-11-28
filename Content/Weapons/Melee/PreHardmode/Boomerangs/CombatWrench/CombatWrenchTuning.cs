@@ -11,7 +11,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
     {
         // ---- DAMAGE (every damage variable lives here; the wrench hurts only at the heavy hit and at the release, from W4 on) ----
         public static float HitDamageMultiplier => 2.5f;       // of the item's damage: the heavy swing's hit on a reeled-in enemy
-        public static float ReleaseDamageMultiplier => 2.5f;   // of the item's damage: the hit when the wrench lets go of an immovable enemy
+
 
         // ---- THROW (the Forward Pass ellipse toward the cursor) ----
         public static float RopeLengthPx => 350f;              // the string's length; the throw goes this far minus ReachMarginPx
@@ -34,11 +34,18 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
 
 
         // ---- REEL (W3: a movable enemy is held and slid to the player, then the wrench flies back to the hand) ----
-        public static int ReelTicks => 24;                    // the enemy slides from where it was latched to the stop point in this many ticks (an immovable enemy is strained against for the same time)
-        public static float ReelEase => 1f;                   // 0 = constant speed, 1 = a full ease-in-out cubic
+        public static float ReelSpeedPx => 12f;              // the enemy is reeled at this constant speed (pixels per tick, no ease), so a longer way takes longer
+        public static int MinReelTicks => 4;                  // but never faster than this many ticks
         public static float SwingDistancePx => 56f;           // the stop point: this far from the player along the line to where the enemy was latched
         public static int RetractTicks => 8;                  // the wrench flies from the enemy to the hand in this many ticks (it accelerates)
         public static int HandOverHoldTicks => 20;            // W3 only (W4 replaces it with the heavy swing): the wrench waits in the hand with the enemy held in front, then the enemy is let go
+
+        // ---- STRAIN (an immovable enemy is not moved: the wrench drags back a little, then snaps forward again, and the snap is the hit) ----
+        public static float StrainDragFraction => 0.3f;       // how far the wrench drags toward the player, as a fraction of the wrench's own length (head tip to butt)
+        public static int StrainDragTicks => 14;              // the drag back, on a cubic ease
+        public static int StrainSnapTicks => 2;               // the snap forward again (the hit lands on its last tick)
+        public static float StrikeShake => 0.9f;              // camera punch of that hit
+        public static int StrikeSparkCount => 12;
 
         // ---- FACING ----
         public static float FaceDeadzonePx => 6f;             // the player always faces the wrench's side; closer to the player than this the facing is kept

@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using IsmailsWeaponReworks.Common;
+using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.Audio;
 using Terraria.ID;
@@ -79,6 +80,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.6f, Pitch = 0.2f, PitchVariance = 0.1f }, position);
             for (int i = 0; i < CombatWrenchTuning.SnapSparkCount; i++)
                 Chip(position, back * Main.rand.NextFloat(1f, 4f) + along * Main.rand.NextFloat(-3f, 3f), Main.rand.NextFloat(0.9f, 1.6f));
+        }
+
+        // The snap-back hit on an immovable enemy: a heavy clank, a camera punch and a spray of chips ('facing' is where the head points, into the enemy).
+        public static void Strike(Vector2 position, Vector2 facing)
+        {
+            if (Main.dedServ)
+                return;
+            facing = facing.LengthSquared() < 0.01f ? Vector2.UnitX : Vector2.Normalize(facing);
+            Vector2 back = -facing;
+            Vector2 along = new Vector2(-facing.Y, facing.X);
+            SoundEngine.PlaySound(SoundID.Tink with { Volume = 1f, Pitch = -0.5f, PitchVariance = 0.1f }, position);
+            SoundEngine.PlaySound(SoundID.NPCHit4 with { Volume = 0.6f, Pitch = -0.2f }, position);
+            CameraShake.Punch(position, CombatWrenchTuning.StrikeShake, 10, "CombatWrenchStrike");
+            for (int i = 0; i < CombatWrenchTuning.StrikeSparkCount; i++)
+                Chip(position, back * Main.rand.NextFloat(1.5f, 5.5f) + along * Main.rand.NextFloat(-4f, 4f), Main.rand.NextFloat(1f, 1.9f));
         }
 
         // The reel begins (the enemy starts sliding in). A placeholder sound until Ismail's reel clip exists (W7).

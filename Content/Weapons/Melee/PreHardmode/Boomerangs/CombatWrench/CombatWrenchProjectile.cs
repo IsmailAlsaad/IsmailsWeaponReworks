@@ -63,6 +63,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         Vector2 reelDir;           // unit vector from the player toward where the enemy was latched: the reel runs along it
         Vector2 heldCenter;        // where the held enemy is (it only moves through open air)
         Vector2 retractStart;      // where the wrench was when the Retract began
+        int reelTicks;             // how long the reel takes at ReelSpeedPx (worked out at the latch from the distance)
         bool havePrev;             // owner only: the swept contact test has last tick's positions
         Vector2 prevCenter;
         Vector2 prevTip;
@@ -96,9 +97,32 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             Projectile.localNPCHitCooldown = -1;
         }
 
+        // The wrench hurts only on the strike tick of an immovable enemy (the owner turns friendly on for that one tick).
         public override bool? CanDamage()
         {
-            return false;
+            return Projectile.friendly;
+        }
+
+        public override bool? CanHitNPC(NPC target)
+        {
+            return target.whoAmI == (int)Projectile.ai[1] - 1 ? (bool?)null : false;   // only the latched enemy
+        }
+
+        // The head's tip counts as touching, with a little room (the head is pinned to the edge of the enemy's box).
+        public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
+        {
+            Rectangle target = targetHitbox;
+            target.Inflate(4, 4);
+            return projHitbox.Intersects(target) || target.Contains(HeadTip().ToPoint());
+        }
+
+        // The same damage the heavy swing's hit does (W4 uses HitDamageMultiplier too); the enemy does not move.
+        public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
+        {
+            Player owner = Main.player[Projectile.owner];
+            modifiers.SourceDamage *= CombatWrenchTuning.HitDamageMultiplier;
+            modifiers.Knockback *= 0f;
+            modifiers.HitDirectionOverride = target.Center.X >= owner.MountedCenter.X ? 1 : -1;
         }
 
         static float Tilt(Player owner)
@@ -359,13 +383,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             heldCenter = snapCenter;
             Vector2 toEnemy = snapCenter - owner.MountedCenter;
             reelDir = toEnemy.LengthSquared() > 16f ? Vector2.Normalize(toEnemy) : new Vector2(side, 0f);   // the reel runs along this line
+            float reelDistance = Math.Max(0f, Vector2.Distance(snapCenter, owner.MountedCenter) - CombatWrenchTuning.SwingDistancePx);
+            reelTicks = Math.Max(CombatWrenchTuning.MinReelTicks, (int)Math.Ceiling(reelDistance / Math.Max(0.1f, CombatWrenchTuning.ReelSpeedPx)));   // a constant speed: the longer the way, the longer it takes
             NPC npc = LatchedNpc();
             Vector2 contact = (npc != null ? npc.Center : snapCenter) + contactOffset;
             CombatWrenchFx.Snap(contact, AwayFromPlayer(owner, contact));
         }
 
         // The held enemy's place this tick: it stays where it was latched during the Snap, slides to the stop point in front of the player
-        // on an ease-in-out cubic during the Reel, and then stays at the stop point. Always through open air only.
+        // at a constant speed during the Reel, and then stays at the stop point. Always through open air only.
         void HoldEnemy(Player owner, NPC npc, Phase now)
         {
             Vector2 stop = owner.MountedCenter + reelDir * CombatWrenchTuning.SwingDistancePx;
@@ -374,10 +400,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                 want = snapCenter;
             else if (now == Phase.Reel)
             {
-                float u = MathHelper.Clamp((latchTicks - CombatWrenchTuning.SnapTicks) / (float)Math.Max(1, CombatWrenchTuning.ReelTicks), 0f, 1f);
-                float v = -2f * u + 2f;
-                float cubic = u < 0.5f ? 4f * u * u * u : 1f - v * v * v * 0.5f;
-                want = Vector2.Lerp(snapCenter, stop, MathHelper.Lerp(u, cubic, CombatWrenchTuning.ReelEase));
+                float u = MathHelper.Clamp((latchTicks - CombatWrenchTuning.SnapTicks) / (float)Math.Max(1, reelTicks), 0f, 1f);
+                want = Vector2.Lerp(snapCenter, stop, u);   // a straight line at a constant speed (the stop point moves with the player)
             }
             else
                 want = stop;
@@ -386,70 +410,44 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         }
 
         // The latched stages, a pure function of the ticks since the latch on every machine: Snap (the head flies to the contact point and
-        // turns away from the player), Reel (a movable enemy is held and slid to the stop point; the wrench stays pinned to it), Retract (the
-        // wrench flies to the hand, the enemy stays held in front of the player), HandOver (a placeholder until W4's swing: the wrench waits
-        // in the hand, then the enemy is let go and the wrench is caught). An immovable enemy is only strained against for the Reel's
-        // duration, and then the owner lets go (a placeholder until W6).
+        // turns away from the player), Reel (a movable enemy is held and slid to the stop point at a constant speed; the wrench stays pinned
+        // to it), Retract (the wrench flies to the hand, the enemy stays held in front of the player), HandOver (a placeholder until W4's
+        // swing: the wrench waits in the hand, then the enemy is let go and the wrench is caught). An immovable enemy is not moved: the
+        // wrench drags back a little on a cubic ease (the head still pinned to it), then snaps forward again, and that snap is the hit
+        // (the same damage as the heavy swing); the owner then sends the wrench back.
         void TickLatched(Player owner, bool isOwner)
         {
             if (!latchBegun)
                 BeginLatch(owner);
             latchTicks++;
+            Projectile.friendly = false;   // only the owner's strike tick turns it on
 
             int snapEnd = CombatWrenchTuning.SnapTicks;
-            int reelEnd = snapEnd + CombatWrenchTuning.ReelTicks;
+            int dragEnd = snapEnd + CombatWrenchTuning.StrainDragTicks;
+            int strikeTick = dragEnd + Math.Max(1, CombatWrenchTuning.StrainSnapTicks);
+            int reelEnd = snapEnd + reelTicks;
             int retractEnd = reelEnd + CombatWrenchTuning.RetractTicks;
             int handOverEnd = retractEnd + CombatWrenchTuning.HandOverHoldTicks;
-            Phase now = latchTicks < snapEnd ? Phase.Snap : latchTicks < reelEnd ? Phase.Reel : latchTicks < retractEnd ? Phase.Retract : Phase.HandOver;
-            bool returning = false;   // the owner has sent the wrench back this tick
-            if (!movable && latchTicks >= reelEnd)
-            {
-                now = Phase.Reel;     // an immovable enemy: pinned, no Retract and no HandOver
-                if (isOwner)
-                {
-                    BeginReturn();
-                    returning = true;
-                }
-            }
+
+            Phase now;
+            if (latchTicks < snapEnd)
+                now = Phase.Snap;
+            else if (!movable || latchTicks < reelEnd)
+                now = Phase.Reel;
+            else if (latchTicks < retractEnd)
+                now = Phase.Retract;
+            else
+                now = Phase.HandOver;
 
             NPC npc = LatchedNpc();
-            if (npc == null)
+            bool returning = false;   // the owner has sent the wrench back this tick
+            if (isOwner && (npc == null || (!movable && latchTicks > strikeTick)))
             {
-                if (isOwner && !returning)
-                {
-                    BeginReturn();    // the enemy died or left: the wrench goes back to the hand and nothing swings
-                    returning = true;
-                }
-            }
-            else
-            {
-                if (movable)
-                    HoldEnemy(owner, npc, now);
-
-                if (now == Phase.Snap || now == Phase.Reel)
-                {
-                    // Pinned: the head at the contact point, pointing away from the player. The Snap flies and turns there.
-                    Vector2 contact = npc.Center + contactOffset;
-                    Vector2 headDirection = AwayFromPlayer(owner, contact);
-                    float t = MathHelper.Clamp(latchTicks / (float)Math.Max(1, snapEnd), 0f, 1f);
-                    float eased = 1f - (1f - t) * (1f - t) * (1f - t);
-                    Projectile.Center = Vector2.Lerp(snapStartCenter, contact - headDirection * CombatWrenchTuning.HeadReachPx, eased);
-                    float targetRotation = headDirection.ToRotation() - MathHelper.ToRadians(CombatWrenchTuning.HeadAngleDeg);
-                    Projectile.rotation = snapStartRotation + MathHelper.WrapAngle(targetRotation - snapStartRotation) * eased;
-                }
-                else if (now == Phase.Retract)
-                {
-                    float u = MathHelper.Clamp((latchTicks - reelEnd) / (float)Math.Max(1, CombatWrenchTuning.RetractTicks), 0f, 1f);
-                    Projectile.Center = Vector2.Lerp(retractStart, hand, u * u);   // it accelerates into the hand
-                    PointAway();
-                }
-                else
-                {
-                    Projectile.Center = hand;
-                    Projectile.rotation = (npc.Center - owner.MountedCenter).ToRotation() - MathHelper.ToRadians(CombatWrenchTuning.HeadAngleDeg);
-                }
+                BeginReturn();        // the enemy died or left, or the strike is done: the wrench goes back to the hand
+                returning = true;
             }
 
+            // The stage changes FIRST, so what a stage starts from (the Retract's start point) is set before the stage uses it.
             if (!returning)
             {
                 if (now != stage)
@@ -464,6 +462,59 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                     }
                 }
                 Projectile.ai[0] = (float)now;   // local, like Out and Back; the owner's Return is the next synced change
+            }
+
+            if (npc != null)
+            {
+                if (movable)
+                    HoldEnemy(owner, npc, now);
+
+                if (now == Phase.Snap || now == Phase.Reel)
+                {
+                    // Pinned: the head at the contact point, pointing away from the player. The Snap flies and turns there. An immovable
+                    // enemy: after the Snap the wrench drags toward the player a little (cubic ease), then snaps back to the pin.
+                    Vector2 contact = npc.Center + contactOffset;
+                    Vector2 headDirection = AwayFromPlayer(owner, contact);
+                    float pull = 0f;
+                    if (!movable && latchTicks > snapEnd)
+                    {
+                        if (latchTicks <= dragEnd)
+                        {
+                            float u = MathHelper.Clamp((latchTicks - snapEnd) / (float)Math.Max(1, CombatWrenchTuning.StrainDragTicks), 0f, 1f);
+                            float v = -2f * u + 2f;
+                            pull = u < 0.5f ? 4f * u * u * u : 1f - v * v * v * 0.5f;
+                        }
+                        else
+                            pull = MathHelper.Clamp(1f - (latchTicks - dragEnd) / (float)Math.Max(1, CombatWrenchTuning.StrainSnapTicks), 0f, 1f);
+                    }
+                    float dragPx = CombatWrenchTuning.StrainDragFraction * (CombatWrenchTuning.HeadReachPx + CombatWrenchTuning.RopeAttachPx);   // a fraction of the wrench's length
+                    Vector2 pinned = contact - headDirection * CombatWrenchTuning.HeadReachPx - headDirection * (dragPx * pull);
+
+                    float t = MathHelper.Clamp(latchTicks / (float)Math.Max(1, snapEnd), 0f, 1f);
+                    float eased = 1f - (1f - t) * (1f - t) * (1f - t);
+                    Projectile.Center = Vector2.Lerp(snapStartCenter, pinned, eased);
+                    float targetRotation = headDirection.ToRotation() - MathHelper.ToRadians(CombatWrenchTuning.HeadAngleDeg);
+                    Projectile.rotation = snapStartRotation + MathHelper.WrapAngle(targetRotation - snapStartRotation) * eased;
+
+                    // The strike: the wrench is back at the pin. Everyone plays the effects; only the owner deals the damage.
+                    if (!movable && latchTicks == strikeTick)
+                    {
+                        CombatWrenchFx.Strike(contact, headDirection);
+                        if (isOwner)
+                            Projectile.friendly = true;
+                    }
+                }
+                else if (now == Phase.Retract)
+                {
+                    float u = MathHelper.Clamp((latchTicks - reelEnd) / (float)Math.Max(1, CombatWrenchTuning.RetractTicks), 0f, 1f);
+                    Projectile.Center = Vector2.Lerp(retractStart, hand, u * u);   // it accelerates into the hand
+                    PointAway();
+                }
+                else
+                {
+                    Projectile.Center = hand;
+                    Projectile.rotation = (npc.Center - owner.MountedCenter).ToRotation() - MathHelper.ToRadians(CombatWrenchTuning.HeadAngleDeg);
+                }
             }
 
             // The player faces the wrench's side (the held enemy's side once the wrench is in the hand); the arm points at the wrench.

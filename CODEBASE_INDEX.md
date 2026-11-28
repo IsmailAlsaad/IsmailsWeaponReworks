@@ -4,7 +4,7 @@ generated 2026-11-28 | 419 .cs files | regenerate: `python index_codebase.py` (p
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-ReworkToggle(47) DetachedTrails(41) YoyoTuning(39) CameraShake(39) RemoteHitTracker(33) HeldSwordPose(27) ThrustPalette(25) YoyoProjectile(23) AfterimageTrail(21) HeldAim(19) YoyoFx(18) PixelTrail(17) PixelTrailStyle(16) SweepTrail(15) SweepFade(15) YoyoTrick(14) FlailTuning(14) Phase(13) NightsEdgeTuning(13) IChargedBladeTuning(13)
+ReworkToggle(47) DetachedTrails(41) CameraShake(40) YoyoTuning(39) RemoteHitTracker(33) HeldSwordPose(27) ThrustPalette(25) YoyoProjectile(23) AfterimageTrail(21) HeldAim(19) YoyoFx(18) PixelTrail(17) PixelTrailStyle(16) SweepTrail(15) SweepFade(15) YoyoTrick(14) FlailTuning(14) Phase(13) NightsEdgeTuning(13) IChargedBladeTuning(13)
 
 ## Inheritance
 Project bases -> derived:
@@ -367,15 +367,15 @@ tModLoader/other bases -> project types:
 **CombatWrenchDrawPlayer.cs** uses: CombatWrenchProjectile
   class CombatWrenchDrawPlayer : ModPlayer
     +ModifyDrawInfo(ref PlayerDrawSet)[ov]
-**CombatWrenchFx.cs** uses: CombatWrenchTuning
+**CombatWrenchFx.cs** uses: CameraShake, CombatWrenchTuning
   static class CombatWrenchFx
-    +Throw(Vector2,Vector2)[s] +Flight(Vector2,Vector2)[s] +Impact(Vector2,Vector2)[s] +Snap(Vector2,Vector2)[s] +Reel(Vector2)[s] +Retract(Vector2)[s] +Catch(Vector2)[s]
+    +Throw(Vector2,Vector2)[s] +Flight(Vector2,Vector2)[s] +Impact(Vector2,Vector2)[s] +Snap(Vector2,Vector2)[s] +Strike(Vector2,Vector2)[s] +Reel(Vector2)[s] +Retract(Vector2)[s] +Catch(Vector2)[s]
 **CombatWrenchGlobalItem.cs** uses: CombatWrenchProjectile, ReworkToggle
   class CombatWrenchGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
 **CombatWrenchProjectile.cs** uses: CarriedNPC, CombatWrenchFx, CombatWrenchRopeLook, CombatWrenchTrailStyle, CombatWrenchTuning, DetachedTrails, EllipsePath, HeldAim, HeldSwordPose, PixelTrail, SegmentHit, Snarable, VerletRope
   class CombatWrenchProjectile : ModProjectile
-    +Texture:string[ov] +CurrentPhase:Phase +Load()[ov] +Unload()[ov] +CanDamage()[ov] +AI()[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +CurrentPhase:Phase +Load()[ov] +Unload()[ov] +CanDamage()[ov] +CanHitNPC(NPC)[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +AI()[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
     enum Phase
       {Out, Back, Snap, Reel, Retract, HandOver, Return}
 **CombatWrenchTrailStyle.cs** uses: CombatWrenchTuning, PixelTrailStyle
@@ -383,7 +383,7 @@ tModLoader/other bases -> project types:
     +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
 **CombatWrenchTuning.cs** uses: IRopeLook
   static class CombatWrenchTuning
-    +HitDamageMultiplier:float[s] +ReleaseDamageMultiplier:float[s] +RopeLengthPx:float[s] +ReachMarginPx:float[s] +PassTicks:int[s] +PassWidthRatio:float[s] +PassEase:float[s] +SpinPerTick:float[s] +ThroughPlatforms:bool[s] +MaxDistancePx:float[s] +HitboxSize:int[s] +CollisionStepPx:float[s] +HeadReachPx:float[s] +HeadHitWidthPx:float[s] +RopeHitWidthPx:float[s] +MaxHoldSize:float[s] +SnapTicks:int[s] +ReelTicks:int[s] +ReelEase:float[s] +SwingDistancePx:float[s] +RetractTicks:int[s] +HandOverHoldTicks:int[s] +FaceDeadzonePx:float[s] +ReturnStartSpeed:float[s] +ReturnAccel:float[s] +ReturnMaxSpeed:float[s] +CatchDistancePx:float[s] +PointFollow:float[s] +ArmFollow:float[s] +ThrowArmStartDeg:float[s] +ThrowArmBlendTicks:int[s] +CatchArmDeg:float[s] +CatchArmBlendDistance:float[s] +RopeColor:Color[s] +RopeAltColor:Color[s] +RopeOutlineColor:Color[s] +RopeWidth:float[s] +RopeOutlineWidth:float[s] +RopeAttachPx:float[s] +HeadAngleDeg:float[s] +RopePoints:int[s] +RopeSlackFactor:float[s] +RopeExtraSlack:float[s] +RopeGravity:float[s] +RopeTightenSpeed:float[s] +RopeMinLength:float[s] +RopeDamping:float[s] +RopeIterations:int[s] +RopeCollides:bool[s] +RopeSubdivisions:int[s] +RopeStripePieces:int[s] +ThrowTrailGrid:float[s] +ThrowTrailLifeTicks:int[s] +ThrowTrailWidth:float[s] +ThrowTrailJitter:float[s] +ThrowTrailOuterColor:Color[s] +ThrowTrailInnerColor:Color[s] +FlightSparkChance:float[s] +ThrowSparkCount:int[s] +ImpactSparkCount:int[s] +CatchSparkCount:int[s] +SnapSparkCount:int[s]
+    +HitDamageMultiplier:float[s] +RopeLengthPx:float[s] +ReachMarginPx:float[s] +PassTicks:int[s] +PassWidthRatio:float[s] +PassEase:float[s] +SpinPerTick:float[s] +ThroughPlatforms:bool[s] +MaxDistancePx:float[s] +HitboxSize:int[s] +CollisionStepPx:float[s] +HeadReachPx:float[s] +HeadHitWidthPx:float[s] +RopeHitWidthPx:float[s] +MaxHoldSize:float[s] +SnapTicks:int[s] +ReelSpeedPx:float[s] +MinReelTicks:int[s] +SwingDistancePx:float[s] +RetractTicks:int[s] +HandOverHoldTicks:int[s] +StrainDragFraction:float[s] +StrainDragTicks:int[s] +StrainSnapTicks:int[s] +StrikeShake:float[s] +StrikeSparkCount:int[s] +FaceDeadzonePx:float[s] +ReturnStartSpeed:float[s] +ReturnAccel:float[s] +ReturnMaxSpeed:float[s] +CatchDistancePx:float[s] +PointFollow:float[s] +ArmFollow:float[s] +ThrowArmStartDeg:float[s] +ThrowArmBlendTicks:int[s] +CatchArmDeg:float[s] +CatchArmBlendDistance:float[s] +RopeColor:Color[s] +RopeAltColor:Color[s] +RopeOutlineColor:Color[s] +RopeWidth:float[s] +RopeOutlineWidth:float[s] +RopeAttachPx:float[s] +HeadAngleDeg:float[s] +RopePoints:int[s] +RopeSlackFactor:float[s] +RopeExtraSlack:float[s] +RopeGravity:float[s] +RopeTightenSpeed:float[s] +RopeMinLength:float[s] +RopeDamping:float[s] +RopeIterations:int[s] +RopeCollides:bool[s] +RopeSubdivisions:int[s] +RopeStripePieces:int[s] +ThrowTrailGrid:float[s] +ThrowTrailLifeTicks:int[s] +ThrowTrailWidth:float[s] +ThrowTrailJitter:float[s] +ThrowTrailOuterColor:Color[s] +ThrowTrailInnerColor:Color[s] +FlightSparkChance:float[s] +ThrowSparkCount:int[s] +ImpactSparkCount:int[s] +CatchSparkCount:int[s] +SnapSparkCount:int[s]
   class CombatWrenchRopeLook : IRopeLook
     +RopePoints:int +RopeMinLength:float +RopeDamping:float +RopeIterations:int +RopeCollides:bool +RopeSubdivisions:int +RopeStripePieces:int +RopeWidth:float +RopeOutlineWidth:float +RopeColor:Color +RopeAltColor:Color +RopeOutlineColor:Color
 
