@@ -67,6 +67,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             }
         }
 
+        // The head clamps onto an enemy: a heavy clank and a spray of chips ('facing' is where the head points, into the enemy).
+        public static void Snap(Vector2 position, Vector2 facing)
+        {
+            if (Main.dedServ)
+                return;
+            facing = facing.LengthSquared() < 0.01f ? Vector2.UnitX : Vector2.Normalize(facing);
+            Vector2 back = -facing;
+            Vector2 along = new Vector2(-facing.Y, facing.X);
+            SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.9f, Pitch = -0.35f, PitchVariance = 0.1f }, position);
+            SoundEngine.PlaySound(SoundID.Tink with { Volume = 0.6f, Pitch = 0.2f, PitchVariance = 0.1f }, position);
+            for (int i = 0; i < CombatWrenchTuning.SnapSparkCount; i++)
+                Chip(position, back * Main.rand.NextFloat(1f, 4f) + along * Main.rand.NextFloat(-3f, 3f), Main.rand.NextFloat(0.9f, 1.6f));
+        }
+
         // The wrench starts back to the hand.
         public static void Retract(Vector2 position)
         {

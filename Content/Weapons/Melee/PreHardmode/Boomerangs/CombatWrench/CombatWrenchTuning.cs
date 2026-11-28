@@ -25,6 +25,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static int HitboxSize => 24;                    // the wrench's box (it is stopped by blocks with this box)
         public static float CollisionStepPx => 6f;             // it moves in pieces of at most this many pixels, each checked against blocks
 
+        // ---- CONTACT (W2: the head or the string touches an enemy, and the wrench snaps onto it) ----
+        public static float HeadReachPx => 12f;               // from the sprite's center to the tip of the head (the head is pinned to the contact point)
+        public static float HeadHitWidthPx => 16f;            // how thick the head's touch test is (swept from the center to the tip)
+        public static float RopeHitWidthPx => 8f;             // how thick the string's touch test is (swept from the hand to the butt)
+        public static float MaxHoldSize => 120f;              // an enemy wider or taller than this counts as immovable (like a boss)
+        public static int SnapTicks => 6;                     // the wrench flies to the contact point and turns its head to the enemy in this many ticks
+        public static int PlaceholderHoldTicks => 60;         // W2 only (W3 replaces it with the reel): the wrench stays pinned this long, then the owner lets go
+
         // ---- RETURN (a block stopped it, or the pass is over: pulled to the hand and caught) ----
         public static float ReturnStartSpeed => 7f;
         public static float ReturnAccel => 1.1f;
@@ -72,6 +80,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static int ThrowSparkCount => 5;
         public static int ImpactSparkCount => 8;
         public static int CatchSparkCount => 5;
+        public static int SnapSparkCount => 8;                // chips thrown when the head clamps onto an enemy
     }
 
     /// <summary>The rope's look and feel for the VerletRope, read live from CombatWrenchTuning (so hot reload works).</summary>

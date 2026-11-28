@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
+using System.IO;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ID;
@@ -16,7 +17,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
     /// upper side, back along the other half, one whole loop that starts and ends at the player) on a rope that runs from the player's
     /// hand to the butt of the wrench sprite. A solid block stops it (platforms do not) and it is pulled back to the hand and caught;
     /// a throw that touched nothing ends the same way after the loop. Gravity does not touch it. Only one is in flight at a time.
-    /// ai[0] = phase (see Phase; W1 uses Out, Back and Return), ai[1] = free (the latched enemy from W2 on),
+    /// ai[0] = phase (see Phase; W2 uses Out, Back, Snap, Reel (a placeholder hold until W3) and Return), ai[1] = the latched enemy's index plus 1 (0 = none),
     /// ai[2] = the aim angle in radians (world), set at the spawn.
     /// MULTIPLAYER: the owner's client decides the click and the aim (ai[2] travels in the spawn packet) and the moment it returns
     /// (ai[0] = Return with netUpdate); every machine, the server included, runs the same ellipse from the aim and the owner's
@@ -48,6 +49,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         Vector2 hand;              // where the string is held
         float armWorld;
         bool armReady;
+
+        // W2: the latch. The owner writes these when it latches; every other machine reads them from SendExtraAI.
+        Vector2 contactOffset;     // where the head is pinned, relative to the enemy's center (synced)
+        Vector2 snapCenter;        // the enemy's center when it was latched: a movable enemy is held there (synced)
+        float headAngle;           // the direction the head faces once pinned, in radians (synced)
+        bool movable;              // the owner's Snarable.CanGrip decision: true = held in place (the Reel from W3 on), false = only strained against (synced)
+        bool latchBegun;           // this machine has started the Snap
+        int latchTicks;            // ticks since the latch began
+        int latchedType = -1;      // the enemy's type when latched, so a recycled npc slot is never mistaken for it
+        Vector2 snapStartCenter;
+        float snapStartRotation;
+        bool havePrev;             // owner only: the swept contact test has last tick's positions
+        Vector2 prevCenter;
+        Vector2 prevTip;
+        Vector2 prevHand;
+        Vector2 prevButt;
 
         public override void Load()
         {
@@ -114,6 +131,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             Vector2 before = Projectile.Center;
             if (CurrentPhase == Phase.Return)
                 TickReturn(owner);
+            else if (CurrentPhase == Phase.Snap || CurrentPhase == Phase.Reel)
+                TickLatched(owner, isOwner);
             else
                 TickThrow(owner, isOwner);
             if (!Projectile.active)
@@ -129,7 +148,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
 
             // The string, from the hand to the butt of the sprite. While Out it is a loose verlet rope; on the way back and while
             // returning it is pulled taut.
-            Vector2 butt = Projectile.Center + (Projectile.rotation + MathHelper.ToRadians(CombatWrenchTuning.HeadAngleDeg + 180f)).ToRotationVector2() * CombatWrenchTuning.RopeAttachPx;
+            Vector2 butt = Butt();
             if (CurrentPhase == Phase.Out)
                 rope.Update(hand, butt, CombatWrenchTuning.RopeSlackFactor, CombatWrenchTuning.RopeExtraSlack, CombatWrenchTuning.RopeGravity * (owner.gravDir >= 0f ? 1 : -1));
             else
@@ -195,6 +214,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             }
             else
                 PointAway();
+
+            // Owner only: did the head or the rope touch an enemy?
+            if (isOwner && !stopped && CurrentPhase != Phase.Return)
+                TestContact();
         }
 
         // The wrench's head points straight away from the hand (along the taut string), turning there from wherever it was at PointFollow per tick.
@@ -205,6 +228,183 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                 return;
             float target = away.ToRotation() - MathHelper.ToRadians(CombatWrenchTuning.HeadAngleDeg);
             Projectile.rotation += MathHelper.WrapAngle(target - Projectile.rotation) * MathHelper.Clamp(CombatWrenchTuning.PointFollow, 0.01f, 1f);
+        }
+
+        // Where the string is tied (the end of the sprite away from the head).
+        Vector2 Butt()
+        {
+            return Projectile.Center + (Projectile.rotation + MathHelper.ToRadians(CombatWrenchTuning.HeadAngleDeg + 180f)).ToRotationVector2() * CombatWrenchTuning.RopeAttachPx;
+        }
+
+        // The tip of the wrench's head.
+        Vector2 HeadTip()
+        {
+            return Projectile.Center + (Projectile.rotation + MathHelper.ToRadians(CombatWrenchTuning.HeadAngleDeg)).ToRotationVector2() * CombatWrenchTuning.HeadReachPx;
+        }
+
+        // Owner only, while Out or Back: the head (swept from the center to the tip, so a spinning or fast head cannot skip over a thin enemy)
+        // and the string (swept from the hand to the butt) are tested against every enemy that Snarable.CanBite allows. The enemy nearest the
+        // wrench wins; one enemy at a time.
+        void TestContact()
+        {
+            Vector2 tip = HeadTip();
+            Vector2 butt = Butt();
+            if (!havePrev)
+            {
+                prevCenter = Projectile.Center;
+                prevTip = tip;
+                prevHand = hand;
+                prevButt = butt;
+                havePrev = true;
+            }
+
+            NPC best = null;
+            bool bestByHead = false;
+            float bestDistance = float.MaxValue;
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC npc = Main.npc[i];
+                if (!Snarable.CanBite(npc) || npc.GetGlobalNPC<CarriedNPC>().Held)
+                    continue;
+                Rectangle box = npc.Hitbox;
+                bool byHead = SegmentHit.Sweep(box, prevCenter, prevTip, Projectile.Center, tip, CombatWrenchTuning.HeadHitWidthPx, 3);
+                bool byRope = !byHead && SegmentHit.Sweep(box, prevHand, prevButt, hand, butt, CombatWrenchTuning.RopeHitWidthPx, 3);
+                if (!byHead && !byRope)
+                    continue;
+                float distance = Vector2.DistanceSquared(npc.Center, Projectile.Center);
+                if (distance < bestDistance)
+                {
+                    best = npc;
+                    bestByHead = byHead;
+                    bestDistance = distance;
+                }
+            }
+
+            prevCenter = Projectile.Center;
+            prevTip = tip;
+            prevHand = hand;
+            prevButt = butt;
+
+            if (best != null)
+                Latch(best, bestByHead, tip, butt);
+        }
+
+        // Where the string first enters an enemy's box, searched from the wrench's end toward the hand (the way the wrench would arrive).
+        static Vector2 RopeEntry(Vector2 handPos, Vector2 buttPos, Rectangle box)
+        {
+            float length = Vector2.Distance(handPos, buttPos);
+            int steps = Math.Max(1, (int)Math.Ceiling(length / 4f));
+            for (int i = 0; i <= steps; i++)
+            {
+                Vector2 p = Vector2.Lerp(buttPos, handPos, i / (float)steps);
+                if (box.Contains(p.ToPoint()))
+                    return p;
+            }
+            return Vector2.Clamp(SegmentHit.ClosestPoint(handPos, buttPos, box.Center.ToVector2()), box.TopLeft(), box.BottomRight());
+        }
+
+        // Owner only: decides the contact point, which way the head faces, and movable or immovable; the phase change and the netUpdate
+        // carry it to every other machine (SendExtraAI has the rest).
+        void Latch(NPC npc, bool byHead, Vector2 tip, Vector2 butt)
+        {
+            Rectangle box = npc.Hitbox;
+            Vector2 contact = byHead ? Vector2.Clamp(tip, box.TopLeft(), box.BottomRight()) : RopeEntry(hand, butt, box);
+            Vector2 inward = npc.Center - contact;
+            Vector2 facing;
+            if (inward.LengthSquared() >= 16f)
+                facing = Vector2.Normalize(inward);   // the head faces the enemy's center
+            else
+            {
+                Vector2 along = contact - hand;
+                facing = along.LengthSquared() > 1f ? Vector2.Normalize(along) : new Vector2(side, 0f);
+            }
+
+            contactOffset = contact - npc.Center;
+            snapCenter = npc.Center;
+            headAngle = facing.ToRotation();
+            movable = Snarable.CanGrip(npc, CombatWrenchTuning.MaxHoldSize);
+            Projectile.ai[0] = (float)Phase.Snap;
+            Projectile.ai[1] = npc.whoAmI + 1;
+            Projectile.netUpdate = true;
+        }
+
+        // The latched enemy, or null when it is gone (dead, despawned, or the slot now holds another type).
+        NPC LatchedNpc()
+        {
+            int index = (int)Projectile.ai[1] - 1;
+            if (index < 0 || index >= Main.maxNPCs)
+                return null;
+            NPC npc = Main.npc[index];
+            return npc.active && npc.type == latchedType ? npc : null;
+        }
+
+        // Every machine, the first latched tick.
+        void BeginLatch()
+        {
+            latchBegun = true;
+            latchTicks = 0;
+            snapStartCenter = Projectile.Center;
+            snapStartRotation = Projectile.rotation;
+            int index = (int)Projectile.ai[1] - 1;
+            latchedType = index >= 0 && index < Main.maxNPCs && Main.npc[index].active ? Main.npc[index].type : -1;
+            NPC npc = LatchedNpc();
+            CombatWrenchFx.Snap((npc != null ? npc.Center : snapCenter) + contactOffset, headAngle.ToRotationVector2());
+        }
+
+        // Snap (the head flies to the contact point and turns to face the enemy) and then Reel. Until W3 the Reel is a placeholder: the
+        // wrench stays pinned for PlaceholderHoldTicks and the owner lets go. A movable enemy is held in place meanwhile (so the movable
+        // and immovable branches can be told apart); an immovable one is not touched, and the wrench follows its contact point.
+        void TickLatched(Player owner, bool isOwner)
+        {
+            owner.ChangeDir(side);
+            if (!latchBegun)
+                BeginLatch();
+            latchTicks++;
+
+            NPC npc = LatchedNpc();
+            if (npc == null)
+            {
+                if (isOwner)
+                    BeginReturn();   // the enemy died or left: the wrench goes back to the hand and nothing swings
+            }
+            else
+            {
+                if (movable)
+                    CarriedNPC.Hold(npc, snapCenter);
+
+                Vector2 pin = npc.Center + contactOffset - headAngle.ToRotationVector2() * CombatWrenchTuning.HeadReachPx;
+                float t = MathHelper.Clamp(latchTicks / (float)Math.Max(1, CombatWrenchTuning.SnapTicks), 0f, 1f);
+                float eased = 1f - (1f - t) * (1f - t) * (1f - t);
+                Projectile.Center = Vector2.Lerp(snapStartCenter, pin, eased);
+                float targetRotation = headAngle - MathHelper.ToRadians(CombatWrenchTuning.HeadAngleDeg);
+                Projectile.rotation = snapStartRotation + MathHelper.WrapAngle(targetRotation - snapStartRotation) * eased;
+
+                if (CurrentPhase == Phase.Snap && latchTicks >= CombatWrenchTuning.SnapTicks)
+                    Projectile.ai[0] = (float)Phase.Reel;   // local, like Out and Back; the owner's Return is the next synced change
+                if (isOwner && latchTicks >= CombatWrenchTuning.SnapTicks + CombatWrenchTuning.PlaceholderHoldTicks)
+                    BeginReturn();
+            }
+
+            float toWrench = HeldAim.ToWorld(owner, (Projectile.Center - owner.MountedCenter).ToRotation()) - Tilt(owner);
+            ApplyArm(owner, toWrench);
+        }
+
+        public override void SendExtraAI(BinaryWriter writer)
+        {
+            writer.Write(contactOffset.X);
+            writer.Write(contactOffset.Y);
+            writer.Write(snapCenter.X);
+            writer.Write(snapCenter.Y);
+            writer.Write(headAngle);
+            writer.Write(movable);
+        }
+
+        public override void ReceiveExtraAI(BinaryReader reader)
+        {
+            contactOffset = new Vector2(reader.ReadSingle(), reader.ReadSingle());
+            snapCenter = new Vector2(reader.ReadSingle(), reader.ReadSingle());
+            headAngle = reader.ReadSingle();
+            movable = reader.ReadBoolean();
         }
 
         // Owner only: from now on every machine pulls the wrench to the hand (ai[0] travels with the netUpdate).
