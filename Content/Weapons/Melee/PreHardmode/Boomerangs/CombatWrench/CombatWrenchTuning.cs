@@ -56,10 +56,15 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         // ---- SWING (W4: the heavy swing on the reeled-in enemy; a held pose, every machine runs it from the ticks since the swing began) ----
         public static int WindupTicks => 0;                   // the arm goes back and up (and the wrench grows into the hand's grip)
         public static int StrikeTicks => 7;                    // the fast overhead-to-forward hammer arc; the hit lands where the arm crosses the line to the enemy
-        public static int RecoverTicks => 24;                  // W4 placeholder: the arm eases down to RestArmDeg and the swing ends (W5 replaces it with the vibration and the settle)
+        public static int VibrateTicks => 28;                  // W5: after the hit the wrench shakes in the hand for this long, the shake fading out
+        public static float VibrateAmpDeg => 9f;               // W5: the shake's peak, degrees each way, about the hand
+        public static float VibrateFreq => 14f;                // W5: shakes per second
+        public static float VibrateDecay => 3.5f;              // W5: how fast the shake dies down (higher = it fades sooner; it always reaches zero at the end)
+        public static float VibrateJitterPx => 1.5f;           // W5: the wrench's tiny rattle off the hand, in pixels
+        public static int SettleTicks => 18;                   // W5: after the shake the arm eases down to RestArmDeg in this many ticks and the swing ends
         public static float ArmStartDeg => 125f;               // wind-up pose: the arm is this many degrees back and up from the line to the enemy
         public static float ArmEndDeg => 40f;                  // follow-through: the arm ends this many degrees past the line to the enemy (downward)
-        public static float RestArmDeg => 55f;                 // after the strike the arm eases down to this angle below the line to the enemy
+        public static float RestArmDeg => 55f;                 // after the shake the arm eases down to this angle below the line to the enemy
         public static float StrikeEasePower => 2.2f;           // the strike speeds up into the hit: progress = t ^ this (1 = constant speed)
         public static float SwingStartTiltDeg => -60f;           // the wrench's angle offset from the arm when the swing begins: the pose the picked-up wrench flies into (positive = the head turns toward the enemy side / downward, like the arm angles; negative = the other way)
         public static float WindupTiltDeg => 55f;              // the offset at the end of the wind-up (the head leans over the shoulder); the wind-up eases from SwingStartTiltDeg to this
@@ -139,6 +144,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static float HitShake => 1.7f;                 // W4: camera punch of the heavy hit
         public static int HitSparkCount => 18;                // W4: chips thrown by the heavy hit
         public static int HitSmokeCount => 6;
+        public static float RattleSparkChance => 0.35f;        // W5: per tick at the start of the shake (fading with it): a tiny chip jumps off the wrench's head
         public static float HitSoundVolume => 0.7f;             // W4: volume of Ismail's WrenchHeavyHit clip
         public static bool ShowHitboxDebug => false;          // true: a magenta line from the hand to the head's tip during the swing and a cyan dot at the stop point
     }

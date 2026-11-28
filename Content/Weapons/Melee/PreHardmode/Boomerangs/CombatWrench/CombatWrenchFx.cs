@@ -24,6 +24,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             dust.noGravity = true;
         }
 
+        // W5: while the wrench shakes after the hit, a tiny chip now and then jumps off its head ('strength' is the shake's fading envelope, 0..1).
+        public static void Rattle(Vector2 position, float strength)
+        {
+            if (Main.dedServ || Main.rand.NextFloat() >= CombatWrenchTuning.RattleSparkChance * strength)
+                return;
+            Chip(position, Main.rand.NextVector2Circular(2.5f, 2.5f), Main.rand.NextFloat(0.6f, 1.1f));
+        }
+
         // The throw: a swish and a few sparks flying out along the throw.
         public static void Throw(Vector2 position, Vector2 direction)
         {

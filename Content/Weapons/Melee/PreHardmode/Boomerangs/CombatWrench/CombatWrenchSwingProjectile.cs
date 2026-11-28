@@ -57,7 +57,38 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         // ---- timeline ----
 
         static int StrikeEnd => CombatWrenchTuning.WindupTicks + Math.Max(1, CombatWrenchTuning.StrikeTicks);
-        static int RecoverEnd => StrikeEnd + Math.Max(1, CombatWrenchTuning.RecoverTicks);
+        // After the hit: the wrench VIBRATES in the hand (VibrateTicks, from the hit tick), then the arm SETTLES down (SettleTicks) and the swing ends.
+        static int SettleStart => Math.Max(StrikeEnd, HitTick + Math.Max(1, CombatWrenchTuning.VibrateTicks));
+        static int RecoverEnd => SettleStart + Math.Max(1, CombatWrenchTuning.SettleTicks);
+
+        // 1 at the hit tick, fading to 0 at the end of the shake (0 before the hit): a damped envelope, a function of the ticks only.
+        static float VibrateEnvelope(float time)
+        {
+            float u = (time - HitTick) / Math.Max(1, CombatWrenchTuning.VibrateTicks);
+            if (u < 0f || u >= 1f)
+                return 0f;
+            return (1f - u) * (float)Math.Exp(-CombatWrenchTuning.VibrateDecay * u);
+        }
+
+        // How far the wrench is turned about the hand by the shake (radians): a damped sine.
+        static float VibrateAngle(float time)
+        {
+            float envelope = VibrateEnvelope(time);
+            if (envelope <= 0f)
+                return 0f;
+            float seconds = (time - HitTick) / 60f;
+            return Rad(CombatWrenchTuning.VibrateAmpDeg) * envelope * (float)Math.Sin(MathHelper.TwoPi * CombatWrenchTuning.VibrateFreq * seconds);
+        }
+
+        // The wrench's tiny rattle off the hand (world pixels): two out-of-step waves, so it never looks like a straight line.
+        static Vector2 VibrateJitter(float time)
+        {
+            float envelope = VibrateEnvelope(time);
+            if (envelope <= 0f)
+                return Vector2.Zero;
+            float t = time - HitTick;
+            return new Vector2((float)Math.Sin(t * 2.3f + 0.7f), (float)Math.Cos(t * 3.1f)) * (CombatWrenchTuning.VibrateJitterPx * envelope);
+        }
 
         // 0 until the strike starts, then 0..1: slow at first and faster and faster into the hit (progress = t ^ StrikeEasePower).
         static float StrikeProgress(float time)
@@ -94,7 +125,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                 return MathHelper.Lerp(startLocal, back, MathHelper.SmoothStep(0f, 1f, time / windup));
             if (time <= StrikeEnd)
                 return MathHelper.Lerp(back, end, StrikeProgress(time));
-            return MathHelper.Lerp(end, Rad(CombatWrenchTuning.RestArmDeg), MathHelper.SmoothStep(0f, 1f, (time - StrikeEnd) / Math.Max(1, CombatWrenchTuning.RecoverTicks)));
+            return MathHelper.Lerp(end, Rad(CombatWrenchTuning.RestArmDeg), MathHelper.SmoothStep(0f, 1f, (time - SettleStart) / Math.Max(1, CombatWrenchTuning.SettleTicks)));
         }
 
         // How far the head leans past the arm: over the shoulder in the wind-up, along the arm in the strike.
@@ -150,7 +181,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             float aim = AimArm(owner);
             worldArm = aim + Facing * armLocal;
             handPos = HandAt(owner, worldArm);
-            bladeDirection = HeldSwordPose.BladeDirectionWorld(owner, aim + Facing * (armLocal + tilt)).RotatedBy(Tilt(owner));
+            bladeDirection = HeldSwordPose.BladeDirectionWorld(owner, aim + Facing * (armLocal + tilt)).RotatedBy(Tilt(owner) + VibrateAngle(time));
         }
 
         // The head's direction from the sprite's center at rotation 0 (mirrored when the player faces left, as the thrown wrench is).
@@ -249,6 +280,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             Projectile.Center = hand + bladeDirection * grip;
             Projectile.rotation = bladeDirection.ToRotation() - HeadAngleRad();
             tip = hand + bladeDirection * (grip + CombatWrenchTuning.HeadReachPx);
+            Projectile.Center += VibrateJitter(timer);   // W5: the wrench rattles a little off the hand while it shakes
+            float shake = VibrateEnvelope(timer);
+            if (shake > 0.05f)
+                CombatWrenchFx.Rattle(tip, shake);
 
             NPC target = Target();
             if (!struck && target != null)
