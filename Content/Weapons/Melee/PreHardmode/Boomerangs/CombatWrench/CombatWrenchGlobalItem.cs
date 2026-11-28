@@ -47,7 +47,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            //tooltips.Add(new TooltipLine(Mod, "CombatWrench1", "Thrown on a rope along a curve toward your cursor"));
+            tooltips.RemoveAll(line => line.Mod == "Terraria" && line.Name.StartsWith("Tooltip"));
+            tooltips.Add(new TooltipLine(Mod, "CombatWrench1", "'For reeling things, and bonking them'"));
             //tooltips.Add(new TooltipLine(Mod, "CombatWrench2", "Snaps onto the first enemy it touches and reels it in, then flings it away with a heavy swing"));
             //tooltips.Add(new TooltipLine(Mod, "CombatWrench3", "Bosses and immovable enemies are not dragged, but still take the hit"));
         }
