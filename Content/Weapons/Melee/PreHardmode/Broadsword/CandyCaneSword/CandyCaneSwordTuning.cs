@@ -71,12 +71,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         public static int BlueSourceIgnoreTicks => 60;     // and it ignores the enemy it popped out of for this long (60 = 1 second)
         public static float BlueStickReach => 4f;          // how far outside an enemy's box a blue candy still counts as touching it
         public static int BlueMaxPerEnemy => 3;            // per player on one enemy; one more pushes the oldest off
-        public static float BlueDamageMultiplier => 0.35f; // of the sword's damage, per hit
+        public static float BlueDamageMultiplier => 1f; // of the sword's damage, per hit
         public static int BlueHitIntervalTicks => 60;      // 60 = once per second
         public static float StickSoundVolume => 0.4f;
 
         // ---- look (Candy.png: 5 columns x 8 rows of 40 x 40 cells; rows 0-1 red, 2-3 green, 4-5 blue, 6-7 yellow) ----
-        public static int HitboxSize => 20;
+        public static int HitboxSize => 12;
         public static int CellSize => 40;
         public static int Columns => 5;
         public static int StyleCount => 10;             // 2 rows x 5 columns per kind

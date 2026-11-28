@@ -31,10 +31,10 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         {
             switch (kind)
             {
-                case CandyKind.Red: return DustID.RedTorch;
-                case CandyKind.Green: return DustID.GreenTorch;
-                case CandyKind.Blue: return DustID.BlueTorch;
-                default: return DustID.YellowTorch;
+                case CandyKind.Red: return DustID.GemRuby;
+                case CandyKind.Green: return DustID.GemEmerald;
+                case CandyKind.Blue: return DustID.GemSapphire;
+                default: return DustID.GemTopaz;
             }
         }
 

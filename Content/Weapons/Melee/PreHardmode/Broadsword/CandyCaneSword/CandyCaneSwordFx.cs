@@ -40,6 +40,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
                 Dust dust = Dust.NewDustPerfect(position + Main.rand.NextVector2Circular(6f, 6f), type, Main.rand.NextVector2Circular(2.5f, 2.5f), 0, default, Main.rand.NextFloat(0.8f, 1.2f));
                 dust.noGravity = true;
             }
+            SoundEngine.PlaySound(new SoundStyle(SoundFolder + "CandyBreak", 1, 3) { Volume = CandyCaneSwordTuning.BreakSoundVolume, PitchVariance = 0.15f, MaxInstances = 3 }, position);
         }
 
         // 'count' dust of the candy's own color thrown out of 'position'.
