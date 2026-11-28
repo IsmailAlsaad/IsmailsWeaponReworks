@@ -71,6 +71,9 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         /// <summary>The sprite the sword is drawn with (and measured from). By default the projectile's own texture; the wooden swords return the held item's sprite.</summary>
         protected virtual ReLogic.Content.Asset<Texture2D> SpriteAsset => TextureAssets.Projectile[Type];
 
+        /// <summary>A sprite that is not a whole asset (a frame cut out of a sheet, or one that changes color): when this returns a texture it is drawn and measured instead of SpriteAsset. Null = use SpriteAsset.</summary>
+        protected virtual Texture2D SpriteOverride => null;
+
         Player Owner => Main.player[Projectile.owner];
         bool IsOwner => Projectile.owner == Main.myPlayer;
 
@@ -803,7 +806,7 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         {
             trail?.Draw();
 
-            Texture2D texture = SpriteAsset.Value;
+            Texture2D texture = SpriteOverride ?? SpriteAsset.Value;
             HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
 
             Vector2 position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, Tune.GripOffset, Projectile.scale) - Main.screenPosition;
@@ -843,9 +846,10 @@ namespace IsmailsWeaponReworks.Common.ChargedBlade
         {
             ChargedBladePose pose = new ChargedBladePose();
             var asset = SpriteAsset;
-            if (asset.IsLoaded)
+            Texture2D custom = SpriteOverride;
+            if (custom != null || asset.IsLoaded)
             {
-                Texture2D texture = asset.Value;
+                Texture2D texture = custom ?? asset.Value;
                 HeldSwordPose.Sprite(texture, Projectile.spriteDirection, out Vector2 origin, out float rotationOffset, out SpriteEffects effects);
                 Vector2 position = Projectile.Center + HeldSwordPose.GripShift(Projectile.rotation, Tune.GripOffset, Projectile.scale);
                 if (stabBlend > 0f)

@@ -19,7 +19,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             inner = new WoodenSwordBladeTune(itemType);
         }
 
-        public float BladeLength => inner.BladeLength;
+        // Hand to tip: the diagonal of one cell of CandyCaneSword.png once it exists, otherwise measured from the vanilla item sprite.
+        public float BladeLength
+        {
+            get
+            {
+                Vector2 cell = CandyCaneSwordSprites.CellSize;
+                if (cell.X > 0f && cell.Y > 0f)
+                    return cell.Length() * WoodenSwordTuning.BladeLengthFactor;
+                return inner.BladeLength;
+            }
+        }
         public float ReadyArmDeg => inner.ReadyArmDeg;
         public float ReadyTiltDeg => inner.ReadyTiltDeg;
         public float SwingLowDeg => inner.SwingLowDeg;

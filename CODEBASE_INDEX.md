@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-27 | 408 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-28 | 409 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -274,7 +274,7 @@ tModLoader/other bases -> project types:
     +SpritePosition:Vector2 +SpriteRotation:float +SpriteOrigin:Vector2 +SpriteSize:Vector2 +Scale:float +Effects:SpriteEffects +Hand:Vector2 +Tip:Vector2 +TipMotion:Vector2 +Direction:Vector2 +Charge:float +Outline:float +Striking:bool +Ticks:int +ToWorld(Vector2)
 **ChargedBladeProjectile.cs** uses: CameraShake, ChargedBladePose, ChargedBladeTrailStyle, DetachedTrails, HeldAim, HeldSwordIdle, HeldSwordPose, IChargedBladeTuning, IDrawnBehindCarried, PixelFan, PixelOutline, RemoteHitTracker, SweepTrail
   abstract partial class ChargedBladeProjectile : ModProjectile, IDrawnBehindCarried
-    #Tune:IChargedBladeTuning[ab] #ItemType:int[ab] #OwnerCharge(Player)[ab] #AddOwnerCharge(Player,float)[ab] #CreateTrailStyle()[ab] #DrawsTrail:bool[v] #StabAvailable(Player)[v] #OnStabImpacted(Player)[ab] #FxPlaySwing(Vector2,float)[ab] #FxSwingDust(Vector2,Vector2,float)[ab] #FxHitSpark(Vector2,float)[ab] #FxChargeHit(Vector2)[ab] #FxCharged(Vector2,Vector2)[ab] #FxPlayStabWindup(Vector2)[ab] #FxStabImpact(Vector2)[ab] #FxSparkle(Vector2,Vector2)[ab] #TickVisuals(ChargedBladePose)[v] #DrawAfterBlade(ChargedBladePose)[v] #OnOwnerHit(NPC,HitInfo,bool)[v] #OnOwnerStrikeStart(Vector2,Vector2)[v] #SpriteAsset:Asset<Texture2D>[v] #StrikeProgress:float #InStrikePhase:bool +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +DrawBehindCarried(NPC) +PreDraw(ref Color)[ov]
+    #Tune:IChargedBladeTuning[ab] #ItemType:int[ab] #OwnerCharge(Player)[ab] #AddOwnerCharge(Player,float)[ab] #CreateTrailStyle()[ab] #DrawsTrail:bool[v] #StabAvailable(Player)[v] #OnStabImpacted(Player)[ab] #FxPlaySwing(Vector2,float)[ab] #FxSwingDust(Vector2,Vector2,float)[ab] #FxHitSpark(Vector2,float)[ab] #FxChargeHit(Vector2)[ab] #FxCharged(Vector2,Vector2)[ab] #FxPlayStabWindup(Vector2)[ab] #FxStabImpact(Vector2)[ab] #FxSparkle(Vector2,Vector2)[ab] #TickVisuals(ChargedBladePose)[v] #DrawAfterBlade(ChargedBladePose)[v] #OnOwnerHit(NPC,HitInfo,bool)[v] #OnOwnerStrikeStart(Vector2,Vector2)[v] #SpriteAsset:Asset<Texture2D>[v] #SpriteOverride:Texture2D[v] #StrikeProgress:float #InStrikePhase:bool +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +AI()[ov] +CanDamage()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +DrawBehindCarried(NPC) +PreDraw(ref Color)[ov]
 **ChargedBladeTrailStyle.cs** uses: SweepTrailStyle
   abstract class ChargedBladeTrailStyle : SweepTrailStyle
     +Charge:float
@@ -307,12 +307,12 @@ tModLoader/other bases -> project types:
     +ChargeTicks(int)[v] +MinReach:float[v] +MaxReach:float[v] +EllipseWidthRatio:float[v] +ThrowSpeed(int)[v] +ReleaseBlendTicks:int[v] +MinHalfTicks:int[v] +TierDamageMultiplier(int)[v] +HitCooldownTicks:int[v] +SpinWhooshAngle:float[v] +SpinHitPeriodFraction:float[v] +SpinDamageMultiplier(int)[v] +HeadSize:float[v] +SpinRadiusMin:float[v] +SpinRadiusMax:float[v] +SpinRadiusSmoothing:float[v] +SpinOmegaStart(int)[v] +SpinOmegaEnd(int)[v] +SpecialMinReach:float[v] +SpecialMaxReach:float[v] +SpecialPathDamageMultiplier:float[v] +SpecialHangTicks:int[v] +RetractSpeed:float[v] +CatchDistance:float[v] +FailRetractSpeed:float[v] +PixelSize:float[v] +TrailLifeTicks:int[v] +TrailWidth(int)[v] +TrailJitter:float[v] +AfterimageTicks:int[v] +FlashTicks:int[v] +GlowColor(int)[ab] +HotColor(int)[ab] +TintLight(Vector3)[v] +ChainName:string[ab] #Pick<T>(int,T,T,T)[s]
 
 ### Common/Net/
-**IwrNet.cs** uses: CandyPickup, IwrPacket
+**IwrNet.cs** uses: CandyCaneSwordPlayer, CandyPickup, IwrPacket
   static class IwrNet
     +Start(IwrPacket)[s] +Handle(BinaryReader,int)[s]
 **IwrPacket.cs**
   enum IwrPacket : byte
-    {CandyPickupRequest, CandyPickupGrant}
+    {CandyPickupRequest, CandyPickupGrant, CandyNext}
 
 ### Common/Rework/
 **GiveWeaponsCommand.cs** uses: ReworkRegistry, ReworkToggle
@@ -614,27 +614,30 @@ tModLoader/other bases -> project types:
 **CandyBlastProjectile.cs** uses: CandyCaneSwordTuning
   class CandyBlastProjectile : ModProjectile
     +Texture:string[ov] +ShouldUpdatePosition()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +PreDraw(ref Color)[ov]
-**CandyCaneSwordBladeProjectile.cs** uses: CandyCaneSwordBladeTune, CandyCaneSwordFx, CandyCaneSwordSweepTrailStyle, CandyCaneSwordTuning, CandyProjectile, ChargedBladeProjectile, ChargedBladeTrailStyle, Contact, IChargedBladeTuning
+**CandyCaneSwordBladeProjectile.cs** uses: CandyCaneSwordBladeTune, CandyCaneSwordFx, CandyCaneSwordPlayer, CandyCaneSwordSprites, CandyCaneSwordSweepTrailStyle, CandyCaneSwordTuning, CandyKind, CandyKinds, CandyProjectile, ChargedBladeProjectile, ChargedBladeTrailStyle, Contact, IChargedBladeTuning
   class CandyCaneSwordBladeProjectile : ChargedBladeProjectile
-    +Texture:string[ov] #Tune:IChargedBladeTuning[ov] #ItemType:int[ov] #SpriteAsset:Asset<Texture2D>[ov] +OnSpawn(IEntitySource)[ov] #OwnerCharge(Player)[ov] #AddOwnerCharge(Player,float)[ov] #DrawsTrail:bool[ov] #CreateTrailStyle()[ov] #StabAvailable(Player)[ov] #OnStabImpacted(Player)[ov] #FxPlaySwing(Vector2,float)[ov] #FxSwingDust(Vector2,Vector2,float)[ov] #FxChargeHit(Vector2)[ov] #FxCharged(Vector2,Vector2)[ov] #FxPlayStabWindup(Vector2)[ov] #FxStabImpact(Vector2)[ov] #FxSparkle(Vector2,Vector2)[ov] #FxHitSpark(Vector2,float)[ov] #OnOwnerHit(NPC,HitInfo,bool)[ov]
-**CandyCaneSwordBladeTune.cs** uses: CandyCaneSwordTuning, IChargedBladeTuning, WoodenSwordBladeTune
+    +Texture:string[ov] #Tune:IChargedBladeTuning[ov] #ItemType:int[ov] #SpriteAsset:Asset<Texture2D>[ov] #SpriteOverride:Texture2D[ov] +OnSpawn(IEntitySource)[ov] #OwnerCharge(Player)[ov] #AddOwnerCharge(Player,float)[ov] #DrawsTrail:bool[ov] #CreateTrailStyle()[ov] #StabAvailable(Player)[ov] #OnStabImpacted(Player)[ov] #FxPlaySwing(Vector2,float)[ov] #FxSwingDust(Vector2,Vector2,float)[ov] #FxChargeHit(Vector2)[ov] #FxCharged(Vector2,Vector2)[ov] #FxPlayStabWindup(Vector2)[ov] #FxStabImpact(Vector2)[ov] #FxSparkle(Vector2,Vector2)[ov] #FxHitSpark(Vector2,float)[ov] #OnOwnerHit(NPC,HitInfo,bool)[ov]
+**CandyCaneSwordBladeTune.cs** uses: CandyCaneSwordSprites, CandyCaneSwordTuning, IChargedBladeTuning, WoodenSwordBladeTune, WoodenSwordTuning
   class CandyCaneSwordBladeTune : IChargedBladeTuning
     +BladeLength:float +ReadyArmDeg:float +ReadyTiltDeg:float +SwingLowDeg:float +SwingHighDeg:float +TiltLowDeg:float +TiltHighDeg:float +ChainAnticipateTicks:int +AnticipateTicks:int +ChainAnticipateDeg:float +AnticipateDeg:float +SwingTicks:int +RecoverTicks:int +SwingEasePower:float +OvershootDeg:float +AnticipateTiltDeg:float +SwordScale:float +ChargedAt:float +ChargeSyncStep:float +ChargeShowEase:float +OutlineFade:float +IdleBobTicks:int +IdleBobDeg:float +IdleEase:float +StabBlendOut:float +SparkleChance:float +FlashTicks:int +StabBufferTicks:int +StabTurnTicks:int +StabAimTicks:int +StabPlungeTicks:int +StabArmDeg:float +StabChestOffsetY:float +StabAimDistance:float +StabDepth:float +StabShake:float +StabHoldTicks:int +StabHitShake:float +MaxSpeedScale:float +SpeedCurvePower:float +AttackSpeedInfluence:float +MinSpeed:float +MaxSpeed:float +TrailSamplesPerTick:int +TrailLagTicks:float +TrailOuter:float +TrailInnerLow:float +TrailInnerHigh:float +TrailExpandBy:float +SweepHitSteps:int +HitLengthScale:float +HitWidth:float +DamageMultiplier:float +KnockbackMultiplier:float +HitShake:float +ChargePerHit:float +GripOffset:float +GlowMaxAlpha:float +OutlineColor:Color +GlowScale:float +OutlinePulseTicks:int +OutlineMin:float +OutlineMax:float +OutlineWidth:float +OutlineCoreColor:Color +CoreColor:Color +ShowBladeDebug:bool
 **CandyCaneSwordFx.cs** uses: CameraShake, CandyCaneSwordTuning, CandyKind, CandyKinds
   static class CandyCaneSwordFx
-    +SheetPath:string[s] +PlaySwing(Vector2)[s] +HitSpark(Vector2)[s] +Burst(Vector2,CandyKind,int,float,float)[s] +Spawn(Vector2,CandyKind)[s] +Break(Vector2,CandyKind)[s] +Pickup(Vector2,CandyKind)[s] +RedExplosion(Vector2)[s] +BlueStick(Vector2)[s] +BlueTick(Vector2)[s] +KillBurst(Vector2)[s]
-**CandyCaneSwordGlobalItem.cs** uses: ReworkToggle
+    +SheetPath:string[s] +PlaySwing(Vector2)[s] +HitSpark(Vector2,CandyKind)[s] +Burst(Vector2,CandyKind,int,float,float)[s] +Spawn(Vector2,CandyKind)[s] +Break(Vector2,CandyKind)[s] +Pickup(Vector2,CandyKind)[s] +RedExplosion(Vector2)[s] +BlueStick(Vector2)[s] +BlueTick(Vector2)[s] +KillBurst(Vector2)[s]
+**CandyCaneSwordGlobalItem.cs** uses: CandyCaneSwordPlayer, CandyCaneSwordSprites, ReworkToggle
   class CandyCaneSwordGlobalItem : GlobalItem
-    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov]
-**CandyCaneSwordPlayer.cs** uses: CandyCaneSwordBladeProjectile, ReworkToggle
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Unload()[ov] +PreDrawInInventory(Item,SpriteBatch,Vector2,Rectangle,Color,Color,Vector2,float)[ov] +PreDrawInWorld(Item,SpriteBatch,Color,Color,ref float,ref float,int)[ov]
+**CandyCaneSwordPlayer.cs** uses: CandyCaneSwordBladeProjectile, CandyKind, CandyKinds, IwrNet, IwrPacket, ReworkToggle
   class CandyCaneSwordPlayer : ModPlayer
-    +PostUpdate()[ov]
-**CandyCaneSwordSweepTrailStyle.cs** uses: CandyCaneSwordTuning, ChargedBladeTrailStyle, SweepFade
+    +NextCandy:CandyKind +CopyClientState(ModPlayer)[ov] +SendClientChanges(ModPlayer)[ov] +SyncPlayer(int,int,bool)[ov] +ReadNext(BinaryReader,int)[s] +PostUpdate()[ov]
+**CandyCaneSwordSprites.cs** uses: CandyKind
+  static class CandyCaneSwordSprites
+    +SheetPath:string[s] +Cells:int[s] +CellSize:Vector2[s] +Cell(CandyKind)[s] +Unload()[s]
+**CandyCaneSwordSweepTrailStyle.cs** uses: CandyCaneSwordTuning, CandyKind, CandyKinds, ChargedBladeTrailStyle, SweepFade
   class CandyCaneSwordSweepTrailStyle : ChargedBladeTrailStyle
     +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
 **CandyCaneSwordTuning.cs**
   static class CandyCaneSwordTuning
-    +SpawnChance:float[s] +BlueEnabled:bool[s] +BurstMin:int[s] +BurstMax:int[s] +BurstSpreadDeg:float[s] +BurstSpeedMin:float[s] +BurstSpeedMax:float[s] +PopSpeedMin:float[s] +PopSpeedMax:float[s] +PopSideSpeed:float[s] +MaxCandies:int[s] +RedLifeTicks:int[s] +GreenLifeTicks:int[s] +BlueLifeTicks:int[s] +YellowLifeTicks:int[s] +BlinkTicks:int[s] +PopInTicks:int[s] +Gravity:float[s] +MaxFallSpeed:float[s] +AirDrag:float[s] +BounceKeep:float[s] +GroundFriction:float[s] +SettleSpeed:float[s] +SpinMin:float[s] +SpinMax:float[s] +GroundSpinKeep:float[s] +PickupDelayTicks:int[s] +PickupRange:int[s] +MagnetRange:float[s] +MagnetAccel:float[s] +MagnetMaxSpeed:float[s] +MagnetDamp:float[s] +RequestRetryTicks:int[s] +ServerReachSlack:float[s] +HealAmount:int[s] +HealOnlyWhenHurt:bool[s] +SugarRushTicksPerCandy:int[s] +SugarRushMaxTicks:int[s] +SugarRushAttackSpeed:float[s] +RedBlastRadius:float[s] +RedBlastTicks:int[s] +RedBlastDamageMultiplier:float[s] +RedBlastKnockback:float[s] +RedBlastShake:float[s] +BlueStickDelayTicks:int[s] +BlueStickReach:float[s] +BlueMaxPerEnemy:int[s] +BlueDamageMultiplier:float[s] +BlueHitIntervalTicks:int[s] +StickSoundVolume:float[s] +HitboxSize:int[s] +CellSize:int[s] +Columns:int[s] +StyleCount:int[s] +DrawScale:float[s] +FallbackSize:float[s] +LightStrength:float[s] +HitSparkCount:int[s] +SpawnDustCount:int[s] +BreakDustCount:int[s] +PickupDustCount:int[s] +BlastDustCount:int[s] +BlastSmokeCount:int[s] +KillBurstDustCount:int[s] +KillBurstShake:float[s] +SwingSoundVolume:float[s] +SpawnSoundVolume:float[s] +BreakSoundVolume:float[s] +PickupSoundVolume:float[s] +BlastSoundVolume:float[s] +TrailSamplesPerTick:int[s] +TrailLagTicks:float[s] +TrailOuter:float[s] +TrailInnerLow:float[s] +TrailInnerHigh:float[s] +TrailExpandBy:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailCore:Color[s] +TrailMid:Color[s] +TrailDeep:Color[s]
+    +SpawnChance:float[s] +BlueEnabled:bool[s] +BurstMin:int[s] +BurstMax:int[s] +BurstSpreadDeg:float[s] +BurstSpeedMin:float[s] +BurstSpeedMax:float[s] +PopSpeedMin:float[s] +PopSpeedMax:float[s] +PopSideSpeed:float[s] +MaxCandies:int[s] +RedLifeTicks:int[s] +GreenLifeTicks:int[s] +BlueLifeTicks:int[s] +YellowLifeTicks:int[s] +BlinkTicks:int[s] +PopInTicks:int[s] +Gravity:float[s] +MaxFallSpeed:float[s] +AirDrag:float[s] +BounceKeep:float[s] +GroundFriction:float[s] +SettleSpeed:float[s] +SpinMin:float[s] +SpinMax:float[s] +GroundSpinKeep:float[s] +PickupDelayTicks:int[s] +PickupRange:int[s] +MagnetRange:float[s] +MagnetAccel:float[s] +MagnetMaxSpeed:float[s] +MagnetDamp:float[s] +RequestRetryTicks:int[s] +ServerReachSlack:float[s] +HealAmount:int[s] +HealOnlyWhenHurt:bool[s] +SugarRushTicksPerCandy:int[s] +SugarRushMaxTicks:int[s] +SugarRushAttackSpeed:float[s] +RedBlastRadius:float[s] +RedBlastTicks:int[s] +RedBlastDamageMultiplier:float[s] +RedBlastKnockback:float[s] +RedBlastShake:float[s] +BlueStickDelayTicks:int[s] +BlueStickReach:float[s] +BlueMaxPerEnemy:int[s] +BlueDamageMultiplier:float[s] +BlueHitIntervalTicks:int[s] +StickSoundVolume:float[s] +HitboxSize:int[s] +CellSize:int[s] +Columns:int[s] +StyleCount:int[s] +DrawScale:float[s] +FallbackSize:float[s] +LightStrength:float[s] +HitSparkCount:int[s] +SpawnDustCount:int[s] +BreakDustCount:int[s] +PickupDustCount:int[s] +BlastDustCount:int[s] +BlastSmokeCount:int[s] +KillBurstDustCount:int[s] +KillBurstShake:float[s] +SwingSoundVolume:float[s] +SpawnSoundVolume:float[s] +BreakSoundVolume:float[s] +PickupSoundVolume:float[s] +BlastSoundVolume:float[s] +TrailSamplesPerTick:int[s] +TrailLagTicks:float[s] +TrailOuter:float[s] +TrailInnerLow:float[s] +TrailInnerHigh:float[s] +TrailExpandBy:float[s] +PixelSize:float[s] +TrailLifeTicks:int[s] +TailLifeScale:float[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailCore:Color[s] +TrailDeepScale:float[s]
 **CandyKind.cs** uses: CandyCaneSwordTuning
   enum CandyKind
     {Red, Green, Blue, Yellow}
@@ -645,7 +648,7 @@ tModLoader/other bases -> project types:
     +Request(Projectile)[s] +ReadRequest(BinaryReader,int)[s] +ReadGrant(BinaryReader)[s]
 **CandyProjectile.cs** uses: CandyBlastProjectile, CandyCaneSwordFx, CandyCaneSwordTuning, CandyKind, CandyKinds, CandyPickup
   class CandyProjectile : ModProjectile
-    +Texture:string[ov] +Age:int +Claimed:bool +Kind:CandyKind +EnforceCap(Player,int)[s] +SpawnOne(IEntitySource,Player,Vector2,int)[s] +SpawnBurst(IEntitySource,Player,Vector2,int)[s] +CanPick(CandyKind,Player)[s] +CanBeClaimedBy(Player) +ShouldUpdatePosition()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +PreDraw(ref Color)[ov]
+    +Texture:string[ov] +Age:int +Claimed:bool +Kind:CandyKind +EnforceCap(Player,int)[s] +SpawnOne(IEntitySource,Player,Vector2,int,CandyKind)[s] +SpawnBurst(IEntitySource,Player,Vector2,int)[s] +CanPick(CandyKind,Player)[s] +CanBeClaimedBy(Player) +ShouldUpdatePosition()[ov] +AI()[ov] +OnTileCollide(Vector2)[ov] +PreDraw(ref Color)[ov]
 
 ### Content/Weapons/Melee/PreHardmode/Broadsword/EnchantedSword/
 **EnchantedSwordBladeProjectile.cs** uses: CameraShake, DetachedTrails, EnchantedSwordFx, EnchantedSwordPlayer, EnchantedSwordSweepTrailStyle, EnchantedSwordTuning, EtherealBeamProjectile, HeldAim, HeldSwordPose, PixelFan, PixelOutline, RemoteHitTracker, SegmentHit, Stage, SweepTrail

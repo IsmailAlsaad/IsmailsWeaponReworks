@@ -4,6 +4,7 @@
     public enum IwrPacket : byte
     {
         CandyPickupRequest, // client to server: "I touched this candy" (slot, owner, identity)
-        CandyPickupGrant    // server to every client: "this candy went to this player" (picker, slot, owner, identity, kind)
+        CandyPickupGrant,   // server to every client: "this candy went to this player" (picker, slot, owner, identity, kind)
+        CandyNext           // a player's next candy color, which is the color of his Candy Cane Sword (player, kind); sent by his client, passed on by the server
     }
 }

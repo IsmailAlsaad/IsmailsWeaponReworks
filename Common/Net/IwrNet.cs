@@ -29,6 +29,9 @@ namespace IsmailsWeaponReworks.Common.Net
                 case IwrPacket.CandyPickupGrant:
                     CandyPickup.ReadGrant(reader);
                     break;
+                case IwrPacket.CandyNext:
+                    CandyCaneSwordPlayer.ReadNext(reader, whoAmI);
+                    break;
             }
         }
     }

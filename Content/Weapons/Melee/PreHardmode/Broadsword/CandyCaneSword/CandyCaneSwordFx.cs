@@ -26,14 +26,14 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
 
         // ---- dust ----
 
-        // A few red and white sparks where the blade touched the enemy.
-        public static void HitSpark(Vector2 position)
+        // A few sparks in the sword's color (and white) where the blade touched the enemy.
+        public static void HitSpark(Vector2 position, CandyKind kind)
         {
             if (Main.dedServ)
                 return;
             for (int i = 0; i < CandyCaneSwordTuning.HitSparkCount; i++)
             {
-                int type = Main.rand.NextBool() ? DustID.RedTorch : DustID.WhiteTorch;
+                int type = Main.rand.NextBool() ? CandyKinds.DustOf(kind) : DustID.WhiteTorch;
                 Dust dust = Dust.NewDustPerfect(position + Main.rand.NextVector2Circular(6f, 6f), type, Main.rand.NextVector2Circular(2.5f, 2.5f), 0, default, Main.rand.NextFloat(0.8f, 1.2f));
                 dust.noGravity = true;
             }

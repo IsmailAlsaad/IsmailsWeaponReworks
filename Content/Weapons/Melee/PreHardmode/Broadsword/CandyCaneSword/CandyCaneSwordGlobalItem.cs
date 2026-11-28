@@ -1,4 +1,6 @@
 ﻿using IsmailsWeaponReworks.Common.Rework;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -29,6 +31,42 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         // The item is never "used": the held blade watches the button itself.
         public override bool CanUseItem(Item item, Player player)
         {
+            return false;
+        }
+
+        // ---- the item's own art follows the color of the next candy (CandyCaneSword.png); the vanilla art until the file exists ----
+
+        public override void Unload()
+        {
+            CandyCaneSwordSprites.Unload();
+        }
+
+        static Texture2D CurrentSprite()
+        {
+            if (Main.dedServ || Main.LocalPlayer == null)
+                return null;
+            return CandyCaneSwordSprites.Cell(Main.LocalPlayer.GetModPlayer<CandyCaneSwordPlayer>().NextCandy);
+        }
+
+        // Inventory, hotbar, chests, shops: the colored sword at the same spot and scale as the vanilla icon.
+        public override bool PreDrawInInventory(Item item, SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
+        {
+            Texture2D texture = CurrentSprite();
+            if (texture == null)
+                return true;
+            Vector2 center = position - origin * scale + frame.Size() * scale * 0.5f;   // where the vanilla icon's middle would be
+            spriteBatch.Draw(texture, center, null, drawColor, 0f, texture.Size() * 0.5f, scale, SpriteEffects.None, 0f);
+            return false;
+        }
+
+        // The item lying in the world: bottom-centered on the item's box, like vanilla.
+        public override bool PreDrawInWorld(Item item, SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI)
+        {
+            Texture2D texture = CurrentSprite();
+            if (texture == null)
+                return true;
+            Vector2 position = item.position - Main.screenPosition + new Vector2(item.width * 0.5f, item.height - texture.Height * 0.5f);
+            spriteBatch.Draw(texture, position, null, alphaColor, rotation, texture.Size() * 0.5f, scale, SpriteEffects.None, 0f);
             return false;
         }
     }

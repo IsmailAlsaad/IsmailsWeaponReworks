@@ -112,7 +112,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         public static int TrailRails => 6;
         public static float TrailOpacity => 0.3f;
         public static Color TrailCore => new Color(255, 255, 255);
-        public static Color TrailMid => new Color(240, 70, 90);
-        public static Color TrailDeep => new Color(160, 25, 45);
+        public static float TrailDeepScale => 0.55f; // the trail's outer edge is the candy's color at this brightness (the middle is the color itself)
     }
 }

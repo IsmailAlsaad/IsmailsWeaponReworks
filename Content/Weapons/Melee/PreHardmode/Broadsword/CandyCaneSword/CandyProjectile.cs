@@ -94,20 +94,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             }
         }
 
-        static void Spawn(IEntitySource source, Player owner, Vector2 position, Vector2 velocity, int damage)
+        static void Spawn(IEntitySource source, Player owner, Vector2 position, Vector2 velocity, int damage, CandyKind kind)
         {
-            CandyKind kind = CandyKinds.Pick();
             int style = Main.rand.Next(Math.Max(1, CandyCaneSwordTuning.StyleCount));
             Projectile.NewProjectile(source, position, velocity, ModContent.ProjectileType<CandyProjectile>(), damage, 0f, owner.whoAmI, (float)kind, style, 0f);
         }
 
-        // Owner's client: one candy pops up out of the enemy.
-        public static void SpawnOne(IEntitySource source, Player owner, Vector2 position, int damage)
+        // Owner's client: one candy of color 'kind' pops up out of the enemy.
+        public static void SpawnOne(IEntitySource source, Player owner, Vector2 position, int damage, CandyKind kind)
         {
             EnforceCap(owner, 1);
             Vector2 velocity = new Vector2(Main.rand.NextFloat(-CandyCaneSwordTuning.PopSideSpeed, CandyCaneSwordTuning.PopSideSpeed),
                 -Main.rand.NextFloat(CandyCaneSwordTuning.PopSpeedMin, CandyCaneSwordTuning.PopSpeedMax));
-            Spawn(source, owner, position, velocity, damage);
+            Spawn(source, owner, position, velocity, damage, kind);
         }
 
         // Owner's client: the enemy died to the sword; a fan of candies shoots upward.
@@ -120,7 +119,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             {
                 float angle = -MathHelper.PiOver2 + Main.rand.NextFloat(-spread, spread);
                 float speed = Main.rand.NextFloat(CandyCaneSwordTuning.BurstSpeedMin, CandyCaneSwordTuning.BurstSpeedMax);
-                Spawn(source, owner, position, angle.ToRotationVector2() * speed, damage);
+                Spawn(source, owner, position, angle.ToRotationVector2() * speed, damage, CandyKinds.Pick());
             }
             CandyCaneSwordFx.KillBurst(position);
         }
