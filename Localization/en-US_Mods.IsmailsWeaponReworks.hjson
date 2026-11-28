@@ -103,6 +103,7 @@ Projectiles: {
 	PhasebladeIdleProjectile.DisplayName: Phaseblade Idle Projectile
 	StarfuryIdleProjectile.DisplayName: Starfury Idle Projectile
 	KatanaSwingProjectile.DisplayName: Katana Swing Projectile
+	CombatWrenchProjectile.DisplayName: Combat Wrench Projectile
 }
 
 Configs: {

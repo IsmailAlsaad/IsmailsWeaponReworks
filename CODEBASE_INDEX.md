@@ -1,10 +1,10 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-28 | 414 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-28 | 418 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
 ## Most-referenced types (files referencing them)
-ReworkToggle(46) YoyoTuning(40) DetachedTrails(40) CameraShake(39) RemoteHitTracker(33) HeldSwordPose(26) ThrustPalette(25) YoyoProjectile(23) AfterimageTrail(21) YoyoFx(18) HeldAim(18) PixelTrail(16) SweepTrail(15) SweepFade(15) PixelTrailStyle(15) YoyoTrick(14) FlailTuning(14) Phase(13) NightsEdgeTuning(13) IChargedBladeTuning(13)
+ReworkToggle(47) DetachedTrails(41) YoyoTuning(39) CameraShake(39) RemoteHitTracker(33) HeldSwordPose(27) ThrustPalette(25) YoyoProjectile(23) AfterimageTrail(21) HeldAim(19) YoyoFx(18) PixelTrail(17) PixelTrailStyle(16) SweepTrail(15) SweepFade(15) YoyoTrick(14) FlailTuning(14) Phase(13) NightsEdgeTuning(13) IChargedBladeTuning(13)
 
 ## Inheritance
 Project bases -> derived:
@@ -30,7 +30,7 @@ Project bases -> derived:
 - IImpaleTuning: NightsEdgeImpaleTune
 - ILoopTuning: ArteryTuning, MalaiseTuning
 - IPopTheClutchTuning: CascadeTuning, PopTheClutchDefaults, ValorTuning
-- IRopeLook: YoyoTuning
+- IRopeLook: CombatWrenchRopeLook, YoyoTuning
 - ISleeperTuning: CascadeTuning, HiveFiveTuning, SleeperDefaults
 - IWalkTheDogTuning: AmazonTuning, WalkTheDogDefaults, WoodenYoyoTuning
 - LoopYoyoFx: ArteryFx, MalaiseFx
@@ -39,7 +39,7 @@ Project bases -> derived:
 - ManOnTrapezeTrick: ArteryTrick, MalaiseRockTrick
 - MetaballStyle: DarkLanceBlobStyle, MeatballBloodStyle, NightsEdgeBlobStyle, SunfuryBurstStyle, VolcanoBlobStyle, VolcanoDripStyle
 - NightsEdgeBlobStyle: NightsEdgeBurstStyle, NightsEdgeEdgeStyle, NightsEdgeFlameStyle
-- PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, EtherealBeamTrailStyle, FlailTrailStyle, FlamingMaceTrailStyle, HiveFiveTrailStyle, MaceShardTrailStyle, MoltenTrailStyle, NightsEdgeWaveTipTrailStyle, SunfuryTrailStyle
+- PixelTrailStyle: ArcBoltStyle, BloodButchererJawTrailStyle, CombatWrenchTrailStyle, DarkLanceOrbTrailStyle, DarkLanceStrikeTrailStyle, EtherealBeamTrailStyle, FlailTrailStyle, FlamingMaceTrailStyle, HiveFiveTrailStyle, MaceShardTrailStyle, MoltenTrailStyle, NightsEdgeWaveTipTrailStyle, SunfuryTrailStyle
 - PopTheClutchTrick: CascadeTrick, ValorTrick
 - SweepTrailStyle: BeeKeeperSweepTrailStyle, BloodButchererSpinTrailStyle, ChargedBladeTrailStyle, EnchantedSwordSweepTrailStyle, IceBladeTrailStyle, KatanaSweepTrailStyle, MuramasaSweepTrailStyle, PhasebladeSweepTrailStyle, RottedForkJavelinTrailStyle, StarfurySweepTrailStyle, ThrustTrailStyle, VolcanoSweepTrailStyle
 - VolcanoDripStyle: VolcanoBurstStyle
@@ -50,8 +50,8 @@ Project bases -> derived:
 - YoyoTrick: AroundTheWorldTrick, ForwardPassTrick, SleeperHoldTrick, WalkTheDogTrick
 - YoyoTuning: AmazonTuning, ArteryTuning, CascadeTuning, Code1Tuning, HiveFiveTuning, MalaiseTuning, RallyTuning, ValorTuning, WoodenYoyoTuning
 tModLoader/other bases -> project types:
-- ModProjectile (75): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BallOHurtBallProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassPlantSwingProjectile, BladeOfGrassPlantedVinesProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, BlueMoonBlastProjectile, CandyBlastProjectile, CandyProjectile, CascadeBlastProjectile, ChargedBladeProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlailProjectile, FlamerangBlastProjectile, FlamerangProjectile, FlamingMaceBlastProjectile, HeldIdleSwordProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, KatanaSwingProjectile, LightsBaneImbueProjectile, MaceShrapnelProjectile, MeatballHeadProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, NightsEdgeBlastProjectile, NightsEdgeDropProjectile, NightsEdgeWaveProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, SplinterProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
-- GlobalItem (30): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, CandyCaneSwordGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, NightsEdgeGlobalItem, OreSwordGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, WoodenSwordGlobalItem, YoyoGlobalItem
+- ModProjectile (76): AmazonBarbedCoilProjectile, AmazonBarbedVineProjectile, BallOHurtBallProjectile, BeeKeeperBeeProjectile, BeeKeeperSwingProjectile, BladeOfGrassPlantSwingProjectile, BladeOfGrassPlantedVinesProjectile, BladeOfGrassSpineProjectile, BloodButchererSwingProjectile, BlueMoonBlastProjectile, CandyBlastProjectile, CandyProjectile, CascadeBlastProjectile, ChargedBladeProjectile, CombatWrenchProjectile, DarkLanceBlastProjectile, DarkLanceChargeProjectile, DarkLanceFlameEmberProjectile, DarkLanceOrbProjectile, DarkLanceStrikeProjectile, EnchantedBoomerangBase, EnchantedSwordBladeProjectile, EtherealBeamProjectile, EtherealSwordProjectile, FlailProjectile, FlamerangBlastProjectile, FlamerangProjectile, FlamingMaceBlastProjectile, HeldIdleSwordProjectile, HeldSpearProjectile, IceBladeSwingProjectile, IceBladeWaveProjectile, IceBoomerangProjectile, IceCrystalBlastProjectile, IceCrystalProjectile, KatanaBladeProjectile, KatanaSlashProjectile, KatanaStanceProjectile, KatanaSwingProjectile, LightsBaneImbueProjectile, MaceShrapnelProjectile, MeatballHeadProjectile, MoltenBoomerangProjectile, MuramasaIaidoProjectile, MuramasaSlashProjectile, MuramasaStanceProjectile, MuramasaSwingProjectile, NightsEdgeBlastProjectile, NightsEdgeDropProjectile, NightsEdgeWaveProjectile, ObsidianShardProjectile, PhasebladePlantedProjectile, PhasebladeSwingProjectile, RallyShellShardProjectile, RottedForkJavelinProjectile, RottedForkSpinProjectile, ShroomerangBurstProjectile, ShroomerangMushroomProjectile, ShroomerangProjectile, SplinterProjectile, StardustBurstProjectile, StarfuryBlastProjectile, StarfuryStarProjectile, StarfurySwingProjectile, SunfuryBlastProjectile, ThornChakramProjectile, ThornChakramStingerProjectile, TrimarangEtherealProjectile, TrimarangProjectile, VolcanoBladeProjectile, VolcanoBlastProjectile, VolcanoLavaDropProjectile, VolcanoThrownProjectile, WoodenBoomerangProjectile, WoodenBoomerangShardProjectile, YoyoProjectile
+- GlobalItem (31): BeeKeeperGlobalItem, BladeOfGrassGlobalItem, BloodButchererGlobalItem, CandyCaneSwordGlobalItem, CombatWrenchGlobalItem, DarkLanceGlobalItem, EnchantedBoomerangGlobalItem, EnchantedSwordGlobalItem, FlailGlobalItem, FlamerangGlobalItem, IceBladeGlobalItem, IceBoomerangGlobalItem, KatanaGlobalItem, LightsBaneGlobalItem, MuramasaGlobalItem, NightsEdgeGlobalItem, OreSwordGlobalItem, PhasebladeGlobalItem, RottedForkGlobalItem, ShroomerangGlobalItem, SpearGlobalItem, StarfuryGlobalItem, StormSpearGlobalItem, SwordfishGlobalItem, ThornChakramGlobalItem, TridentGlobalItem, TrimarangGlobalItem, VolcanoGlobalItem, WoodenBoomerangGlobalItem, WoodenSwordGlobalItem, YoyoGlobalItem
 - ModPlayer (22): BeeKeeperPlayer, BladeOfGrassPlayer, CandyCaneSwordPlayer, DarkLancePlayer, DashPlayer, EnchantedSwordPlayer, HeldIdleSwordPlayer, ImmunityPlayer, KatanaPlayer, LightsBanePlayer, MeatballPlayer, MuramasaPlayer, NightsEdgePlayer, OreSwordPlayer, PhasebladePlayer, RottedForkPlayer, StarfuryPlayer, ThrustPlayer, TridentPlayer, VolcanoPlayer, WoodenSwordPlayer, YoyoPlayer
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
 - ModSystem (6): DetachedFlares, DetachedTrails, HeldIdleSwordSystem, MetaballLayers, ReworkRegistry, YoyoRegistry
@@ -362,6 +362,27 @@ tModLoader/other bases -> project types:
 **SugarRushBuff.cs** uses: CandyCaneSwordTuning
   class SugarRushBuff : ModBuff
     +Texture:string[ov] +Update(Player,ref int)[ov]
+
+### Content/Weapons/Melee/PreHardmode/Boomerangs/CombatWrench/
+**CombatWrenchFx.cs** uses: CombatWrenchTuning
+  static class CombatWrenchFx
+    +Throw(Vector2,Vector2)[s] +Flight(Vector2,Vector2)[s] +Impact(Vector2,Vector2)[s] +Retract(Vector2)[s] +Catch(Vector2)[s]
+**CombatWrenchGlobalItem.cs** uses: CombatWrenchProjectile, ReworkToggle
+  class CombatWrenchGlobalItem : GlobalItem
+    +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
+**CombatWrenchProjectile.cs** uses: CombatWrenchFx, CombatWrenchRopeLook, CombatWrenchTrailStyle, CombatWrenchTuning, DetachedTrails, EllipsePath, HeldAim, HeldSwordPose, PixelTrail, VerletRope
+  class CombatWrenchProjectile : ModProjectile
+    +Texture:string[ov] +CurrentPhase:Phase +Load()[ov] +Unload()[ov] +CanDamage()[ov] +AI()[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+    enum Phase
+      {Out, Back, Snap, Reel, Retract, HandOver, Return}
+**CombatWrenchTrailStyle.cs** uses: CombatWrenchTuning, PixelTrailStyle
+  class CombatWrenchTrailStyle : PixelTrailStyle
+    +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
+**CombatWrenchTuning.cs** uses: IRopeLook
+  static class CombatWrenchTuning
+    +HitDamageMultiplier:float[s] +ReleaseDamageMultiplier:float[s] +RopeLengthPx:float[s] +ReachMarginPx:float[s] +PassTicks:int[s] +PassWidthRatio:float[s] +PassEase:float[s] +SpinPerTick:float[s] +ThroughPlatforms:bool[s] +MaxDistancePx:float[s] +HitboxSize:int[s] +CollisionStepPx:float[s] +ReturnStartSpeed:float[s] +ReturnAccel:float[s] +ReturnMaxSpeed:float[s] +CatchDistancePx:float[s] +ReturnSpinPerTick:float[s] +ArmFollow:float[s] +ThrowArmStartDeg:float[s] +ThrowArmBlendTicks:int[s] +CatchArmDeg:float[s] +CatchArmBlendDistance:float[s] +RopeColor:Color[s] +RopeAltColor:Color[s] +RopeOutlineColor:Color[s] +RopeWidth:float[s] +RopeOutlineWidth:float[s] +RopeAttachPx:float[s] +ButtAngleDeg:float[s] +RopePoints:int[s] +RopeSlackFactor:float[s] +RopeExtraSlack:float[s] +RopeGravity:float[s] +RopeTightenSpeed:float[s] +RopeMinLength:float[s] +RopeDamping:float[s] +RopeIterations:int[s] +RopeCollides:bool[s] +RopeSubdivisions:int[s] +ThrowTrailGrid:float[s] +ThrowTrailLifeTicks:int[s] +ThrowTrailWidth:float[s] +ThrowTrailJitter:float[s] +ThrowTrailOuterColor:Color[s] +ThrowTrailInnerColor:Color[s] +FlightSparkChance:float[s] +ThrowSparkCount:int[s] +ImpactSparkCount:int[s] +CatchSparkCount:int[s]
+  class CombatWrenchRopeLook : IRopeLook
+    +RopePoints:int +RopeMinLength:float +RopeDamping:float +RopeIterations:int +RopeCollides:bool +RopeSubdivisions:int +RopeWidth:float +RopeOutlineWidth:float +RopeColor:Color +RopeAltColor:Color +RopeOutlineColor:Color
 
 ### Content/Weapons/Melee/PreHardmode/Boomerangs/EnchantedBoomerang/
 **EnchantedBoomerangBase.cs** uses: AfterimageTrail, BoomerangFlight, DetachedTrails, EnchantedBoomerangFx, EnchantedBoomerangTuning, EtherealBoomerangProjectile, RemoteHitTracker, StardustBurstProjectile
@@ -1369,9 +1390,6 @@ tModLoader/other bases -> project types:
 **YoyoRegistry.cs**
   class YoyoRegistry : ModSystem
     +Register(int,int)[s] +ProjectileFor(int)[s] +Load()[ov] +Unload()[ov]
-**YoyoRope.cs** uses: YoyoTuning
-  class YoyoRope
-    +MainOverride:Color? +AltOverride:Color? +OutlineOverride:Color? +Straight(Vector2,Vector2) +Update(Vector2,Vector2,float,float,float) +Tighten(Vector2,Vector2,float) +TightenAlong(Vector2,IReadOnlyList<Vector2>,Vector2,float) +Draw(Texture2D) +DrawPolyline(Texture2D,IReadOnlyList<Vector2>)
 **YoyoRopeWrap.cs**
   class YoyoRopeWrap
     +Pivots:IReadOnlyList<Vector2> +Active:bool +Clear() +Update(Vector2,Vector2,int,float)
@@ -1565,6 +1583,7 @@ tModLoader/other bases -> project types:
 - (root)/: .gitattributes, .gitignore, LICENSE; IsmailsWeaponReworks.csproj; README.md; build.txt, description.txt, description_workshop.txt
 - Assets/Sounds/: BloodSpill.wav, ElectricEel.wav, Stab.wav, WrenchReel.wav
 - Assets/Sounds/Candy/: CandyBreak1.wav, CandyBreak2.wav, CandyBreak3.wav, CandyExplode.wav, CandyPickup.wav
+- Assets/Sounds/MetalBonk/: MetalBonk1.wav, MetalBonk2.wav, MetalBonk3.wav
 - Assets/Sounds/MetalHit/: MetalHit1.wav, MetalHit2.wav, MetalHit3.wav
 - Assets/Sounds/MetalSword/: MetalSword1.wav, MetalSword2.wav, MetalSword3.wav
 - Assets/Sounds/WoodSplit/: WoodSplit1.wav, WoodSplit2.wav, WoodSplit3.wav, WoodSplit4.wav
