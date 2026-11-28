@@ -11,6 +11,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
     {
         // ---- DAMAGE (every damage variable lives here; the wrench hurts only at the heavy hit and at the release, from W4 on) ----
         public static float HitDamageMultiplier => 2.5f;       // of the item's damage: the heavy swing's hit on a reeled-in enemy
+        public static float LaunchSpeed => 26f;                // W4: the speed (pixels per tick) the heavy swing flings the enemy at, times its knockback resistance factor (a heavier enemy flies less far)
+        public static float LaunchLift => 0.25f;               // W4: the launch direction is the line away from the player plus this much "up" (0 = flat)
 
 
         // ---- THROW (the Forward Pass ellipse toward the cursor) ----
@@ -39,7 +41,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static float PickupDistancePx => 110f;         // the moment the reeled enemy is this close to the player, the wrench is picked up (it flies to the hand while the enemy keeps sliding to the stop point)
         public static float SwingDistancePx => 56f;           // the stop point: this far from the player along the line to where the enemy was latched
         public static int RetractTicks => 8;                  // the wrench flies from the enemy to the hand in this many ticks (it accelerates)
-        public static int HandOverHoldTicks => 20;            // W3 only (W4 replaces it with the heavy swing): the wrench waits in the hand with the enemy held in front, then the enemy is let go
+        public static int HandOverHoldTicks => 45;            // W4: the wrench waits in the hand at most this long for the heavy swing to start on this machine (a safety net for a lost packet: after it the enemy is let go and the wrench is caught)
 
         // ---- STRAIN (an immovable enemy is not moved: the wrench drags back a little, and the moment the drag ends it reels straight back and deals the hit) ----
         public static float StrainDragFraction => 0.3f;       // how far the wrench drags toward the player, as a fraction of the wrench's own length (head tip to butt)
@@ -47,6 +49,17 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
 
         public static float StrikeShake => 0.9f;              // camera punch of that hit
         public static int StrikeSparkCount => 12;
+
+        // ---- SWING (W4: the heavy swing on the reeled-in enemy; a held pose, every machine runs it from the ticks since the swing began) ----
+        public static int WindupTicks => 14;                   // the arm goes back and up (and the wrench grows into the hand's grip)
+        public static int StrikeTicks => 7;                    // the fast overhead-to-forward hammer arc; the hit lands where the arm crosses the line to the enemy
+        public static int RecoverTicks => 24;                  // W4 placeholder: the arm eases down to RestArmDeg and the swing ends (W5 replaces it with the vibration and the settle)
+        public static float ArmStartDeg => 125f;               // wind-up pose: the arm is this many degrees back and up from the line to the enemy
+        public static float ArmEndDeg => 40f;                  // follow-through: the arm ends this many degrees past the line to the enemy (downward)
+        public static float RestArmDeg => 55f;                 // after the strike the arm eases down to this angle below the line to the enemy
+        public static float StrikeEasePower => 2.2f;           // the strike speeds up into the hit: progress = t ^ this (1 = constant speed)
+        public static float WindupTiltDeg => 55f;              // the head leans this far past the arm during the wind-up (over the shoulder) and straightens along the arm in the strike
+        public static float GripOffsetPx => 10f;               // how far from the hand the wrench's center sits along the swing (10 = the butt in the hand, like RopeAttachPx)
 
         // ---- FACING ----
         public static float FaceDeadzonePx => 6f;             // the player always faces the wrench's side; closer to the player than this the facing is kept
@@ -85,7 +98,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static int RopeSubdivisions => 4;               // smoothing: curve pieces drawn between two rope points
         public static int RopeStripePieces => 2;               // the string alternates its two colors every this many curve pieces (2 = the yoyo look; 1 = twice as many, thinner stripes; 4 = fewer, longer stripes). The string has (RopePoints - 1) x RopeSubdivisions pieces
 
-        // ---- THROWN TRAIL (the pixel trail the flying wrench lays; the swing's fan trail comes with W4) ----
+        // ---- THROWN TRAIL (the pixel trail the flying wrench lays; the swing's fan is the SWING TRAIL group below) ----
         public static float ThrowTrailGrid => 2f;              // pixel size of the trail
         public static int ThrowTrailLifeTicks => 0;           // how long a point of the trail lasts
         public static float ThrowTrailWidth => 0f;
@@ -93,12 +106,31 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static Color ThrowTrailOuterColor => new Color(170, 185, 210);
         public static Color ThrowTrailInnerColor => new Color(245, 248, 255);
 
+        // ---- SWING TRAIL (W4: the fan the heavy swing leaves; a SweepTrail) ----
+        public static float TrailOuter => 1.15f;               // the fan's outer edge as a fraction of the hand-to-head length (1 = the head's tip)
+        public static float TrailInner => 0.15f;               // the inner edge once the fan is fully open (0 = at the hand)
+        public static float TrailExpandBy => 0.8f;             // the fan is fully open this far (0..1) into the strike
+        public static float TrailLagTicks => 0.8f;             // how many ticks the trail runs behind the sprite (0 = exactly on it)
+        public static int TrailLifeTicks => 20;                // how long a point of the fan lasts
+        public static int TrailRails => 7;                     // parallel pixel lines that fill the fan
+        public static int TrailSamplesPerTick => 8;            // fan points laid per tick (the strike is fast, so many keep it smooth)
+        public static float TrailPixelSize => 2f;              // pixel size of the fan
+        public static float TrailOpacity => 0.85f;
+        public static float TrailTailLifeScale => 0.45f;       // the oldest point lives this fraction as long as the newest, so the tail fades first
+        public static Color TrailOuterColor => new Color(150, 170, 205);
+        public static Color TrailInnerColor => new Color(245, 248, 255);
+
         // ---- FX ----
         public static float FlightSparkChance => 0.4f;         // per tick: a spark sheds off the flying wrench
         public static int ThrowSparkCount => 5;
         public static int ImpactSparkCount => 8;
         public static int CatchSparkCount => 5;
         public static int SnapSparkCount => 8;                // chips thrown when the head clamps onto an enemy
+        public static float HitShake => 1.7f;                 // W4: camera punch of the heavy hit
+        public static int HitSparkCount => 18;                // W4: chips thrown by the heavy hit
+        public static int HitSmokeCount => 6;
+        public static float HitSoundVolume => 1f;             // W4: volume of Ismail's WrenchHeavyHit clip
+        public static bool ShowHitboxDebug => false;          // true: a magenta line from the hand to the head's tip during the swing and a cyan dot at the stop point
     }
 
     /// <summary>The rope's look and feel for the VerletRope, read live from CombatWrenchTuning (so hot reload works).</summary>

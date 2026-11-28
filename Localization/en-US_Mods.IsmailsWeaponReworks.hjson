@@ -104,6 +104,7 @@ Projectiles: {
 	StarfuryIdleProjectile.DisplayName: Starfury Idle Projectile
 	KatanaSwingProjectile.DisplayName: Katana Swing Projectile
 	CombatWrenchProjectile.DisplayName: Combat Wrench Projectile
+	CombatWrenchSwingProjectile.DisplayName: Combat Wrench Swing Projectile
 }
 
 Configs: {

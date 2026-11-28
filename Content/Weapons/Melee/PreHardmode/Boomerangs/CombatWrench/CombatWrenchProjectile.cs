@@ -17,7 +17,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
     /// upper side, back along the other half, one whole loop that starts and ends at the player) on a rope that runs from the player's
     /// hand to the butt of the wrench sprite. A solid block stops it (platforms do not) and it is pulled back to the hand and caught;
     /// a throw that touched nothing ends the same way after the loop. Gravity does not touch it. Only one is in flight at a time.
-    /// ai[0] = phase (see Phase; W3 uses Out, Back, Snap, Reel, Retract, HandOver (a placeholder hold until W4) and Return), ai[1] = the latched enemy's index plus 1 (0 = none),
+    /// ai[0] = phase (see Phase; W3 uses Out, Back, Snap, Reel, Retract, HandOver (the hold in the hand until the swing projectile takes over) and Return), ai[1] = the latched enemy's index plus 1 (0 = none),
     /// ai[2] = the aim angle in radians (world), set at the spawn.
     /// MULTIPLAYER: the owner's client decides the click and the aim (ai[2] travels in the spawn packet) and the moment it returns
     /// (ai[0] = Return with netUpdate); every machine, the server included, runs the same ellipse from the aim and the owner's
@@ -65,6 +65,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         Vector2 retractStart;      // where the wrench was when the Retract began
         int reelTicks;             // how long the reel takes at ReelSpeedPx (worked out at the latch from the distance)
         int pickupDelay;           // ticks after the Snap until the enemy is within PickupDistancePx of the player and the wrench is picked up
+        bool swingSpawned;         // owner only: the heavy swing has been spawned
         bool havePrev;             // owner only: the swept contact test has last tick's positions
         Vector2 prevCenter;
         Vector2 prevTip;
@@ -81,6 +82,12 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public override void Unload()
         {
             art = null;
+        }
+
+        // The wrench's sprite (Ismail's file when it exists, the vanilla one until then); the heavy swing draws the same one.
+        public static Texture2D WrenchTexture()
+        {
+            return art?.Value ?? TextureAssets.Projectile[ProjectileID.CombatWrench].Value;
         }
 
         public override void SetDefaults()
@@ -416,8 +423,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
 
         // The latched stages, a pure function of the ticks since the latch on every machine: Snap (the head flies to the contact point and
         // turns away from the player), Reel (a movable enemy is held and slid to the stop point at a constant speed; the wrench stays pinned
-        // to it), Retract (the moment the enemy is within PickupDistancePx of the player the wrench flies to the hand, while the enemy keeps sliding in), HandOver (a placeholder until W4's
-        // swing: the wrench waits in the hand, then the enemy is let go and the wrench is caught). An immovable enemy is not moved: the
+        // to it), Retract (the moment the enemy is within PickupDistancePx of the player the wrench flies to the hand, while the enemy keeps sliding in), HandOver (the wrench waits in the hand
+        // while the heavy swing projectile takes over: the wrench ends without letting the enemy go). An immovable enemy is not moved: the
         // wrench drags back a little on a cubic ease (the head still pinned to it), and the moment the drag ends it reels straight
         // back to the hand; that snap back is the hit (the same damage as the heavy swing), with no push forward first.
         void TickLatched(Player owner, bool isOwner)
@@ -523,13 +530,51 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             FaceToward(owner, armAt.X);
             ApplyArm(owner, HeldAim.ToWorld(owner, (armAt - owner.MountedCenter).ToRotation()) - Tilt(owner));
 
-            if (movable && !returning && latchTicks >= handOverEnd)
+            if (movable && !returning && npc != null)
             {
-                if (npc != null)
-                    CarriedNPC.Release(npc);   // (W4 replaces this end with the heavy swing)
-                CombatWrenchFx.Catch(Projectile.Center);
-                Projectile.Kill();
+                // W4: once the enemy has arrived and the wrench is in the hand, the owner starts the heavy swing (a separate projectile that holds
+                // the enemy from its very first tick). The wrench keeps holding the enemy until that swing has run on this machine, then it ends
+                // quietly (no catch, no release). If the swing never shows up (a lost packet) the old end is the fallback: let go and catch.
+                if (isOwner && !swingSpawned && latchTicks >= Math.Max(reelEnd, retractEnd))
+                    SpawnSwing(owner, npc);
+                if (SwingTakenOver())
+                {
+                    Projectile.Kill();
+                    return;
+                }
+                if (latchTicks >= handOverEnd)
+                {
+                    CarriedNPC.Release(npc);
+                    CombatWrenchFx.Catch(Projectile.Center);
+                    Projectile.Kill();
+                }
             }
+        }
+
+        // Owner only: starts the heavy swing from the wrench's pose in the hand. ai[0] = the enemy's index plus 1, ai[1] = the world angle of the
+        // reel line (player to the stop point), ai[2] = the arm the swing starts from, relative to the swing's own aim (so there is no pop).
+        void SpawnSwing(Player owner, NPC npc)
+        {
+            swingSpawned = true;
+            float angle = reelDir.ToRotation();
+            float aimArm = HeldAim.ToWorld(owner, angle) - Tilt(owner);
+            float startLocal = HeldAim.Facing(angle) * MathHelper.WrapAngle(armWorld - aimArm);
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), hand, Vector2.Zero, ModContent.ProjectileType<CombatWrenchSwingProjectile>(),
+                Projectile.damage, Projectile.knockBack, owner.whoAmI, npc.whoAmI + 1, angle, startLocal);
+        }
+
+        // Every machine: the heavy swing for the enemy this wrench holds exists and has run a tick here, so it holds the enemy now.
+        bool SwingTakenOver()
+        {
+            int swingType = ModContent.ProjectileType<CombatWrenchSwingProjectile>();
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile other = Main.projectile[i];
+                if (other.active && other.type == swingType && other.owner == Projectile.owner && (int)other.ai[0] == (int)Projectile.ai[1]
+                    && ((CombatWrenchSwingProjectile)other.ModProjectile).Started)
+                    return true;
+            }
+            return false;
         }
 
         public override void SendExtraAI(BinaryWriter writer)

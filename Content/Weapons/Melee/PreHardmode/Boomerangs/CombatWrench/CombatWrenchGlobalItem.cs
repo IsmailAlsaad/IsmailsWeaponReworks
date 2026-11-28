@@ -32,7 +32,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         // Only one wrench in flight; it counts as in flight until it is caught.
         public override bool CanUseItem(Item item, Player player)
         {
-            return player.ownedProjectileCounts[ModContent.ProjectileType<CombatWrenchProjectile>()] <= 0;
+            // (the heavy swing counts too: no new throw until it is over)
+            return player.ownedProjectileCounts[ModContent.ProjectileType<CombatWrenchProjectile>()] <= 0
+                && player.ownedProjectileCounts[ModContent.ProjectileType<CombatWrenchSwingProjectile>()] <= 0;
         }
 
         public override bool Shoot(Item item, Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)

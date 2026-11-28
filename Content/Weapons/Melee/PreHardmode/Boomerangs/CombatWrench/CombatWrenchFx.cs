@@ -105,6 +105,44 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.5f, Pitch = -0.4f, PitchVariance = 0.05f }, position);
         }
 
+        // The strike begins: a heavy whoosh ('direction' is where the hammer is going).
+        public static void Swing(Vector2 position, Vector2 direction)
+        {
+            if (Main.dedServ)
+                return;
+            SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.9f, Pitch = -0.55f, PitchVariance = 0.05f }, position);
+            SoundEngine.PlaySound(SoundID.Item7 with { Volume = 0.45f, Pitch = -0.7f }, position);
+        }
+
+        // The heavy hit on the reeled-in enemy: a thump, a camera punch, chips and smoke thrown the way the enemy is flung ('direction' points away
+        // from the player). Ismail's WrenchHeavyHit clip plays when the file exists; vanilla stand-ins until then.
+        public static void HeavyHit(Vector2 position, Vector2 direction)
+        {
+            if (Main.dedServ)
+                return;
+            direction = direction.LengthSquared() < 0.01f ? Vector2.UnitX : Vector2.Normalize(direction);
+            Vector2 along = new Vector2(-direction.Y, direction.X);
+
+            string path = "IsmailsWeaponReworks/Assets/Sounds/CombatWrench/WrenchHeavyHit";
+            if (Terraria.ModLoader.ModContent.HasAsset(path))
+                SoundEngine.PlaySound(new SoundStyle(path) { Volume = CombatWrenchTuning.HitSoundVolume }, position);
+            else
+            {
+                SoundEngine.PlaySound(SoundID.Tink with { Volume = 1f, Pitch = -0.6f, PitchVariance = 0.05f }, position);
+                SoundEngine.PlaySound(SoundID.NPCHit4 with { Volume = 0.8f, Pitch = -0.3f }, position);
+                SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.35f, Pitch = -0.5f }, position);
+            }
+
+            CameraShake.Punch(position, CombatWrenchTuning.HitShake, 14, "CombatWrenchHit");
+            for (int i = 0; i < CombatWrenchTuning.HitSparkCount; i++)
+                Chip(position, direction * Main.rand.NextFloat(2f, 9f) + along * Main.rand.NextFloat(-4f, 4f), Main.rand.NextFloat(1f, 2f));
+            for (int i = 0; i < CombatWrenchTuning.HitSmokeCount; i++)
+            {
+                Dust smoke = Dust.NewDustPerfect(position + Main.rand.NextVector2Circular(6f, 6f), DustID.Smoke, direction * Main.rand.NextFloat(0.5f, 3f) + Main.rand.NextVector2Circular(1.5f, 1.5f), 120, default, Main.rand.NextFloat(1f, 1.6f));
+                smoke.noGravity = true;
+            }
+        }
+
         // The wrench starts back to the hand.
         public static void Retract(Vector2 position)
         {

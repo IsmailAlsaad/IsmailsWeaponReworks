@@ -15,7 +15,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
 
         public override void ModifyDrawInfo(ref PlayerDrawSet drawInfo)
         {
-            if (Player.HeldItem.type == ItemID.CombatWrench && Player.ownedProjectileCounts[ModContent.ProjectileType<CombatWrenchProjectile>()] > 0)
+            if (Player.HeldItem.type == ItemID.CombatWrench && (Player.ownedProjectileCounts[ModContent.ProjectileType<CombatWrenchProjectile>()] > 0
+                || Player.ownedProjectileCounts[ModContent.ProjectileType<CombatWrenchSwingProjectile>()] > 0))
                 drawInfo.heldItem = nothing;
         }
     }
