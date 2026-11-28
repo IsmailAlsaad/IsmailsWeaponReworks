@@ -6,6 +6,7 @@ using ReLogic.Content;
 using System;
 using System.IO;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -24,7 +25,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
     /// position, stops at blocks itself and catches its own copy, so no kill packet is needed. The rope, trail, sparks and sounds are
     /// visual: every machine builds its own, nothing is synced.
     /// </summary>
-    public class CombatWrenchProjectile : ModProjectile
+    public class CombatWrenchProjectile : ModProjectile, IBehindHandDrawer
     {
         // Vanilla art until a CombatWrenchProjectile.png exists next to this file.
         public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.CombatWrench;
@@ -69,6 +70,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         float reelStartDistance;   // how far from the player the enemy was when latched
         Vector2 heldCenter;        // where the held enemy is (it only moves through open air)
         Vector2 retractStart;      // where the wrench was when the Retract began
+        float retractStartRotation; // and how it was turned
         int reelTicks;             // how long the reel takes at ReelSpeedPx (worked out at the latch from the distance)
         int pickupDelay;           // ticks after the Snap until the enemy is PickupProgress of the way along its reel and the wrench is picked up
         bool swingSpawned;         // owner only: the heavy swing has been spawned
@@ -511,6 +513,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                     if (now == Phase.Retract)
                     {
                         retractStart = Projectile.Center;
+                        retractStartRotation = Projectile.rotation;
                         CombatWrenchFx.Retract(Projectile.Center);
                     }
                 }
@@ -562,23 +565,39 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                             Projectile.friendly = true;
                     }
                 }
-                else if (now == Phase.Retract)
-                {
-                    float u = MathHelper.Clamp((latchTicks - pickupTick) / (float)Math.Max(1, CombatWrenchTuning.RetractTicks), 0f, 1f);
-                    Projectile.Center = Vector2.Lerp(retractStart, hand, u * u);   // it accelerates into the hand
-                    PointAway();
-                }
                 else
                 {
-                    Projectile.Center = hand;
-                    Projectile.rotation = (npc.Center - owner.MountedCenter).ToRotation() - HeadAngleRad();
+                    // Picked up (Retract) and waiting for the swing (HandOver): the arm goes to the swing's starting angle FIRST, then the wrench
+                    // lerps straight into the swing's starting pose (in the grip, turned by SwingStartTiltDeg). It never sinks into the player,
+                    // and the swing begins exactly where it lands, so nothing pops.
+                    side = HeldAim.Facing(reelAngle);
+                    owner.ChangeDir(side);
+                    ApplyArm(owner, StartArm(owner));
+                    SwingStartPose(owner, out Vector2 poseCenter, out float poseRotation);
+                    if (now == Phase.Retract)
+                    {
+                        float u = MathHelper.Clamp((latchTicks - pickupTick) / (float)Math.Max(1, CombatWrenchTuning.RetractTicks), 0f, 1f);
+                        float eased = 1f - (1f - u) * (1f - u) * (1f - u);   // fast at first: it is "immediately" most of the way there
+                        Projectile.Center = Vector2.Lerp(retractStart, poseCenter, eased);
+                        Projectile.rotation = retractStartRotation + MathHelper.WrapAngle(poseRotation - retractStartRotation) * eased;
+                    }
+                    else
+                    {
+                        Projectile.Center = poseCenter;
+                        Projectile.rotation = poseRotation;
+                    }
                 }
             }
 
-            // The player faces the wrench's side (the held enemy's side once the wrench is in the hand); the arm points at the wrench.
-            Vector2 armAt = now == Phase.HandOver && npc != null ? npc.Center : Projectile.Center;
-            FaceToward(owner, armAt.X);
-            ApplyArm(owner, HeldAim.ToWorld(owner, (armAt - owner.MountedCenter).ToRotation()) - Tilt(owner));
+            // The player faces the wrench's side and the arm points at the wrench. (Once the wrench is picked up, the block above has already
+            // posed the arm for the swing's start.)
+            bool carried = npc != null && (now == Phase.Retract || now == Phase.HandOver);
+            if (!carried)
+            {
+                Vector2 armAt = Projectile.Center;
+                FaceToward(owner, armAt.X);
+                ApplyArm(owner, HeldAim.ToWorld(owner, (armAt - owner.MountedCenter).ToRotation()) - Tilt(owner));
+            }
 
             if (movable && !returning && npc != null)
             {
@@ -594,6 +613,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
                     Projectile.Kill();
                 }
             }
+        }
+
+        // The arm's target while the wrench is picked up and handed over: along the reel line (which follows the cursor), turned by SwingStartArmDeg.
+        float StartArm(Player owner)
+        {
+            int facing = HeldAim.Facing(reelAngle);
+            return HeldAim.ToWorld(owner, reelAngle) - Tilt(owner) + facing * MathHelper.ToRadians(CombatWrenchTuning.SwingStartArmDeg);
+        }
+
+        // Where the heavy swing starts its wrench (the same numbers as the swing's pose at tick 0): in the grip, the head along the arm turned by
+        // SwingStartTiltDeg. The arm must be posed first (armWorld and hand).
+        void SwingStartPose(Player owner, out Vector2 center, out float rotation)
+        {
+            int facing = HeldAim.Facing(reelAngle);
+            Vector2 blade = HeldSwordPose.BladeDirectionWorld(owner, armWorld + facing * MathHelper.ToRadians(CombatWrenchTuning.SwingStartTiltDeg)).RotatedBy(Tilt(owner));
+            center = hand + blade * CombatWrenchTuning.GripOffsetPx;
+            rotation = blade.ToRotation() - HeadAngleRad();
         }
 
         // Owner only: starts the heavy swing from the wrench's pose in the hand. ai[0] = the enemy's index plus 1, ai[1] = the world angle of the
@@ -743,10 +779,27 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
             rope.Draw(TextureAssets.MagicPixel.Value);
             trail?.Draw();
 
-            Texture2D texture = art?.Value ?? TextureAssets.Projectile[Type].Value;
-            Color light = Lighting.GetColor((int)(Projectile.Center.X / 16f), (int)(Projectile.Center.Y / 16f));
-            Main.EntitySpriteDraw(texture, Projectile.Center - Main.screenPosition, null, light, Projectile.rotation, texture.Size() * 0.5f, 1f, side < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0);
+            if (!BehindHand)
+            {
+                Texture2D texture = WrenchTexture();
+                Color light = Lighting.GetColor((int)(Projectile.Center.X / 16f), (int)(Projectile.Center.Y / 16f));
+                Main.EntitySpriteDraw(texture, Projectile.Center - Main.screenPosition, null, light, Projectile.rotation, texture.Size() * 0.5f, CombatWrenchTuning.SpriteScale, side < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0);
+            }
             return false;
+        }
+
+        // Once the wrench is picked up (Retract) and while it waits for the swing (HandOver) it is drawn inside the player's layers, behind the
+        // hand, like the swing's wrench; before that it is drawn here, over everything.
+        bool BehindHand => CurrentPhase == Phase.Retract || CurrentPhase == Phase.HandOver;
+
+        // Called by BehindHandLayer on every machine.
+        public void AddBehindHandDrawData(ref PlayerDrawSet drawInfo)
+        {
+            if (ticks == 0 || rope == null || !BehindHand)
+                return;
+            Texture2D texture = WrenchTexture();
+            Color light = Lighting.GetColor((int)(Projectile.Center.X / 16f), (int)(Projectile.Center.Y / 16f));
+            drawInfo.DrawDataCache.Add(new DrawData(texture, Projectile.Center - Main.screenPosition, null, light, Projectile.rotation, texture.Size() * 0.5f, CombatWrenchTuning.SpriteScale, side < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0));
         }
     }
 }

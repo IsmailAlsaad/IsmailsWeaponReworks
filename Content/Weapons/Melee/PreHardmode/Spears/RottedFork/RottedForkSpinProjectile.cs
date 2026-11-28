@@ -22,7 +22,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.RottedFo
     /// while spinning (the direction is synced like any player's). Other players' machines find the hits themselves and only show sparks
     /// (RemoteHitTracker); the damage is the owner's alone. Visual state is never synced.
     /// </summary>
-    public class RottedForkSpinProjectile : ModProjectile
+    public class RottedForkSpinProjectile : ModProjectile, IBehindHandDrawer
     {
         // The vanilla item sprite is the projectile sprite.
         public override string Texture => "Terraria/Images/Item_" + ItemID.TheRottedFork;
@@ -48,7 +48,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.RottedFo
         Vector2 prevTip2;
         SweepTrail trail;
         SweepTrail trail2;
-        Color lastLight = Color.White; // the light the last PreDraw saw, for the fork drawn by RottedForkSpinLayer
+        Color lastLight = Color.White; // the light the last PreDraw saw, for the fork drawn by BehindHandLayer
         RemoteHitTracker remoteHits; // created on first use: a field initializer here would be shared by every projectile of the type
 
         public override void SetDefaults()
@@ -228,13 +228,13 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Spears.RottedFo
         {
             trail?.Draw();
             trail2?.Draw();
-            lastLight = lightColor; // the fork itself is drawn by RottedForkSpinLayer, inside the player's layers (behind the hand)
+            lastLight = lightColor; // the fork itself is drawn by BehindHandLayer, inside the player's layers (behind the hand)
             return false;
         }
 
-        // Called by RottedForkSpinLayer on every machine: the two forks (and their glow copies) as player draw data, queued just before the
+        // Called by BehindHandLayer on every machine: the two forks (and their glow copies) as player draw data, queued just before the
         // player's front arm so the hand is drawn over the shaft.
-        public void AddForkDrawData(ref PlayerDrawSet drawInfo)
+        public void AddBehindHandDrawData(ref PlayerDrawSet drawInfo)
         {
             if (!hasPose)
                 return;

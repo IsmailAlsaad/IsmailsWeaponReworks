@@ -28,7 +28,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static float CollisionStepPx => 6f;             // it moves in pieces of at most this many pixels, each checked against blocks
 
         // ---- CONTACT (W2: the head or the string touches an enemy, and the wrench snaps onto it) ----
-        public static float HeadReachPx => 12f;               // from the sprite's center to the tip of the head (the head is pinned to the contact point)
+        public static float HeadReachPx => 12f * SpriteScale;  // from the sprite's center to the tip of the head (the head is pinned to the contact point); 12 px at scale 1
         public static float HeadHitWidthPx => 16f;            // how thick the head's touch test is (swept from the center to the tip)
         public static float RopeHitWidthPx => 8f;             // how thick the string's touch test is (swept from the hand to the butt)
         public static float MaxHoldSize => 120f;              // an enemy wider or taller than this counts as immovable (like a boss)
@@ -54,16 +54,22 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static int StrikeSparkCount => 12;
 
         // ---- SWING (W4: the heavy swing on the reeled-in enemy; a held pose, every machine runs it from the ticks since the swing began) ----
-        public static int WindupTicks => 14;                   // the arm goes back and up (and the wrench grows into the hand's grip)
+        public static int WindupTicks => 0;                   // the arm goes back and up (and the wrench grows into the hand's grip)
         public static int StrikeTicks => 7;                    // the fast overhead-to-forward hammer arc; the hit lands where the arm crosses the line to the enemy
         public static int RecoverTicks => 24;                  // W4 placeholder: the arm eases down to RestArmDeg and the swing ends (W5 replaces it with the vibration and the settle)
         public static float ArmStartDeg => 125f;               // wind-up pose: the arm is this many degrees back and up from the line to the enemy
         public static float ArmEndDeg => 40f;                  // follow-through: the arm ends this many degrees past the line to the enemy (downward)
         public static float RestArmDeg => 55f;                 // after the strike the arm eases down to this angle below the line to the enemy
         public static float StrikeEasePower => 2.2f;           // the strike speeds up into the hit: progress = t ^ this (1 = constant speed)
-        public static float WindupTiltDeg => 55f;              // the head leans this far past the arm during the wind-up (over the shoulder) and straightens along the arm in the strike
-        public static float GripOffsetPx => 10f;               // how far from the hand the wrench's center sits along the swing (10 = the butt in the hand, like RopeAttachPx; more and the wrench floats in front of the hand)
+        public static float SwingStartTiltDeg => -60f;           // the wrench's angle offset from the arm when the swing begins: the pose the picked-up wrench flies into (positive = the head turns toward the enemy side / downward, like the arm angles; negative = the other way)
+        public static float WindupTiltDeg => 55f;              // the offset at the end of the wind-up (the head leans over the shoulder); the wind-up eases from SwingStartTiltDeg to this
+        public static float SwingEndTiltDeg => 0f;             // the offset at the end of the strike (the follow-through); the strike eases from WindupTiltDeg to this, and it stays there afterwards
+        public static float SwingStartArmDeg => 0f;            // the arm's angle when the swing begins, relative to the line to the enemy (0 = pointing at it, negative = raised back and up, positive = down): the arm eases to it while the wrench is picked up
+        public static float GripOffsetPx => 10f * SpriteScale; // how far from the hand the wrench's center sits along the swing (10 at scale 1 = the butt in the hand, like RopeAttachPx; more and the wrench floats in front of the hand)
         public static float SwingApproachDecay => 0.85f;       // while the swing winds up, an enemy that is still coming slows from the reel speed toward the speed that makes it arrive exactly on the hit tick: 1 = keeps the reel speed as long as it can, lower = slows sooner
+
+        // ---- SPRITE ----
+        public static float SpriteScale => 1.2f;                 // the wrench sprite's scale, thrown and in the swing. HeadReachPx, RopeAttachPx and GripOffsetPx are written for scale 1 and grow with it; the touch widths do not
 
         // ---- FACING ----
         public static float FaceDeadzonePx => 6f;             // the player always faces the wrench's side; closer to the player than this the facing is kept
@@ -88,7 +94,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static Color RopeOutlineColor => new Color(109, 13, 15);      // placeholder
         public static float RopeWidth => 1.8f;
         public static float RopeOutlineWidth => 3.2f;
-        public static float RopeAttachPx => 10f;               // how far from the sprite's center the butt is (where the string is tied)
+        public static float RopeAttachPx => 10f * SpriteScale; // how far from the sprite's center the butt is (where the string is tied); 10 px at scale 1
         public static float HeadAngleDeg => -45f;              // the direction of the wrench HEAD from the sprite's center when the rotation is 0 (the vanilla sprite points up-right = -45); the butt (where the string is tied) is the opposite end. Change it if the head points the wrong way
         public static int RopePoints => 16;                    // points along the string (more = smoother and a bit slower)
         public static float RopeSlackFactor => 1.015f;         // while Out: the string is this much longer than the distance hand to wrench
@@ -114,7 +120,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         public static float TrailOuter => 1.15f;               // the fan's outer edge as a fraction of the hand-to-head length (1 = the head's tip)
         public static float TrailInner => 0.15f;               // the inner edge once the fan is fully open (0 = at the hand)
         public static float TrailExpandBy => 0.8f;             // the fan is fully open this far (0..1) into the strike
-        public static float TrailLagTicks => 0.8f;             // how many ticks the trail runs behind the sprite (0 = exactly on it)
+        public static float TrailLagTicks => 0f;             // how many ticks the trail runs behind the sprite (0 = exactly on it)
         public static int TrailLifeTicks => 20;                // how long a point of the fan lasts
         public static int TrailRails => 7;                     // parallel pixel lines that fill the fan
         public static int TrailSamplesPerTick => 8;            // fan points laid per tick (the strike is fast, so many keep it smooth)

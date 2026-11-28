@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -24,7 +25,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
     /// (the projectile is damaging for the hit tick and the one after it, and only the held enemy can be hit). The launch velocity is set by the
     /// server (or single player) on the hit tick, the way the Rotted Fork flings its impaled enemy, so no custom packets.
     /// </summary>
-    public class CombatWrenchSwingProjectile : ModProjectile
+    public class CombatWrenchSwingProjectile : ModProjectile, IBehindHandDrawer
     {
         // Vanilla art until a CombatWrenchProjectile.png exists (the same sprite the thrown wrench uses).
         public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.CombatWrench;
@@ -100,19 +101,20 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
         static float TiltAt(float time)
         {
             int windup = Math.Max(1, CombatWrenchTuning.WindupTicks);
+            float start = Rad(CombatWrenchTuning.SwingStartTiltDeg);
             float lean = Rad(CombatWrenchTuning.WindupTiltDeg);
+            float end = Rad(CombatWrenchTuning.SwingEndTiltDeg);
             if (time < windup)
-                return MathHelper.Lerp(0f, lean, MathHelper.SmoothStep(0f, 1f, time / windup));
+                return MathHelper.Lerp(start, lean, MathHelper.SmoothStep(0f, 1f, time / windup));
             if (time <= StrikeEnd)
-                return MathHelper.Lerp(lean, 0f, StrikeProgress(time));
-            return 0f;
+                return MathHelper.Lerp(lean, end, StrikeProgress(time));
+            return end;
         }
 
         // The wrench grows into the grip during the wind-up (at the hand-over its center is at the hand).
         static float GripAt(float time)
         {
-            int windup = Math.Max(1, CombatWrenchTuning.WindupTicks);
-            return CombatWrenchTuning.GripOffsetPx * MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp(time / windup, 0f, 1f));
+            return CombatWrenchTuning.GripOffsetPx;   // already in the grip when the swing begins (the picked-up wrench flew straight into this pose)
         }
 
         // ---- pose ----
@@ -366,18 +368,27 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Boomerangs.Comb
 
             trail?.Draw();
 
+            // the wrench sprite itself is drawn by BehindHandLayer (AddBehindHandDrawData), so the hand is drawn over it
+
+            if (CombatWrenchTuning.ShowHitboxDebug)
+                DrawDebug();
+            return false;
+        }
+
+        // Called by BehindHandLayer on every machine: the wrench (and its white flash after the hit) as player draw data, just before the front arm.
+        public void AddBehindHandDrawData(ref PlayerDrawSet drawInfo)
+        {
+            if (ticks == 0)
+                return; // not posed yet (the first tick has not run)
             Texture2D texture = CombatWrenchProjectile.WrenchTexture();
             Color light = Lighting.GetColor((int)(Projectile.Center.X / 16f), (int)(Projectile.Center.Y / 16f));
             SpriteEffects effects = Facing < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
             Vector2 position = Projectile.Center - Main.screenPosition;
             Vector2 origin = texture.Size() * 0.5f;
-            Main.EntitySpriteDraw(texture, position, null, light, Projectile.rotation, origin, 1f, effects, 0);
+            float scale = CombatWrenchTuning.SpriteScale;
+            drawInfo.DrawDataCache.Add(new DrawData(texture, position, null, light, Projectile.rotation, origin, scale, effects, 0));
             if (flash > 0.01f)
-                Main.EntitySpriteDraw(texture, position, null, Color.White * (0.6f * flash), Projectile.rotation, origin, 1f + 0.25f * flash, effects, 0);
-
-            if (CombatWrenchTuning.ShowHitboxDebug)
-                DrawDebug();
-            return false;
+                drawInfo.DrawDataCache.Add(new DrawData(texture, position, null, Color.White * (0.6f * flash), Projectile.rotation, origin, scale * (1f + 0.25f * flash), effects, 0));
         }
 
         // CombatWrenchTuning.ShowHitboxDebug: a magenta line from the hand to the head's tip and a cyan dot at the stop point.

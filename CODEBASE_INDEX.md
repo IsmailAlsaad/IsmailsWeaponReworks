@@ -1,5 +1,5 @@
 # CODEBASE INDEX - IsmailsWeaponReworks
-generated 2026-11-28 | 421 .cs files | regenerate: `python index_codebase.py` (project root)
+generated 2026-11-28 | 422 .cs files | regenerate: `python index_codebase.py` (project root)
 
 Legend: `+` public `#` protected `~` internal | s=static ab=abstract v=virtual ov=override c=const | `Name(Types)` method, `Name:Type` field/prop | `uses:` other project types used in file | `ns!=X` namespace differs from folder path (matters for `using`) | no line numbers: grep the name | private members and SetDefaults/SetStaticDefaults omitted
 
@@ -23,6 +23,7 @@ Project bases -> derived:
 - HeldIdleSwordProjectile: BeeKeeperIdleProjectile, IceBladeIdleProjectile, PhasebladeIdleProjectile, StarfuryIdleProjectile
 - HeldSpearProjectile: SpearThrustProjectile, StormSpearThrustProjectile, SwordfishThrustProjectile, TridentThrustProjectile
 - IAroundTheWorldTuning: AroundTheWorldDefaults, HiveFiveTuning, ValorTuning
+- IBehindHandDrawer: CombatWrenchProjectile, CombatWrenchSwingProjectile, RottedForkSpinProjectile
 - IChargeOutlineTuning: CascadeTuning, HiveFiveTuning
 - IChargedBladeTuning: BladeOfGrassBladeTune, CandyCaneSwordBladeTune, LightsBaneBladeTune, NightsEdgeBladeTune, OreSwordBladeTune, WoodenSwordBladeTune
 - IDrawnBehindCarried: ChargedBladeProjectile
@@ -56,7 +57,7 @@ tModLoader/other bases -> project types:
 - GlobalNPC (6): AmazonSnareNPC, ArteryBleedNPC, BloodButchererGripNPC, CarriedNPC, KatanaHitStopNPC, NpcHold
 - ModSystem (6): DetachedFlares, DetachedTrails, HeldIdleSwordSystem, MetaballLayers, ReworkRegistry, YoyoRegistry
 - ModBuff (4): GrapeBuff, LightsBaneImbueBuff, NightsEdgeShadowArmorBuff, SugarRushBuff
-- PlayerDrawLayer (2): BladeOfGrassVineLayer, RottedForkSpinLayer
+- PlayerDrawLayer (3): BehindHandLayer, BladeOfGrassVineLayer, RottedForkSpinLayer
 - ConfigElement (1): ReworkGridElement
 - Mod (1): IsmailsWeaponReworks
 - ModCommand (1): GiveWeaponsCommand
@@ -87,6 +88,11 @@ tModLoader/other bases -> project types:
 **AreaEffect.cs**
   static class AreaEffect
     +ForEachNpc(Vector2,float,Action<NPC>)[s] +ApplyBuff(Vector2,float,int,int)[s]
+**BehindHandLayer.cs**
+  interface IBehindHandDrawer
+    +AddBehindHandDrawData(ref PlayerDrawSet)
+  class BehindHandLayer : PlayerDrawLayer
+    +GetDefaultPosition()[ov] +GetDefaultVisibility(PlayerDrawSet)[ov] #Draw(ref PlayerDrawSet)[ov]
 **BoomerangFlight.cs**
   static class BoomerangFlight
     +StepReturn(Projectile,Player,float,float,float,float)[s] +StepForceReturn(Projectile,Player,float,float,float,float)[s] +StepOutbound(Projectile,float,float,float,float)[s]
@@ -373,23 +379,23 @@ tModLoader/other bases -> project types:
 **CombatWrenchGlobalItem.cs** uses: CombatWrenchProjectile, CombatWrenchSwingProjectile, ReworkToggle
   class CombatWrenchGlobalItem : GlobalItem
     +AppliesToEntity(Item,bool)[ov] +CanUseItem(Item,Player)[ov] +Shoot(Item,Player,EntitySource_ItemUse_WithAmmo,Vector2,Vector2,int,int,float)[ov] +ModifyTooltips(Item,List<TooltipLine>)[ov]
-**CombatWrenchProjectile.cs** uses: CarriedNPC, CombatWrenchFx, CombatWrenchRopeLook, CombatWrenchSwingProjectile, CombatWrenchTrailStyle, CombatWrenchTuning, DetachedTrails, EllipsePath, HeldAim, HeldSwordPose, PixelTrail, SegmentHit, Snarable, VerletRope
-  class CombatWrenchProjectile : ModProjectile
-    +Texture:string[ov] +CurrentPhase:Phase +Load()[ov] +Unload()[ov] +WrenchTexture()[s] +CanDamage()[ov] +CanHitNPC(NPC)[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +AI()[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**CombatWrenchProjectile.cs** uses: CarriedNPC, CombatWrenchFx, CombatWrenchRopeLook, CombatWrenchSwingProjectile, CombatWrenchTrailStyle, CombatWrenchTuning, DetachedTrails, EllipsePath, HeldAim, HeldSwordPose, IBehindHandDrawer, PixelTrail, SegmentHit, Snarable, VerletRope
+  class CombatWrenchProjectile : ModProjectile, IBehindHandDrawer
+    +Texture:string[ov] +CurrentPhase:Phase +Load()[ov] +Unload()[ov] +WrenchTexture()[s] +CanDamage()[ov] +CanHitNPC(NPC)[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +AI()[ov] +SendExtraAI(BinaryWriter)[ov] +ReceiveExtraAI(BinaryReader)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov] +AddBehindHandDrawData(ref PlayerDrawSet)
     enum Phase
       {Out, Back, Snap, Reel, Retract, HandOver, Return}
 **CombatWrenchSweepTrailStyle.cs** uses: CombatWrenchTuning, SweepFade, SweepTrailStyle
   class CombatWrenchSweepTrailStyle : SweepTrailStyle
     +Grid:float[ov] +LifeTicks:int[ov] +Rails:int[ov] +Fade:SweepFade[ov] +TailLifeScale:float[ov] +GetColor(float,float)[ov]
-**CombatWrenchSwingProjectile.cs** uses: CarriedNPC, CombatWrenchFx, CombatWrenchProjectile, CombatWrenchSweepTrailStyle, CombatWrenchTuning, DetachedTrails, HeldAim, HeldSwordPose, PixelFan, SweepTrail
-  class CombatWrenchSwingProjectile : ModProjectile
-    +Texture:string[ov] +Started:bool +AI()[ov] +CanDamage()[ov] +CanHitNPC(NPC)[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov]
+**CombatWrenchSwingProjectile.cs** uses: CarriedNPC, CombatWrenchFx, CombatWrenchProjectile, CombatWrenchSweepTrailStyle, CombatWrenchTuning, DetachedTrails, HeldAim, HeldSwordPose, IBehindHandDrawer, PixelFan, SweepTrail
+  class CombatWrenchSwingProjectile : ModProjectile, IBehindHandDrawer
+    +Texture:string[ov] +Started:bool +AI()[ov] +CanDamage()[ov] +CanHitNPC(NPC)[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov] +AddBehindHandDrawData(ref PlayerDrawSet)
 **CombatWrenchTrailStyle.cs** uses: CombatWrenchTuning, PixelTrailStyle
   class CombatWrenchTrailStyle : PixelTrailStyle
     +Grid:float[ov] +LifeTicks:int[ov] +Layers:int[ov] +Jitter:float[ov] +GetWidth(int,float)[ov] +GetColor(int,float)[ov]
 **CombatWrenchTuning.cs** uses: IRopeLook
   static class CombatWrenchTuning
-    +HitDamageMultiplier:float[s] +LaunchSpeed:float[s] +LaunchLift:float[s] +RopeLengthPx:float[s] +ReachMarginPx:float[s] +PassTicks:int[s] +PassWidthRatio:float[s] +PassEase:float[s] +SpinPerTick:float[s] +ThroughPlatforms:bool[s] +MaxDistancePx:float[s] +HitboxSize:int[s] +CollisionStepPx:float[s] +HeadReachPx:float[s] +HeadHitWidthPx:float[s] +RopeHitWidthPx:float[s] +MaxHoldSize:float[s] +SnapTicks:int[s] +ReelSpeedPx:float[s] +MinReelTicks:int[s] +PickupProgress:float[s] +ReelAimTurnRad:float[s] +ReelAimMinDistancePx:float[s] +ReelAimSyncDelta:float[s] +SwingDistancePx:float[s] +RetractTicks:int[s] +HandOverHoldTicks:int[s] +StrainDragFraction:float[s] +StrainDragTicks:int[s] +StrikeShake:float[s] +StrikeSparkCount:int[s] +WindupTicks:int[s] +StrikeTicks:int[s] +RecoverTicks:int[s] +ArmStartDeg:float[s] +ArmEndDeg:float[s] +RestArmDeg:float[s] +StrikeEasePower:float[s] +WindupTiltDeg:float[s] +GripOffsetPx:float[s] +SwingApproachDecay:float[s] +FaceDeadzonePx:float[s] +ReturnStartSpeed:float[s] +ReturnAccel:float[s] +ReturnMaxSpeed:float[s] +CatchDistancePx:float[s] +PointFollow:float[s] +ArmFollow:float[s] +ThrowArmStartDeg:float[s] +ThrowArmBlendTicks:int[s] +CatchArmDeg:float[s] +CatchArmBlendDistance:float[s] +RopeColor:Color[s] +RopeAltColor:Color[s] +RopeOutlineColor:Color[s] +RopeWidth:float[s] +RopeOutlineWidth:float[s] +RopeAttachPx:float[s] +HeadAngleDeg:float[s] +RopePoints:int[s] +RopeSlackFactor:float[s] +RopeExtraSlack:float[s] +RopeGravity:float[s] +RopeTightenSpeed:float[s] +RopeMinLength:float[s] +RopeDamping:float[s] +RopeIterations:int[s] +RopeCollides:bool[s] +RopeSubdivisions:int[s] +RopeStripePieces:int[s] +ThrowTrailGrid:float[s] +ThrowTrailLifeTicks:int[s] +ThrowTrailWidth:float[s] +ThrowTrailJitter:float[s] +ThrowTrailOuterColor:Color[s] +ThrowTrailInnerColor:Color[s] +TrailOuter:float[s] +TrailInner:float[s] +TrailExpandBy:float[s] +TrailLagTicks:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailSamplesPerTick:int[s] +TrailPixelSize:float[s] +TrailOpacity:float[s] +TrailTailLifeScale:float[s] +TrailOuterColor:Color[s] +TrailInnerColor:Color[s] +FlightSparkChance:float[s] +ThrowSparkCount:int[s] +ImpactSparkCount:int[s] +CatchSparkCount:int[s] +SnapSparkCount:int[s] +HitShake:float[s] +HitSparkCount:int[s] +HitSmokeCount:int[s] +HitSoundVolume:float[s] +ShowHitboxDebug:bool[s]
+    +HitDamageMultiplier:float[s] +LaunchSpeed:float[s] +LaunchLift:float[s] +RopeLengthPx:float[s] +ReachMarginPx:float[s] +PassTicks:int[s] +PassWidthRatio:float[s] +PassEase:float[s] +SpinPerTick:float[s] +ThroughPlatforms:bool[s] +MaxDistancePx:float[s] +HitboxSize:int[s] +CollisionStepPx:float[s] +HeadReachPx:float[s] +HeadHitWidthPx:float[s] +RopeHitWidthPx:float[s] +MaxHoldSize:float[s] +SnapTicks:int[s] +ReelSpeedPx:float[s] +MinReelTicks:int[s] +PickupProgress:float[s] +ReelAimTurnRad:float[s] +ReelAimMinDistancePx:float[s] +ReelAimSyncDelta:float[s] +SwingDistancePx:float[s] +RetractTicks:int[s] +HandOverHoldTicks:int[s] +StrainDragFraction:float[s] +StrainDragTicks:int[s] +StrikeShake:float[s] +StrikeSparkCount:int[s] +WindupTicks:int[s] +StrikeTicks:int[s] +RecoverTicks:int[s] +ArmStartDeg:float[s] +ArmEndDeg:float[s] +RestArmDeg:float[s] +StrikeEasePower:float[s] +SwingStartTiltDeg:float[s] +WindupTiltDeg:float[s] +SwingEndTiltDeg:float[s] +SwingStartArmDeg:float[s] +GripOffsetPx:float[s] +SwingApproachDecay:float[s] +SpriteScale:float[s] +FaceDeadzonePx:float[s] +ReturnStartSpeed:float[s] +ReturnAccel:float[s] +ReturnMaxSpeed:float[s] +CatchDistancePx:float[s] +PointFollow:float[s] +ArmFollow:float[s] +ThrowArmStartDeg:float[s] +ThrowArmBlendTicks:int[s] +CatchArmDeg:float[s] +CatchArmBlendDistance:float[s] +RopeColor:Color[s] +RopeAltColor:Color[s] +RopeOutlineColor:Color[s] +RopeWidth:float[s] +RopeOutlineWidth:float[s] +RopeAttachPx:float[s] +HeadAngleDeg:float[s] +RopePoints:int[s] +RopeSlackFactor:float[s] +RopeExtraSlack:float[s] +RopeGravity:float[s] +RopeTightenSpeed:float[s] +RopeMinLength:float[s] +RopeDamping:float[s] +RopeIterations:int[s] +RopeCollides:bool[s] +RopeSubdivisions:int[s] +RopeStripePieces:int[s] +ThrowTrailGrid:float[s] +ThrowTrailLifeTicks:int[s] +ThrowTrailWidth:float[s] +ThrowTrailJitter:float[s] +ThrowTrailOuterColor:Color[s] +ThrowTrailInnerColor:Color[s] +TrailOuter:float[s] +TrailInner:float[s] +TrailExpandBy:float[s] +TrailLagTicks:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailSamplesPerTick:int[s] +TrailPixelSize:float[s] +TrailOpacity:float[s] +TrailTailLifeScale:float[s] +TrailOuterColor:Color[s] +TrailInnerColor:Color[s] +FlightSparkChance:float[s] +ThrowSparkCount:int[s] +ImpactSparkCount:int[s] +CatchSparkCount:int[s] +SnapSparkCount:int[s] +HitShake:float[s] +HitSparkCount:int[s] +HitSmokeCount:int[s] +HitSoundVolume:float[s] +ShowHitboxDebug:bool[s]
   class CombatWrenchRopeLook : IRopeLook
     +RopePoints:int +RopeMinLength:float +RopeDamping:float +RopeIterations:int +RopeCollides:bool +RopeSubdivisions:int +RopeStripePieces:int +RopeWidth:float +RopeOutlineWidth:float +RopeColor:Color +RopeAltColor:Color +RopeOutlineColor:Color
 
@@ -1259,9 +1265,9 @@ tModLoader/other bases -> project types:
 **RottedForkSpinLayer.cs** uses: RottedForkSpinProjectile
   class RottedForkSpinLayer : PlayerDrawLayer
     +GetDefaultPosition()[ov] +GetDefaultVisibility(PlayerDrawSet)[ov] #Draw(ref PlayerDrawSet)[ov]
-**RottedForkSpinProjectile.cs** uses: DetachedTrails, HeldAim, RemoteHitTracker, RottedForkFx, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
-  class RottedForkSpinProjectile : ModProjectile
-    +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov] +AddForkDrawData(ref PlayerDrawSet)
+**RottedForkSpinProjectile.cs** uses: DetachedTrails, HeldAim, IBehindHandDrawer, RemoteHitTracker, RottedForkFx, RottedForkTuning, SegmentHit, SpearPose, SweepTrail, ThrustFx, ThrustPalette, ThrustPlayer, ThrustTrailStyle
+  class RottedForkSpinProjectile : ModProjectile, IBehindHandDrawer
+    +Texture:string[ov] +AI()[ov] +Colliding(Rectangle,Rectangle)[ov] +ModifyHitNPC(NPC,ref HitModifiers)[ov] +OnHitNPC(NPC,HitInfo,int)[ov] +OnKill(int)[ov] +PreDraw(ref Color)[ov] +AddBehindHandDrawData(ref PlayerDrawSet)
 **RottedForkTuning.cs** uses: ThrustPalette
   static class RottedForkTuning
     +SpinSpeed:float[s] +RampTicks:int[s] +StartSpeedFraction:float[s] +WindDownTicks:int[s] +MinSpinTicks:int[s] +CooldownTicks:int[s] +DamageMultiplier:float[s] +HitCooldownTicks:int[s] +MinHitSpeed:float[s] +HitStart:float[s] +HitEnd:float[s] +HitWidth:float[s] +SpearScale:float[s] +JointOffset:float[s] +JavelinSpeed:float[s] +JavelinLifeTicks:int[s] +JavelinDamageMultiplier:float[s] +JavelinHitWidth:float[s] +JavelinCooldownTicks:int[s] +MaxImpaled:int[s] +MaxCarrySize:float[s] +CarryFollow:float[s] +CarryFrontGap:float[s] +CarryGap:float[s] +BlastRadius:float[s] +BlastDamageMultiplier:float[s] +CarriedBlastMultiplier:float[s] +BlastKnockback:float[s] +CarriedKnockback:float[s] +BlastShake:float[s] +TrailLifeTicks:int[s] +TrailRails:int[s] +TrailOpacity:float[s] +TrailInnerFraction:float[s] +TrailOuter:float[s] +TrailLagTicks:float[s] +PixelSize:float[s] +JavelinTrailWidth:float[s] +JavelinTrailAlong:float[s] +JavelinTrailAcross:float[s] +Palette:ThrustPalette[s]
