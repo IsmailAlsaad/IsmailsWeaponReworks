@@ -55,14 +55,19 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             return kind == CandyKind.Green || kind == CandyKind.Yellow;
         }
 
-        // Owner's client: a random kind, every enabled kind equally likely.
-        public static CandyKind Pick()
+        // Owner's client: the kind of a new candy. Green (the heal) gets likelier the lower the owner's health is: GreenChanceFullHealth at full health,
+        // GreenChanceNoHealth at none, linear between. The other enabled kinds share the rest equally.
+        public static CandyKind Pick(Player owner)
         {
-            int count = CandyCaneSwordTuning.BlueEnabled ? 4 : 3;
-            int roll = Main.rand.Next(count);
-            if (!CandyCaneSwordTuning.BlueEnabled && roll >= (int)CandyKind.Blue)
-                roll++; // skip blue
-            return (CandyKind)roll;
+            float health = owner.statLifeMax2 > 0 ? MathHelper.Clamp(owner.statLife / (float)owner.statLifeMax2, 0f, 1f) : 1f;
+            float green = MathHelper.Lerp(CandyCaneSwordTuning.GreenChanceNoHealth, CandyCaneSwordTuning.GreenChanceFullHealth, health);
+            if (Main.rand.NextFloat() < green)
+                return CandyKind.Green;
+
+            int roll = Main.rand.Next(CandyCaneSwordTuning.BlueEnabled ? 3 : 2); // red, yellow, (blue)
+            if (roll == 0)
+                return CandyKind.Red;
+            return roll == 1 ? CandyKind.Yellow : CandyKind.Blue;
         }
     }
 }

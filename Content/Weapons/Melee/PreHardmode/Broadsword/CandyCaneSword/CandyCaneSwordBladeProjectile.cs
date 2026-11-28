@@ -93,8 +93,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             Vector2 tip = hand + Projectile.rotation.ToRotationVector2() * (Tune.BladeLength * Projectile.scale * Tune.HitLengthScale);
             Vector2 point = Contact.EntryPoint(hand, tip, target.Hitbox);
             CandyCaneSwordPlayer state = owner.GetModPlayer<CandyCaneSwordPlayer>();
-            CandyProjectile.SpawnOne(Projectile.GetSource_FromThis(), owner, point, damage, state.NextCandy);
-            state.NextCandy = CandyKinds.Pick(); // rolls again: the sword, its trail and its sparks take the new color
+            CandyProjectile.SpawnOne(Projectile.GetSource_FromThis(), owner, point, damage, state.NextCandy, target.whoAmI);
+            state.NextCandy = CandyKinds.Pick(owner); // rolls again: the sword, its trail and its sparks take the new color
         }
     }
 }

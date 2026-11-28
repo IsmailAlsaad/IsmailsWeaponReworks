@@ -13,6 +13,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
     public static class CandyCaneSwordFx
     {
         // Ismail's sheet: 5 columns x 8 rows of 40 x 40 cells (no extension). Until it exists a colored square is drawn instead.
+        // Ismail's sounds: CandyBreak1-3, CandyPickup and CandyExplode (no extension).
+        public static string SoundFolder => "IsmailsWeaponReworks/Assets/Sounds/Candy/";
+
         public static string SheetPath => "IsmailsWeaponReworks/Content/Weapons/Melee/PreHardmode/Broadsword/CandyCaneSword/Candy";
 
         // ---- sounds ----
@@ -67,7 +70,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             if (Main.dedServ)
                 return;
             Burst(position, kind, CandyCaneSwordTuning.BreakDustCount, 3f, 1f);
-            SoundEngine.PlaySound(SoundID.Item27 with { Volume = CandyCaneSwordTuning.BreakSoundVolume, Pitch = 0.5f, PitchVariance = 0.2f, MaxInstances = 3 }, position);
+            SoundEngine.PlaySound(new SoundStyle(SoundFolder + "CandyBreak", 1, 3) { Volume = CandyCaneSwordTuning.BreakSoundVolume, PitchVariance = 0.15f, MaxInstances = 3 }, position);
         }
 
         // A green or yellow candy is picked up (every machine sees the candy vanish).
@@ -76,10 +79,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             if (Main.dedServ)
                 return;
             Burst(position, kind, CandyCaneSwordTuning.PickupDustCount, 3.5f, 1.1f);
-            if (kind == CandyKind.Yellow)
-                SoundEngine.PlaySound(SoundID.Item29 with { Volume = CandyCaneSwordTuning.PickupSoundVolume, Pitch = 0.5f, PitchVariance = 0.1f, MaxInstances = 2 }, position);
-            else
-                SoundEngine.PlaySound(SoundID.Grab with { Volume = CandyCaneSwordTuning.PickupSoundVolume, Pitch = 0.3f, PitchVariance = 0.1f, MaxInstances = 2 }, position);
+            SoundEngine.PlaySound(new SoundStyle(SoundFolder + "CandyPickup") { Volume = CandyCaneSwordTuning.PickupSoundVolume, Pitch = kind == CandyKind.Yellow ? 0.2f : 0f, PitchVariance = 0.1f, MaxInstances = 2 }, position);
         }
 
         // A red candy goes off.
@@ -98,7 +98,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
                 Dust smoke = Dust.NewDustPerfect(position + Main.rand.NextVector2Circular(8f, 8f), DustID.Smoke, Main.rand.NextVector2Circular(2f, 2f), 120, default, Main.rand.NextFloat(0.8f, 1.2f));
                 smoke.noGravity = true;
             }
-            SoundEngine.PlaySound(SoundID.Item14 with { Volume = CandyCaneSwordTuning.BlastSoundVolume, Pitch = 0.5f, PitchVariance = 0.15f, MaxInstances = 3 }, position);
+            SoundEngine.PlaySound(new SoundStyle(SoundFolder + "CandyExplode") { Volume = CandyCaneSwordTuning.BlastSoundVolume, PitchVariance = 0.1f, MaxInstances = 3 }, position);
             CameraShake.Punch(position, CandyCaneSwordTuning.RedBlastShake, 10);
         }
 

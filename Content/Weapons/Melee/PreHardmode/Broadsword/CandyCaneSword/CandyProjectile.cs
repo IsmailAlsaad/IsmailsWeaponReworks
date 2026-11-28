@@ -15,7 +15,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
     /// One candy (all kinds are this one projectile). ai[0] = the kind (CandyKind), ai[1] = the style (0..9: row * 5 + column inside the kind's two rows
     /// of Candy.png), ai[2] = 0 normal, 1 = "break now" (the owner pushed it out because of the cap or the enemy it hung on was pushed out; every machine sees it and breaks it), 2 = blue stuck to a block, 3 + n = blue stuck to enemy n (the velocity then holds the offset from the enemy's center).
     /// Red: falls and goes off in a small AoE (CandyBlastProjectile) when it touches a block. Green: waits on the ground, drifts to a player and heals
-    /// him 5. Yellow: the same, but gives Sugar Rush (+2 s each, max 10 s). Blue: sticks to the first enemy it touches (after a short delay) or to a block, and an enemy that touches a block-stuck one takes it; stuck to an enemy it hurts it every BlueHitIntervalTicks for BlueDamageMultiplier of the sword's damage (up to BlueMaxPerEnemy per player on one enemy, the oldest comes off). Every candy breaks when its lifetime runs out (it blinks first).
+    /// him 5. Yellow: the same, but gives Sugar Rush (+2 s each, max 10 s). Blue: sticks to the first enemy it touches (after a short delay) or to a block, and an enemy that touches a block-stuck one takes it; stuck to an enemy it hurts it every BlueHitIntervalTicks for BlueDamageMultiplier of the sword's damage (up to BlueMaxPerEnemy per player on one enemy, the oldest comes off). Every candy breaks when its lifetime runs out.
     /// MULTIPLAYER: the owner's client decides what spawns (kind, style, velocity, the cap). Every machine runs the same physics and the same timers
     /// (a bounce or settle is corrected by the owner's netUpdate) and draws the same look from ai. ANY player can pick up a green or yellow candy:
     /// that player's client asks the server (CandyPickup.Request), the server claims the candy once and tells everybody (CandyPickup grant packet), and only
@@ -41,6 +41,9 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
 
         /// <summary>The server (or singleplayer) has given this candy to a player; nobody else can take it.</summary>
         public bool Claimed;
+
+        /// <summary>Owner's machine only: the enemy this candy popped out of (-1 = none). A blue candy ignores it for BlueSourceIgnoreTicks so it does not stick right back.</summary>
+        public int SourceNpc = -1;
 
         public CandyKind Kind => (CandyKind)Math.Clamp((int)Projectile.ai[0], 0, 3);
 
@@ -94,19 +97,21 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             }
         }
 
-        static void Spawn(IEntitySource source, Player owner, Vector2 position, Vector2 velocity, int damage, CandyKind kind)
+        static void Spawn(IEntitySource source, Player owner, Vector2 position, Vector2 velocity, int damage, CandyKind kind, int sourceNpc = -1)
         {
             int style = Main.rand.Next(Math.Max(1, CandyCaneSwordTuning.StyleCount));
-            Projectile.NewProjectile(source, position, velocity, ModContent.ProjectileType<CandyProjectile>(), damage, 0f, owner.whoAmI, (float)kind, style, 0f);
+            int index = Projectile.NewProjectile(source, position, velocity, ModContent.ProjectileType<CandyProjectile>(), damage, 0f, owner.whoAmI, (float)kind, style, 0f);
+            if (index >= 0 && index < Main.maxProjectiles && Main.projectile[index].ModProjectile is CandyProjectile candy)
+                candy.SourceNpc = sourceNpc;
         }
 
         // Owner's client: one candy of color 'kind' pops up out of the enemy.
-        public static void SpawnOne(IEntitySource source, Player owner, Vector2 position, int damage, CandyKind kind)
+        public static void SpawnOne(IEntitySource source, Player owner, Vector2 position, int damage, CandyKind kind, int sourceNpc)
         {
             EnforceCap(owner, 1);
             Vector2 velocity = new Vector2(Main.rand.NextFloat(-CandyCaneSwordTuning.PopSideSpeed, CandyCaneSwordTuning.PopSideSpeed),
                 -Main.rand.NextFloat(CandyCaneSwordTuning.PopSpeedMin, CandyCaneSwordTuning.PopSpeedMax));
-            Spawn(source, owner, position, velocity, damage, kind);
+            Spawn(source, owner, position, velocity, damage, kind, sourceNpc);
         }
 
         // Owner's client: the enemy died to the sword; a fan of candies shoots upward.
@@ -119,7 +124,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             {
                 float angle = -MathHelper.PiOver2 + Main.rand.NextFloat(-spread, spread);
                 float speed = Main.rand.NextFloat(CandyCaneSwordTuning.BurstSpeedMin, CandyCaneSwordTuning.BurstSpeedMax);
-                Spawn(source, owner, position, angle.ToRotationVector2() * speed, damage, CandyKinds.Pick());
+                Spawn(source, owner, position, angle.ToRotationVector2() * speed, damage, CandyKinds.Pick(owner));
             }
             CandyCaneSwordFx.KillBurst(position);
         }
@@ -284,6 +289,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             for (int i = 0; i < Main.maxNPCs; i++)
             {
                 NPC npc = Main.npc[i];
+                if (i == SourceNpc && Age < CandyCaneSwordTuning.BlueSourceIgnoreTicks)
+                    continue; // still ignoring the enemy it popped out of
                 if (!npc.active || npc.life <= 0 || npc.friendly || (!npc.CanBeChasedBy() && npc.type != NPCID.TargetDummy) || !box.Intersects(npc.Hitbox))
                     continue;
                 AttachTo(npc);
@@ -457,10 +464,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         public override bool PreDraw(ref Color lightColor)
         {
             CandyKind kind = Kind;
-            int left = CandyKinds.LifeTicks(kind) - Age;
             float alpha = 1f;
-            if (left > 0 && left < CandyCaneSwordTuning.BlinkTicks && (left / 4) % 2 == 0)
-                alpha = 0.35f; // about to break
             float grow = Math.Min(1f, (Age + 1) / (float)Math.Max(1, CandyCaneSwordTuning.PopInTicks));
             float scale = 0.5f + 0.5f * grow;
             Vector2 position = Projectile.Center - Main.screenPosition;
@@ -487,7 +491,23 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
                 Main.spriteBatch.Draw(TextureAssets.MagicPixel.Value, position, new Rectangle(0, 0, 1, 1), CandyKinds.Tint(kind) * alpha, Projectile.rotation,
                     new Vector2(0.5f), new Vector2(size), SpriteEffects.None, 0f);
             }
+            if (CandyCaneSwordTuning.ShowHitboxDebug)
+                DrawHitboxDebug(position);
             return false;
+        }
+
+        // CandyCaneSwordTuning.ShowHitboxDebug: a magenta circle on the hitbox (radius = half of its size) and a dot on the center.
+        void DrawHitboxDebug(Vector2 center)
+        {
+            Texture2D pixel = TextureAssets.MagicPixel.Value;
+            float radius = Projectile.width * 0.5f;
+            int dots = Math.Max(16, (int)(radius * 1.5f));
+            for (int i = 0; i < dots; i++)
+            {
+                Vector2 point = center + (MathHelper.TwoPi * i / dots).ToRotationVector2() * radius;
+                Main.spriteBatch.Draw(pixel, point, new Rectangle(0, 0, 1, 1), Color.Magenta, 0f, new Vector2(0.5f), new Vector2(2f), SpriteEffects.None, 0f);
+            }
+            Main.spriteBatch.Draw(pixel, center, new Rectangle(0, 0, 1, 1), Color.Magenta, 0f, new Vector2(0.5f), new Vector2(3f), SpriteEffects.None, 0f);
         }
     }
 }

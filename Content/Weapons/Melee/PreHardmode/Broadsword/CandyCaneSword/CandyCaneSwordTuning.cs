@@ -11,6 +11,8 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
     {
         // ---- when a candy appears ----
         public static float SpawnChance => 0.25f;       // per true melee hit that does not kill (1/4)
+        public static float GreenChanceFullHealth => 0.05f; // chance that a new candy is green at full health (the other kinds share the rest equally)
+        public static float GreenChanceNoHealth => 0.40f;   // the same at no health; linear in between (the owner's health when the candy is rolled)
         public static bool BlueEnabled => true;         // false: the random pick skips blue candies
         public static int BurstMin => 6;                // candies shot upward when a hit of the sword kills an enemy
         public static int BurstMax => 8;
@@ -27,7 +29,6 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         public static int GreenLifeTicks => 600;
         public static int BlueLifeTicks => 480;
         public static int YellowLifeTicks => 600;
-        public static int BlinkTicks => 90;             // a candy blinks this long before it breaks
         public static int PopInTicks => 6;              // it grows from half size to full size this fast
 
         // ---- physics (every machine runs the same) ----
@@ -51,7 +52,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         public static int RequestRetryTicks => 20;      // a client asks the server again after this long if nothing came back
         public static float ServerReachSlack => 140f;   // the server accepts a pickup this far beyond (pickup + magnet range)
         public static int HealAmount => 5;              // green candy
-        public static bool HealOnlyWhenHurt => true;    // a green candy is left alone by a player at full health
+        public static bool HealOnlyWhenHurt => false;   // true: a green candy is left alone by a player at full health
 
         // ---- Sugar Rush (yellow candy) ----
         public static int SugarRushTicksPerCandy => 120;
@@ -67,6 +68,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
 
         // ---- blue candy (sticks to an enemy or a block; stuck to an enemy it hurts it every interval until it breaks) ----
         public static int BlueStickDelayTicks => 10;       // a fresh candy cannot stick to an enemy yet (it pops up first); a block it touches sticks it at once
+        public static int BlueSourceIgnoreTicks => 60;     // and it ignores the enemy it popped out of for this long (60 = 1 second)
         public static float BlueStickReach => 4f;          // how far outside an enemy's box a blue candy still counts as touching it
         public static int BlueMaxPerEnemy => 3;            // per player on one enemy; one more pushes the oldest off
         public static float BlueDamageMultiplier => 0.35f; // of the sword's damage, per hit
@@ -81,6 +83,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
         public static float DrawScale => 1f;
         public static float FallbackSize => 14f;        // the colored square drawn until Candy.png exists
         public static float LightStrength => 0.25f;
+        public static bool ShowHitboxDebug => false;    // true: a magenta circle on every candy's hitbox (radius = half of HitboxSize) and a dot on its center
 
         // ---- dust, sound, shake ----
         public static int HitSparkCount => 3;

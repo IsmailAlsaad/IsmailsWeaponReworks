@@ -63,7 +63,7 @@ namespace IsmailsWeaponReworks.Content.Weapons.Melee.PreHardmode.Broadsword.Cand
             if (Player.whoAmI == Main.myPlayer && !rolled)
             {
                 rolled = true;
-                NextCandy = CandyKinds.Pick();
+                NextCandy = CandyKinds.Pick(Player);
             }
             if (Player.whoAmI != Main.myPlayer || Player.dead || Player.noItems || Player.CCed)
                 return;
